@@ -121,17 +121,30 @@ class REVEBackbone(EEGBackbone):
 
 def extract_reve_representation(out):
     if hasattr(out, "pooler_output") and out.pooler_output is not None:
-        return out.pooler_output
+        return _pool_reve_tensor(out.pooler_output)
     if hasattr(out, "last_hidden_state"):
-        return out.last_hidden_state.mean(dim=1)
+        return _pool_reve_tensor(out.last_hidden_state)
     if isinstance(out, torch.Tensor):
-        return out
+        return _pool_reve_tensor(out)
     if isinstance(out, dict):
         for key in ["pooler_output", "last_hidden_state", "embeddings", "h"]:
             if key in out:
                 value = out[key]
-                return value.mean(dim=1) if value.ndim == 3 else value
+                return _pool_reve_tensor(value)
     raise RuntimeError(f"Cannot extract representation from REVE output type: {type(out)}")
+
+
+def _pool_reve_tensor(value: torch.Tensor) -> torch.Tensor:
+    if value.ndim == 2:
+        return value
+    if value.ndim == 3:
+        return value.mean(dim=1)
+    if value.ndim > 3:
+        # REVE may return structured embeddings such as [B, C, T, D].
+        # Keep batch and feature dimensions, pool all structure in between.
+        dims = tuple(range(1, value.ndim - 1))
+        return value.mean(dim=dims)
+    raise RuntimeError(f"Cannot pool REVE tensor with shape {tuple(value.shape)}")
 
 
 def _infer_reve_dim(model, cfg: dict) -> int:
