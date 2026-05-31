@@ -31,5 +31,6 @@ def ensure_outside_repo(path: Path, repo_root: Path) -> None:
     if not str(path).startswith(str(allowed.resolve())):
         raise MissingAssetError(
             f"Refusing to place large external asset under repository path: {path}\n"
-            "Use scripts/setup_gpu_pod.sh so large assets go under .local/ and stay ignored by Git."
+            "Use scripts/setup_gpu_pod.sh. Model/HF cache goes under ~/nvme/cache/interns/hf; "
+            "data and W&B local files go under the repo .local directory."
         )

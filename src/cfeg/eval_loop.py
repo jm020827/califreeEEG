@@ -24,7 +24,8 @@ def run_channel_stress_eval(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     vocab = ckpt.get("vocabularies") or build_vocabularies()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ConditionedEEGDecoder(cfg, vocab_sizes={k: len(v) for k, v in vocab.items()}).to(device)
-    model.load_state_dict(ckpt["model_state"], strict=True)
+    strict = not bool(ckpt.get("save_trainable_only", False))
+    model.load_state_dict(ckpt["model_state"], strict=strict)
     results = []
     for channel_set in eval_cfg.get("channel_sets", ["all"]):
         collate = partial(collate_eeg, vocabularies=vocab)
@@ -69,4 +70,3 @@ def _channel_set_ids(name: str) -> list[int]:
         raise KeyError(f"Unknown channel set {name}. Known: {sorted(sets)}")
     cmap = CanonicalChannelMap.from_yaml()
     return cmap.get_ids(list(sets[name]))
-

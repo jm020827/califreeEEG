@@ -37,6 +37,8 @@ train:
   amp: true
   grad_clip_norm: 1.0
   early_stop_patience: 10
+checkpoint:
+  save_trainable_only: true
 loss:
   lambda_cons: 0.1
   lambda_logit_cons: 0.05

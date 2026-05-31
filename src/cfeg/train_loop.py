@@ -90,6 +90,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
 
     best_acc = -1.0
     patience = int(cfg["train"].get("early_stop_patience", 10))
+    save_trainable_only = bool(cfg.get("checkpoint", {}).get("save_trainable_only", True))
     stale = 0
     metrics_rows = []
     for epoch in range(1, int(cfg["train"].get("epochs", 20)) + 1):
@@ -120,6 +121,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             vocabularies=vocab,
             class_map=full_ds.class_map,
             asset_info={"processed_dirs": [str(p) for p in cfg["data"]["processed_dirs"]]},
+            save_trainable_only=save_trainable_only,
         )
         if val["accuracy"] > best_acc:
             best_acc = val["accuracy"]
@@ -134,6 +136,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
                 vocabularies=vocab,
                 class_map=full_ds.class_map,
                 asset_info={"processed_dirs": [str(p) for p in cfg["data"]["processed_dirs"]]},
+                save_trainable_only=save_trainable_only,
             )
             _log_checkpoint_artifact(wandb_run, output_dir / "best.pt", cfg, epoch)
         else:

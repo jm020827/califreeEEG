@@ -32,15 +32,32 @@ The setup script creates and exports:
 
 ```bash
 PROJECT_ROOT=$HOME/work/jm020827/califreeEEG
+CFEG_HF_ROOT=$HOME/nvme/cache/interns/hf
 EEG_DATA_ROOT=$PROJECT_ROOT/.local/eeg_data
-EEG_MODEL_ROOT=$PROJECT_ROOT/.local/eeg_models
-HF_HOME=$EEG_MODEL_ROOT/huggingface
+EEG_MODEL_ROOT=$CFEG_HF_ROOT/eeg_models
+HF_HOME=$CFEG_HF_ROOT
 MNE_DATA=$EEG_DATA_ROOT/mne_data
+WANDB_DIR=$PROJECT_ROOT/.local/wandb
 ```
 
 ## Asset Policy
 
-Do not commit raw EEG, processed datasets, REVE weights, Hugging Face cache, OpenBCI recordings, checkpoints, TensorBoard/W&B logs, or HDF5/NPY/MAT/EDF/BDF files. In the pod, large assets live under `.local/`, which is ignored by Git:
+Do not commit raw EEG, processed datasets, REVE weights, Hugging Face cache, OpenBCI recordings, checkpoints, TensorBoard/W&B logs, or HDF5/NPY/MAT/EDF/BDF files.
+
+Model/Hugging Face cache files are written under:
+
+```text
+~/nvme/cache/interns/hf
+```
+
+Data and W&B local files are written inside the repo under ignored `.local/` paths:
+
+```text
+~/work/jm020827/califreeEEG/.local/eeg_data
+~/work/jm020827/califreeEEG/.local/wandb
+```
+
+Initialize those paths with:
 
 ```bash
 source scripts/setup_gpu_pod.sh
@@ -56,6 +73,57 @@ source scripts/setup_gpu_pod.sh
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+python -m pip install -e .
+```
+
+Or run the bootstrap helper:
+
+```bash
+cd "$HOME/work/jm020827/califreeEEG"
+bash scripts/bootstrap_gpu_pod.sh
+source .venv/bin/activate
+```
+
+`setup_gpu_pod.sh` normally uses `~/nvme/cache/interns/hf` only for model/HF cache files. It keeps data and W&B local files inside the repo `.local/` directory. If you intentionally want to keep pre-set environment paths, run:
+
+```bash
+CFEG_KEEP_EXISTING_ENV=1 source scripts/setup_gpu_pod.sh
+```
+
+## One-Command Pod Run
+
+For a fresh pod, this single command handles environment setup, virtualenv creation, dependency installation, optional HF/REVE fetch, W&B login, synthetic data preparation, and training:
+
+```bash
+cd "$HOME/work/jm020827/califreeEEG"
+bash scripts/run_gpu_pod_full.sh
+```
+
+It prompts at the beginning for:
+
+```text
+Hugging Face token
+W&B API key
+W&B project/entity/mode
+run name
+training config
+backbone: tiny_transformer or reve
+synthetic data preparation
+epoch and batch-size overrides
+```
+
+Tokens are not written to the repository. HF/model files go under `~/nvme/cache/interns/hf`; data and W&B local files go under the repo `.local/` directory.
+
+Checkpoints default to `checkpoint.save_trainable_only=true`, so frozen REVE weights are not duplicated into `outputs/`. The REVE backbone is reloaded from `HF_HOME` when evaluating.
+
+You can also run it non-interactively:
+
+```bash
+WANDB_API_KEY=<wandb-key> HF_TOKEN=<hf-token> \
+CFEG_TRAIN_CONFIG=configs/train/debug.yaml \
+CFEG_BACKBONE=tiny_transformer \
+CFEG_TRAIN_EPOCHS=5 \
+bash scripts/run_gpu_pod_full.sh
 ```
 
 Optional MOABB/OpenBCI support:

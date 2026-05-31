@@ -20,12 +20,14 @@ def save_checkpoint(
     class_map: dict | None = None,
     asset_info: dict | None = None,
     train_z_mean=None,
+    save_trainable_only: bool = False,
 ) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
         {
-            "model_state": model.state_dict(),
+            "model_state": _checkpoint_state_dict(model, save_trainable_only=save_trainable_only),
+            "save_trainable_only": save_trainable_only,
             "optimizer_state": optimizer.state_dict() if optimizer else None,
             "scheduler_state": scheduler.state_dict() if scheduler else None,
             "config": config,
@@ -50,3 +52,10 @@ def save_json(path: str | Path, payload: dict) -> None:
     with path.open("w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
+
+def _checkpoint_state_dict(model, *, save_trainable_only: bool) -> dict:
+    state = model.state_dict()
+    if not save_trainable_only:
+        return state
+    trainable_names = {name for name, p in model.named_parameters() if p.requires_grad}
+    return {name: value for name, value in state.items() if name in trainable_names}

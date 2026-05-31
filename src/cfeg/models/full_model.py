@@ -47,6 +47,12 @@ class ConditionedEEGDecoder(nn.Module):
             )
         elif name == "reve":
             reve_cfg = dict(backbone_cfg)
+            reve_cfg.setdefault("hf_model", "brain-bzh/reve-base")
+            reve_cfg.setdefault("hf_positions", "brain-bzh/reve-positions")
+            reve_cfg.setdefault("cache_dir", None)
+            reve_cfg.setdefault("trust_remote_code", True)
+            reve_cfg.setdefault("local_files_only", True)
+            reve_cfg.setdefault("freeze", True)
             reve_cfg.setdefault("d_model", d_model)
             self.backbone = REVEBackbone(reve_cfg)
             d_model = self.backbone.d_model
@@ -140,4 +146,3 @@ class ConditionedEEGDecoder(nn.Module):
             logvar=logvar,
             aux=backbone_out.aux,
         )
-
