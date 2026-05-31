@@ -57,12 +57,12 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ConditionedEEGDecoder(cfg).to(device)
-    params = count_parameters(model)
 
     batch = next(iter(train_loader))
     batch = _to_device(batch, device)
     with torch.no_grad():
         out = model(batch["x"], batch["cond"])
+    params = count_parameters(model)
     dry_result = {"n_samples": len(full_ds), "logits_shape": tuple(out.logits.shape), "params": params}
     if dry_run:
         return dry_result
