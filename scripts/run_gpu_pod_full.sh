@@ -188,4 +188,17 @@ echo
 echo "Starting training:"
 printf ' %q' "${train_args[@]}"
 echo
-"${train_args[@]}"
+
+log_dir="${CFEG_LOG_DIR:-$PROJECT_ROOT/outputs/logs}"
+mkdir -p "$log_dir"
+log_file="$log_dir/train_${CFEG_RUN_NAME}_$(date +%Y%m%d_%H%M%S).log"
+echo "Logging train output to: $log_file"
+
+set +e
+"${train_args[@]}" 2>&1 | tee "$log_file"
+status="${PIPESTATUS[0]}"
+set -e
+
+echo "Exit code: $status" | tee -a "$log_file"
+echo "Log saved to: $log_file"
+exit "$status"

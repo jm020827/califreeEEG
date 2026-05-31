@@ -304,3 +304,19 @@ python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outp
 python scripts/run_ablation.py --config configs/train/ablation.yaml --only synthetic
 python scripts/export_results_table.py --runs outputs/ablation_* --out outputs/summary/ablation_results.csv
 ```
+
+To keep terminal output and tracebacks even when the Kubernetes exec session exits, run training through the logging wrapper:
+
+```bash
+bash scripts/run_train_logged.sh --config configs/train/debug.yaml \
+  model.backbone.name=reve \
+  model.backbone.cache_dir="$HF_HOME" \
+  tracking.wandb.enabled=true \
+  train.epochs=1
+```
+
+Logs are written to:
+
+```text
+outputs/logs/train_<timestamp>.log
+```
