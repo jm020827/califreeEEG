@@ -15,7 +15,7 @@ The default path is fully runnable without external models by using `TinyEEGTran
 Use this Kubernetes pod path for the project:
 
 ```bash
-~/work/jm020827/califreeeeg
+~/work/jm020827/califreeEEG
 ```
 
 Move or clone this repository there, then initialize the environment:
@@ -23,15 +23,15 @@ Move or clone this repository there, then initialize the environment:
 ```bash
 mkdir -p "$HOME/work/jm020827"
 cd "$HOME/work/jm020827"
-# copy/clone the repository directory here as califreeeeg
-cd "$HOME/work/jm020827/califreeeeg"
+# copy/clone the repository directory here as califreeEEG
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 ```
 
 The setup script creates and exports:
 
 ```bash
-PROJECT_ROOT=$HOME/work/jm020827/califreeeeg
+PROJECT_ROOT=$HOME/work/jm020827/califreeEEG
 EEG_DATA_ROOT=$PROJECT_ROOT/.local/eeg_data
 EEG_MODEL_ROOT=$PROJECT_ROOT/.local/eeg_models
 HF_HOME=$EEG_MODEL_ROOT/huggingface
@@ -51,7 +51,7 @@ Download never happens on import. Use explicit scripts only.
 ## Install
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python -m venv .venv
 source .venv/bin/activate
@@ -70,7 +70,7 @@ python -m pip install -e '.[openbci]'
 This uses generated non-human synthetic signals and writes only to ignored data paths.
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/prepare_synthetic.py --out_dir data/processed/synthetic --n_subjects 8 --n_trials_per_class 20 --n_classes 4 --target_sfreq 200
 python scripts/inspect_manifest.py --processed_dir data/processed/synthetic
@@ -81,7 +81,7 @@ python scripts/train.py --config configs/train/debug.yaml --dry-run
 To run a short actual training smoke:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/train.py --config configs/train/debug.yaml train.epochs=1
 python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outputs/debug/best.pt
@@ -92,7 +92,7 @@ python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outp
 REVE weights are not redistributed here. On the GPU/storage server:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 huggingface-cli login
 python scripts/fetch_reve.py --probe-remote --model brain-bzh/reve-base --positions brain-bzh/reve-positions
@@ -117,7 +117,7 @@ python scripts/train.py --config configs/train/ssvep_pretrain.yaml model.backbon
 BETA:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/fetch_dataset.py --dataset beta --probe-remote
 python scripts/fetch_dataset.py --dataset beta
@@ -128,7 +128,7 @@ python scripts/prepare_dataset.py --dataset beta --raw_dir "$EEG_DATA_ROOT/raw/b
 Wang2016:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python -m pip install -e '.[moabb]'
 python scripts/fetch_dataset.py --dataset wang --method moabb
@@ -138,7 +138,7 @@ python scripts/prepare_dataset.py --dataset wang --raw_dir "$EEG_DATA_ROOT/raw/w
 Wearable SSVEP is treated as manual/Figshare-first:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/fetch_dataset.py --dataset wearable
 python scripts/verify_assets.py --dataset wearable --stage raw
@@ -161,7 +161,7 @@ $EEG_DATA_ROOT/raw/openbci/sub001_ses001/
 Convert with:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/openbci_convert.py --raw_session_dir "$EEG_DATA_ROOT/raw/openbci/sub001_ses001" --out_dir "$EEG_DATA_ROOT/processed/openbci_v1" --target_sfreq 200
 ```
@@ -173,7 +173,7 @@ OpenBCI Cyton raw data is recorded at 250 Hz; REVE experiments resample processe
 `requirements.txt` includes W&B. In the pod, log in once:
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 source .venv/bin/activate
 
@@ -229,7 +229,7 @@ wandb sync "$WANDB_DIR"/wandb/offline-run-*
 ## Useful Commands
 
 ```bash
-cd "$HOME/work/jm020827/califreeeeg"
+cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/train.py --config configs/train/debug.yaml
 python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outputs/debug/best.pt

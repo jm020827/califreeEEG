@@ -14,7 +14,7 @@ def env_path(name: str, *, required: bool = True) -> Path | None:
         raise MissingAssetError(
             f"Environment variable {name} is not set.\n"
             "Set external asset roots before fetching or preparing public datasets:\n"
-            "  cd $HOME/work/jm020827/califreeeeg\n"
+            "  cd $HOME/work/jm020827/califreeEEG\n"
             "  source scripts/setup_gpu_pod.sh"
         )
     return None

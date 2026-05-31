@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # Source this file inside the Kubernetes pod:
-#   cd "$HOME/work/jm020827/califreeeeg"
+#   cd "$HOME/work/jm020827/califreeEEG"
 #   source scripts/setup_gpu_pod.sh
 
-export PROJECT_ROOT="${PROJECT_ROOT:-$HOME/work/jm020827/califreeeeg}"
+export PROJECT_ROOT="${PROJECT_ROOT:-$HOME/work/jm020827/califreeEEG}"
 export EEG_DATA_ROOT="${EEG_DATA_ROOT:-$PROJECT_ROOT/.local/eeg_data}"
 export EEG_MODEL_ROOT="${EEG_MODEL_ROOT:-$PROJECT_ROOT/.local/eeg_models}"
 export HF_HOME="${HF_HOME:-$EEG_MODEL_ROOT/huggingface}"
