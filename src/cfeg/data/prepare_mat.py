@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from collections.abc import Mapping
 from typing import Any
 
 import h5py
@@ -18,15 +19,18 @@ from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write
 
 
 LABEL_KEYS = {"label", "labels", "y", "target", "targets", "class", "classes", "class_id"}
+CHANNEL_KEYS = {"channel", "channels", "channel_names", "chan", "chans", "chanlocs", "chaninfo"}
 
 
 def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dataset_id: str) -> None:
-    files = sorted([*raw_dir.rglob("*.mat"), *raw_dir.rglob("*.npz")])
+    files, duplicate_files = _dedupe_files(sorted([*raw_dir.rglob("*.mat"), *raw_dir.rglob("*.npz")]))
     if not files:
         raise FileNotFoundError(
             f"No .mat or .npz files found under {raw_dir}. If this dataset is in another raw "
             "format, inspect it first and add a schema-specific adapter."
         )
+    if duplicate_files:
+        print(f"skipped {len(duplicate_files)} duplicate linked raw file(s)")
     pcfg = PreprocessConfig.from_dict(cfg.get("preprocess"))
     cmap = CanonicalChannelMap.from_yaml()
     expected_channels = int(cfg.get("expected", {}).get("n_channels") or pcfg.c_max)
@@ -43,9 +47,10 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         data_key, data = _select_data_array(arrays)
         trials = _to_trials_channels_time(data, expected_channels=expected_channels)
         labels = _extract_labels(arrays, len(trials), n_targets=n_targets)
+        file_channel_names = _extract_channel_names(arrays, expected_channels) or channel_names
         subject_id = _subject_from_path(file)
         for trial_i, trial in enumerate(trials):
-            ch_names = channel_names[: trial.shape[0]]
+            ch_names = file_channel_names[: trial.shape[0]]
             placed, mask, _ids, sfreq_processed = preprocess_trial(trial, ch_names, raw_sfreq, pcfg, cmap)
             label = int(labels[trial_i])
             slot_ids = ((np.arange(pcfg.c_max) + 1) * mask.astype(np.int64)).tolist()
@@ -116,15 +121,33 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         )
 
 
-def _load_arrays(path: Path) -> dict[str, np.ndarray]:
+def _dedupe_files(files: list[Path]) -> tuple[list[Path], list[Path]]:
+    seen: set[tuple[int, int] | str] = set()
+    unique: list[Path] = []
+    duplicates: list[Path] = []
+    for file in files:
+        try:
+            stat = file.stat()
+            key: tuple[int, int] | str = (stat.st_dev, stat.st_ino)
+        except OSError:
+            key = str(file.resolve(strict=False))
+        if key in seen:
+            duplicates.append(file)
+            continue
+        seen.add(key)
+        unique.append(file)
+    return unique, duplicates
+
+
+def _load_arrays(path: Path) -> dict[str, Any]:
     if path.suffix.lower() == ".npz":
         with np.load(path, allow_pickle=False) as data:
             return {k: np.asarray(v) for k, v in data.items()}
     try:
         mat = loadmat(path, simplify_cells=True)
-        return {k: np.asarray(v) for k, v in mat.items() if not k.startswith("__")}
+        return _flatten_items({k: v for k, v in mat.items() if not k.startswith("__")})
     except NotImplementedError:
-        arrays: dict[str, np.ndarray] = {}
+        arrays: dict[str, Any] = {}
         with h5py.File(path, "r") as h5:
             h5.visititems(
                 lambda name, obj: arrays.setdefault(name, np.asarray(obj))
@@ -134,7 +157,25 @@ def _load_arrays(path: Path) -> dict[str, np.ndarray]:
         return arrays
 
 
-def _select_data_array(arrays: dict[str, np.ndarray]) -> tuple[str, np.ndarray]:
+def _flatten_items(value: Any, prefix: str = "") -> dict[str, Any]:
+    flat: dict[str, Any] = {}
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            name = f"{prefix}.{key}" if prefix else str(key)
+            flat.update(_flatten_items(child, name))
+        return flat
+    arr = np.asarray(value)
+    if arr.dtype == object and arr.ndim > 0 and arr.size <= 512:
+        flat[prefix or "array"] = value
+        for index in np.ndindex(arr.shape):
+            name = f"{prefix}[{','.join(str(i) for i in index)}]"
+            flat.update(_flatten_items(arr[index], name))
+        return flat
+    flat[prefix or "array"] = value
+    return flat
+
+
+def _select_data_array(arrays: dict[str, Any]) -> tuple[str, np.ndarray]:
     candidates = []
     for key, value in arrays.items():
         arr = np.asarray(value)
@@ -181,9 +222,9 @@ def _time_axis(shape: tuple[int, ...], channel_axis: int) -> int:
     return max(candidates)[1]
 
 
-def _extract_labels(arrays: dict[str, np.ndarray], n_trials: int, n_targets: int) -> np.ndarray:
+def _extract_labels(arrays: dict[str, Any], n_trials: int, n_targets: int) -> np.ndarray:
     for key, value in arrays.items():
-        if key.lower() in LABEL_KEYS:
+        if _last_key(key) in LABEL_KEYS:
             labels = np.asarray(value).squeeze().astype(int).reshape(-1)
             if len(labels) >= n_trials:
                 labels = labels[:n_trials]
@@ -193,6 +234,44 @@ def _extract_labels(arrays: dict[str, np.ndarray], n_trials: int, n_targets: int
     if n_targets <= 0:
         return np.zeros(n_trials, dtype=np.int64)
     return np.arange(n_trials, dtype=np.int64) % n_targets
+
+
+def _extract_channel_names(arrays: dict[str, Any], expected_channels: int) -> list[str] | None:
+    for key, value in arrays.items():
+        if _last_key(key) not in CHANNEL_KEYS:
+            continue
+        names = _strings_from_value(value, expected_channels)
+        if names:
+            return names
+    for value in arrays.values():
+        names = _strings_from_value(value, expected_channels)
+        if names:
+            return names
+    return None
+
+
+def _strings_from_value(value: Any, expected_channels: int) -> list[str] | None:
+    arr = np.asarray(value, dtype=object)
+    if arr.ndim == 0:
+        if isinstance(arr.item(), str):
+            return [arr.item()] if expected_channels == 1 else None
+        return None
+    if arr.ndim == 1:
+        strings = [str(x) for x in arr.tolist() if isinstance(x, str)]
+        return strings if len(strings) == expected_channels else None
+    for axis in range(arr.ndim):
+        if arr.shape[axis] != expected_channels:
+            continue
+        moved = np.moveaxis(arr, axis, 0).reshape(expected_channels, -1)
+        for col in range(moved.shape[1]):
+            strings = [str(x) for x in moved[:, col].tolist() if isinstance(x, str)]
+            if len(strings) == expected_channels:
+                return strings
+    return None
+
+
+def _last_key(key: str) -> str:
+    return key.rsplit(".", maxsplit=1)[-1].lower()
 
 
 def _subject_from_path(path: Path) -> str:

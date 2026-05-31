@@ -188,8 +188,15 @@ BETA:
 cd "$HOME/work/jm020827/califreeEEG"
 source scripts/setup_gpu_pod.sh
 python scripts/fetch_dataset.py --dataset beta --probe-remote
-python scripts/fetch_dataset.py --dataset beta
+python scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta"
 python scripts/verify_assets.py --dataset beta --stage raw
+python scripts/prepare_dataset.py --dataset beta --raw_dir "$EEG_DATA_ROOT/raw/beta" --out_dir "$EEG_DATA_ROOT/processed/beta_v1" --config configs/data/beta.yaml
+```
+
+For a quick smoke test, fetch only one subject first:
+
+```bash
+python scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta" --subjects 1
 python scripts/prepare_dataset.py --dataset beta --raw_dir "$EEG_DATA_ROOT/raw/beta" --out_dir "$EEG_DATA_ROOT/processed/beta_v1" --config configs/data/beta.yaml
 ```
 

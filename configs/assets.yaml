@@ -26,10 +26,10 @@ external_sources:
     required_sample_rate_hz: 200
     url: https://huggingface.co/brain-bzh/reve-positions
   beta:
-    repo_id: Bingchuan/beta
-    type: huggingface_dataset_or_manual
+    figshare_article_id: 12264401
+    type: figshare_or_manual
     note: 64-channel EEG, 70 subjects, 40-target SSVEP
-    url: https://huggingface.co/datasets/Bingchuan/BETA
+    url: https://figshare.com/articles/dataset/The_BETA_database/12264401
   wang:
     type: moabb_or_manual
     moabb_dataset: Wang2016
@@ -69,8 +69,8 @@ datasets:
     target_sfreq: 200
     public: false
   beta:
-    type: huggingface_dataset
-    repo_id: Bingchuan/beta
+    type: figshare_or_manual
+    figshare_article_id: 12264401
     raw_dir: ${paths.data_root}/raw/beta
     processed_dir: ${paths.data_root}/processed/beta_v1
     target_sfreq: 200
@@ -79,7 +79,7 @@ datasets:
       n_channels: 64
       n_targets: 40
     fetch:
-      method: datasets.load_dataset
+      method: figshare
       allow_manual_fallback: true
   wang:
     type: moabb_or_manual
