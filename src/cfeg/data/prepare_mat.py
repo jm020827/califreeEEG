@@ -20,6 +20,9 @@ from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write
 
 LABEL_KEYS = {"label", "labels", "y", "target", "targets", "class", "classes", "class_id"}
 CHANNEL_KEYS = {"channel", "channels", "channel_names", "chan", "chans", "chanlocs", "chaninfo"}
+FREQUENCY_KEYS = {"freq", "freqs", "frequency", "frequencies", "stimulus_frequency_hz"}
+PHASE_KEYS = {"phase", "phases", "stimulus_phase_rad"}
+SFREQ_KEYS = {"srate", "sfreq", "sample_rate", "sampling_rate"}
 
 
 def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dataset_id: str) -> None:
@@ -40,6 +43,9 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     raw_sfreq = float(cfg.get("raw_sfreq", cfg.get("sfreq", pcfg.target_sfreq)))
     n_targets = int(cfg.get("expected", {}).get("n_targets") or cfg.get("n_targets") or 0)
     class_freqs = cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1))
+    class_phases = cfg.get("class_phases")
+    drop_unknown_channels = bool(cfg.get("drop_unknown_channels", False))
+    dropped_unknown_names: set[str] = set()
 
     xs, masks, ys, rows = [], [], [], []
     for file in files:
@@ -48,17 +54,33 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         trials = _to_trials_channels_time(data, expected_channels=expected_channels)
         labels = _extract_labels(arrays, len(trials), n_targets=n_targets)
         file_channel_names = _extract_channel_names(arrays, expected_channels) or channel_names
+        file_class_freqs = _extract_numeric_vector(arrays, FREQUENCY_KEYS, n_targets) or class_freqs
+        file_class_phases = _extract_numeric_vector(arrays, PHASE_KEYS, n_targets) or class_phases
+        file_raw_sfreq = _extract_scalar(arrays, SFREQ_KEYS) or raw_sfreq
         subject_id = _subject_from_path(file)
         for trial_i, trial in enumerate(trials):
-            ch_names = file_channel_names[: trial.shape[0]]
-            placed, mask, _ids, sfreq_processed = preprocess_trial(trial, ch_names, raw_sfreq, pcfg, cmap)
+            original_trial = trial
+            original_ch_names = file_channel_names[: original_trial.shape[0]]
+            ch_names = original_ch_names
+            if drop_unknown_channels:
+                trial, ch_names, dropped = _drop_unknown_channels(original_trial, original_ch_names, cmap)
+                new_dropped = [name for name in dropped if name not in dropped_unknown_names]
+                if new_dropped:
+                    print(f"dropped unknown channel(s) from {file.name}: {', '.join(new_dropped)}")
+                    dropped_unknown_names.update(new_dropped)
+            placed, mask, _ids, sfreq_processed = preprocess_trial(trial, ch_names, file_raw_sfreq, pcfg, cmap)
             label = int(labels[trial_i])
             slot_ids = ((np.arange(pcfg.c_max) + 1) * mask.astype(np.int64)).tolist()
             h5_index = len(xs)
             xs.append(placed)
             masks.append(mask)
             ys.append(label)
-            freq = float(class_freqs[label % len(class_freqs)]) if class_freqs else float(label)
+            freq = float(file_class_freqs[label % len(file_class_freqs)]) if file_class_freqs else float(label)
+            phase = (
+                float(file_class_phases[label % len(file_class_phases)])
+                if file_class_phases
+                else None
+            )
             rows.append(
                 {
                     "sample_id": f"{dataset_id}_{file.stem}_{trial_i:05d}",
@@ -70,8 +92,8 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     "trial_id": f"{trial_i:05d}",
                     "label": label,
                     "stimulus_frequency_hz": freq,
-                    "stimulus_phase_rad": None,
-                    "sfreq_original": raw_sfreq,
+                    "stimulus_phase_rad": phase,
+                    "sfreq_original": file_raw_sfreq,
                     "sfreq_processed": sfreq_processed,
                     "window_start_sec": pcfg.window_start_sec,
                     "window_duration_sec": pcfg.window_duration_sec,
@@ -79,9 +101,9 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     "hardware_id": cfg.get("hardware_id", "public_unknown"),
                     "cap_type": cfg.get("cap_type", "unknown"),
                     "electrode_type": cfg.get("electrode_type", "unknown"),
-                    "n_channels_original": int(trial.shape[0]),
+                    "n_channels_original": int(original_trial.shape[0]),
                     "n_channels_used": int(mask.sum()),
-                    "channel_names_original": ch_names,
+                    "channel_names_original": original_ch_names,
                     "channel_names_used": ch_names,
                     "canonical_channel_ids": slot_ids,
                     "impedance_mean_kohm": None,
@@ -258,7 +280,8 @@ def _strings_from_value(value: Any, expected_channels: int) -> list[str] | None:
         return None
     if arr.ndim == 1:
         strings = [str(x) for x in arr.tolist() if isinstance(x, str)]
-        return strings if len(strings) == expected_channels else None
+        return strings if len(strings) == expected_channels and _channel_name_score(strings) > 0 else None
+    candidates: list[tuple[int, list[str]]] = []
     for axis in range(arr.ndim):
         if arr.shape[axis] != expected_channels:
             continue
@@ -266,12 +289,67 @@ def _strings_from_value(value: Any, expected_channels: int) -> list[str] | None:
         for col in range(moved.shape[1]):
             strings = [str(x) for x in moved[:, col].tolist() if isinstance(x, str)]
             if len(strings) == expected_channels:
-                return strings
+                score = _channel_name_score(strings)
+                if score > 0:
+                    candidates.append((score, strings))
+    return max(candidates, key=lambda item: item[0])[1] if candidates else None
+
+
+def _channel_name_score(names: list[str]) -> int:
+    return sum(bool(re.search(r"[A-Za-z]", name)) and not _is_number_like(name) for name in names)
+
+
+def _is_number_like(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def _extract_numeric_vector(arrays: dict[str, Any], keys: set[str], expected_len: int) -> list[float] | None:
+    for key, value in arrays.items():
+        if _last_key(key) not in keys:
+            continue
+        arr = np.asarray(value).squeeze()
+        if arr.ndim != 1 or not np.issubdtype(arr.dtype, np.number):
+            continue
+        if expected_len > 0 and arr.size < expected_len:
+            continue
+        n = expected_len if expected_len > 0 else arr.size
+        return [float(x) for x in arr[:n].tolist()]
     return None
 
 
+def _extract_scalar(arrays: dict[str, Any], keys: set[str]) -> float | None:
+    for key, value in arrays.items():
+        if _last_key(key) not in keys:
+            continue
+        arr = np.asarray(value).squeeze()
+        if arr.size != 1 or not np.issubdtype(arr.dtype, np.number):
+            continue
+        return float(arr.item())
+    return None
+
+
+def _drop_unknown_channels(
+    trial: np.ndarray, ch_names: list[str], canonical_map: CanonicalChannelMap
+) -> tuple[np.ndarray, list[str], list[str]]:
+    keep_indices: list[int] = []
+    dropped: list[str] = []
+    for i, name in enumerate(ch_names):
+        if canonical_map.get_id(name) > 0:
+            keep_indices.append(i)
+        else:
+            dropped.append(name)
+    if not keep_indices:
+        raise ValueError(f"All channels are unknown: {ch_names}")
+    return trial[keep_indices], [ch_names[i] for i in keep_indices], dropped
+
+
 def _last_key(key: str) -> str:
-    return key.rsplit(".", maxsplit=1)[-1].lower()
+    key = key.rsplit(".", maxsplit=1)[-1]
+    return key.split("[", maxsplit=1)[0].lower()
 
 
 def _subject_from_path(path: Path) -> str:

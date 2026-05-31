@@ -1,67 +1,66 @@
 unknown_id: 0
 channels:
-  - {id: 1, name: Fp1, aliases: [FP1, fp1], xyz: null}
-  - {id: 2, name: Fp2, aliases: [FP2, fp2], xyz: null}
-  - {id: 3, name: F7, aliases: [f7], xyz: null}
-  - {id: 4, name: F3, aliases: [f3], xyz: null}
-  - {id: 5, name: Fz, aliases: [FZ, fz], xyz: null}
-  - {id: 6, name: F4, aliases: [f4], xyz: null}
-  - {id: 7, name: F8, aliases: [f8], xyz: null}
-  - {id: 8, name: FC5, aliases: [fc5], xyz: null}
-  - {id: 9, name: FC1, aliases: [fc1], xyz: null}
-  - {id: 10, name: FC2, aliases: [fc2], xyz: null}
-  - {id: 11, name: FC6, aliases: [fc6], xyz: null}
-  - {id: 12, name: T7, aliases: [T3, t7], xyz: null}
-  - {id: 13, name: C3, aliases: [c3], xyz: null}
-  - {id: 14, name: Cz, aliases: [CZ, cz], xyz: null}
-  - {id: 15, name: C4, aliases: [c4], xyz: null}
-  - {id: 16, name: T8, aliases: [T4, t8], xyz: null}
-  - {id: 17, name: TP9, aliases: [tp9], xyz: null}
-  - {id: 18, name: CP5, aliases: [cp5], xyz: null}
-  - {id: 19, name: CP1, aliases: [cp1], xyz: null}
-  - {id: 20, name: CP2, aliases: [cp2], xyz: null}
-  - {id: 21, name: CP6, aliases: [cp6], xyz: null}
-  - {id: 22, name: TP10, aliases: [tp10], xyz: null}
-  - {id: 23, name: P7, aliases: [p7], xyz: null}
-  - {id: 24, name: P3, aliases: [p3], xyz: null}
-  - {id: 25, name: Pz, aliases: [PZ, pz], xyz: null}
-  - {id: 26, name: P4, aliases: [p4], xyz: null}
-  - {id: 27, name: P8, aliases: [p8], xyz: null}
-  - {id: 28, name: PO7, aliases: [po7], xyz: null}
-  - {id: 29, name: PO3, aliases: [po3], xyz: null}
-  - {id: 30, name: POz, aliases: [POZ, poz], xyz: null}
-  - {id: 31, name: PO4, aliases: [po4], xyz: null}
-  - {id: 32, name: PO8, aliases: [po8], xyz: null}
-  - {id: 33, name: O1, aliases: [o1], xyz: null}
-  - {id: 34, name: Oz, aliases: [OZ, oz], xyz: null}
-  - {id: 35, name: O2, aliases: [o2], xyz: null}
-  - {id: 36, name: Iz, aliases: [IZ, iz], xyz: null}
-  - {id: 37, name: AF3, aliases: [af3], xyz: null}
-  - {id: 38, name: AF4, aliases: [af4], xyz: null}
-  - {id: 39, name: F5, aliases: [f5], xyz: null}
-  - {id: 40, name: F1, aliases: [f1], xyz: null}
-  - {id: 41, name: F2, aliases: [f2], xyz: null}
-  - {id: 42, name: F6, aliases: [f6], xyz: null}
-  - {id: 43, name: FC3, aliases: [fc3], xyz: null}
-  - {id: 44, name: FCz, aliases: [FCZ, fcz], xyz: null}
-  - {id: 45, name: FC4, aliases: [fc4], xyz: null}
-  - {id: 46, name: C5, aliases: [c5], xyz: null}
-  - {id: 47, name: C1, aliases: [c1], xyz: null}
-  - {id: 48, name: C2, aliases: [c2], xyz: null}
-  - {id: 49, name: C6, aliases: [c6], xyz: null}
-  - {id: 50, name: CP3, aliases: [cp3], xyz: null}
-  - {id: 51, name: CPz, aliases: [CPZ, cpz], xyz: null}
-  - {id: 52, name: CP4, aliases: [cp4], xyz: null}
-  - {id: 53, name: P5, aliases: [p5], xyz: null}
-  - {id: 54, name: P1, aliases: [p1], xyz: null}
-  - {id: 55, name: P2, aliases: [p2], xyz: null}
-  - {id: 56, name: P6, aliases: [p6], xyz: null}
-  - {id: 57, name: PO5, aliases: [po5], xyz: null}
-  - {id: 58, name: PO1, aliases: [po1], xyz: null}
-  - {id: 59, name: PO2, aliases: [po2], xyz: null}
-  - {id: 60, name: PO6, aliases: [po6], xyz: null}
-  - {id: 61, name: FT7, aliases: [ft7], xyz: null}
-  - {id: 62, name: FT8, aliases: [ft8], xyz: null}
-  - {id: 63, name: M1, aliases: [A1, m1], xyz: null}
-  - {id: 64, name: M2, aliases: [A2, m2], xyz: null}
-
+  - {id: 1, name: FP1, aliases: [Fp1, fp1], xyz: null}
+  - {id: 2, name: FPZ, aliases: [Fpz, fpz], xyz: null}
+  - {id: 3, name: FP2, aliases: [Fp2, fp2], xyz: null}
+  - {id: 4, name: AF3, aliases: [af3], xyz: null}
+  - {id: 5, name: AF4, aliases: [af4], xyz: null}
+  - {id: 6, name: F7, aliases: [f7], xyz: null}
+  - {id: 7, name: F5, aliases: [f5], xyz: null}
+  - {id: 8, name: F3, aliases: [f3], xyz: null}
+  - {id: 9, name: F1, aliases: [f1], xyz: null}
+  - {id: 10, name: FZ, aliases: [Fz, fz], xyz: null}
+  - {id: 11, name: F2, aliases: [f2], xyz: null}
+  - {id: 12, name: F4, aliases: [f4], xyz: null}
+  - {id: 13, name: F6, aliases: [f6], xyz: null}
+  - {id: 14, name: F8, aliases: [f8], xyz: null}
+  - {id: 15, name: FT7, aliases: [ft7], xyz: null}
+  - {id: 16, name: FC5, aliases: [fc5], xyz: null}
+  - {id: 17, name: FC3, aliases: [fc3], xyz: null}
+  - {id: 18, name: FC1, aliases: [fc1], xyz: null}
+  - {id: 19, name: FCZ, aliases: [FCz, fcz], xyz: null}
+  - {id: 20, name: FC2, aliases: [fc2], xyz: null}
+  - {id: 21, name: FC4, aliases: [fc4], xyz: null}
+  - {id: 22, name: FC6, aliases: [fc6], xyz: null}
+  - {id: 23, name: FT8, aliases: [ft8], xyz: null}
+  - {id: 24, name: T7, aliases: [T3, t7], xyz: null}
+  - {id: 25, name: C5, aliases: [c5], xyz: null}
+  - {id: 26, name: C3, aliases: [c3], xyz: null}
+  - {id: 27, name: C1, aliases: [c1], xyz: null}
+  - {id: 28, name: CZ, aliases: [Cz, cz], xyz: null}
+  - {id: 29, name: C2, aliases: [c2], xyz: null}
+  - {id: 30, name: C4, aliases: [c4], xyz: null}
+  - {id: 31, name: C6, aliases: [c6], xyz: null}
+  - {id: 32, name: T8, aliases: [T4, t8], xyz: null}
+  - {id: 33, name: M1, aliases: [A1, m1], xyz: null}
+  - {id: 34, name: TP7, aliases: [TP9, tp7, tp9], xyz: null}
+  - {id: 35, name: CP5, aliases: [cp5], xyz: null}
+  - {id: 36, name: CP3, aliases: [cp3], xyz: null}
+  - {id: 37, name: CP1, aliases: [cp1], xyz: null}
+  - {id: 38, name: CPZ, aliases: [CPz, cpz], xyz: null}
+  - {id: 39, name: CP2, aliases: [cp2], xyz: null}
+  - {id: 40, name: CP4, aliases: [cp4], xyz: null}
+  - {id: 41, name: CP6, aliases: [cp6], xyz: null}
+  - {id: 42, name: TP8, aliases: [TP10, tp8, tp10], xyz: null}
+  - {id: 43, name: M2, aliases: [A2, m2], xyz: null}
+  - {id: 44, name: P7, aliases: [p7], xyz: null}
+  - {id: 45, name: P5, aliases: [p5], xyz: null}
+  - {id: 46, name: P3, aliases: [p3], xyz: null}
+  - {id: 47, name: P1, aliases: [p1], xyz: null}
+  - {id: 48, name: PZ, aliases: [Pz, pz], xyz: null}
+  - {id: 49, name: P2, aliases: [p2], xyz: null}
+  - {id: 50, name: P4, aliases: [p4], xyz: null}
+  - {id: 51, name: P6, aliases: [p6], xyz: null}
+  - {id: 52, name: P8, aliases: [p8], xyz: null}
+  - {id: 53, name: PO7, aliases: [po7], xyz: null}
+  - {id: 54, name: PO5, aliases: [po5], xyz: null}
+  - {id: 55, name: PO3, aliases: [po3], xyz: null}
+  - {id: 56, name: POZ, aliases: [POz, poz], xyz: null}
+  - {id: 57, name: PO4, aliases: [po4], xyz: null}
+  - {id: 58, name: PO6, aliases: [po6], xyz: null}
+  - {id: 59, name: PO8, aliases: [po8], xyz: null}
+  - {id: 60, name: CB1, aliases: [cb1], xyz: null}
+  - {id: 61, name: O1, aliases: [o1], xyz: null}
+  - {id: 62, name: OZ, aliases: [Oz, oz], xyz: null}
+  - {id: 63, name: O2, aliases: [o2], xyz: null}
+  - {id: 64, name: CB2, aliases: [cb2], xyz: null}

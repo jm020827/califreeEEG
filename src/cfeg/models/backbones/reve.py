@@ -31,6 +31,7 @@ class REVEBackbone(EEGBackbone):
         self.d_model = _infer_reve_dim(self.reve, cfg)
         self.canonical_map = CanonicalChannelMap.from_yaml()
         self.output_proj: nn.Module | None = None
+        self._position_cache: dict[tuple[str, ...], tuple[list[int], torch.Tensor]] = {}
         if cfg.get("freeze", True):
             for p in self.reve.parameters():
                 p.requires_grad = False
@@ -105,18 +106,71 @@ class REVEBackbone(EEGBackbone):
                 "Check canonical_channel_ids in the processed manifest."
             )
 
-        x_reve = x[:, keep_slots, :]
+        cache_key = tuple(names)
+        if cache_key in self._position_cache:
+            keep_indices, base_positions = self._position_cache[cache_key]
+        else:
+            keep_indices, base_positions, missing_names = self._resolve_positions(names)
+            self._position_cache[cache_key] = (keep_indices, base_positions.detach().cpu())
+            if missing_names:
+                print(
+                    "REVEBackbone dropped channel(s) without REVE positions: "
+                    f"{', '.join(missing_names)}"
+                )
+
+        filtered_slots = [keep_slots[i] for i in keep_indices]
+        if not filtered_slots:
+            raise ValueError(
+                "REVEBackbone could not resolve positions for any active channels. "
+                "Check configs/canonical_channels.yaml aliases."
+            )
+
+        x_reve = x[:, filtered_slots, :]
+        positions = base_positions.to(device=x.device, dtype=x.dtype)
+        if positions.ndim == 2:
+            positions = positions.unsqueeze(0).expand(x.size(0), -1, -1)
+        return x_reve, positions
+
+    def _resolve_positions(self, names: list[str]) -> tuple[list[int], torch.Tensor, list[str]]:
         try:
-            positions = self.pos_bank(names)
+            positions = self._standardize_positions(self.pos_bank(names))
         except Exception as exc:
             raise ValueError(
                 f"REVE position bank could not resolve electrode names: {names}. "
                 "Check configs/canonical_channels.yaml aliases."
             ) from exc
-        positions = positions.to(device=x.device, dtype=x.dtype)
-        if positions.ndim == 2:
-            positions = positions.unsqueeze(0).expand(x.size(0), -1, -1)
-        return x_reve, positions
+        if positions.shape[0] == len(names):
+            return list(range(len(names))), positions, []
+
+        keep_indices: list[int] = []
+        resolved: list[torch.Tensor] = []
+        missing_names: list[str] = []
+        for i, name in enumerate(names):
+            try:
+                pos = self._standardize_positions(self.pos_bank([name]))
+            except Exception:
+                missing_names.append(name)
+                continue
+            if pos.shape[0] != 1:
+                missing_names.append(name)
+                continue
+            keep_indices.append(i)
+            resolved.append(pos)
+        if not resolved:
+            return [], positions[:0], missing_names
+        return keep_indices, torch.cat(resolved, dim=0), missing_names
+
+    @staticmethod
+    def _standardize_positions(positions) -> torch.Tensor:
+        if not isinstance(positions, torch.Tensor):
+            positions = torch.as_tensor(positions)
+        if positions.ndim == 3:
+            if positions.shape[0] != 1:
+                raise ValueError(f"Expected REVE positions batch size 1, got shape {tuple(positions.shape)}")
+            positions = positions.squeeze(0)
+        if positions.ndim != 2:
+            raise ValueError(f"Expected REVE positions with shape [channels, dim], got {tuple(positions.shape)}")
+        return positions
 
 
 def extract_reve_representation(out):
