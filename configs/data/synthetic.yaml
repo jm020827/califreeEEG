@@ -1,0 +1,12 @@
+dataset_id: synthetic
+preprocess:
+  target_sfreq: 200.0
+  window_start_sec: 0.0
+  window_duration_sec: 2.0
+  bandpass_low_hz: null
+  bandpass_high_hz: null
+  notch_hz: null
+  normalize: per_trial_channel_zscore
+  c_max: 64
+channel_names: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+

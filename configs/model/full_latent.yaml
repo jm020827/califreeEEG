@@ -1,0 +1,16 @@
+model:
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+  adapter:
+    enabled: true
+    type: conditioned_feature_adapter
+    bottleneck_dim: 32
+  latent:
+    enabled: true
+    z_dim: 16
+    beta_kl: 0.001
+    ce_zero_weight: 0.5
+    z_dropout: 0.5
+    inference_mode: zero
+

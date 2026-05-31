@@ -1,0 +1,119 @@
+paths:
+  project_root: ${env:PROJECT_ROOT}
+  data_root: ${env:EEG_DATA_ROOT}
+  model_root: ${env:EEG_MODEL_ROOT}
+  hf_home: ${env:HF_HOME}
+  mne_data: ${env:MNE_DATA}
+
+policies:
+  allow_download_during_train: false
+  allow_download_during_import: false
+  require_explicit_fetch: true
+  local_files_only_by_default: true
+  max_test_fixture_mb: 1
+
+external_sources:
+  reve_base:
+    repo_id: brain-bzh/reve-base
+    type: huggingface_model
+    note: REVE backbone; use transformers.AutoModel.from_pretrained(..., trust_remote_code=True)
+    required_sample_rate_hz: 200
+    url: https://huggingface.co/brain-bzh/reve-base
+  reve_positions:
+    repo_id: brain-bzh/reve-positions
+    type: huggingface_model
+    note: position bank mapping electrode names to positions
+    required_sample_rate_hz: 200
+    url: https://huggingface.co/brain-bzh/reve-positions
+  beta:
+    repo_id: Bingchuan/beta
+    type: huggingface_dataset_or_manual
+    note: 64-channel EEG, 70 subjects, 40-target SSVEP
+    url: https://huggingface.co/datasets/Bingchuan/BETA
+  wang:
+    type: moabb_or_manual
+    moabb_dataset: Wang2016
+    note: 35 subjects, 64-channel EEG, 40-target SSVEP benchmark
+    url: https://moabb.neurotechx.com/docs/generated/moabb.datasets.Wang2016.html
+  wearable:
+    type: figshare_or_manual
+    note: 8-channel wearable SSVEP, 102 subjects, 12-target, wet/dry electrodes and impedance metadata
+    url: https://figshare.com/articles/dataset/An_Open_Dataset_for_Wearable_SSVEP-Based_Brain-Computer_Interfaces/13560281
+  openbci_cyton:
+    type: local_private_recording
+    note: 8-channel Cyton board; raw sampling rate is 250 Hz per channel
+    url: https://shop.openbci.com/products/cyton-biosensing-board-8-channel
+
+models:
+  reve_base:
+    type: huggingface_model
+    repo_id: brain-bzh/reve-base
+    positions_repo_id: brain-bzh/reve-positions
+    cache_dir: ${paths.hf_home}
+    requires_hf_login: true
+    trust_remote_code: true
+    local_files_only: true
+    allow_download: false
+    required_sample_rate_hz: 200
+    freeze: true
+    no_redistribution: true
+  tiny_eeg_transformer:
+    type: local_code
+    requires_external_asset: false
+
+datasets:
+  synthetic:
+    type: generated
+    raw_dir: null
+    processed_dir: data/processed/synthetic
+    target_sfreq: 200
+    public: false
+  beta:
+    type: huggingface_dataset
+    repo_id: Bingchuan/beta
+    raw_dir: ${paths.data_root}/raw/beta
+    processed_dir: ${paths.data_root}/processed/beta_v1
+    target_sfreq: 200
+    expected:
+      n_subjects: 70
+      n_channels: 64
+      n_targets: 40
+    fetch:
+      method: datasets.load_dataset
+      allow_manual_fallback: true
+  wang:
+    type: moabb_or_manual
+    moabb_dataset: Wang2016
+    raw_dir: ${paths.data_root}/raw/wang
+    processed_dir: ${paths.data_root}/processed/wang_v1
+    target_sfreq: 200
+    expected:
+      n_subjects: 35
+      n_channels: 64
+      n_targets: 40
+    fetch:
+      method: moabb
+      allow_manual_fallback: true
+  wearable:
+    type: figshare_or_manual
+    raw_dir: ${paths.data_root}/raw/wearable
+    processed_dir: ${paths.data_root}/processed/wearable_v1
+    target_sfreq: 200
+    expected:
+      n_subjects: 102
+      n_channels: 8
+      n_targets: 12
+      has_wet_dry: true
+      has_impedance: true
+    fetch:
+      method: manual_or_figshare
+      allow_manual_fallback: true
+  openbci:
+    type: local_private
+    raw_dir: ${paths.data_root}/raw/openbci
+    processed_dir: ${paths.data_root}/processed/openbci_v1
+    target_sfreq: 200
+    expected:
+      n_channels: 8
+      raw_sfreq: 250
+    public: false

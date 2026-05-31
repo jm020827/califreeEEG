@@ -1,0 +1,22 @@
+model:
+  n_classes: 4
+  c_max: 64
+  target_sfreq: 200
+  t_len: 400
+  d_model: 128
+  patch_size: 20
+  depth: 4
+  n_heads: 4
+  backbone:
+    name: tiny_transformer
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+  adapter:
+    enabled: true
+    bottleneck_dim: 32
+  latent:
+    enabled: true
+    z_dim: 16
+    z_dropout: 0.5
+

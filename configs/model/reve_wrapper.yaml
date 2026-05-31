@@ -1,0 +1,21 @@
+model:
+  backbone:
+    name: reve
+    hf_model: brain-bzh/reve-base
+    hf_positions: brain-bzh/reve-positions
+    cache_dir: ${env:HF_HOME}
+    trust_remote_code: true
+    local_files_only: true
+    allow_download: false
+    freeze: true
+    fallback: tiny_transformer
+  target_sfreq: 200
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+  adapter:
+    enabled: true
+    type: conditioned_feature_adapter
+  latent:
+    enabled: true
+

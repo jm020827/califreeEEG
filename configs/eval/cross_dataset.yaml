@@ -1,0 +1,5 @@
+run_name: cross_dataset
+train_datasets: [wang, beta]
+test_datasets: [wearable]
+common_label_subset_only: true
+

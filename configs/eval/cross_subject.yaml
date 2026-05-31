@@ -1,0 +1,5 @@
+run_name: cross_subject
+data:
+  split: cross_subject
+metrics: [accuracy, balanced_accuracy, macro_f1, nll, ece]
+

@@ -1,0 +1,11 @@
+run_name: channel_stress
+data:
+  processed_dirs: [data/processed/synthetic]
+  split: test
+channel_sets:
+  - all
+  - occipital_8
+  - occipital_4
+  - occipital_2
+output_csv: outputs/debug/eval/channel_stress.csv
+

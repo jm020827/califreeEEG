@@ -1,0 +1,47 @@
+# Large data and generated artifacts
+data/raw/*
+data/processed/*
+data/manifests/*
+checkpoints/*
+outputs/*
+runs/*
+wandb/*
+artifacts/*
+.local/*
+
+# EEG/data formats
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.mat
+*.edf
+*.bdf
+*.fif
+*.csv.gz
+*.parquet
+
+# Model/checkpoint formats
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+
+# Secrets/local paths
+.env
+.env.*
+!.env.example
+
+# Python/cache
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+
+# Keep directory placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/manifests/.gitkeep
+!checkpoints/.gitkeep
+!outputs/.gitkeep

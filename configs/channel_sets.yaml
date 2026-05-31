@@ -1,0 +1,5 @@
+occipital_8: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+occipital_4: [POz, O1, Oz, O2]
+occipital_2: [O1, O2]
+openbci_default_8: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+

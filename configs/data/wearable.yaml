@@ -1,0 +1,13 @@
+dataset_id: wearable
+raw_sfreq: 250.0
+channel_names: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+preprocess:
+  target_sfreq: 200.0
+  window_start_sec: 0.14
+  window_duration_sec: 2.0
+  bandpass_low_hz: 6.0
+  bandpass_high_hz: 90.0
+  notch_hz: null
+  normalize: per_trial_channel_zscore
+  c_max: 64
+

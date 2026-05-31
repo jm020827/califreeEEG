@@ -1,0 +1,8 @@
+run_name: openbci_external
+data:
+  processed_dirs:
+    - ${env:EEG_DATA_ROOT}/processed/openbci_v1
+  split: external
+calibration_trials_per_class: 0
+common_label_subset_only: true
+

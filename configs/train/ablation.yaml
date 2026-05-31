@@ -1,0 +1,35 @@
+base_config: configs/train/debug.yaml
+only: synthetic
+variants:
+  A0_eeg_only:
+    model.condition_encoder.enabled: false
+    model.adapter.enabled: false
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  A1_dataset_id_prompt:
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields: [dataset_id]
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  A2_structured_condition_prompt:
+    model.condition_encoder.enabled: true
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  A3_prompt_adapter_consistency:
+    model.condition_encoder.enabled: true
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.1
+    loss.lambda_logit_cons: 0.05
+  A4_full_latent:
+    model.condition_encoder.enabled: true
+    model.adapter.enabled: true
+    model.latent.enabled: true
+    loss.lambda_cons: 0.1
+    loss.lambda_logit_cons: 0.05
+

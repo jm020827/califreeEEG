@@ -1,0 +1,11 @@
+model:
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+  adapter:
+    enabled: true
+    type: conditioned_feature_adapter
+    bottleneck_dim: 32
+  latent:
+    enabled: false
+
