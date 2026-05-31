@@ -32,9 +32,12 @@ class REVEBackbone(EEGBackbone):
         self.canonical_map = CanonicalChannelMap.from_yaml()
         self.output_proj: nn.Module | None = None
         self._position_cache: dict[tuple[str, ...], tuple[list[int], torch.Tensor]] = {}
-        if cfg.get("freeze", True):
+        self.freeze = bool(cfg.get("freeze", True))
+        if self.freeze:
             for p in self.reve.parameters():
                 p.requires_grad = False
+            self.reve.eval()
+            self.pos_bank.eval()
 
     @staticmethod
     def _load_model(auto_model, repo_id: str, cfg: dict):
@@ -65,16 +68,30 @@ class REVEBackbone(EEGBackbone):
             # REVE remote code does not expose a stable prompt-token prepend contract.
             prompt_tokens = None
         x_reve, positions = self._select_channels_and_positions(x, cond)
-        try:
-            out = self.reve(x_reve, positions)
-        except TypeError:
-            out = self.reve(x_reve, pos=positions)
+        if self.freeze:
+            with torch.no_grad():
+                out = self._forward_reve(x_reve, positions)
+        else:
+            out = self._forward_reve(x_reve, positions)
         h = extract_reve_representation(out)
         if h.shape[-1] != self.d_model:
             if self.output_proj is None:
                 self.output_proj = nn.Linear(h.shape[-1], self.d_model).to(device=h.device, dtype=h.dtype)
             h = self.output_proj(h)
         return BackboneOutput(h=h, tokens=None, aux={})
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if getattr(self, "freeze", False):
+            self.reve.eval()
+            self.pos_bank.eval()
+        return self
+
+    def _forward_reve(self, x_reve: torch.Tensor, positions: torch.Tensor):
+        try:
+            return self.reve(x_reve, positions)
+        except TypeError:
+            return self.reve(x_reve, pos=positions)
 
     def _select_channels_and_positions(
         self, x: torch.Tensor, cond: dict[str, torch.Tensor]

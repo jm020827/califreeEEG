@@ -84,7 +84,9 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     save_json(output_dir / "vocab.json", vocab)
     save_json(output_dir / "params.json", params)
     save_json(output_dir / "class_map.json", full_ds.class_map)
-    wandb_run = _init_wandb(cfg, output_dir, params, len(split.train), len(split.val))
+    wandb_run = _init_wandb(
+        cfg, output_dir, params, len(split.train), len(split.val), len(train_loader), len(val_loader)
+    )
     if wandb_run is not None and cfg.get("tracking", {}).get("wandb", {}).get("watch_model", False):
         _watch_wandb(model)
 
@@ -93,8 +95,20 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     save_trainable_only = bool(cfg.get("checkpoint", {}).get("save_trainable_only", True))
     stale = 0
     metrics_rows = []
+    global_step = 0
     for epoch in range(1, int(cfg["train"].get("epochs", 20)) + 1):
-        train_loss = _train_epoch(model, train_loader, optimizer, scaler, cfg, device, amp_enabled)
+        train_loss, global_step = _train_epoch(
+            model,
+            train_loader,
+            optimizer,
+            scaler,
+            cfg,
+            device,
+            amp_enabled,
+            wandb_run=wandb_run,
+            epoch=epoch,
+            global_step=global_step,
+        )
         val = evaluate_loader(model, val_loader, device)
         row = {"epoch": epoch, "train_loss": train_loss, **{f"val_{k}": v for k, v in val.items()}}
         metrics_rows.append(row)
@@ -109,7 +123,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
                 "lr": optimizer.param_groups[0]["lr"],
                 "best/accuracy": max(best_acc, val["accuracy"]),
             },
-            step=epoch,
+            step=global_step,
         )
         save_checkpoint(
             output_dir / "last.pt",
@@ -147,11 +161,25 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     return {"best_accuracy": best_acc, "output_dir": str(output_dir), "params": params}
 
 
-def _train_epoch(model, loader, optimizer, scaler, cfg, device, amp_enabled: bool) -> float:
+def _train_epoch(
+    model,
+    loader,
+    optimizer,
+    scaler,
+    cfg,
+    device,
+    amp_enabled: bool,
+    *,
+    wandb_run=None,
+    epoch: int = 0,
+    global_step: int = 0,
+) -> tuple[float, int]:
     model.train()
     total = 0.0
     count = 0
-    for batch in loader:
+    log_interval = int(cfg.get("train", {}).get("log_interval", 25) or 0)
+    n_batches = len(loader)
+    for batch_idx, batch in enumerate(loader, start=1):
         batch = _to_device(batch, device)
         optimizer.zero_grad(set_to_none=True)
         with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
@@ -163,27 +191,53 @@ def _train_epoch(model, loader, optimizer, scaler, cfg, device, amp_enabled: boo
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(grad_clip))
         scaler.step(optimizer)
         scaler.update()
-        total += float(loss.detach().cpu()) * batch["x"].shape[0]
+        loss_value = float(loss.detach().cpu())
+        total += loss_value * batch["x"].shape[0]
         count += batch["x"].shape[0]
-    return total / max(count, 1)
+        global_step += 1
+        if log_interval and (batch_idx == 1 or batch_idx % log_interval == 0 or batch_idx == n_batches):
+            running_loss = total / max(count, 1)
+            print(
+                f"epoch {epoch} batch {batch_idx}/{n_batches} "
+                f"loss={loss_value:.4f} running_loss={running_loss:.4f}",
+                flush=True,
+            )
+            _log_wandb(
+                wandb_run,
+                {
+                    "epoch": epoch,
+                    "train/batch_loss": loss_value,
+                    "train/running_loss": running_loss,
+                    "train/batch": batch_idx,
+                    "train/epoch_progress": batch_idx / max(n_batches, 1),
+                },
+                step=global_step,
+            )
+    return total / max(count, 1), global_step
 
 
 def _step_loss(model, batch, cfg) -> torch.Tensor:
     loss_cfg = cfg.get("loss", {})
     aug = cfg.get("augment", {})
-    if aug.get("make_two_views", True):
-        (x1, cond1), (x2, cond2) = make_two_views(
-            batch["x"],
-            batch["cond"],
-            channel_dropout_prob=float(aug.get("channel_dropout_prob", 0.2)),
-            min_channels=int(aug.get("min_channels", 4)),
-            noise_std_range=tuple(aug.get("noise_std_range", [0.01, 0.05])),
-            time_shift_samples=int(aug.get("time_shift_samples", 8)),
-        )
-    else:
-        x1, cond1 = batch["x"], batch["cond"]
-        x2, cond2 = batch["x"], batch["cond"]
     y = batch["y"]
+    if not aug.get("make_two_views", True):
+        out = model(batch["x"], batch["cond"], use_latent=True)
+        loss = F.cross_entropy(out.logits, y)
+        ce_zero_weight = float(loss_cfg.get("ce_zero_weight", 0.5))
+        if out.logits_zero is not None:
+            loss = loss + ce_zero_weight * F.cross_entropy(out.logits_zero, y)
+        if out.mu is not None:
+            loss = loss + float(loss_cfg.get("beta_kl", 0.001)) * kl_normal(out.mu, out.logvar).to(loss.device)
+        return loss
+
+    (x1, cond1), (x2, cond2) = make_two_views(
+        batch["x"],
+        batch["cond"],
+        channel_dropout_prob=float(aug.get("channel_dropout_prob", 0.2)),
+        min_channels=int(aug.get("min_channels", 4)),
+        noise_std_range=tuple(aug.get("noise_std_range", [0.01, 0.05])),
+        time_shift_samples=int(aug.get("time_shift_samples", 8)),
+    )
     out1 = model(x1, cond1, use_latent=True)
     out2 = model(x2, cond2, use_latent=True)
     loss = F.cross_entropy(out1.logits, y) + F.cross_entropy(out2.logits, y)
@@ -232,7 +286,15 @@ def _to_device(batch, device):
     return out
 
 
-def _init_wandb(cfg: dict, output_dir: Path, params: dict, n_train: int, n_val: int):
+def _init_wandb(
+    cfg: dict,
+    output_dir: Path,
+    params: dict,
+    n_train: int,
+    n_val: int,
+    n_train_batches: int,
+    n_val_batches: int,
+):
     wandb_cfg = cfg.get("tracking", {}).get("wandb", {})
     if not wandb_cfg.get("enabled", False):
         return None
@@ -261,6 +323,8 @@ def _init_wandb(cfg: dict, output_dir: Path, params: dict, n_train: int, n_val: 
     run.summary["params/trainable"] = params["trainable"]
     run.summary["data/n_train"] = int(n_train)
     run.summary["data/n_val"] = int(n_val)
+    run.summary["data/n_train_batches"] = int(n_train_batches)
+    run.summary["data/n_val_batches"] = int(n_val_batches)
     return run
 
 
