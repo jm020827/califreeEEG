@@ -13,6 +13,7 @@ Calibration-Free EEG one-click commands
   bash scripts/cfeg.sh setup
   bash scripts/cfeg.sh assets synthetic
   bash scripts/cfeg.sh assets reve beta wang wearable
+  bash scripts/cfeg.sh migrate-labels [--apply]
   bash scripts/cfeg.sh smoke
   bash scripts/cfeg.sh train wang-to-beta|beta-to-wang|wearable-loso|wearable-dry-to-wet|wearable-wet-to-dry|joint|synthetic
   bash scripts/cfeg.sh eval  wang-to-beta|beta-to-wang|wearable-dry-to-wet|wearable-wet-to-dry <checkpoint>
@@ -127,6 +128,12 @@ case "$command" in
     source_runtime
     [[ "$#" -gt 0 ]] || { echo "Choose at least one asset." >&2; usage; exit 2; }
     bash scripts/prepare_k8s_assets.sh "$@"
+    ;;
+  migrate-labels)
+    source_runtime
+    python scripts/migrate_label_alignment.py \
+      --processed-dir "$EEG_DATA_ROOT/processed/beta_v1" \
+      --processed-dir "$EEG_DATA_ROOT/processed/wang_v1" "$@"
     ;;
   smoke)
     source_runtime

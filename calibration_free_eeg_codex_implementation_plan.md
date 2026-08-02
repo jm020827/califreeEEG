@@ -50,6 +50,7 @@
 - [x] clone 위치 독립 경로와 PVC override
 - [x] `HF_HOME/hub` 표준 cache와 interns NVMe/DDN env profile
 - [x] legacy HF root/`.local/eeg_data` 안전한 dry-run migration
+- [x] legacy Wang/BETA label을 신호 재처리 없이 canonical frequency로 migration
 - [x] optional dependency 분리
 - [x] 다운로드 없는 bootstrap과 선택형 asset download
 - [x] scripts/cfeg.sh 단일 entrypoint

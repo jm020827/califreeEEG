@@ -98,6 +98,18 @@ bash scripts/cfeg.sh assets wearable
 
 전용 parser가 [channel,time,electrode,block,target], dry/wet, block, impedance, 공식 8채널과 9.25–14.75Hz 12개 target을 읽는다.
 
+## 기존 Wang/BETA label 변환
+
+예전 processed asset에서 `Class ... conflicting frequencies` 오류가 나면 신호를 다시
+다운로드하거나 전처리하지 않는다. 주파수 기준으로 manifest, `signals.h5/y`,
+`class_map.json`만 변환한다. 원래 label metadata와 y는 processed 폴더 안의
+`.label-alignment-backup-*`에 보존된다.
+
+~~~bash
+bash scripts/cfeg.sh migrate-labels          # dry-run
+bash scripts/cfeg.sh migrate-labels --apply  # 실제 변환, 한 번만
+~~~
+
 ## Train
 
 ~~~bash
