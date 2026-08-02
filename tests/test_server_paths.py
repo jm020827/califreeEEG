@@ -24,3 +24,5 @@ def test_interns_env_uses_real_nvme_and_ddn_mounts():
     assert env["WANDB_DIR"] == (
         "/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/wandb"
     )
+    assert env["WANDB_ENTITY"] == "jmsmlove02"
+    assert env["WANDB_PROJECT"] == "calibration-free-eeg"

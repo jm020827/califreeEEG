@@ -63,7 +63,7 @@ export HF_TOKEN=hf_...
 export WANDB_API_KEY=...
 export WANDB_MODE=online
 export WANDB_PROJECT=calibration-free-eeg
-export WANDB_ENTITY=<user-or-team>
+export WANDB_ENTITY=jmsmlove02
 ~~~
 
 WANDB_API_KEY가 있으면 scripts/cfeg.sh는 online logging을 켜고, 없으면 disabled다. WANDB_MODE=offline도 지원한다.
