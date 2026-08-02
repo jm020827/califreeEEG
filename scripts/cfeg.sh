@@ -25,9 +25,10 @@ Calibration-Free EEG one-click commands
   bash scripts/cfeg.sh research
 
 Environment:
+  source scripts/env_k8s_interns.sh  # jm020827 interns cluster profile
   CFEG_BACKBONE=tiny_transformer|reve
   WANDB_API_KEY=... WANDB_MODE=online WANDB_PROJECT=calibration-free-eeg WANDB_ENTITY=...
-  EEG_DATA_ROOT=/mnt/pvc/eeg CFEG_HF_ROOT=/mnt/pvc/hf WANDB_DIR=/mnt/pvc/wandb
+  EEG_DATA_ROOT=/mnt/pvc/eeg HF_HOME=/mnt/pvc/hf HF_HUB_CACHE=/mnt/pvc/hf/hub
 EOF
 }
 
@@ -61,7 +62,7 @@ backbone_args() {
     BACKBONE_ARGS+=(
       "model.backbone.hf_model=brain-bzh/reve-base"
       "model.backbone.hf_positions=brain-bzh/reve-positions"
-      "model.backbone.cache_dir=$HF_HOME"
+      "model.backbone.cache_dir=$HF_HUB_CACHE"
       "model.backbone.local_files_only=true"
       "model.backbone.freeze=true"
     )

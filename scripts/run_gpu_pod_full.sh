@@ -9,22 +9,9 @@ set -euo pipefail
 
 CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
-if [[ -z "${CFEG_HF_ROOT:-}" ]]; then
-  if [[ -n "${CFEG_EXTERNAL_ROOT:-}" ]]; then
-    CFEG_HF_ROOT="$CFEG_EXTERNAL_ROOT"
-  elif [[ -d "$HOME/nvme" ]]; then
-    CFEG_HF_ROOT="$HOME/nvme/cache/interns/hf"
-  else
-    CFEG_HF_ROOT="$PROJECT_ROOT/.local/hf"
-  fi
-fi
-CFEG_EXTERNAL_ROOT="$CFEG_HF_ROOT"
-CFEG_TMP_ROOT="${CFEG_TMP_ROOT:-$PROJECT_ROOT/.local/tmp}"
-export TMPDIR="$CFEG_TMP_ROOT"
-export TMP="$CFEG_TMP_ROOT"
-export TEMP="$CFEG_TMP_ROOT"
-
+export PROJECT_ROOT
 cd "$PROJECT_ROOT"
+source scripts/setup_gpu_pod.sh
 
 prompt_default() {
   local var_name="$1"
@@ -90,29 +77,15 @@ else
   prompt_default CFEG_FETCH_REVE "Fetch REVE into HF_HOME before training? y/n" "n"
 fi
 
-export PROJECT_ROOT
-export CFEG_HF_ROOT
-export CFEG_EXTERNAL_ROOT
 export HF_TOKEN
 export WANDB_API_KEY
-export EEG_DATA_ROOT="${EEG_DATA_ROOT:-$PROJECT_ROOT/.local/eeg_data}"
-export EEG_MODEL_ROOT="${EEG_MODEL_ROOT:-$CFEG_HF_ROOT/eeg_models}"
-export HF_HOME="${HF_HOME:-$CFEG_HF_ROOT}"
-export MNE_DATA="${MNE_DATA:-$EEG_DATA_ROOT/mne_data}"
-export WANDB_DIR="${WANDB_DIR:-$PROJECT_ROOT/.local/wandb}"
-export WANDB_CACHE_DIR="$WANDB_DIR/cache"
-export WANDB_CONFIG_DIR="$WANDB_DIR/config"
-
-mkdir -p "$CFEG_TMP_ROOT" "$PROJECT_ROOT/.local/pip-cache"
-mkdir -p "$EEG_DATA_ROOT/raw" "$EEG_DATA_ROOT/processed" "$MNE_DATA"
-mkdir -p "$EEG_MODEL_ROOT" "$HF_HOME" "$WANDB_DIR" "$WANDB_CACHE_DIR" "$WANDB_CONFIG_DIR"
-mkdir -p "$PROJECT_ROOT/data/processed" "$PROJECT_ROOT/outputs" "$PROJECT_ROOT/checkpoints"
 
 echo
 echo "Resolved paths:"
 echo "  PROJECT_ROOT=$PROJECT_ROOT"
 echo "  CFEG_HF_ROOT=$CFEG_HF_ROOT"
 echo "  HF_HOME=$HF_HOME"
+echo "  HF_HUB_CACHE=$HF_HUB_CACHE"
 echo "  EEG_DATA_ROOT=$EEG_DATA_ROOT"
 echo "  WANDB_DIR=$WANDB_DIR"
 
@@ -164,7 +137,7 @@ if [[ "$CFEG_FETCH_REVE" =~ ^[Yy]$ ]]; then
   python scripts/fetch_reve.py \
     --model brain-bzh/reve-base \
     --positions brain-bzh/reve-positions \
-    --cache-dir "$HF_HOME"
+    --cache-dir "$HF_HUB_CACHE"
 fi
 
 train_args=(
@@ -191,7 +164,7 @@ if [[ "$CFEG_BACKBONE" == "reve" ]]; then
     "model.backbone.name=reve"
     "model.backbone.hf_model=brain-bzh/reve-base"
     "model.backbone.hf_positions=brain-bzh/reve-positions"
-    "model.backbone.cache_dir=$HF_HOME"
+    "model.backbone.cache_dir=$HF_HUB_CACHE"
     "model.backbone.trust_remote_code=true"
     "model.backbone.local_files_only=true"
     "model.backbone.freeze=true"

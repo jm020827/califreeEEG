@@ -8,7 +8,7 @@ from _bootstrap import add_src_to_path
 
 add_src_to_path()
 
-from cfeg.assets.hf import assert_hf_snapshot_present
+from cfeg.assets.hf import assert_hf_snapshot_present, resolve_hf_hub_cache
 
 
 def fetch_reve(model_id: str, positions_id: str, cache_dir: str | None, dry_run: bool = False, probe_remote: bool = False) -> None:
@@ -44,7 +44,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="brain-bzh/reve-base")
     parser.add_argument("--positions", default="brain-bzh/reve-positions")
-    parser.add_argument("--cache-dir", default=os.environ.get("HF_HOME"))
+    parser.add_argument("--cache-dir", default=str(resolve_hf_hub_cache()))
     parser.add_argument("--dry-run", action="store_true", help="Only check local cache; do not download.")
     parser.add_argument("--probe-remote", action="store_true", help="Check that HF repos are reachable without downloading snapshots.")
     args = parser.parse_args()

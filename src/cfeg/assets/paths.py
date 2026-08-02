@@ -32,5 +32,5 @@ def ensure_outside_repo(path: Path, repo_root: Path) -> None:
         raise MissingAssetError(
             f"Refusing to place large external asset under repository path: {path}\n"
             "Use scripts/setup_gpu_pod.sh. Model/HF cache and local data paths are selected "
-            "portably and can be overridden with CFEG_HF_ROOT and EEG_DATA_ROOT."
+            "portably and can be overridden with HF_HOME, HF_HUB_CACHE, and EEG_DATA_ROOT."
         )

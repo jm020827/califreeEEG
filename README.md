@@ -9,9 +9,13 @@ git clone https://github.com/jm020827/califreeEEG.git
 # private repository 또는 SSH key를 쓰면:
 # git clone git@github.com:jm020827/califreeEEG.git
 cd califreeEEG
-export CFEG_HF_ROOT=/mnt/pvc/hf
-export EEG_DATA_ROOT=/mnt/pvc/eeg
-export WANDB_DIR=/mnt/pvc/wandb
+
+# jm020827 interns cluster: exact NVMe/DDN paths
+source scripts/env_k8s_interns.sh
+
+# Existing legacy cache/data: inspect first, then migrate once.
+bash scripts/migrate_server_storage.sh
+bash scripts/migrate_server_storage.sh --apply
 
 bash scripts/cfeg.sh setup
 bash scripts/cfeg.sh assets synthetic
@@ -20,6 +24,35 @@ bash scripts/cfeg.sh help
 ~~~
 
 Setup은 의존성만 준비하고 데이터와 weight를 받지 않는다.
+
+## 서버 저장 경로
+
+`scripts/env_k8s_interns.sh`는 현재 interns Kubernetes mount를 다음처럼 고정한다.
+
+| 용도 | 경로 |
+|---|---|
+| Hugging Face 상위 설정 | `/mnt/nvme/cache/interns/hf` |
+| 실제 Hub model/dataset cache | `/mnt/nvme/cache/interns/hf/hub` |
+| EEG raw/processed/MNE | `/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/eeg_data` |
+| W&B 지속 로그 | `/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/wandb` |
+| 임시 파일 | `/mnt/nvme/cache/interns/tmp/jm020827/califreeEEG` |
+| pip cache | `/mnt/nvme/cache/interns/pip/jm020827/califreeEEG` |
+
+`HF_HOME`은 Hugging Face 전체 상위 경로이고 `HF_HUB_CACHE=$HF_HOME/hub`가
+`models--*`, `datasets--*`, `.locks`의 실제 위치다. 예전 코드가 만든 빈
+`eeg_models/`는 사용하지 않는다. 기존 HF 루트의 REVE cache와 DDN의
+`.local/eeg_data`는 `migrate_server_storage.sh`가 대상 덮어쓰기나 파일시스템 간
+이동 없이 정리한다. 기본 실행은 dry-run이고 `--apply`에서만 `mv`한다.
+
+일반 PVC 환경은 서버 프로필 대신 직접 지정한다.
+
+~~~bash
+export HF_HOME=/mnt/pvc/hf
+export HF_HUB_CACHE=/mnt/pvc/hf/hub
+export CFEG_HF_ROOT=/mnt/pvc/hf
+export EEG_DATA_ROOT=/mnt/pvc/eeg
+export WANDB_DIR=/mnt/pvc/wandb
+~~~
 
 ## HF와 W&B
 
@@ -114,6 +147,6 @@ Research는 Wang→BETA와 BETA→Wang의 zero-shot·채널·강건성 평가를
 - k=0이 핵심 calibration-free 결과다.
 - Raw/processed EEG, REVE weight, checkpoint, token, W&B log는 Git 제외다.
 - Download는 명시적인 assets 명령에서만 일어난다.
-- Frozen REVE는 checkpoint에 복제하지 않고 HF_HOME에서 다시 읽는다.
+- Frozen REVE는 checkpoint에 복제하지 않고 `HF_HUB_CACHE`에서 다시 읽는다.
 
 상세 완료/남은 실험은 calibration_free_eeg_codex_implementation_plan.md에 있다.

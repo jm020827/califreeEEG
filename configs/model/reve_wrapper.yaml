@@ -3,7 +3,7 @@ model:
     name: reve
     hf_model: brain-bzh/reve-base
     hf_positions: brain-bzh/reve-positions
-    cache_dir: ${env:HF_HOME}
+    cache_dir: ${env:HF_HUB_CACHE}
     trust_remote_code: true
     local_files_only: true
     allow_download: false

@@ -81,7 +81,7 @@ def _apply_runtime_environment(cfg: dict) -> None:
                 {
                     "hf_model": "brain-bzh/reve-base",
                     "hf_positions": "brain-bzh/reve-positions",
-                    "cache_dir": os.environ.get("HF_HOME"),
+                    "cache_dir": os.environ.get("HF_HUB_CACHE"),
                     "local_files_only": True,
                     "freeze": True,
                 }

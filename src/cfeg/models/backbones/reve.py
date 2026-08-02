@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import os
-
 import torch
 from torch import nn
 
 from cfeg.assets.errors import MissingAssetError
-from cfeg.assets.hf import hf_cache_hint
+from cfeg.assets.hf import hf_cache_hint, resolve_hf_hub_cache
 from cfeg.data.preprocess import CanonicalChannelMap
 from cfeg.models.backbones.base import BackboneOutput, EEGBackbone
 
@@ -24,7 +22,7 @@ class REVEBackbone(EEGBackbone):
                 "model.backbone.name=tiny_transformer."
             ) from exc
         self.cfg = cfg
-        self.cache_dir = cfg.get("cache_dir") or os.environ.get("HF_HOME")
+        self.cache_dir = str(resolve_hf_hub_cache(cfg.get("cache_dir")))
         self.required_sample_rate_hz = float(cfg.get("required_sample_rate_hz", 200.0))
         self.pos_bank = self._load_model(AutoModel, cfg["hf_positions"], cfg)
         self.reve = self._load_model(AutoModel, cfg["hf_model"], cfg)
@@ -49,7 +47,7 @@ class REVEBackbone(EEGBackbone):
 
     @staticmethod
     def _load_model(auto_model, repo_id: str, cfg: dict):
-        cache_dir = cfg.get("cache_dir") or os.environ.get("HF_HOME")
+        cache_dir = str(resolve_hf_hub_cache(cfg.get("cache_dir")))
         try:
             return auto_model.from_pretrained(
                 repo_id,

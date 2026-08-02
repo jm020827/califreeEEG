@@ -51,7 +51,7 @@ for asset in "$@"; do
       "$PYTHON" scripts/fetch_reve.py \
         --model brain-bzh/reve-base \
         --positions brain-bzh/reve-positions \
-        --cache-dir "$HF_HOME"
+        --cache-dir "$HF_HUB_CACHE"
       "$PYTHON" scripts/verify_assets.py --model reve_base
       ;;
     beta)
@@ -104,4 +104,4 @@ for asset in "$@"; do
   esac
 done
 
-du -sh "$HF_HOME" "$EEG_DATA_ROOT" 2>/dev/null || true
+du -sh "$HF_HUB_CACHE" "$EEG_DATA_ROOT" 2>/dev/null || true
