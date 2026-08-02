@@ -1,5 +1,4 @@
-base_config: configs/train/debug.yaml
-only: synthetic
+base_config: configs/train/wang_to_beta.yaml
 variants:
   A0_eeg_only:
     model.condition_encoder.enabled: false
@@ -9,27 +8,52 @@ variants:
     loss.lambda_logit_cons: 0.0
   A1_dataset_id_prompt:
     model.condition_encoder.enabled: true
-    model.condition_encoder.fields: [dataset_id]
+    model.condition_encoder.fields:
+    - dataset_id
     model.adapter.enabled: true
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
+    model.condition_encoder.include_continuous: false
+    model.condition_encoder.include_channels: false
   A2_structured_condition_prompt:
     model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - hardware_id
+    - electrode_type
+    - cap_type
+    - reattach_flag
     model.adapter.enabled: true
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: true
   A3_prompt_adapter_consistency:
     model.condition_encoder.enabled: true
     model.adapter.enabled: true
     model.latent.enabled: false
     loss.lambda_cons: 0.1
     loss.lambda_logit_cons: 0.05
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: true
   A4_full_latent:
     model.condition_encoder.enabled: true
     model.adapter.enabled: true
     model.latent.enabled: true
     loss.lambda_cons: 0.1
     loss.lambda_logit_cons: 0.05
-
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: true
+  A5_full_finetune_optional:
+    model.condition_encoder.enabled: true
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: true
+    model.adapter.enabled: true
+    model.latent.enabled: true
+    model.backbone.freeze: false
+    loss.lambda_cons: 0.1
+    loss.lambda_logit_cons: 0.05
+optional_variants:
+- A5_full_finetune_optional

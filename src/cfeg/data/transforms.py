@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 
 import torch
@@ -24,6 +25,17 @@ class ChannelSubset:
         out_cond["channel_mask"] = keep
         _update_n_channels(out_cond)
         return x2, out_cond
+
+
+class RandomChannelSubset:
+    def __init__(self, channel_sets: list[list[int]] | None = None, p: float = 0.0):
+        self.channel_sets = channel_sets or []
+        self.p = p
+
+    def __call__(self, x: torch.Tensor, cond: dict) -> tuple[torch.Tensor, dict]:
+        if not self.channel_sets or random.random() > self.p:
+            return x, cond
+        return ChannelSubset(random.choice(self.channel_sets), p=1.0)(x, cond)
 
 
 class RandomChannelDropout:
@@ -76,12 +88,19 @@ def make_two_views(
     x: torch.Tensor,
     cond: dict,
     channel_dropout_prob: float = 0.2,
-    min_channels: int = 4,
+    min_channels: int = 2,
+    channel_subsets: list[list[int]] | None = None,
+    channel_subset_prob: float = 0.0,
     noise_std_range: tuple[float, float] = (0.01, 0.05),
     time_shift_samples: int = 8,
 ) -> tuple[tuple[torch.Tensor, dict], tuple[torch.Tensor, dict]]:
     weak_x, weak_cond = GaussianNoise((0.0, 0.01), p=0.5)(x, cond)
-    strong_x, strong_cond = RandomChannelDropout(channel_dropout_prob, min_channels)(x, cond)
+    strong_x, strong_cond = RandomChannelSubset(
+        channel_subsets, p=channel_subset_prob
+    )(x, cond)
+    strong_x, strong_cond = RandomChannelDropout(
+        channel_dropout_prob, min_channels
+    )(strong_x, strong_cond)
     strong_x, strong_cond = GaussianNoise(noise_std_range, p=0.8)(strong_x, strong_cond)
     strong_x, strong_cond = TimeShift(time_shift_samples, p=0.8)(strong_x, strong_cond)
     return (weak_x, weak_cond), (strong_x, strong_cond)
@@ -95,6 +114,6 @@ def _update_n_channels(cond: dict) -> None:
     n_channels = cond["channel_mask"].sum(dim=-1).float()
     c_max = cond["channel_mask"].shape[-1]
     cond["continuous"] = cond["continuous"].clone()
-    cond["continuous"][:, 1] = torch.log1p(n_channels) / torch.log1p(torch.tensor(float(c_max)))
+    cond["continuous"][:, 1] = torch.log1p(n_channels) / math.log1p(float(c_max))
     cond["continuous_missing"] = cond["continuous_missing"].clone()
     cond["continuous_missing"][:, 1] = False

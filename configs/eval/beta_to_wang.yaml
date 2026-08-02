@@ -2,9 +2,9 @@ run_name: cross_dataset
 mode: cross_dataset
 data:
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
 test_datasets:
-- beta
+- wang
 common_label_subset_only: true
 trial_time_sec: 2.0
-output_csv: outputs/research/wang_to_beta/eval/zero_shot.csv
+output_csv: outputs/research/beta_to_wang/eval/zero_shot.csv

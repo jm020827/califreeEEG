@@ -1,0 +1,62 @@
+seed: 42
+run_name: robustness
+mode: robustness
+data:
+  processed_dirs:
+  - data/processed/synthetic
+trial_time_sec: 2.0
+perturbations:
+- name: metadata_missing_25pct
+  type: metadata_missing_ratio
+  ratio: 0.25
+- name: metadata_missing_50pct
+  type: metadata_missing_ratio
+  ratio: 0.50
+- name: metadata_missing_75pct
+  type: metadata_missing_ratio
+  ratio: 0.75
+- name: metadata_missing_all
+  type: metadata_missing
+- name: metadata_shuffle
+  type: metadata_shuffle
+- name: channel_metadata_missing
+  type: metadata_group_missing
+  channels: true
+  continuous_indices: [1]
+- name: sampling_metadata_missing
+  type: metadata_group_missing
+  continuous_indices: [0]
+- name: session_metadata_missing
+  type: metadata_group_missing
+  categorical_fields: [reattach_flag]
+  continuous_indices: [4]
+- name: electrode_hardware_metadata_missing
+  type: metadata_group_missing
+  categorical_fields: [reference, hardware_id, electrode_type, cap_type]
+- name: impedance_metadata_missing
+  type: metadata_group_missing
+  continuous_indices: [2, 3]
+- name: downsample_100hz
+  type: downsample
+  factor: 0.5
+- name: average_rereference
+  type: rereference
+- name: broadband_noise
+  type: gaussian_noise
+  std: 0.1
+- name: alpha_band_noise
+  type: band_limited_noise
+  band_hz: [8.0, 16.0]
+  std: 0.1
+- name: combined_4ch_100hz_noise_metadata50
+  type: compose
+  transforms:
+  - type: channel_subset
+    channel_set: occipital_4
+  - type: downsample
+    factor: 0.5
+  - type: gaussian_noise
+    std: 0.1
+  - type: metadata_missing_ratio
+    ratio: 0.5
+output_csv: outputs/debug/eval/robustness.csv

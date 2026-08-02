@@ -1,329 +1,119 @@
 # Calibration-Free EEG Decoding
 
-This repository implements a calibration-free SSVEP EEG decoding pipeline where the model receives both EEG signals and acquisition-condition metadata. The goal is to reduce per-subject calibration when moving across subjects, sessions, hardware, and channel layouts.
+EEG와 획득조건 metadata를 함께 사용해 unseen subject, dataset, channel layout, wet/dry electrode에서 calibration-free SSVEP decoding을 평가하는 연구 코드다. Tiny Transformer는 smoke용이고 최종 구성은 frozen REVE token과 metadata prompt를 trainable cross-attention으로 결합한다.
 
-```text
-acquisition metadata -> ConditionEncoder -> prompt/condition vector
-EEG window + prompt  -> TinyEEGTransformer or optional REVE wrapper
-representation       -> adapter + latent nuisance branch + classifier
-```
+## Kubernetes quickstart
 
-The default path is fully runnable without external models by using `TinyEEGTransformerBackbone`. REVE is optional and is loaded only from the local Hugging Face cache.
+~~~bash
+git clone https://github.com/jm020827/califreeEEG.git
+# private repository 또는 SSH key를 쓰면:
+# git clone git@github.com:jm020827/califreeEEG.git
+cd califreeEEG
+export CFEG_HF_ROOT=/mnt/pvc/hf
+export EEG_DATA_ROOT=/mnt/pvc/eeg
+export WANDB_DIR=/mnt/pvc/wandb
 
-## GPU Pod Layout
+bash scripts/cfeg.sh setup
+bash scripts/cfeg.sh assets synthetic
+bash scripts/cfeg.sh smoke
+bash scripts/cfeg.sh help
+~~~
 
-Use this Kubernetes pod path for the project:
+Setup은 의존성만 준비하고 데이터와 weight를 받지 않는다.
 
-```bash
-~/work/jm020827/califreeEEG
-```
+## HF와 W&B
 
-Move or clone this repository there, then initialize the environment:
+Secret은 Pod 환경변수로 주입한다.
 
-```bash
-mkdir -p "$HOME/work/jm020827"
-cd "$HOME/work/jm020827"
-# copy/clone the repository directory here as califreeEEG
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-```
+~~~bash
+export HF_TOKEN=hf_...
+export WANDB_API_KEY=...
+export WANDB_MODE=online
+export WANDB_PROJECT=calibration-free-eeg
+export WANDB_ENTITY=<user-or-team>
+~~~
 
-The setup script creates and exports:
+WANDB_API_KEY가 있으면 scripts/cfeg.sh는 online logging을 켜고, 없으면 disabled다. WANDB_MODE=offline도 지원한다.
 
-```bash
-PROJECT_ROOT=$HOME/work/jm020827/califreeEEG
-CFEG_HF_ROOT=$HOME/nvme/cache/interns/hf
-EEG_DATA_ROOT=$PROJECT_ROOT/.local/eeg_data
-EEG_MODEL_ROOT=$CFEG_HF_ROOT/eeg_models
-HF_HOME=$CFEG_HF_ROOT
-MNE_DATA=$EEG_DATA_ROOT/mne_data
-WANDB_DIR=$PROJECT_ROOT/.local/wandb
-```
+~~~bash
+kubectl -n <namespace> create secret generic califree-credentials \
+  --from-literal=HF_TOKEN='<token>' \
+  --from-literal=WANDB_API_KEY='<key>'
+~~~
 
-## Asset Policy
+Pod spec에는 secretRef로 연결한다. Token은 Git에 저장하지 않는다.
 
-Do not commit raw EEG, processed datasets, REVE weights, Hugging Face cache, OpenBCI recordings, checkpoints, TensorBoard/W&B logs, or HDF5/NPY/MAT/EDF/BDF files.
+## Asset
 
-Model/Hugging Face cache files are written under:
+REVE gated access 승인 후:
 
-```text
-~/nvme/cache/interns/hf
-```
+~~~bash
+bash scripts/cfeg.sh assets reve
+CFEG_BETA_SUBJECTS=1,2 bash scripts/cfeg.sh assets beta
+bash scripts/cfeg.sh assets beta
 
-Data and W&B local files are written inside the repo under ignored `.local/` paths:
+CFEG_ENABLE_MOABB=1 bash scripts/cfeg.sh setup
+CFEG_WANG_SUBJECTS=1,2 bash scripts/cfeg.sh assets wang
+bash scripts/cfeg.sh assets wang
+~~~
 
-```text
-~/work/jm020827/califreeEEG/.local/eeg_data
-~/work/jm020827/califreeEEG/.local/wandb
-```
+Wearable은 https://figshare.com/articles/dataset/13560281 에서 받고 S001.mat부터 S102.mat, Impedance.mat을 EEG_DATA_ROOT/raw/wearable 아래 둔다.
 
-Initialize those paths with:
+~~~bash
+bash scripts/cfeg.sh assets wearable
+~~~
 
-```bash
-source scripts/setup_gpu_pod.sh
-```
+전용 parser가 [channel,time,electrode,block,target], dry/wet, block, impedance, 공식 8채널과 9.25–14.75Hz 12개 target을 읽는다.
 
-Download never happens on import. Use explicit scripts only.
+## Train
 
-## Install
+~~~bash
+CFEG_BACKBONE=tiny_transformer bash scripts/cfeg.sh train wang-to-beta
+CFEG_BACKBONE=reve WANDB_MODE=online bash scripts/cfeg.sh train wang-to-beta
+~~~
 
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install -e .
-```
+Preset은 wang-to-beta, beta-to-wang, wearable-loso, wearable-dry-to-wet, wearable-wet-to-dry, joint, synthetic이다.
 
-Or run the bootstrap helper:
+각 run은 `split.csv`, source-validation checkpoint, held-out `metrics_test.json`을 저장한다. Target test는 checkpoint 선택에 절대 사용하지 않으며, source validation이 불가능할 만큼 피험자가 적으면 실행을 중단한다.
 
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-bash scripts/bootstrap_gpu_pod.sh
-source .venv/bin/activate
-```
+Wang과 BETA label은 raw index가 아니라 stimulus frequency로 canonical 40-class 8.0, 8.2, ..., 15.8Hz에 정렬된다. 학습 strong view는 8/4/2채널 subset을 명시적으로 포함한다. Source validation만 checkpoint 선택에 쓰며 target은 test-only다.
 
-`setup_gpu_pod.sh` normally uses `~/nvme/cache/interns/hf` only for model/HF cache files. It keeps data and W&B local files inside the repo `.local/` directory. If you intentionally want to keep pre-set environment paths, run:
+## Evaluate, robustness, calibration, inference
 
-```bash
-CFEG_KEEP_EXISTING_ENV=1 source scripts/setup_gpu_pod.sh
-```
+~~~bash
+bash scripts/cfeg.sh eval wang-to-beta outputs/research/wang_to_beta/best.pt
+bash scripts/cfeg.sh eval beta-to-wang outputs/research/beta_to_wang/best.pt
 
-## One-Command Pod Run
+bash scripts/cfeg.sh channel-stress outputs/research/wang_to_beta/best.pt \
+  "$EEG_DATA_ROOT/processed/beta_v1"
+bash scripts/cfeg.sh robustness outputs/research/wang_to_beta/best.pt \
+  "$EEG_DATA_ROOT/processed/beta_v1"
 
-For a fresh pod, this single command handles environment setup, virtualenv creation, dependency installation, optional HF/REVE fetch, W&B login, synthetic data preparation, and training:
+bash scripts/cfeg.sh calibration outputs/research/wearable_dry_to_wet/best.pt
+bash scripts/cfeg.sh predict <checkpoint.pt> <processed-dir> outputs/predictions.csv
+~~~
 
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-bash scripts/run_gpu_pod_full.sh
-```
+Robustness는 metadata 결측 25/50/75/100%, 그룹별 제거, shuffle, downsample, re-reference, broadband/band-limited noise와 복합 4채널 조건을 평가한다. Channel metadata를 가려도 backbone의 실제 electrode 위치 입력은 보존한다. CSV에는 accuracy, balanced accuracy, macro-F1, NLL, ECE, ITR, 기준 대비 절대 저하와 상대 저하율, confusion matrix가 저장된다. Calibration은 피험자별 k=0/1/3/5다.
 
-It prompts at the beginning for:
+## Ablation과 전체 suite
 
-```text
-Hugging Face token
-W&B API key
-W&B project/entity/mode
-run name
-training config
-backbone: tiny_transformer or reve
-synthetic data preparation
-epoch and batch-size overrides
-```
-
-Tokens are not written to the repository. HF/model files go under `~/nvme/cache/interns/hf`; data and W&B local files go under the repo `.local/` directory.
-
-Checkpoints default to `checkpoint.save_trainable_only=true`, so frozen REVE weights are not duplicated into `outputs/`. The REVE backbone is reloaded from `HF_HOME` when evaluating.
-
-You can also run it non-interactively:
-
-```bash
-WANDB_API_KEY=<wandb-key> HF_TOKEN=<hf-token> \
-CFEG_TRAIN_CONFIG=configs/train/debug.yaml \
-CFEG_BACKBONE=tiny_transformer \
-CFEG_TRAIN_EPOCHS=5 \
-bash scripts/run_gpu_pod_full.sh
-```
-
-Optional MOABB/OpenBCI support:
-
-```bash
-python -m pip install -e '.[moabb]'
-python -m pip install -e '.[openbci]'
-```
-
-## Local Smoke Test
-
-This uses generated non-human synthetic signals and writes only to ignored data paths.
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/prepare_synthetic.py --out_dir data/processed/synthetic --n_subjects 8 --n_trials_per_class 20 --n_classes 4 --target_sfreq 200
-python scripts/inspect_manifest.py --processed_dir data/processed/synthetic
-python scripts/verify_assets.py --dataset synthetic --stage processed
-python scripts/train.py --config configs/train/debug.yaml --dry-run
-```
-
-To run a short actual training smoke:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/train.py --config configs/train/debug.yaml train.epochs=1
-python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outputs/debug/best.pt
-```
-
-## REVE Setup
-
-REVE weights are not redistributed here. On the GPU/storage server:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-huggingface-cli login
-python scripts/fetch_reve.py --probe-remote --model brain-bzh/reve-base --positions brain-bzh/reve-positions
-python scripts/fetch_reve.py --model brain-bzh/reve-base --positions brain-bzh/reve-positions --cache-dir "$HF_HOME"
-python scripts/verify_assets.py --model reve_base
-```
-
-Training with REVE uses local files only by default:
-
-```bash
-python scripts/train.py --config configs/train/ssvep_pretrain.yaml model.backbone.name=reve
-```
-
-If REVE is unavailable, use:
-
-```bash
-python scripts/train.py --config configs/train/ssvep_pretrain.yaml model.backbone.name=tiny_transformer
-```
-
-## Public Data Setup
-
-BETA:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/fetch_dataset.py --dataset beta --probe-remote
-python scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta"
-python scripts/verify_assets.py --dataset beta --stage raw
-python scripts/prepare_dataset.py --dataset beta --raw_dir "$EEG_DATA_ROOT/raw/beta" --out_dir "$EEG_DATA_ROOT/processed/beta_v1" --config configs/data/beta.yaml
-```
-
-For a quick smoke test, fetch only one subject first:
-
-```bash
-python scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta" --subjects 1
-python scripts/prepare_dataset.py --dataset beta --raw_dir "$EEG_DATA_ROOT/raw/beta" --out_dir "$EEG_DATA_ROOT/processed/beta_v1" --config configs/data/beta.yaml
-```
-
-Wang2016:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python -m pip install -e '.[moabb]'
-python scripts/fetch_dataset.py --dataset wang --method moabb
-python scripts/prepare_dataset.py --dataset wang --raw_dir "$EEG_DATA_ROOT/raw/wang" --out_dir "$EEG_DATA_ROOT/processed/wang_v1" --config configs/data/wang.yaml
-```
-
-Wearable SSVEP is treated as manual/Figshare-first:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/fetch_dataset.py --dataset wearable
-python scripts/verify_assets.py --dataset wearable --stage raw
-python scripts/prepare_dataset.py --dataset wearable --raw_dir "$EEG_DATA_ROOT/raw/wearable" --out_dir "$EEG_DATA_ROOT/processed/wearable_v1" --config configs/data/wearable.yaml
-```
-
-Dataset-specific preparers include a conservative generic `.mat`/`.npz` adapter that finds numeric EEG arrays, infers trial/channel/time axes, and writes the common processed format. If a public source uses a different schema, the script fails with the available keys/shape context instead of copying raw data into the repo.
-
-## OpenBCI Format
-
-Private OpenBCI sessions should look like:
-
-```text
-$EEG_DATA_ROOT/raw/openbci/sub001_ses001/
-  eeg.csv
-  events.csv
-  session_meta.json
-```
-
-Convert with:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/openbci_convert.py --raw_session_dir "$EEG_DATA_ROOT/raw/openbci/sub001_ses001" --out_dir "$EEG_DATA_ROOT/processed/openbci_v1" --target_sfreq 200
-```
-
-OpenBCI Cyton raw data is recorded at 250 Hz; REVE experiments resample processed windows to 200 Hz.
-
-## W&B Monitoring
-
-`requirements.txt` includes W&B. In the pod, log in once:
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-source .venv/bin/activate
-
-# Interactive login
-wandb login
-
-# Or non-interactive login if the pod has the key
-# export WANDB_API_KEY=<your-key>
-# wandb login "$WANDB_API_KEY"
-```
-
-Start a monitored run by enabling W&B through config overrides:
-
-```bash
-python scripts/train.py --config configs/train/ssvep_pretrain.yaml \
-  run_name=ssvep_pretrain_tiny_v1 \
-  tracking.wandb.enabled=true \
-  tracking.wandb.project=calibration-free-eeg \
-  tracking.wandb.tags='["ssvep","tiny","wang-beta"]'
-```
-
-For a quick synthetic check:
-
-```bash
-python scripts/train.py --config configs/train/debug.yaml \
-  run_name=debug_wandb \
-  tracking.wandb.enabled=true \
-  train.epochs=3
-```
-
-This logs epoch-level `train/loss`, `val/accuracy`, `val/nll`, learning rate, parameter counts, and train/val sample counts. Checkpoint upload is disabled by default; enable it only when you want W&B artifacts:
-
-```bash
-python scripts/train.py --config configs/train/ssvep_pretrain.yaml \
-  tracking.wandb.enabled=true \
-  tracking.wandb.log_model=true
-```
-
-If the pod has no outbound network during training, use offline mode and sync later:
-
-```bash
-python scripts/train.py --config configs/train/ssvep_pretrain.yaml \
-  tracking.wandb.enabled=true \
-  tracking.wandb.mode=offline
-
-wandb sync "$WANDB_DIR"/wandb/offline-run-*
-```
-
-## Leakage Rules
-
-`label`, `class_id`, `stimulus_frequency_hz`, `stimulus_phase_rad`, `trial_id`, `subject_id`, `session_id`, and `source_file` are never fed to `ConditionEncoder` by default. Subject/session/trial metadata is for splitting and evaluation only.
-
-## Useful Commands
-
-```bash
-cd "$HOME/work/jm020827/califreeEEG"
-source scripts/setup_gpu_pod.sh
-python scripts/train.py --config configs/train/debug.yaml
-python scripts/evaluate.py --config configs/eval/channel_stress.yaml --ckpt outputs/debug/best.pt
-python scripts/run_ablation.py --config configs/train/ablation.yaml --only synthetic
-python scripts/export_results_table.py --runs outputs/ablation_* --out outputs/summary/ablation_results.csv
-```
-
-To keep terminal output and tracebacks even when the Kubernetes exec session exits, run training through the logging wrapper:
-
-```bash
-bash scripts/run_train_logged.sh --config configs/train/debug.yaml \
-  model.backbone.name=reve \
-  model.backbone.cache_dir="$HF_HOME" \
-  tracking.wandb.enabled=true \
-  train.epochs=1
-```
-
-Logs are written to:
-
-```text
-outputs/logs/train_<timestamp>.log
-```
+~~~bash
+bash scripts/cfeg.sh ablation
+bash scripts/cfeg.sh ablation A0_eeg_only,A4_full_latent
+python scripts/run_ablation.py --include-optional --continue-on-error
+CFEG_BACKBONE=reve WANDB_MODE=online bash scripts/cfeg.sh research
+~~~
+
+Research는 Wang→BETA와 BETA→Wang의 zero-shot·채널·강건성 평가를 실행한다. wearable_v1이 있으면 leave-subject-out, dry→wet, wet→dry, k=0/1/3/5 calibration도 실행한다. Ablation은 별도 한 번의 명령으로 A0-A4를 Wang→BETA에 수행하며 `CFEG_BACKBONE`과 W&B 환경변수를 그대로 따른다.
+
+## 규칙
+
+- Label, stimulus frequency/phase, subject/session/trial의 원시 식별자와 source file은 ConditionEncoder 입력이 아니다. 세션 조건은 reattach 여부와 경과시간처럼 일반화 가능한 파생 metadata로만 사용한다.
+- Dataset-ID-only ablation은 continuous/channel metadata도 사용하지 않는다. Structured-without-ID ablation은 dataset_id도 제거한다.
+- Frequency overlap이 없으면 unrelated class id 비교를 거부한다.
+- k=0이 핵심 calibration-free 결과다.
+- Raw/processed EEG, REVE weight, checkpoint, token, W&B log는 Git 제외다.
+- Download는 명시적인 assets 명령에서만 일어난다.
+- Frozen REVE는 checkpoint에 복제하지 않고 HF_HOME에서 다시 읽는다.
+
+상세 완료/남은 실험은 calibration_free_eeg_codex_implementation_plan.md에 있다.

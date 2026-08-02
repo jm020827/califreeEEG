@@ -70,6 +70,8 @@ class ConditionedEEGDecoder(nn.Module):
                 n_cont_features=5,
                 channel_vocab_size=int(model_cfg.get("c_max", 64)) + 1,
                 fields=ce_cfg.get("fields"),
+                include_continuous=bool(ce_cfg.get("include_continuous", True)),
+                include_channels=bool(ce_cfg.get("include_channels", True)),
             )
         else:
             self.condition_encoder = None
@@ -99,6 +101,16 @@ class ConditionedEEGDecoder(nn.Module):
             self.latent = None
         self.head = ClassificationHead(d_model, int(model_cfg.get("n_classes", 4)), self.z_dim)
 
+    def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
+        projection_weight = state_dict.get("backbone.output_proj.weight")
+        if projection_weight is not None and getattr(self.backbone, "output_proj", None) is None:
+            out_features, in_features = projection_weight.shape
+            self.backbone.output_proj = nn.Linear(in_features, out_features)
+        try:
+            return super().load_state_dict(state_dict, strict=strict, assign=assign)
+        except TypeError:
+            return super().load_state_dict(state_dict, strict=strict)
+
     def forward(
         self,
         x: torch.Tensor,
@@ -110,7 +122,9 @@ class ConditionedEEGDecoder(nn.Module):
         if self.condition_encoder is not None:
             prompt, cond_vec = self.condition_encoder(cond)
         if prompt is not None and not self.backbone.supports_prompt_tokens:
-            prompt = None
+            raise RuntimeError(
+                f"{type(self.backbone).__name__} does not support condition prompt tokens."
+            )
         backbone_out = self.backbone(x, cond=cond, prompt_tokens=prompt, return_tokens=return_repr)
         h = backbone_out.h
         if self.adapter is not None:

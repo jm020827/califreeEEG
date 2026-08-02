@@ -12,7 +12,7 @@ from cfeg.models.backbones.base import BackboneOutput, EEGBackbone
 
 
 class REVEBackbone(EEGBackbone):
-    supports_prompt_tokens = False
+    supports_prompt_tokens = True
 
     def __init__(self, cfg: dict):
         super().__init__()
@@ -31,13 +31,21 @@ class REVEBackbone(EEGBackbone):
         self.d_model = _infer_reve_dim(self.reve, cfg)
         self.canonical_map = CanonicalChannelMap.from_yaml()
         self.output_proj: nn.Module | None = None
+        n_heads = _compatible_heads(self.d_model, int(cfg.get("prompt_fusion_heads", 8)))
+        self.prompt_attention = nn.MultiheadAttention(
+            self.d_model, n_heads, dropout=float(cfg.get("prompt_fusion_dropout", 0.1)), batch_first=True
+        )
+        self.prompt_gate = nn.Sequential(nn.Linear(self.d_model, self.d_model), nn.Sigmoid())
+        self.prompt_norm = nn.LayerNorm(self.d_model)
         self._position_cache: dict[tuple[str, ...], tuple[list[int], torch.Tensor]] = {}
         self.freeze = bool(cfg.get("freeze", True))
+        for parameter in self.pos_bank.parameters():
+            parameter.requires_grad = False
         if self.freeze:
-            for p in self.reve.parameters():
-                p.requires_grad = False
+            for parameter in self.reve.parameters():
+                parameter.requires_grad = False
             self.reve.eval()
-            self.pos_bank.eval()
+        self.pos_bank.eval()
 
     @staticmethod
     def _load_model(auto_model, repo_id: str, cfg: dict):
@@ -64,21 +72,32 @@ class REVEBackbone(EEGBackbone):
             sfreq.float(), torch.full_like(sfreq.float(), self.required_sample_rate_hz), atol=1e-3
         ):
             raise ValueError("REVEBackbone requires processed sample rate of 200 Hz.")
-        if prompt_tokens is not None:
-            # REVE remote code does not expose a stable prompt-token prepend contract.
-            prompt_tokens = None
         x_reve, positions = self._select_channels_and_positions(x, cond)
         if self.freeze:
             with torch.no_grad():
                 out = self._forward_reve(x_reve, positions)
         else:
             out = self._forward_reve(x_reve, positions)
-        h = extract_reve_representation(out)
-        if h.shape[-1] != self.d_model:
+        tokens = extract_reve_tokens(out)
+        if tokens.shape[-1] != self.d_model:
             if self.output_proj is None:
-                self.output_proj = nn.Linear(h.shape[-1], self.d_model).to(device=h.device, dtype=h.dtype)
-            h = self.output_proj(h)
-        return BackboneOutput(h=h, tokens=None, aux={})
+                self.output_proj = nn.Linear(tokens.shape[-1], self.d_model).to(
+                    device=tokens.device, dtype=tokens.dtype
+                )
+            tokens = self.output_proj(tokens)
+        h = tokens.mean(dim=1)
+        aux: dict[str, torch.Tensor] = {}
+        if prompt_tokens is not None:
+            attended, weights = self.prompt_attention(
+                self.prompt_norm(prompt_tokens), self.prompt_norm(tokens), self.prompt_norm(tokens)
+            )
+            prompt_summary = attended.mean(dim=1)
+            h = self.prompt_norm(h + self.prompt_gate(prompt_tokens.mean(dim=1)) * prompt_summary)
+            aux["prompt_attention_mean"] = weights.mean(dim=(1, 2))
+        returned_tokens = torch.cat([prompt_tokens, tokens], dim=1) if (
+            return_tokens and prompt_tokens is not None
+        ) else (tokens if return_tokens else None)
+        return BackboneOutput(h=h, tokens=returned_tokens, aux=aux)
 
     def train(self, mode: bool = True):
         super().train(mode)
@@ -142,7 +161,8 @@ class REVEBackbone(EEGBackbone):
                 "Check configs/canonical_channels.yaml aliases."
             )
 
-        x_reve = x[:, filtered_slots, :]
+        selected_mask = mask[:, filtered_slots].unsqueeze(-1).to(x.dtype)
+        x_reve = x[:, filtered_slots, :] * selected_mask
         positions = base_positions.to(device=x.device, dtype=x.dtype)
         if positions.ndim == 2:
             positions = positions.unsqueeze(0).expand(x.size(0), -1, -1)
@@ -190,19 +210,39 @@ class REVEBackbone(EEGBackbone):
         return positions
 
 
-def extract_reve_representation(out):
-    if hasattr(out, "pooler_output") and out.pooler_output is not None:
-        return _pool_reve_tensor(out.pooler_output)
-    if hasattr(out, "last_hidden_state"):
-        return _pool_reve_tensor(out.last_hidden_state)
-    if isinstance(out, torch.Tensor):
-        return _pool_reve_tensor(out)
-    if isinstance(out, dict):
-        for key in ["pooler_output", "last_hidden_state", "embeddings", "h"]:
-            if key in out:
+
+def extract_reve_tokens(out) -> torch.Tensor:
+    """Standardize REVE output to a trainable prompt-fusion sequence [B, N, D]."""
+    value = None
+    if hasattr(out, "last_hidden_state") and out.last_hidden_state is not None:
+        value = out.last_hidden_state
+    elif hasattr(out, "pooler_output") and out.pooler_output is not None:
+        value = out.pooler_output
+    elif isinstance(out, torch.Tensor):
+        value = out
+    elif isinstance(out, dict):
+        for key in ["last_hidden_state", "embeddings", "h", "pooler_output"]:
+            if key in out and out[key] is not None:
                 value = out[key]
-                return _pool_reve_tensor(value)
-    raise RuntimeError(f"Cannot extract representation from REVE output type: {type(out)}")
+                break
+    if value is None:
+        raise RuntimeError(f"Cannot extract representation from REVE output type: {type(out)}")
+    if value.ndim == 2:
+        return value.unsqueeze(1)
+    if value.ndim >= 3:
+        return value.reshape(value.shape[0], -1, value.shape[-1])
+    raise RuntimeError(f"Cannot standardize REVE tensor with shape {tuple(value.shape)}")
+
+
+def _compatible_heads(d_model: int, requested: int) -> int:
+    for n_heads in range(min(requested, d_model), 0, -1):
+        if d_model % n_heads == 0:
+            return n_heads
+    return 1
+
+def extract_reve_representation(out):
+    """Backward-compatible pooled view of the standardized REVE tokens."""
+    return extract_reve_tokens(out).mean(dim=1)
 
 
 def _pool_reve_tensor(value: torch.Tensor) -> torch.Tensor:

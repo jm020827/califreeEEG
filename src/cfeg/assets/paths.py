@@ -14,7 +14,7 @@ def env_path(name: str, *, required: bool = True) -> Path | None:
         raise MissingAssetError(
             f"Environment variable {name} is not set.\n"
             "Set external asset roots before fetching or preparing public datasets:\n"
-            "  cd $HOME/work/jm020827/califreeEEG\n"
+            "  cd /path/to/califreeEEG\n"
             "  source scripts/setup_gpu_pod.sh"
         )
     return None
@@ -31,6 +31,6 @@ def ensure_outside_repo(path: Path, repo_root: Path) -> None:
     if not str(path).startswith(str(allowed.resolve())):
         raise MissingAssetError(
             f"Refusing to place large external asset under repository path: {path}\n"
-            "Use scripts/setup_gpu_pod.sh. Model/HF cache goes under ~/nvme/cache/interns/hf; "
-            "data and W&B local files go under the repo .local directory."
+            "Use scripts/setup_gpu_pod.sh. Model/HF cache and local data paths are selected "
+            "portably and can be overridden with CFEG_HF_ROOT and EEG_DATA_ROOT."
         )

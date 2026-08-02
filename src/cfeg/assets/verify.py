@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
+import h5py
+import numpy as np
 from typing import Any
 
 from cfeg.assets.errors import AssetVerificationError, MissingAssetError
 from cfeg.assets.hf import assert_hf_snapshot_present
+from cfeg.data.datasets import _validate_manifest_class_map
 from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, load_manifest, validate_manifest
 
 
@@ -25,8 +29,24 @@ def verify_processed_dir(processed_dir: str | Path) -> dict[str, Any]:
         )
     manifest = load_manifest(root)
     validate_manifest(manifest)
+    _validate_manifest_class_map(root, manifest)
     with (root / "class_map.json").open("r", encoding="utf-8") as f:
         class_map = json.load(f)
+    with h5py.File(root / "signals.h5", "r") as h5:
+        missing_arrays = [name for name in ("x", "channel_mask", "y") if name not in h5]
+        if missing_arrays:
+            raise AssetVerificationError(
+                f"Processed signals.h5 is missing arrays: {', '.join(missing_arrays)}"
+            )
+        lengths = {name: len(h5[name]) for name in ("x", "channel_mask", "y")}
+        if set(lengths.values()) != {len(manifest)}:
+            raise AssetVerificationError(
+                f"Manifest/HDF5 sample counts disagree: manifest={len(manifest)}, arrays={lengths}"
+            )
+        if not np.array_equal(h5["y"][:].astype(int), manifest["label"].astype(int).to_numpy()):
+            raise AssetVerificationError(
+                "HDF5 labels disagree with the manifest. Re-run dataset preparation."
+            )
     return {
         "processed_dir": str(root),
         "n_samples": int(len(manifest)),

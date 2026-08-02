@@ -1,16 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# One-command GPU pod runner:
-#   cd "$HOME/work/jm020827/califreeEEG"
+# One-command local/GPU runner from any clone location:
 #   bash scripts/run_gpu_pod_full.sh
 #
 # Non-interactive use is also supported by pre-setting env vars such as:
 #   WANDB_API_KEY=... HF_TOKEN=... CFEG_TRAIN_CONFIG=configs/train/debug.yaml bash scripts/run_gpu_pod_full.sh
 
-PROJECT_ROOT="${PROJECT_ROOT:-$HOME/work/jm020827/califreeEEG}"
-CFEG_HF_ROOT="${CFEG_HF_ROOT:-${CFEG_EXTERNAL_ROOT:-$HOME/nvme/cache/interns/hf}}"
+CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
+if [[ -z "${CFEG_HF_ROOT:-}" ]]; then
+  if [[ -n "${CFEG_EXTERNAL_ROOT:-}" ]]; then
+    CFEG_HF_ROOT="$CFEG_EXTERNAL_ROOT"
+  elif [[ -d "$HOME/nvme" ]]; then
+    CFEG_HF_ROOT="$HOME/nvme/cache/interns/hf"
+  else
+    CFEG_HF_ROOT="$PROJECT_ROOT/.local/hf"
+  fi
+fi
 CFEG_EXTERNAL_ROOT="$CFEG_HF_ROOT"
+CFEG_TMP_ROOT="${CFEG_TMP_ROOT:-$PROJECT_ROOT/.local/tmp}"
+export TMPDIR="$CFEG_TMP_ROOT"
+export TMP="$CFEG_TMP_ROOT"
+export TEMP="$CFEG_TMP_ROOT"
 
 cd "$PROJECT_ROOT"
 
@@ -57,7 +69,12 @@ prompt_secret HF_TOKEN "Hugging Face token"
 prompt_secret WANDB_API_KEY "W&B API key"
 prompt_default WANDB_PROJECT "W&B project" "calibration-free-eeg"
 prompt_default WANDB_ENTITY "W&B entity/team; empty is okay" ""
-prompt_default WANDB_MODE "W&B mode: online/offline/disabled" "online"
+if [[ -n "${WANDB_API_KEY:-}" ]]; then
+  CFEG_DEFAULT_WANDB_MODE=online
+else
+  CFEG_DEFAULT_WANDB_MODE=disabled
+fi
+prompt_default WANDB_MODE "W&B mode: online/offline/disabled" "$CFEG_DEFAULT_WANDB_MODE"
 prompt_default CFEG_RUN_NAME "Run name" "cfeg_$(date +%Y%m%d_%H%M%S)"
 prompt_default CFEG_TRAIN_CONFIG "Training config" "configs/train/debug.yaml"
 prompt_default CFEG_BACKBONE "Backbone: tiny_transformer/reve" "tiny_transformer"
@@ -78,14 +95,15 @@ export CFEG_HF_ROOT
 export CFEG_EXTERNAL_ROOT
 export HF_TOKEN
 export WANDB_API_KEY
-export EEG_DATA_ROOT="$PROJECT_ROOT/.local/eeg_data"
-export EEG_MODEL_ROOT="$CFEG_HF_ROOT/eeg_models"
-export HF_HOME="$CFEG_HF_ROOT"
-export MNE_DATA="$EEG_DATA_ROOT/mne_data"
-export WANDB_DIR="$PROJECT_ROOT/.local/wandb"
+export EEG_DATA_ROOT="${EEG_DATA_ROOT:-$PROJECT_ROOT/.local/eeg_data}"
+export EEG_MODEL_ROOT="${EEG_MODEL_ROOT:-$CFEG_HF_ROOT/eeg_models}"
+export HF_HOME="${HF_HOME:-$CFEG_HF_ROOT}"
+export MNE_DATA="${MNE_DATA:-$EEG_DATA_ROOT/mne_data}"
+export WANDB_DIR="${WANDB_DIR:-$PROJECT_ROOT/.local/wandb}"
 export WANDB_CACHE_DIR="$WANDB_DIR/cache"
 export WANDB_CONFIG_DIR="$WANDB_DIR/config"
 
+mkdir -p "$CFEG_TMP_ROOT" "$PROJECT_ROOT/.local/pip-cache"
 mkdir -p "$EEG_DATA_ROOT/raw" "$EEG_DATA_ROOT/processed" "$MNE_DATA"
 mkdir -p "$EEG_MODEL_ROOT" "$HF_HOME" "$WANDB_DIR" "$WANDB_CACHE_DIR" "$WANDB_CONFIG_DIR"
 mkdir -p "$PROJECT_ROOT/data/processed" "$PROJECT_ROOT/outputs" "$PROJECT_ROOT/checkpoints"
@@ -106,6 +124,12 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
+if [[ "$CFEG_BACKBONE" == "reve" ]]; then
+  python -m pip install -e '.[reve]'
+fi
+if [[ "$WANDB_MODE" != "disabled" ]]; then
+  python -m pip install -e '.[tracking]'
+fi
 
 if [[ -n "${HF_TOKEN:-}" ]]; then
   python -c 'import os; from huggingface_hub import login; login(token=os.environ["HF_TOKEN"], add_to_git_credential=False)'

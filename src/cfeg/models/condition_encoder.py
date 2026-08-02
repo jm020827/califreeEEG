@@ -16,11 +16,18 @@ class ConditionEncoder(nn.Module):
         channel_vocab_size: int,
         dropout: float = 0.1,
         fields: list[str] | None = None,
+        include_continuous: bool = True,
+        include_channels: bool = True,
     ):
         super().__init__()
         self.d_model = d_model
         self.n_prompt_tokens = n_prompt_tokens
-        self.cat_names = [f for f in (fields or CONDITION_CATEGORICAL_FIELDS) if f in CONDITION_CATEGORICAL_FIELDS]
+        self.include_continuous = include_continuous
+        self.include_channels = include_channels
+        selected_fields = CONDITION_CATEGORICAL_FIELDS if fields is None else fields
+        self.cat_names = [
+            field for field in selected_fields if field in CONDITION_CATEGORICAL_FIELDS
+        ]
         self.cat_embeddings = nn.ModuleDict(
             {name: nn.Embedding(vocab_sizes.get(name, 1), d_model) for name in self.cat_names}
         )
@@ -31,6 +38,18 @@ class ConditionEncoder(nn.Module):
             nn.Linear(d_model, d_model),
         )
         self.channel_embed = nn.Embedding(channel_vocab_size, d_model, padding_idx=0)
+        self.modality_embedding = nn.Parameter(torch.zeros(1, 3, d_model))
+        n_heads = _compatible_heads(d_model, 4)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=n_heads,
+            dim_feedforward=d_model * 2,
+            dropout=dropout,
+            batch_first=True,
+            activation="gelu",
+            norm_first=True,
+        )
+        self.context_encoder = nn.TransformerEncoder(encoder_layer, num_layers=1)
         self.fuse = nn.Sequential(
             nn.LayerNorm(d_model * 3),
             nn.Linear(d_model * 3, d_model),
@@ -47,16 +66,35 @@ class ConditionEncoder(nn.Module):
         for name in self.cat_names:
             ids = cond[name].clamp(min=0, max=self.cat_embeddings[name].num_embeddings - 1)
             cat_vec = cat_vec + self.cat_embeddings[name](ids)
-        cont_in = torch.cat([cond["continuous"], cond["continuous_missing"].float()], dim=-1)
-        cont_vec = self.cont_mlp(cont_in)
-        ch_emb = self.channel_embed(
-            cond["channel_ids"].clamp(min=0, max=self.channel_embed.num_embeddings - 1)
-        )
-        mask = cond["channel_mask"].float().unsqueeze(-1)
-        ch_vec = (ch_emb * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0)
-        cond_vec = self.fuse(torch.cat([cat_vec, cont_vec, ch_vec], dim=-1))
+        if self.include_continuous:
+            cont_in = torch.cat([cond["continuous"], cond["continuous_missing"].float()], dim=-1)
+            cont_vec = self.cont_mlp(cont_in)
+        else:
+            cont_vec = torch.zeros_like(cat_vec)
+        if self.include_channels:
+            condition_channel_ids = cond.get("condition_channel_ids", cond["channel_ids"])
+            condition_channel_mask = cond.get("condition_channel_mask", cond["channel_mask"])
+            ch_emb = self.channel_embed(
+                condition_channel_ids.clamp(
+                    min=0, max=self.channel_embed.num_embeddings - 1
+                )
+            )
+            mask = condition_channel_mask.float().unsqueeze(-1)
+            ch_vec = (ch_emb * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0)
+        else:
+            ch_vec = torch.zeros_like(cat_vec)
+        context_tokens = torch.stack([cat_vec, cont_vec, ch_vec], dim=1)
+        context_tokens = self.context_encoder(context_tokens + self.modality_embedding)
+        cond_vec = self.fuse(context_tokens.reshape(batch, self.d_model * 3))
         if self.to_prompt is None:
             return None, cond_vec
         prompt = self.to_prompt(cond_vec).view(batch, self.n_prompt_tokens, self.d_model)
         return prompt, cond_vec
 
+
+
+def _compatible_heads(d_model: int, requested: int) -> int:
+    for n_heads in range(min(requested, d_model), 0, -1):
+        if d_model % n_heads == 0:
+            return n_heads
+    return 1

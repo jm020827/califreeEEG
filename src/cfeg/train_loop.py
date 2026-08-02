@@ -4,16 +4,24 @@ import os
 from functools import partial
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
+import yaml
 from torch.utils.data import DataLoader, Subset
 
 from cfeg.data.collate import build_vocabularies, collate_eeg
 from cfeg.data.datasets import EEGProcessedDataset
-from cfeg.data.splits import make_cross_subject_split
+from cfeg.data.preprocess import CanonicalChannelMap
+from cfeg.data.splits import (
+    make_cross_condition_split,
+    make_cross_dataset_split,
+    make_cross_subject_split,
+)
 from cfeg.data.transforms import make_two_views
 from cfeg.losses import kl_normal, representation_consistency_loss, symmetric_kl_logits
+from cfeg.metrics import classification_metrics, itr_bits_per_min
 from cfeg.models.full_model import ConditionedEEGDecoder
 from cfeg.seed import seed_everything
 from cfeg.utils.checkpoint import save_checkpoint, save_json
@@ -23,6 +31,7 @@ from cfeg.utils.params import count_parameters
 
 def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     seed_everything(int(cfg.get("seed", 42)))
+    _resolve_augmentation_channel_sets(cfg)
     full_ds = EEGProcessedDataset(cfg["data"]["processed_dirs"])
     manifest = pd.DataFrame([entry[2] for entry in full_ds.entries])
     split_name = cfg["data"].get("split", "cross_subject")
@@ -33,10 +42,35 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
             test_ratio=float(cfg["data"].get("test_ratio", 0.2)),
         )
+    elif split_name == "cross_dataset":
+        split = make_cross_dataset_split(
+            manifest,
+            train_datasets=list(cfg["data"]["train_datasets"]),
+            test_datasets=list(cfg["data"]["test_datasets"]),
+            seed=int(cfg.get("seed", 42)),
+            val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
+        )
+    elif split_name == "cross_condition":
+        split = make_cross_condition_split(
+            manifest,
+            train_filter=dict(cfg["data"]["train_filter"]),
+            test_filter=dict(cfg["data"]["test_filter"]),
+            seed=int(cfg.get("seed", 42)),
+            val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
+        )
     else:
-        idx = torch.randperm(len(full_ds)).numpy()
-        n_val = max(1, int(0.2 * len(idx)))
-        split = type("Split", (), {"train": idx[n_val:], "val": idx[:n_val], "test": idx[:n_val]})()
+        raise ValueError(
+            f"Unknown data.split={split_name!r}; use cross_subject, cross_dataset, or cross_condition."
+        )
+
+    n_classes = int(cfg.get("model", {}).get("n_classes", 0))
+    selected_indices = np.concatenate([split.train, split.val, split.test])
+    selected_labels = manifest.iloc[selected_indices]["label"].astype(int)
+    if len(selected_labels) and (selected_labels.min() < 0 or selected_labels.max() >= n_classes):
+        raise ValueError(
+            f"Training labels span {selected_labels.min()}..{selected_labels.max()} but "
+            f"model.n_classes={n_classes}. Re-run preparation with the correct class map."
+        )
 
     vocab = build_vocabularies()
     collate = partial(collate_eeg, vocabularies=vocab)
@@ -48,7 +82,14 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
         collate_fn=collate,
     )
     val_loader = DataLoader(
-        Subset(full_ds, split.val.tolist() if len(split.val) else split.test.tolist()),
+        Subset(full_ds, split.val.tolist()),
+        batch_size=int(cfg["data"].get("batch_size", 16)),
+        shuffle=False,
+        num_workers=int(cfg["data"].get("num_workers", 0)),
+        collate_fn=collate,
+    )
+    test_loader = DataLoader(
+        Subset(full_ds, split.test.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=False,
         num_workers=int(cfg["data"].get("num_workers", 0)),
@@ -81,6 +122,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     output_dir = Path(cfg.get("output_dir", "outputs/debug"))
     output_dir.mkdir(parents=True, exist_ok=True)
     save_config(cfg, output_dir / "config.yaml")
+    _save_split_manifest(manifest, split, output_dir / "split.csv")
     save_json(output_dir / "vocab.json", vocab)
     save_json(output_dir / "params.json", params)
     save_json(output_dir / "class_map.json", full_ds.class_map)
@@ -157,8 +199,88 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             stale += 1
             if stale >= patience:
                 break
+    best_checkpoint = torch.load(output_dir / "best.pt", map_location=device)
+    model.load_state_dict(
+        best_checkpoint["model_state"],
+        strict=not bool(best_checkpoint.get("save_trainable_only", False)),
+    )
+    trial_time_sec = float(cfg.get("evaluation", {}).get("trial_time_sec", 2.0))
+    test_metrics = evaluate_loader(
+        model, test_loader, device, trial_time_sec=trial_time_sec
+    )
+    reference_itr = itr_bits_per_min(n_classes, best_acc, trial_time_sec)
+    test_metrics.update(
+        {
+            "reference_validation_accuracy": best_acc,
+            "accuracy_drop": float(best_acc - test_metrics["accuracy"]),
+            "accuracy_drop_rate": _relative_drop(best_acc, test_metrics["accuracy"]),
+            "reference_validation_itr_bits_per_min": reference_itr,
+            "itr_drop": float(reference_itr - test_metrics.get("itr_bits_per_min", 0.0)),
+            "itr_drop_rate": _relative_drop(
+                reference_itr, test_metrics.get("itr_bits_per_min", 0.0)
+            ),
+        }
+    )
+    save_json(output_dir / "metrics_test.json", test_metrics)
+    _log_wandb(
+        wandb_run,
+        {f"test/{key}": value for key, value in test_metrics.items()},
+        step=global_step,
+    )
+    if wandb_run is not None:
+        for key, value in test_metrics.items():
+            wandb_run.summary[f"test/{key}"] = value
     _finish_wandb(wandb_run)
-    return {"best_accuracy": best_acc, "output_dir": str(output_dir), "params": params}
+    return {
+        "best_accuracy": best_acc,
+        "test": test_metrics,
+        "output_dir": str(output_dir),
+        "params": params,
+    }
+
+
+def _resolve_augmentation_channel_sets(cfg: dict) -> None:
+    augment = cfg.setdefault("augment", {})
+    names = augment.get("channel_sets") or []
+    if not names:
+        return
+    with Path("configs/channel_sets.yaml").open("r", encoding="utf-8") as handle:
+        registry = yaml.safe_load(handle) or {}
+    canonical = CanonicalChannelMap.from_yaml()
+    resolved = []
+    for name in names:
+        if name not in registry:
+            raise KeyError(f"Unknown training channel set {name!r}: {sorted(registry)}")
+        resolved.append(canonical.get_ids(list(registry[name])))
+    augment["channel_subset_ids"] = resolved
+
+
+def _save_split_manifest(manifest: pd.DataFrame, split, path: Path) -> None:
+    assignment = np.full(len(manifest), "unassigned", dtype=object)
+    assignment[split.train] = "train"
+    assignment[split.val] = "val"
+    assignment[split.test] = "test"
+    columns = [
+        column
+        for column in [
+            "sample_id",
+            "dataset_id",
+            "subject_id",
+            "session_id",
+            "electrode_type",
+            "label",
+        ]
+        if column in manifest
+    ]
+    table = manifest[columns].copy()
+    table["split"] = assignment
+    table.to_csv(path, index=False)
+
+
+def _relative_drop(reference: float, observed: float) -> float:
+    if abs(reference) < 1e-12:
+        return 0.0
+    return float((reference - observed) / reference)
 
 
 def _train_epoch(
@@ -234,7 +356,9 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
         batch["x"],
         batch["cond"],
         channel_dropout_prob=float(aug.get("channel_dropout_prob", 0.2)),
-        min_channels=int(aug.get("min_channels", 4)),
+        min_channels=int(aug.get("min_channels", 2)),
+        channel_subsets=aug.get("channel_subset_ids"),
+        channel_subset_prob=float(aug.get("channel_subset_prob", 0.0)),
         noise_std_range=tuple(aug.get("noise_std_range", [0.01, 0.05])),
         time_shift_samples=int(aug.get("time_shift_samples", 8)),
     )
@@ -259,20 +383,31 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
 
 
 @torch.no_grad()
-def evaluate_loader(model, loader, device) -> dict[str, float]:
+def evaluate_loader(
+    model, loader, device, *, trial_time_sec: float | None = None
+) -> dict[str, float]:
     model.eval()
-    correct = 0
-    total = 0
-    total_loss = 0.0
+    labels = []
+    logits = []
     for batch in loader:
         batch = _to_device(batch, device)
         out = model(batch["x"], batch["cond"], use_latent=False)
-        loss = F.cross_entropy(out.logits, batch["y"])
-        pred = out.logits.argmax(dim=-1)
-        correct += int((pred == batch["y"]).sum().item())
-        total += int(batch["y"].numel())
-        total_loss += float(loss.cpu()) * batch["y"].numel()
-    return {"accuracy": correct / max(total, 1), "nll": total_loss / max(total, 1)}
+        labels.append(batch["y"].detach().cpu())
+        logits.append(out.logits.detach().float().cpu())
+    if not labels:
+        return {
+            "accuracy": 0.0,
+            "balanced_accuracy": 0.0,
+            "macro_f1": 0.0,
+            "nll": 0.0,
+            "ece": 0.0,
+            "n_samples": 0,
+        }
+    return classification_metrics(
+        torch.cat(labels).numpy(),
+        torch.cat(logits).numpy(),
+        trial_time_sec=trial_time_sec,
+    )
 
 
 def _to_device(batch, device):

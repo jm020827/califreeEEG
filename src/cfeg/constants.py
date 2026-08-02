@@ -3,8 +3,14 @@ DEFAULT_TARGET_SFREQ = 200.0
 
 CATEGORICAL_VOCABS = {
     "dataset_id": ["unknown", "synthetic", "wang", "beta", "wearable", "openbci"],
-    "reference": ["unknown", "average", "linked_mastoids", "cz", "openbci_default"],
-    "hardware_id": ["unknown", "public_unknown", "openbci_cyton"],
+    "reference": ["unknown", "average", "linked_mastoids", "cz", "forehead", "openbci_default"],
+    "hardware_id": [
+        "unknown",
+        "public_unknown",
+        "neuroscan_synamp2",
+        "neuracle_neusenw",
+        "openbci_cyton",
+    ],
     "cap_type": ["unknown", "wet_cap", "dry_cap", "wearable"],
     "electrode_type": ["unknown", "wet", "dry", "gel"],
     "reattach_flag": ["unknown", "false", "true"],

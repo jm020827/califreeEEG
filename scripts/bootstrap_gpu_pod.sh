@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "${PROJECT_ROOT:-$HOME/work/jm020827/califreeEEG}"
-source scripts/setup_gpu_pod.sh
+CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
+export PROJECT_ROOT
 
-python -m venv .venv
-source .venv/bin/activate
-
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
-
-echo "Bootstrap complete."
-echo "Next time run:"
-echo "  cd \"$PROJECT_ROOT\""
-echo "  source scripts/setup_gpu_pod.sh"
-echo "  source .venv/bin/activate"
+echo "bootstrap_gpu_pod.sh now delegates to the portable Kubernetes bootstrap."
+exec bash "$PROJECT_ROOT/scripts/bootstrap_k8s.sh"

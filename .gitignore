@@ -37,7 +37,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
-.venv/
+.venv*/
 
 # Keep directory placeholders
 !data/raw/.gitkeep

@@ -16,6 +16,7 @@ class EEGProcessedDataset(Dataset):
         self.entries: list[tuple[Path, int, dict]] = []
         for root in self.roots:
             manifest = load_manifest(root)
+            _validate_manifest_class_map(root, manifest)
             for _, row in manifest.iterrows():
                 self.entries.append((root, int(row["h5_index"]), row.to_dict()))
         if indices is not None:
@@ -23,12 +24,26 @@ class EEGProcessedDataset(Dataset):
         self.class_map = self._load_first_class_map()
 
     def _load_first_class_map(self) -> dict:
+        reference = None
         for root in self.roots:
             path = root / "class_map.json"
             if path.exists():
                 with path.open("r", encoding="utf-8") as f:
-                    return json.load(f)
-        return {}
+                    current = json.load(f)
+                if reference is None:
+                    reference = current
+                    continue
+                for label in set(reference) & set(current):
+                    left = float(reference[label]["stimulus_frequency_hz"])
+                    right = float(current[label]["stimulus_frequency_hz"])
+                    if abs(left - right) > 1e-4:
+                        raise ValueError(
+                            f"Class {label} has conflicting frequencies across processed datasets: "
+                            f"{left:g} vs {right:g} Hz. Re-run preparation with canonical frequency "
+                            "label alignment."
+                        )
+                reference = {**reference, **current}
+        return reference or {}
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -57,6 +72,31 @@ class EEGProcessedDataset(Dataset):
             reattach_flag=_bool_or_none(row.get("reattach_flag")),
             time_since_last_session_hours=_float_or_none(row.get("time_since_last_session_hours")),
         )
+
+
+def _validate_manifest_class_map(root: Path, manifest) -> None:
+    """Reject stale processed assets whose integer labels no longer mean the same frequency."""
+    path = root / "class_map.json"
+    if not path.exists():
+        return
+    with path.open("r", encoding="utf-8") as handle:
+        class_map = json.load(handle)
+    for label, rows in manifest.groupby("label"):
+        entry = class_map.get(str(int(label)))
+        if entry is None:
+            raise ValueError(
+                f"Processed dataset {root} uses label {int(label)} but class_map.json has no entry. "
+                "Re-run dataset preparation."
+            )
+        expected = float(entry["stimulus_frequency_hz"])
+        observed = rows["stimulus_frequency_hz"].astype(float).to_numpy()
+        if not np.allclose(observed, expected, atol=1e-4, rtol=0.0):
+            examples = sorted(set(float(value) for value in observed))[:5]
+            raise ValueError(
+                f"Processed dataset {root} maps label {int(label)} to {examples}, but "
+                f"class_map.json declares {expected:g} Hz. Delete this processed version and "
+                "re-run dataset preparation with canonical frequency alignment."
+            )
 
 
 def _none_if_nan(value):

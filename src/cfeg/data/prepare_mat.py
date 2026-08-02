@@ -13,7 +13,7 @@ import yaml
 from scipy.io import loadmat
 
 from cfeg.data.io_hdf5 import write_processed_hdf5
-from cfeg.data.label_mapping import write_class_map
+from cfeg.data.label_mapping import remap_source_label, write_class_map
 from cfeg.data.preprocess import CanonicalChannelMap, PreprocessConfig, preprocess_trial
 from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write_manifest
 
@@ -42,7 +42,10 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     ]
     raw_sfreq = float(cfg.get("raw_sfreq", cfg.get("sfreq", pcfg.target_sfreq)))
     n_targets = int(cfg.get("expected", {}).get("n_targets") or cfg.get("n_targets") or 0)
-    class_freqs = cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1))
+    class_freqs = [float(v) for v in (cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1)))]
+    canonical_freqs = [
+        float(v) for v in (cfg.get("canonical_class_frequencies") or class_freqs)
+    ]
     class_phases = cfg.get("class_phases")
     drop_unknown_channels = bool(cfg.get("drop_unknown_channels", False))
     dropped_unknown_names: set[str] = set()
@@ -50,9 +53,19 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     xs, masks, ys, rows = [], [], [], []
     for file in files:
         arrays = _load_arrays(file)
-        data_key, data = _select_data_array(arrays)
+        try:
+            data_key, data = _select_data_array(arrays, expected_channels=expected_channels)
+        except KeyError:
+            print(f"skipped support MAT without an EEG array: {file}")
+            continue
         trials = _to_trials_channels_time(data, expected_channels=expected_channels)
-        labels = _extract_labels(arrays, len(trials), n_targets=n_targets)
+        labels = _extract_labels(
+            arrays,
+            len(trials),
+            n_targets=n_targets,
+            data=data,
+            expected_channels=expected_channels,
+        )
         file_channel_names = _extract_channel_names(arrays, expected_channels) or channel_names
         file_class_freqs = _extract_numeric_vector(arrays, FREQUENCY_KEYS, n_targets) or class_freqs
         file_class_phases = _extract_numeric_vector(arrays, PHASE_KEYS, n_targets) or class_phases
@@ -69,15 +82,15 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     print(f"dropped unknown channel(s) from {file.name}: {', '.join(new_dropped)}")
                     dropped_unknown_names.update(new_dropped)
             placed, mask, _ids, sfreq_processed = preprocess_trial(trial, ch_names, file_raw_sfreq, pcfg, cmap)
-            label = int(labels[trial_i])
+            source_label = int(labels[trial_i])
+            label, freq = remap_source_label(source_label, file_class_freqs, canonical_freqs)
             slot_ids = ((np.arange(pcfg.c_max) + 1) * mask.astype(np.int64)).tolist()
             h5_index = len(xs)
             xs.append(placed)
             masks.append(mask)
             ys.append(label)
-            freq = float(file_class_freqs[label % len(file_class_freqs)]) if file_class_freqs else float(label)
             phase = (
-                float(file_class_phases[label % len(file_class_phases)])
+                float(file_class_phases[source_label % len(file_class_phases)])
                 if file_class_phases
                 else None
             )
@@ -123,9 +136,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     manifest = pd.DataFrame(rows, columns=REQUIRED_MANIFEST_COLUMNS)
     validate_manifest(manifest)
     write_manifest(manifest, out_dir)
-    labels_sorted = sorted(set(int(y) for y in ys))
-    freqs = [float(class_freqs[label % len(class_freqs)]) for label in labels_sorted]
-    write_class_map(freqs, out_dir)
+    write_class_map(canonical_freqs, out_dir)
     with (out_dir / "preprocess_config.yaml").open("w", encoding="utf-8") as f:
         yaml.safe_dump(pcfg.__dict__, f, sort_keys=False)
     with (out_dir / "asset_info.json").open("w", encoding="utf-8") as f:
@@ -136,7 +147,9 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                 "processed_dir": str(out_dir),
                 "created_by": "scripts/prepare_dataset.py",
                 "source": "manual .mat/.npz adapter",
-                "notes": "Raw files are not copied into the processed output.",
+                "class_alignment": "stimulus_frequency_hz",
+                "canonical_class_frequencies": canonical_freqs,
+                "notes": "Raw files are not copied; source labels are remapped by frequency.",
             },
             f,
             indent=2,
@@ -197,11 +210,15 @@ def _flatten_items(value: Any, prefix: str = "") -> dict[str, Any]:
     return flat
 
 
-def _select_data_array(arrays: dict[str, Any]) -> tuple[str, np.ndarray]:
+def _select_data_array(
+    arrays: dict[str, Any], expected_channels: int | None = None
+) -> tuple[str, np.ndarray]:
     candidates = []
     for key, value in arrays.items():
         arr = np.asarray(value)
         if key.lower() in LABEL_KEYS:
+            continue
+        if expected_channels and expected_channels not in arr.shape:
             continue
         if arr.ndim >= 2 and np.issubdtype(arr.dtype, np.number):
             candidates.append((arr.size, key, arr))
@@ -244,7 +261,14 @@ def _time_axis(shape: tuple[int, ...], channel_axis: int) -> int:
     return max(candidates)[1]
 
 
-def _extract_labels(arrays: dict[str, Any], n_trials: int, n_targets: int) -> np.ndarray:
+def _extract_labels(
+    arrays: dict[str, Any],
+    n_trials: int,
+    n_targets: int,
+    *,
+    data: np.ndarray | None = None,
+    expected_channels: int = 0,
+) -> np.ndarray:
     for key, value in arrays.items():
         if _last_key(key) in LABEL_KEYS:
             labels = np.asarray(value).squeeze().astype(int).reshape(-1)
@@ -255,7 +279,28 @@ def _extract_labels(arrays: dict[str, Any], n_trials: int, n_targets: int) -> np
                 return labels
     if n_targets <= 0:
         return np.zeros(n_trials, dtype=np.int64)
+    if data is not None:
+        inferred = _labels_from_data_shape(data, expected_channels, n_targets)
+        if inferred is not None and len(inferred) == n_trials:
+            return inferred
     return np.arange(n_trials, dtype=np.int64) % n_targets
+
+
+def _labels_from_data_shape(
+    data: np.ndarray, expected_channels: int, n_targets: int
+) -> np.ndarray | None:
+    shape = np.squeeze(np.asarray(data)).shape
+    if len(shape) < 3:
+        return None
+    channel_axis = _channel_axis(shape, expected_channels)
+    time_axis = _time_axis(shape, channel_axis)
+    trial_axes = [axis for axis in range(len(shape)) if axis not in {channel_axis, time_axis}]
+    class_axes = [axis for axis in trial_axes if shape[axis] == n_targets]
+    if len(class_axes) != 1:
+        return None
+    trial_shape = tuple(shape[axis] for axis in trial_axes)
+    class_axis_in_trials = trial_axes.index(class_axes[0])
+    return np.indices(trial_shape, dtype=np.int64)[class_axis_in_trials].reshape(-1)
 
 
 def _extract_channel_names(arrays: dict[str, Any], expected_channels: int) -> list[str] | None:

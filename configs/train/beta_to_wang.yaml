@@ -1,14 +1,19 @@
 seed: 42
-run_name: ssvep_pretrain
-output_dir: outputs/ssvep_pretrain
+run_name: beta_to_wang
+output_dir: outputs/research/beta_to_wang
 assets_config: configs/assets.yaml
 data:
   processed_dirs:
-    - ${env:EEG_DATA_ROOT}/processed/wang_v1
-    - ${env:EEG_DATA_ROOT}/processed/beta_v1
-  split: cross_subject
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+  split: cross_dataset
   batch_size: 64
   num_workers: 4
+  val_ratio: 0.2
+  train_datasets:
+  - beta
+  test_datasets:
+  - wang
 model:
   n_classes: 40
   c_max: 64
@@ -23,6 +28,8 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
+    include_continuous: true
+    include_channels: true
   adapter:
     enabled: true
     type: conditioned_feature_adapter
@@ -50,9 +57,12 @@ tracking:
     project: calibration-free-eeg
     entity: null
     mode: online
-    tags: [ssvep-pretrain]
+    tags:
+    - ssvep-pretrain
     log_model: false
     watch_model: false
+evaluation:
+  trial_time_sec: 2.0
 augment:
   make_two_views: true
   channel_dropout_prob: 0.2

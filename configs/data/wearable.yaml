@@ -1,13 +1,58 @@
 dataset_id: wearable
 raw_sfreq: 250.0
-channel_names: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+channel_names:
+- POz
+- PO3
+- PO4
+- PO5
+- PO6
+- Oz
+- O1
+- O2
 preprocess:
   target_sfreq: 200.0
-  window_start_sec: 0.14
+  window_start_sec: 0.64
   window_duration_sec: 2.0
   bandpass_low_hz: 6.0
   bandpass_high_hz: 90.0
   notch_hz: null
   normalize: per_trial_channel_zscore
   c_max: 64
-
+expected:
+  n_subjects: 102
+  n_channels: 8
+  n_targets: 12
+  n_blocks_per_electrode: 10
+  has_wet_dry: true
+  has_impedance: true
+class_frequencies:
+- 9.25
+- 9.75
+- 10.25
+- 10.75
+- 11.25
+- 11.75
+- 12.25
+- 12.75
+- 13.25
+- 13.75
+- 14.25
+- 14.75
+class_phases:
+- 0.0
+- 1.5707963267948966
+- 3.141592653589793
+- 4.71238898038469
+- 0.0
+- 1.5707963267948966
+- 3.141592653589793
+- 4.71238898038469
+- 0.0
+- 1.5707963267948966
+- 3.141592653589793
+- 4.71238898038469
+electrode_types:
+- dry
+- wet
+reference: forehead
+hardware_id: neuracle_neusenw

@@ -1,0 +1,10 @@
+run_name: cross_condition
+mode: cross_condition
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v1
+test_filter:
+  dataset_id: wearable
+  electrode_type: dry
+trial_time_sec: 2.0
+output_csv: outputs/research/wearable_wet_to_dry/eval/zero_shot.csv

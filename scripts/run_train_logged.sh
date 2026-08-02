@@ -5,7 +5,8 @@ set -euo pipefail
 # Usage:
 #   bash scripts/run_train_logged.sh --config configs/train/debug.yaml model.backbone.name=reve
 
-PROJECT_ROOT="${PROJECT_ROOT:-$HOME/work/jm020827/califreeEEG}"
+CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
 cd "$PROJECT_ROOT"
 
 log_dir="${CFEG_LOG_DIR:-$PROJECT_ROOT/outputs/logs}"
