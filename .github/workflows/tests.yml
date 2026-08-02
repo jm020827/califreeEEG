@@ -20,4 +20,4 @@ jobs:
       - name: Static syntax check
         run: python -m compileall -q src scripts tests
       - name: Unit tests
-        run: python -m pytest -q
+        run: python scripts/ci_pytest.py
