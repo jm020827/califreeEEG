@@ -35,6 +35,7 @@ artifacts/*
 # Python/cache
 __pycache__/
 .pytest_cache/
+.pytest-temp/
 .ruff_cache/
 *.egg-info/
 .venv*/

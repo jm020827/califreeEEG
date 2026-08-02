@@ -37,4 +37,4 @@ target-version = "py310"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-addopts = "--basetemp=.local/pytest-temp"
+addopts = "--basetemp=.pytest-temp"
