@@ -95,9 +95,9 @@ def _validate_manifest_class_map(root: Path, manifest) -> None:
             examples = sorted(set(float(value) for value in observed))[:5]
             raise ValueError(
                 f"Processed dataset {root} maps label {int(label)} to {examples}, but "
-                f"class_map.json declares {expected:g} Hz. Run "
-                "`bash scripts/cfeg.sh migrate-labels --apply` for legacy Wang/BETA artifacts "
-                "or re-run dataset preparation."
+                f"class_map.json declares {expected:g} Hz. Restore canonical frequency alignment "
+                "with `bash scripts/cfeg.sh migrate-labels --apply` for legacy Wang/BETA "
+                "artifacts or re-run dataset preparation."
             )
 
 
