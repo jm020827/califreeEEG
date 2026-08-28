@@ -72,32 +72,45 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             f"model.n_classes={n_classes}. Re-run preparation with the correct class map."
         )
 
-    vocab = build_vocabularies()
-    collate = partial(collate_eeg, vocabularies=vocab)
+    train_rows = (manifest.iloc[int(index)].to_dict() for index in split.train)
+    vocab = build_vocabularies(train_rows)
+    train_collate = partial(
+        collate_eeg,
+        vocabularies=vocab,
+        categorical_metadata_dropout_prob=float(
+            cfg.get("augment", {}).get("categorical_metadata_dropout_prob", 0.0)
+        ),
+    )
+    eval_collate = partial(
+        collate_eeg,
+        vocabularies=vocab,
+        categorical_metadata_dropout_prob=0.0,
+    )
     train_loader = DataLoader(
         Subset(full_ds, split.train.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=True,
         num_workers=int(cfg["data"].get("num_workers", 0)),
-        collate_fn=collate,
+        collate_fn=train_collate,
     )
     val_loader = DataLoader(
         Subset(full_ds, split.val.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=False,
         num_workers=int(cfg["data"].get("num_workers", 0)),
-        collate_fn=collate,
+        collate_fn=eval_collate,
     )
     test_loader = DataLoader(
         Subset(full_ds, split.test.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=False,
         num_workers=int(cfg["data"].get("num_workers", 0)),
-        collate_fn=collate,
+        collate_fn=eval_collate,
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = ConditionedEEGDecoder(cfg).to(device)
+    vocab_sizes = {field: len(values) for field, values in vocab.items()}
+    model = ConditionedEEGDecoder(cfg, vocab_sizes=vocab_sizes).to(device)
 
     batch = next(iter(train_loader))
     batch = _to_device(batch, device)

@@ -44,6 +44,21 @@ def test_condition_encoder_zero_prompt():
     assert cond_vec.shape == (2, 32)
 
 
+def test_condition_encoder_uses_dynamic_training_vocabulary_sizes():
+    vocab_sizes = {name: 1 for name in CATEGORICAL_VOCABS}
+    vocab_sizes["dataset_id"] = 2
+    enc = ConditionEncoder(
+        d_model=32,
+        n_prompt_tokens=2,
+        vocab_sizes=vocab_sizes,
+        n_cont_features=5,
+        channel_vocab_size=65,
+    )
+
+    assert enc.cat_embeddings["dataset_id"].num_embeddings == 2
+    for name in set(CATEGORICAL_VOCABS) - {"dataset_id"}:
+        assert enc.cat_embeddings[name].num_embeddings == 1
+
 
 def test_dataset_id_only_encoder_ignores_continuous_and_channel_metadata():
     enc = ConditionEncoder(

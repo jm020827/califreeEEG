@@ -1,28 +1,56 @@
 from __future__ import annotations
 
 import math
-from typing import Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import numpy as np
 import torch
 
-from cfeg.constants import CATEGORICAL_VOCABS
+from cfeg.constants import CATEGORICAL_VOCABS, UNKNOWN_CATEGORY
 from cfeg.data.schema import EEGSample
 
 
-def build_vocabularies(samples: list[EEGSample] | None = None) -> dict[str, dict[str, int]]:
-    vocabs = {name: {v: i for i, v in enumerate(values)} for name, values in CATEGORICAL_VOCABS.items()}
-    if samples:
+def build_vocabularies(
+    samples: Iterable[EEGSample | Mapping[str, Any]] | None = None,
+) -> dict[str, dict[str, int]]:
+    """Build categorical vocabularies with a stable unknown ID.
+
+    Passing samples builds a closed vocabulary from those samples only.  Calling
+    without samples preserves the legacy global registry used as a fallback for
+    checkpoints created before vocabularies were saved.
+    """
+    if samples is None:
+        values_by_field = CATEGORICAL_VOCABS
+    else:
+        observed = {field: set() for field in CATEGORICAL_VOCABS}
         for sample in samples:
-            for field in vocabs:
-                value = _sample_field(sample, field)
-                if value not in vocabs[field]:
-                    vocabs[field][value] = len(vocabs[field])
-    return vocabs
+            for field in observed:
+                observed[field].add(_sample_field(sample, field))
+        values_by_field = {
+            field: [UNKNOWN_CATEGORY, *sorted(values - {UNKNOWN_CATEGORY})]
+            for field, values in observed.items()
+        }
+
+    return {
+        field: {
+            value: index
+            for index, value in enumerate(
+                [UNKNOWN_CATEGORY, *(v for v in values if v != UNKNOWN_CATEGORY)]
+            )
+        }
+        for field, values in values_by_field.items()
+    }
 
 
-def collate_eeg(batch: list[EEGSample], vocabularies: Mapping[str, Mapping[str, int]] | None = None):
-    vocabs = vocabularies or build_vocabularies()
+def collate_eeg(
+    batch: list[EEGSample],
+    vocabularies: Mapping[str, Mapping[str, int]] | None = None,
+    categorical_metadata_dropout_prob: float = 0.0,
+):
+    if not 0.0 <= categorical_metadata_dropout_prob <= 1.0:
+        raise ValueError("categorical_metadata_dropout_prob must be between 0 and 1")
+    vocabs = build_vocabularies() if vocabularies is None else vocabularies
     x = torch.tensor(np.stack([b.x for b in batch]), dtype=torch.float32)
     y = torch.tensor([b.y for b in batch], dtype=torch.long)
     channel_mask = torch.tensor(np.stack([b.channel_mask for b in batch]), dtype=torch.bool)
@@ -36,10 +64,14 @@ def collate_eeg(batch: list[EEGSample], vocabularies: Mapping[str, Mapping[str, 
         "sfreq_processed_float": torch.tensor([b.sfreq for b in batch], dtype=torch.float32),
     }
     for field in CATEGORICAL_VOCABS:
-        cond[field] = torch.tensor(
+        category_ids = torch.tensor(
             [_category_id(_sample_field(b, field), vocabs[field]) for b in batch],
             dtype=torch.long,
         )
+        if categorical_metadata_dropout_prob > 0.0:
+            drop = torch.rand(category_ids.shape) < categorical_metadata_dropout_prob
+            category_ids = category_ids.masked_fill(drop, 0)
+        cond[field] = category_ids
     return {
         "x": x,
         "y": y,
@@ -53,19 +85,36 @@ def collate_eeg(batch: list[EEGSample], vocabularies: Mapping[str, Mapping[str, 
     }
 
 
-def _sample_field(sample: EEGSample, field: str) -> str:
+def _sample_field(sample: EEGSample | Mapping[str, Any], field: str) -> str:
+    value = sample.get(field) if isinstance(sample, Mapping) else getattr(sample, field, None)
     if field == "dataset_id":
-        return sample.dataset_id or "unknown"
+        return UNKNOWN_CATEGORY if _is_missing(value) else str(value)
     if field == "reattach_flag":
-        if sample.reattach_flag is None:
-            return "unknown"
-        return "true" if sample.reattach_flag else "false"
-    value = getattr(sample, field, None)
-    return str(value) if value not in {None, "", "nan"} else "unknown"
+        if _is_missing(value):
+            return UNKNOWN_CATEGORY
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"true", "1"}:
+                return "true"
+            if normalized in {"false", "0"}:
+                return "false"
+        return "true" if bool(value) else "false"
+    return UNKNOWN_CATEGORY if _is_missing(value) else str(value)
+
+
+def _is_missing(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip().lower() in {"", "nan", "<na>", "nat"}
+    try:
+        return bool(np.isnan(value))
+    except (TypeError, ValueError):
+        return str(value).strip().lower() in {"nan", "<na>", "nat"}
 
 
 def _category_id(value: str, vocab: Mapping[str, int]) -> int:
-    return int(vocab.get(value, vocab.get("unknown", 0)))
+    return int(vocab.get(value, vocab.get(UNKNOWN_CATEGORY, 0)))
 
 
 def _continuous_features(sample: EEGSample, c_max: int) -> tuple[np.ndarray, np.ndarray]:
@@ -97,4 +146,3 @@ def _norm_time(value: float | None) -> float:
     if value is None:
         return 0.0
     return float(np.clip(np.log1p(value) / np.log1p(24.0 * 30.0), 0.0, 2.0))
-

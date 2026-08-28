@@ -1,19 +1,27 @@
 DEFAULT_C_MAX = 64
 DEFAULT_TARGET_SFREQ = 200.0
+UNKNOWN_CATEGORY = "unknown"
 
 CATEGORICAL_VOCABS = {
-    "dataset_id": ["unknown", "synthetic", "wang", "beta", "wearable", "openbci"],
-    "reference": ["unknown", "average", "linked_mastoids", "cz", "forehead", "openbci_default"],
+    "dataset_id": [UNKNOWN_CATEGORY, "synthetic", "wang", "beta", "wearable", "openbci"],
+    "reference": [
+        UNKNOWN_CATEGORY,
+        "average",
+        "linked_mastoids",
+        "cz",
+        "forehead",
+        "openbci_default",
+    ],
     "hardware_id": [
-        "unknown",
+        UNKNOWN_CATEGORY,
         "public_unknown",
         "neuroscan_synamp2",
         "neuracle_neusenw",
         "openbci_cyton",
     ],
-    "cap_type": ["unknown", "wet_cap", "dry_cap", "wearable"],
-    "electrode_type": ["unknown", "wet", "dry", "gel"],
-    "reattach_flag": ["unknown", "false", "true"],
+    "cap_type": [UNKNOWN_CATEGORY, "wet_cap", "dry_cap", "wearable"],
+    "electrode_type": [UNKNOWN_CATEGORY, "wet", "dry", "gel"],
+    "reattach_flag": [UNKNOWN_CATEGORY, "false", "true"],
 }
 
 CONDITION_CATEGORICAL_FIELDS = [
@@ -35,4 +43,3 @@ LEAKAGE_FIELDS = {
     "session_id",
     "source_file",
 }
-
