@@ -1,4 +1,5 @@
 # Large data and generated artifacts
+storage/
 data/raw/*
 data/processed/*
 data/manifests/*
