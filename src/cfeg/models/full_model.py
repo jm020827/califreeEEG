@@ -72,6 +72,7 @@ class ConditionedEEGDecoder(nn.Module):
                 fields=ce_cfg.get("fields"),
                 include_continuous=bool(ce_cfg.get("include_continuous", True)),
                 include_channels=bool(ce_cfg.get("include_channels", True)),
+                force_missing=bool(ce_cfg.get("force_missing", False)),
             )
         else:
             self.condition_encoder = None

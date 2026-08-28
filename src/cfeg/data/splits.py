@@ -32,6 +32,52 @@ def make_cross_subject_split(
     return split
 
 
+def make_cross_subject_fold_split(
+    manifest: pd.DataFrame,
+    *,
+    seed: int,
+    n_folds: int,
+    fold_index: int,
+    val_ratio: float,
+) -> SplitIndices:
+    """Create one outer participant fold with source-only participant validation."""
+    groups = _subject_groups(manifest)
+    unique = np.asarray(sorted(set(groups)))
+    if n_folds < 3:
+        raise ValueError("cross-subject-fold requires at least three folds.")
+    if n_folds > len(unique):
+        raise ValueError(
+            f"cross-subject-fold has {len(unique)} subjects but n_folds={n_folds}."
+        )
+    if not 0 <= fold_index < n_folds:
+        raise ValueError(
+            f"fold_index must be within [0, {n_folds - 1}], got {fold_index}."
+        )
+    rng = np.random.default_rng(seed)
+    rng.shuffle(unique)
+    outer_folds = np.array_split(unique, n_folds)
+    test_groups = set(outer_folds[fold_index].tolist())
+    source_groups = np.asarray(
+        [group for group in unique if group not in test_groups]
+    )
+    rng.shuffle(source_groups)
+    n_val = max(1, round(len(source_groups) * val_ratio))
+    val_groups = set(source_groups[:n_val].tolist())
+    train_groups = set(source_groups[n_val:].tolist())
+    split = SplitIndices(
+        train=_indices_for_groups(groups, train_groups),
+        val=_indices_for_groups(groups, val_groups),
+        test=_indices_for_groups(groups, test_groups),
+    )
+    _ensure_nonempty(
+        split.train,
+        split.val,
+        split.test,
+        context=f"cross-subject-fold-{fold_index}",
+    )
+    return split
+
+
 def make_within_dataset_leave_subjects_out(
     manifest: pd.DataFrame, dataset_id: str, seed: int
 ) -> SplitIndices:
@@ -73,6 +119,45 @@ def make_cross_condition_split(
     return SplitIndices(train=train, val=val, test=test)
 
 
+def make_joint_subject_condition_split(
+    manifest: pd.DataFrame,
+    train_filter: dict[str, str | list[str]],
+    test_filter: dict[str, str | list[str]],
+    *,
+    seed: int = 42,
+    val_ratio: float = 0.2,
+    test_ratio: float = 0.2,
+) -> SplitIndices:
+    """Hold out both target subjects and their acquisition condition.
+
+    Only subjects represented in both filtered conditions are eligible. Their
+    identities are partitioned first; source-condition rows from the train and
+    validation identities form the corresponding splits, while target-condition
+    rows from disjoint identities form the final test split.
+    """
+
+    source_mask = _filter_mask(manifest, train_filter)
+    target_mask = _filter_mask(manifest, test_filter)
+    groups = _subject_groups(manifest)
+    eligible_groups = sorted(set(groups[source_mask]) & set(groups[target_mask]))
+    if len(eligible_groups) < 3:
+        raise ValueError(
+            "joint-subject-condition requires at least three subjects represented "
+            "in both source and target conditions."
+        )
+    train_groups, val_groups, test_groups = _split_groups(
+        np.asarray(eligible_groups),
+        seed=seed,
+        val_ratio=val_ratio,
+        test_ratio=test_ratio,
+    )
+    train = np.flatnonzero(source_mask & np.isin(groups, list(train_groups)))
+    val = np.flatnonzero(source_mask & np.isin(groups, list(val_groups)))
+    test = np.flatnonzero(target_mask & np.isin(groups, list(test_groups)))
+    _ensure_nonempty(train, val, test, context="joint-subject-condition")
+    return SplitIndices(train=train, val=val, test=test)
+
+
 def make_openbci_external_split(manifest: pd.DataFrame) -> SplitIndices:
     idx = np.arange(len(manifest))
     return SplitIndices(train=np.array([], dtype=int), val=idx, test=idx)
@@ -95,7 +180,7 @@ def _source_train_val(
     unique = np.array(sorted(set(groups)))
     rng = np.random.default_rng(seed)
     rng.shuffle(unique)
-    n_val = max(1, int(round(len(unique) * val_ratio))) if len(unique) > 1 else 0
+    n_val = max(1, round(len(unique) * val_ratio)) if len(unique) > 1 else 0
     val_groups = set(unique[:n_val])
     local_val = np.flatnonzero(np.isin(groups, list(val_groups)))
     local_train = np.flatnonzero(~np.isin(groups, list(val_groups)))
@@ -108,8 +193,8 @@ def _split_groups(
     unique = np.array(sorted(set(groups)))
     rng = np.random.default_rng(seed)
     rng.shuffle(unique)
-    n_test = max(1, int(round(len(unique) * test_ratio)))
-    n_val = max(1, int(round(len(unique) * val_ratio))) if len(unique) > 2 else 0
+    n_test = max(1, round(len(unique) * test_ratio))
+    n_val = max(1, round(len(unique) * val_ratio)) if len(unique) > 2 else 0
     test = set(unique[:n_test])
     val = set(unique[n_test : n_test + n_val])
     train = set(unique[n_test + n_val :])

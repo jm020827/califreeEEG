@@ -2,7 +2,8 @@ run_name: cross_condition
 mode: cross_condition
 data:
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/wearable_v1
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v2
+  split: test
 test_filter:
   dataset_id: wearable
   electrode_type: wet

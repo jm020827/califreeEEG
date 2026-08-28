@@ -21,9 +21,9 @@ No downloads started. Choose assets explicitly:
   CFEG_BETA_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh beta
   CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_k8s.sh
   CFEG_WANG_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh wang
+  CFEG_DONG2023_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh dong2023
 
-Use empty CFEG_BETA_SUBJECTS/CFEG_WANG_SUBJECTS for the full public dataset.
-Wearable SSVEP remains a manual Figshare download.
+Use an empty subject selector for the full public dataset.
 USAGE
   exit 0
 fi
@@ -84,21 +84,34 @@ for asset in "$@"; do
         --config configs/data/wang.yaml
       "$PYTHON" scripts/verify_assets.py --dataset wang --stage processed
       ;;
-    wearable)
-      if [[ ! -d "$EEG_DATA_ROOT/raw/wearable" ]]; then
-        echo "Download wearable SSVEP manually into $EEG_DATA_ROOT/raw/wearable" >&2
-        echo "https://figshare.com/articles/dataset/13560281" >&2
-        exit 1
+    dong2023)
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset dong2023 --raw-dir "$EEG_DATA_ROOT/raw/dong2023")
+      if [[ -n "${CFEG_DONG2023_SUBJECTS:-}" ]]; then
+        fetch_args+=(--subjects "$CFEG_DONG2023_SUBJECTS")
       fi
+      "${fetch_args[@]}"
+      "$PYTHON" scripts/prepare_dataset.py \
+        --dataset dong2023 \
+        --raw_dir "$EEG_DATA_ROOT/raw/dong2023" \
+        --out_dir "$EEG_DATA_ROOT/processed/dong2023_v1" \
+        --config configs/data/dong2023.yaml
+      "$PYTHON" scripts/verify_assets.py --dataset dong2023 --stage processed
+      ;;
+    wearable)
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wearable --raw-dir "$EEG_DATA_ROOT/raw/wearable")
+      if [[ -n "${CFEG_WEARABLE_SUBJECTS:-}" ]]; then
+        fetch_args+=(--subjects "$CFEG_WEARABLE_SUBJECTS")
+      fi
+      "${fetch_args[@]}"
       "$PYTHON" scripts/prepare_dataset.py \
         --dataset wearable \
         --raw_dir "$EEG_DATA_ROOT/raw/wearable" \
-        --out_dir "$EEG_DATA_ROOT/processed/wearable_v1" \
+        --out_dir "$EEG_DATA_ROOT/processed/wearable_v2" \
         --config configs/data/wearable.yaml
       "$PYTHON" scripts/verify_assets.py --dataset wearable --stage processed
       ;;
     *)
-      echo "Unknown asset: $asset (known: synthetic reve beta wang wearable)" >&2
+      echo "Unknown asset: $asset (known: synthetic reve beta wang dong2023 wearable)" >&2
       exit 2
       ;;
   esac

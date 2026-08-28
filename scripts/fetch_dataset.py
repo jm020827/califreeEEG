@@ -17,11 +17,17 @@ add_src_to_path()
 from cfeg.assets.registry import AssetRegistry
 
 BETA_FIGSHARE_ARTICLE_ID = 12264401
+WEARABLE_FIGSHARE_ARTICLE_ID = 13560281
+DONG2023_ZENODO_RECORD_ID = 18847318
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", required=True, choices=["beta", "wang", "wearable", "openbci"])
+    parser.add_argument(
+        "--dataset",
+        required=True,
+        choices=["beta", "wang", "wearable", "dong2023", "openbci"],
+    )
     parser.add_argument("--assets-config", default="configs/assets.yaml")
     parser.add_argument("--method", default=None)
     parser.add_argument("--raw-dir", default=None)
@@ -35,11 +41,68 @@ def main() -> None:
     if args.dataset == "openbci":
         print("openbci is local private data. Use scripts/openbci_convert.py on a local session folder.")
         return
-    if args.dataset == "wearable":
+    if args.dataset == "dong2023":
+        raw_dir = _path_arg(
+            args.raw_dir or cfg.get("raw_dir"), "$EEG_DATA_ROOT/raw/dong2023"
+        )
+        record_id = int(
+            cfg.get("zenodo_record_id") or DONG2023_ZENODO_RECORD_ID
+        )
+        record = _zenodo_record(record_id)
+        files = _select_dong2023_files(record, _parse_subjects(args.subjects))
+        total_size = sum(int(file.get("size", 0)) for file in files)
+        print(f"Dong2023 source: Zenodo record {record_id}")
+        print(f"Selected files: {len(files)} ({_format_bytes(total_size)})")
+        if args.probe_remote or args.dry_run:
+            _print_zenodo_plan(files, raw_dir)
+            return
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        with (raw_dir / "zenodo_record.json").open("w", encoding="utf-8") as f:
+            json.dump(record, f, indent=2)
+        downloaded = []
+        for file in files:
+            dst = raw_dir / str(file["key"])
+            _download_zenodo_file(file, dst, force_update=args.force_update)
+            downloaded.append(dst)
+        with (raw_dir / "downloaded_paths.txt").open("w", encoding="utf-8") as f:
+            for path in downloaded:
+                f.write(f"{path}\n")
+        print(f"Downloaded/resolved {len(downloaded)} Dong2023 file(s) under {raw_dir}.")
+        print("Next:")
         print(
-            "Wearable SSVEP is treated as manual/Figshare source. Download on storage server from:\n"
-            "  https://figshare.com/articles/dataset/An_Open_Dataset_for_Wearable_SSVEP-Based_Brain-Computer_Interfaces/13560281\n"
-            "Then place files under EEG_DATA_ROOT/raw/wearable and run verify/prepare."
+            "  python scripts/prepare_dataset.py --dataset dong2023 "
+            f"--raw_dir {raw_dir} --out_dir $EEG_DATA_ROOT/processed/dong2023_v1 "
+            "--config configs/data/dong2023.yaml"
+        )
+        return
+    if args.dataset == "wearable":
+        raw_dir = _path_arg(args.raw_dir or cfg.get("raw_dir"), "$EEG_DATA_ROOT/raw/wearable")
+        article_id = int(cfg.get("figshare_article_id") or WEARABLE_FIGSHARE_ARTICLE_ID)
+        article = _figshare_article(article_id)
+        files = _select_wearable_files(article, _parse_subjects(args.subjects))
+        total_size = sum(int(file.get("size", 0)) for file in files)
+        print(f"Wearable source: Figshare article {article_id}")
+        print(f"Selected files: {len(files)} ({_format_bytes(total_size)})")
+        if args.probe_remote or args.dry_run:
+            _print_figshare_plan(files, raw_dir)
+            return
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        with (raw_dir / "figshare_article.json").open("w", encoding="utf-8") as f:
+            json.dump(article, f, indent=2)
+        downloaded = []
+        for file in files:
+            dst = raw_dir / str(file["name"])
+            _download_figshare_file(file, dst, force_update=args.force_update)
+            downloaded.append(dst)
+        with (raw_dir / "downloaded_paths.txt").open("w", encoding="utf-8") as f:
+            for path in downloaded:
+                f.write(f"{path}\n")
+        print(f"Downloaded/resolved {len(downloaded)} wearable file(s) under {raw_dir}.")
+        print("Next:")
+        print(
+            "  python scripts/prepare_dataset.py --dataset wearable "
+            f"--raw_dir {raw_dir} --out_dir $EEG_DATA_ROOT/processed/wearable_v2 "
+            "--config configs/data/wearable.yaml"
         )
         return
     if args.dataset == "beta":
@@ -77,7 +140,7 @@ def main() -> None:
             return
         try:
             from moabb.datasets import Wang2016
-        except Exception:
+        except ImportError:
             raise SystemExit(
                 "MOABB is not installed. Install with:\n"
                 "  pip install -e '.[moabb]'\n"
@@ -125,6 +188,12 @@ def _figshare_article(article_id: int) -> dict[str, Any]:
         return json.loads(response.read().decode("utf-8"))
 
 
+def _zenodo_record(record_id: int) -> dict[str, Any]:
+    url = f"https://zenodo.org/api/records/{record_id}"
+    with urllib.request.urlopen(url) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
 def _select_beta_files(article: dict[str, Any], subjects: list[int] | None) -> list[dict[str, Any]]:
     files = []
     selected = set(subjects or [])
@@ -143,9 +212,78 @@ def _select_beta_files(article: dict[str, Any], subjects: list[int] | None) -> l
     return files
 
 
+def _select_wearable_files(
+    article: dict[str, Any], subjects: list[int] | None
+) -> list[dict[str, Any]]:
+    selected_subjects = set(subjects or [])
+    subject_files: list[dict[str, Any]] = []
+    support_files: list[dict[str, Any]] = []
+    support_names = {
+        "impedance.mat",
+        "readme.pdf",
+        "subjects_information.mat",
+        "stimulation_information.pdf",
+    }
+    for file in article.get("files", []):
+        name = str(file.get("name", ""))
+        match = re.fullmatch(r"S(\d{3})\.mat", name, flags=re.IGNORECASE)
+        if match:
+            subject = int(match.group(1))
+            if not selected_subjects or subject in selected_subjects:
+                subject_files.append({**file, "subject": subject})
+        elif name.lower() in support_names:
+            support_files.append(file)
+    subject_files.sort(key=lambda item: int(item["subject"]))
+    support_files.sort(key=lambda item: str(item["name"]).lower())
+    if not subject_files:
+        raise SystemExit("No matching wearable S###.mat files found in the Figshare article.")
+    if selected_subjects:
+        found = {int(file["subject"]) for file in subject_files}
+        missing = sorted(selected_subjects - found)
+        if missing:
+            raise SystemExit(f"Wearable subjects not found in Figshare article: {missing}")
+    return [*subject_files, *support_files]
+
+
+def _select_dong2023_files(
+    record: dict[str, Any], subjects: list[int] | None
+) -> list[dict[str, Any]]:
+    selected_subjects = set(subjects or [])
+    subject_files: list[dict[str, Any]] = []
+    support_files: list[dict[str, Any]] = []
+    for file in record.get("files", []):
+        name = str(file.get("key", ""))
+        match = re.fullmatch(r"S(\d+)\.mat", name, flags=re.IGNORECASE)
+        if match:
+            subject = int(match.group(1))
+            if not selected_subjects or subject in selected_subjects:
+                subject_files.append({**file, "subject": subject})
+        elif name.lower() in {"8-channels.mat", "59-subject.mat"}:
+            support_files.append(file)
+    subject_files.sort(key=lambda item: int(item["subject"]))
+    support_files.sort(key=lambda item: str(item["key"]).lower())
+    if not subject_files:
+        raise SystemExit("No matching Dong2023 S*.mat files found in the Zenodo record.")
+    if selected_subjects:
+        found = {int(file["subject"]) for file in subject_files}
+        missing = sorted(selected_subjects - found)
+        if missing:
+            raise SystemExit(f"Dong2023 subjects not found in Zenodo record: {missing}")
+    return [*subject_files, *support_files]
+
+
 def _print_figshare_plan(files: list[dict[str, Any]], raw_dir: Path) -> None:
     for file in files[:10]:
         print(f"  {file['name']}: {_format_bytes(int(file.get('size', 0)))}")
+    if len(files) > 10:
+        print(f"  ... {len(files) - 10} more")
+    print(f"Target raw_dir: {raw_dir}")
+    print("Run without --dry-run/--probe-remote to download.")
+
+
+def _print_zenodo_plan(files: list[dict[str, Any]], raw_dir: Path) -> None:
+    for file in files[:10]:
+        print(f"  {file['key']}: {_format_bytes(int(file.get('size', 0)))}")
     if len(files) > 10:
         print(f"  ... {len(files) - 10} more")
     print(f"Target raw_dir: {raw_dir}")
@@ -156,10 +294,11 @@ def _download_figshare_file(file: dict[str, Any], dst: Path, *, force_update: bo
     expected_size = int(file.get("size", 0) or 0)
     expected_md5 = str(file.get("computed_md5") or file.get("supplied_md5") or "")
     if dst.exists() and not force_update:
-        if expected_size and dst.stat().st_size == expected_size:
-            if not expected_md5 or _md5(dst) == expected_md5:
-                print(f"cache ok: {dst}")
-                return
+        size_matches = not expected_size or dst.stat().st_size == expected_size
+        checksum_matches = not expected_md5 or _md5(dst) == expected_md5
+        if size_matches and checksum_matches:
+            print(f"cache ok: {dst}")
+            return
         raise SystemExit(
             f"Existing file looks incomplete or mismatched: {dst}\n"
             "Rerun with --force-update to replace it."
@@ -182,6 +321,18 @@ def _download_figshare_file(file: dict[str, Any], dst: Path, *, force_update: bo
     if expected_md5 and _md5(tmp) != expected_md5:
         raise SystemExit(f"Downloaded md5 mismatch for {dst.name}")
     tmp.replace(dst)
+
+
+def _download_zenodo_file(file: dict[str, Any], dst: Path, *, force_update: bool) -> None:
+    checksum = str(file.get("checksum") or "")
+    expected_md5 = checksum.removeprefix("md5:") if checksum.startswith("md5:") else ""
+    normalized = {
+        "name": str(file["key"]),
+        "size": int(file.get("size", 0) or 0),
+        "computed_md5": expected_md5,
+        "download_url": str(file["links"]["self"]),
+    }
+    _download_figshare_file(normalized, dst, force_update=force_update)
 
 
 def _md5(path: Path) -> str:
@@ -232,9 +383,7 @@ def _flatten_paths(paths) -> list[Path]:
     for item in iterable:
         if isinstance(item, (str, os.PathLike)):
             out.append(Path(item))
-        elif isinstance(item, dict):
-            out.extend(_flatten_paths(item))
-        elif isinstance(item, (list, tuple, set)):
+        elif isinstance(item, (dict, list, tuple, set)):
             out.extend(_flatten_paths(item))
     return out
 

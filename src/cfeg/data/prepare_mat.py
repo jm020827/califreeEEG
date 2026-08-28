@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import h5py
@@ -16,7 +16,6 @@ from cfeg.data.io_hdf5 import write_processed_hdf5
 from cfeg.data.label_mapping import remap_source_label, write_class_map
 from cfeg.data.preprocess import CanonicalChannelMap, PreprocessConfig, preprocess_trial
 from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write_manifest
-
 
 LABEL_KEYS = {"label", "labels", "y", "target", "targets", "class", "classes", "class_id"}
 CHANNEL_KEYS = {"channel", "channels", "channel_names", "chan", "chans", "chanlocs", "chaninfo"}
@@ -40,6 +39,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     channel_names = cfg.get("channel_names") or [
         cmap.id_to_name.get(i + 1, f"CH{i + 1}") for i in range(expected_channels)
     ]
+    _validate_configured_channels(channel_names, expected_channels, cmap, dataset_id)
     raw_sfreq = float(cfg.get("raw_sfreq", cfg.get("sfreq", pcfg.target_sfreq)))
     n_targets = int(cfg.get("expected", {}).get("n_targets") or cfg.get("n_targets") or 0)
     class_freqs = [float(v) for v in (cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1)))]
@@ -51,6 +51,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     dropped_unknown_names: set[str] = set()
 
     xs, masks, ys, rows = [], [], [], []
+    observed_source_schemas: set[tuple[int, ...]] = set()
     for file in files:
         arrays = _load_arrays(file)
         try:
@@ -58,6 +59,8 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         except KeyError:
             print(f"skipped support MAT without an EEG array: {file}")
             continue
+        source_shape = _validate_source_schema(data, cfg, dataset_id, file)
+        observed_source_schemas.add(source_shape)
         trials = _to_trials_channels_time(data, expected_channels=expected_channels)
         labels = _extract_labels(
             arrays,
@@ -65,6 +68,19 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
             n_targets=n_targets,
             data=data,
             expected_channels=expected_channels,
+        )
+        _validate_known_subject_trials(
+            labels,
+            len(trials),
+            n_targets=n_targets,
+            n_blocks=cfg.get("expected", {}).get("n_blocks_per_subject"),
+            dataset_id=dataset_id,
+            file=file,
+        )
+        block_indices = _trial_block_indices(
+            data,
+            expected_channels=expected_channels,
+            n_targets=n_targets,
         )
         file_channel_names = _extract_channel_names(arrays, expected_channels) or channel_names
         file_class_freqs = _extract_numeric_vector(arrays, FREQUENCY_KEYS, n_targets) or class_freqs
@@ -100,8 +116,12 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     "h5_index": h5_index,
                     "dataset_id": dataset_id,
                     "subject_id": subject_id,
-                    "session_id": "unknown",
-                    "run_id": "unknown",
+                    "session_id": "session01" if block_indices is not None else "unknown",
+                    "run_id": (
+                        f"block{int(block_indices[trial_i]) + 1:02d}"
+                        if block_indices is not None
+                        else "unknown"
+                    ),
                     "trial_id": f"{trial_i:05d}",
                     "label": label,
                     "stimulus_frequency_hz": freq,
@@ -123,7 +143,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     "impedance_max_kohm": None,
                     "reattach_flag": None,
                     "time_since_last_session_hours": None,
-                    "environment_note_code": "unknown",
+                    "environment_note_code": cfg.get("environment_note_code", "unknown"),
                     "source_file": str(file),
                 }
             )
@@ -149,11 +169,105 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                 "source": "manual .mat/.npz adapter",
                 "class_alignment": "stimulus_frequency_hz",
                 "canonical_class_frequencies": canonical_freqs,
+                "observed_source_schemas": [
+                    list(shape) for shape in sorted(observed_source_schemas)
+                ],
+                "distributed_variant": cfg.get("distributed_variant"),
+                "acquisition_provenance": cfg.get("acquisition_provenance", {}),
                 "notes": "Raw files are not copied; source labels are remapped by frequency.",
             },
             f,
             indent=2,
         )
+
+
+def _validate_configured_channels(
+    channel_names: list[str],
+    expected_channels: int,
+    canonical_map: CanonicalChannelMap,
+    dataset_id: str,
+) -> None:
+    if len(channel_names) != expected_channels:
+        raise ValueError(
+            f"{dataset_id} config has {len(channel_names)} channel names, expected "
+            f"{expected_channels}."
+        )
+    channel_ids = canonical_map.get_ids(channel_names)
+    unknown = [name for name, channel_id in zip(channel_names, channel_ids) if channel_id == 0]
+    if unknown:
+        raise ValueError(f"{dataset_id} config contains unknown channels: {unknown}")
+    if len(set(channel_ids)) != len(channel_ids):
+        raise ValueError(f"{dataset_id} config maps multiple raw channels to one canonical slot.")
+
+
+def _validate_source_schema(
+    data: np.ndarray,
+    cfg: dict[str, Any],
+    dataset_id: str,
+    file: Path,
+) -> tuple[int, ...]:
+    shape = tuple(int(value) for value in np.squeeze(np.asarray(data)).shape)
+    configured = cfg.get("source_schema_variants")
+    if configured is None and cfg.get("source_schema") is not None:
+        configured = [cfg["source_schema"]]
+    if configured is not None:
+        expected = {tuple(int(value) for value in variant) for variant in configured}
+        if shape not in expected:
+            raise ValueError(
+                f"Unexpected {dataset_id} EEG schema in {file}: got {shape}, expected one of "
+                f"{sorted(expected)}. Refusing heuristic axis/label inference."
+            )
+    if not np.isfinite(data).all():
+        raise ValueError(f"{dataset_id} EEG array contains non-finite values: {file}")
+    return shape
+
+
+def _validate_known_subject_trials(
+    labels: np.ndarray,
+    n_trials: int,
+    *,
+    n_targets: int,
+    n_blocks: int | None,
+    dataset_id: str,
+    file: Path,
+) -> None:
+    if not n_blocks:
+        return
+    expected_trials = int(n_targets) * int(n_blocks)
+    if n_trials != expected_trials:
+        raise ValueError(
+            f"{dataset_id} {file.name} has {n_trials} trials, expected {n_targets} targets × "
+            f"{n_blocks} blocks = {expected_trials}."
+        )
+    counts = np.bincount(np.asarray(labels, dtype=int), minlength=n_targets)
+    if len(counts) != n_targets or not np.all(counts == int(n_blocks)):
+        raise ValueError(
+            f"{dataset_id} {file.name} label counts must be {n_blocks} per target; got "
+            f"{counts.tolist()}."
+        )
+
+
+def _trial_block_indices(
+    data: np.ndarray,
+    *,
+    expected_channels: int,
+    n_targets: int,
+) -> np.ndarray | None:
+    shape = np.squeeze(np.asarray(data)).shape
+    if len(shape) < 4 or n_targets <= 0:
+        return None
+    channel_axis = _channel_axis(shape, expected_channels)
+    time_axis = _time_axis(shape, channel_axis)
+    trial_axes = [axis for axis in range(len(shape)) if axis not in {channel_axis, time_axis}]
+    class_axes = [axis for axis in trial_axes if shape[axis] == n_targets]
+    if len(class_axes) != 1:
+        return None
+    block_axes = [axis for axis in trial_axes if axis != class_axes[0]]
+    if len(block_axes) != 1:
+        return None
+    trial_shape = tuple(shape[axis] for axis in trial_axes)
+    block_axis_in_trials = trial_axes.index(block_axes[0])
+    return np.indices(trial_shape, dtype=np.int64)[block_axis_in_trials].reshape(-1)
 
 
 def _dedupe_files(files: list[Path]) -> tuple[list[Path], list[Path]]:

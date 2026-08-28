@@ -3,13 +3,22 @@ DEFAULT_TARGET_SFREQ = 200.0
 UNKNOWN_CATEGORY = "unknown"
 
 CATEGORICAL_VOCABS = {
-    "dataset_id": [UNKNOWN_CATEGORY, "synthetic", "wang", "beta", "wearable", "openbci"],
+    "dataset_id": [
+        UNKNOWN_CATEGORY,
+        "synthetic",
+        "wang",
+        "beta",
+        "dong2023",
+        "wearable",
+        "openbci",
+    ],
     "reference": [
         UNKNOWN_CATEGORY,
         "average",
         "linked_mastoids",
         "cz",
         "forehead",
+        "fp1",
         "openbci_default",
     ],
     "hardware_id": [
@@ -20,7 +29,13 @@ CATEGORICAL_VOCABS = {
         "openbci_cyton",
     ],
     "cap_type": [UNKNOWN_CATEGORY, "wet_cap", "dry_cap", "wearable"],
-    "electrode_type": [UNKNOWN_CATEGORY, "wet", "dry", "gel"],
+    "electrode_type": [
+        UNKNOWN_CATEGORY,
+        "wet",
+        "dry",
+        "gel",
+        "pregelled_semidry",
+    ],
     "reattach_flag": [UNKNOWN_CATEGORY, "false", "true"],
 }
 

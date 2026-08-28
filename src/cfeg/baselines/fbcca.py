@@ -37,7 +37,7 @@ def _positive_integer(value: Any, name: str) -> int:
 
 def _positive_float(value: Any, name: str) -> float:
     if not isinstance(value, Real) or isinstance(value, bool):
-        raise ValueError(f"{name} must be a positive finite number, got {value!r}")
+        raise TypeError(f"{name} must be a positive finite number, got {value!r}")
     result = float(value)
     if not np.isfinite(result) or result <= 0.0:
         raise ValueError(f"{name} must be a positive finite number, got {value!r}")
@@ -46,7 +46,7 @@ def _positive_float(value: Any, name: str) -> float:
 
 def _nonnegative_float(value: Any, name: str) -> float:
     if not isinstance(value, Real) or isinstance(value, bool):
-        raise ValueError(f"{name} must be a non-negative finite number, got {value!r}")
+        raise TypeError(f"{name} must be a non-negative finite number, got {value!r}")
     result = float(value)
     if not np.isfinite(result) or result < 0.0:
         raise ValueError(f"{name} must be a non-negative finite number, got {value!r}")
@@ -274,6 +274,22 @@ def _bandpass(x: np.ndarray, sfreq: float, band: tuple[float, float], order: int
     default_padlen = 3 * (2 * len(sos) + 1)
     padlen = min(default_padlen, x.shape[-1] - 1)
     return signal.sosfiltfilt(sos, x, axis=-1, padlen=padlen)
+
+
+def resolve_filterbank_parameters(filterbank: Any, sfreq: float) -> dict[str, object]:
+    """Return the exact effective FBCCA parameters for provenance artifacts."""
+    sampling_frequency = _positive_float(sfreq, "sfreq")
+    bands, weights, order, harmonics, regularization = _validated_filterbank(
+        filterbank, sampling_frequency
+    )
+    return {
+        "filter_family": "zero_phase_butterworth_sos",
+        "bands_hz": [list(band) for band in bands],
+        "weights": weights.tolist(),
+        "order": order,
+        "n_harmonics": harmonics,
+        "regularization": regularization,
+    }
 
 
 def predict_fbcca(x, freqs, sfreq, filterbank=None):

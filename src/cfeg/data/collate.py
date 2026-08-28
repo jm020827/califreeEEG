@@ -25,8 +25,8 @@ def build_vocabularies(
     else:
         observed = {field: set() for field in CATEGORICAL_VOCABS}
         for sample in samples:
-            for field in observed:
-                observed[field].add(_sample_field(sample, field))
+            for field, values in observed.items():
+                values.add(_sample_field(sample, field))
         values_by_field = {
             field: [UNKNOWN_CATEGORY, *sorted(values - {UNKNOWN_CATEGORY})]
             for field, values in observed.items()

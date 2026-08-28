@@ -3,6 +3,7 @@ mode: cross_dataset
 data:
   processed_dirs:
   - ${env:EEG_DATA_ROOT}/processed/beta_v1
+  split: test
 test_datasets:
 - beta
 common_label_subset_only: true

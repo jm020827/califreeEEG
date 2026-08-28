@@ -1,4 +1,5 @@
 dataset_id: wearable
+dataset_revision: wearable_v2
 raw_sfreq: 250.0
 channel_names:
 - POz
@@ -27,32 +28,42 @@ expected:
   has_impedance: true
 class_frequencies:
 - 9.25
-- 9.75
-- 10.25
-- 10.75
 - 11.25
-- 11.75
-- 12.25
-- 12.75
 - 13.25
+- 9.75
+- 11.75
 - 13.75
+- 10.25
+- 12.25
 - 14.25
+- 10.75
+- 12.75
 - 14.75
 class_phases:
 - 0.0
-- 1.5707963267948966
-- 3.141592653589793
-- 4.71238898038469
+- 0.0
 - 0.0
 - 1.5707963267948966
-- 3.141592653589793
-- 4.71238898038469
-- 0.0
+- 1.5707963267948966
 - 1.5707963267948966
 - 3.141592653589793
+- 3.141592653589793
+- 3.141592653589793
+- 4.71238898038469
+- 4.71238898038469
 - 4.71238898038469
 electrode_types:
 - dry
 - wet
+impedance_electrode_types:
+- wet
+- dry
 reference: forehead
 hardware_id: neuracle_neusenw
+environment_note_code: non_shielded_non_soundproof
+acquisition_provenance:
+  acquisition_sfreq_hz: 1000
+  distributed_sfreq_hz: 250
+  reference: forehead
+  dry_electrode_geometry: multipin
+  wet_coupling: conductive_paste

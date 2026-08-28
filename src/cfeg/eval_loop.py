@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import copy
 import hashlib
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -158,8 +158,6 @@ def collect_predictions(
 
 
 def _scenarios(eval_cfg: dict, context: dict, mode: str):
-    manifest = context["manifest"]
-    all_indices = np.arange(len(manifest))
     if mode == "channel_stress":
         test_indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
         return [
@@ -170,23 +168,28 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
         test_datasets = eval_cfg.get("test_datasets") or eval_cfg.get("data", {}).get("test_datasets")
         if not test_datasets:
             raise ValueError("cross_dataset evaluation requires test_datasets.")
-        mask = manifest["dataset_id"].astype(str).isin(test_datasets).to_numpy()
-        indices = np.flatnonzero(mask)
+        indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
         if eval_cfg.get("common_label_subset_only", True):
             indices = _common_label_indices(context, indices)
         return [("zero_shot_" + "_".join(test_datasets), indices, None)]
     if mode == "cross_condition":
-        filters = eval_cfg.get("test_filter", {})
-        indices = np.flatnonzero(_manifest_filter(manifest, filters))
+        indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
         return [("zero_shot_condition", indices, None)]
     if mode == "robustness":
         test_indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
         scenarios = [("clean", test_indices, None)]
         for spec in eval_cfg.get("perturbations", []):
             name = str(spec["name"])
-            scenarios.append((name, test_indices, _robustness_perturbation(spec)))
+            kind = spec.get("type", spec.get("name"))
+            perturbation = (
+                _global_metadata_shuffle_perturbation(spec, context, test_indices)
+                if kind == "metadata_shuffle"
+                else _robustness_perturbation(spec)
+            )
+            scenarios.append((name, test_indices, perturbation))
         return scenarios
-    return [("standard", all_indices, None)]
+    test_indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
+    return [("standard", test_indices, None)]
 
 
 def _held_out_evaluation_indices(eval_cfg: dict, context: dict, *, mode: str) -> np.ndarray:
@@ -258,11 +261,24 @@ def _checkpoint_split_indices(context: dict, *, split: str) -> np.ndarray:
             f"Checkpoint split manifest {split_path} has no rows assigned to {split!r}."
         )
     manifest_ids = context["manifest"]["sample_id"].astype(str)
+    if manifest_ids.duplicated().any():
+        duplicated = sorted(manifest_ids[manifest_ids.duplicated()].unique())
+        raise ValueError(
+            "Evaluation manifest contains duplicate sample_id values, so split provenance "
+            f"is ambiguous: {duplicated[:5]}"
+        )
     indices = np.flatnonzero(manifest_ids.isin(selected_ids).to_numpy())
     if not len(indices):
         raise ValueError(
             f"No data in the evaluation manifest matches the {split!r} sample_id values from "
             f"{split_path}. Check processed_dirs and checkpoint provenance."
+        )
+    matched_ids = set(manifest_ids.iloc[indices])
+    missing_ids = sorted(selected_ids - matched_ids)
+    if missing_ids:
+        raise ValueError(
+            f"Evaluation manifest is missing {len(missing_ids)} sample_id values assigned to "
+            f"{split!r} in {split_path}: {missing_ids[:5]}"
         )
     return indices
 
@@ -338,16 +354,13 @@ def _robustness_perturbation(spec: dict):
                 channels=bool(spec.get("channels", False)),
             )
         elif kind == "metadata_shuffle":
-            order = torch.arange(x.shape[0] - 1, -1, -1, device=x.device)
-            for field in CONDITION_CATEGORICAL_FIELDS:
-                cond[field] = cond[field][order]
-            cond["continuous"] = cond["continuous"][order]
-            cond["continuous_missing"] = cond["continuous_missing"][order]
-            cond["condition_channel_ids"] = cond["channel_ids"][order]
-            cond["condition_channel_mask"] = cond["channel_mask"][order]
+            raise ValueError(
+                "metadata_shuffle requires a held-out global permutation; construct it "
+                "through robustness _scenarios rather than as a batch-local transform."
+            )
         elif kind == "downsample":
             factor = float(spec.get("factor", 0.5))
-            length = max(2, int(round(x.shape[-1] * factor)))
+            length = max(2, round(x.shape[-1] * factor))
             x = F.interpolate(
                 F.interpolate(x, size=length, mode="linear", align_corners=False),
                 size=x.shape[-1],
@@ -379,6 +392,121 @@ def _robustness_perturbation(spec: dict):
         return x, cond
 
     return apply
+
+
+def _global_metadata_shuffle_perturbation(
+    spec: dict, context: dict, selected_indices: np.ndarray
+):
+    source_indices = _metadata_shuffle_indices(
+        context["manifest"], selected_indices, seed=int(spec.get("seed", 42))
+    )
+    cursor = 0
+
+    def apply(x, cond):
+        nonlocal cursor
+        batch_size = x.shape[0]
+        batch_source_indices = source_indices[cursor : cursor + batch_size]
+        if len(batch_source_indices) != batch_size:
+            raise RuntimeError(
+                "Global metadata permutation was consumed out of order; evaluation loader "
+                "must be deterministic and unshuffled."
+            )
+        cursor += batch_size
+        source_batch = collate_eeg(
+            [context["dataset"][int(index)] for index in batch_source_indices],
+            vocabularies=context["vocab"],
+        )
+        source = source_batch["cond"]
+        shuffled = _clone_cond(cond)
+        for field in CONDITION_CATEGORICAL_FIELDS:
+            shuffled[field] = source[field].to(x.device)
+        shuffled["continuous"] = source["continuous"].to(x.device)
+        shuffled["continuous_missing"] = source["continuous_missing"].to(x.device)
+        shuffled["sfreq_processed_float"] = source["sfreq_processed_float"].to(
+            x.device
+        )
+        shuffled["condition_channel_ids"] = source["channel_ids"].to(x.device)
+        shuffled["condition_channel_mask"] = source["channel_mask"].to(x.device)
+        return x, shuffled
+
+    return apply
+
+
+def _metadata_shuffle_indices(
+    manifest: pd.DataFrame, selected_indices: np.ndarray, *, seed: int
+) -> np.ndarray:
+    """Return a fixed global metadata donor for every selected target row."""
+    selected = np.asarray(selected_indices, dtype=int)
+    if len(selected) < 2:
+        raise ValueError("metadata_shuffle requires at least two held-out samples.")
+    candidate_columns = [
+        "dataset_id",
+        "reference",
+        "hardware_id",
+        "electrode_type",
+        "cap_type",
+        "reattach_flag",
+        "sfreq_processed",
+        "n_channels_used",
+        "impedance_mean_kohm",
+        "impedance_max_kohm",
+        "time_since_last_session_hours",
+        "canonical_channel_ids",
+    ]
+    columns = [column for column in candidate_columns if column in manifest]
+    view = manifest.iloc[selected]
+    categorical_columns = [
+        column
+        for column in [
+            "dataset_id",
+            "reference",
+            "hardware_id",
+            "electrode_type",
+            "cap_type",
+            "reattach_flag",
+        ]
+        if column in view
+    ]
+    if columns:
+        signatures = (
+            view[columns]
+            .fillna("<missing>")
+            .astype(str)
+            .agg("\x1f".join, axis=1)
+            .to_numpy()
+        )
+    else:
+        signatures = np.asarray([str(index) for index in selected])
+    categorical_signatures = (
+        view[categorical_columns]
+        .fillna("<missing>")
+        .astype(str)
+        .agg("\x1f".join, axis=1)
+        .to_numpy()
+        if categorical_columns
+        else np.asarray([""] * len(selected))
+    )
+    rng = np.random.default_rng(seed)
+    positions = np.arange(len(selected))
+    best = np.roll(positions, 1)
+    best_score = (-1, -1, -1)
+    for _ in range(128):
+        candidate = rng.permutation(positions)
+        score = (
+            int(
+                np.count_nonzero(
+                    categorical_signatures != categorical_signatures[candidate]
+                )
+            ),
+            int(np.count_nonzero(signatures != signatures[candidate])),
+            int(np.count_nonzero(candidate != positions)),
+        )
+        if score > best_score:
+            best = candidate
+            best_score = score
+        if score == (len(selected), len(selected), len(selected)):
+            break
+    return selected[best]
 
 
 def _mask_condition_metadata(
@@ -418,14 +546,11 @@ def _mask_condition_metadata(
 
 def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     manifest = context["manifest"]
-    target = eval_cfg.get("test_datasets")
-    target_mask = (
-        manifest["dataset_id"].astype(str).isin(target).to_numpy()
-        if target
-        else np.ones(len(manifest), dtype=bool)
+    selected_indices = _held_out_evaluation_indices(
+        eval_cfg, context, mode="calibration"
     )
-    if eval_cfg.get("test_filter"):
-        target_mask &= _manifest_filter(manifest, eval_cfg["test_filter"])
+    target_mask = np.zeros(len(manifest), dtype=bool)
+    target_mask[selected_indices] = True
     target_groups = (
         manifest.loc[target_mask, ["dataset_id", "subject_id"]]
         .astype(str)
@@ -495,28 +620,68 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
         for indices in support_by_label.values()
     )
     rows = []
+    subject_rows: list[dict] = []
+    prediction_rows: list[dict] = []
     base_model = context["model"].to("cpu")
     for budget in budgets:
         all_y: list[np.ndarray] = []
         all_logits: list[np.ndarray] = []
         observed_query_ids: list[str] = []
+        budget_subject_scores: list[float] = []
         evaluated_subjects = 0
         support_count = 0
         for dataset_id, subject in subjects:
             support_by_label, evaluation = partitions[(dataset_id, subject)]
             calibration = _calibration_support_indices(support_by_label, budget)
+            adaptation_seed = _calibration_adaptation_seed(
+                seed, dataset_id=dataset_id, subject_id=subject, budget=budget
+            )
             support_count += len(calibration)
             if budget == 0:
                 model = base_model.to(context["device"])
             else:
                 model = copy.deepcopy(base_model).to(context["device"])
-                _calibrate_model(model, context, calibration, eval_cfg)
+                _calibrate_model(
+                    model,
+                    context,
+                    calibration,
+                    eval_cfg,
+                    seed=adaptation_seed,
+                )
             y_true, logits, sample_ids = collect_predictions(
                 model, _loader(context, evaluation), context["device"]
             )
             all_y.append(y_true)
             all_logits.append(logits)
             observed_query_ids.extend(sample_ids)
+            subject_metrics = classification_metrics(
+                y_true,
+                logits,
+                trial_time_sec=float(eval_cfg.get("trial_time_sec", 2.0)),
+            )
+            budget_subject_scores.append(float(subject_metrics["balanced_accuracy"]))
+            subject_rows.append(
+                {
+                    "dataset_id": dataset_id,
+                    "subject_id": subject,
+                    "calibration_trials_per_class": budget,
+                    "n_support_trials": len(calibration),
+                    "adaptation_seed": adaptation_seed,
+                    "query_identity_sha256": query_identity_sha256,
+                    **subject_metrics,
+                }
+            )
+            prediction_rows.extend(
+                _calibration_prediction_rows(
+                    dataset_id=dataset_id,
+                    subject_id=subject,
+                    budget=budget,
+                    query_identity_sha256=query_identity_sha256,
+                    sample_ids=sample_ids,
+                    y_true=y_true,
+                    logits=logits,
+                )
+            )
             evaluated_subjects += 1
             if budget > 0:
                 del model
@@ -544,6 +709,9 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
                 "n_query_trials": len(observed_query_ids),
                 "max_calibration_trials_per_class": max_budget,
                 "query_identity_sha256": query_identity_sha256,
+                "mean_subject_balanced_accuracy": float(np.mean(budget_subject_scores)),
+                "median_subject_balanced_accuracy": float(np.median(budget_subject_scores)),
+                "worst_subject_balanced_accuracy": float(np.min(budget_subject_scores)),
             }
         )
         rows.append(metrics)
@@ -552,12 +720,50 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     pd.DataFrame(rows).to_csv(output_csv, index=False)
     partition_csv = output_csv.with_name(f"{output_csv.stem}_partition.csv")
     pd.DataFrame(partition_rows).to_csv(partition_csv, index=False)
+    subject_csv = output_csv.with_name(f"{output_csv.stem}_subject_metrics.csv")
+    pd.DataFrame(subject_rows).to_csv(subject_csv, index=False)
+    predictions_csv = output_csv.with_name(f"{output_csv.stem}_predictions.csv")
+    pd.DataFrame(prediction_rows).to_csv(predictions_csv, index=False)
     return {
         "output_csv": str(output_csv),
         "partition_csv": str(partition_csv),
+        "subject_csv": str(subject_csv),
+        "predictions_csv": str(predictions_csv),
         "query_identity_sha256": query_identity_sha256,
         "results": rows,
     }
+
+
+def _calibration_prediction_rows(
+    *,
+    dataset_id: str,
+    subject_id: str,
+    budget: int,
+    query_identity_sha256: str,
+    sample_ids: list[str],
+    y_true: np.ndarray,
+    logits: np.ndarray,
+) -> list[dict]:
+    probabilities = torch.softmax(torch.from_numpy(logits), dim=1).numpy()
+    predictions = logits.argmax(axis=1)
+    return [
+        {
+            "dataset_id": dataset_id,
+            "subject_id": subject_id,
+            "calibration_trials_per_class": budget,
+            "query_identity_sha256": query_identity_sha256,
+            "sample_id": sample_id,
+            "label": int(label),
+            "prediction": int(prediction),
+            "confidence": float(confidence),
+        }
+        for sample_id, label, prediction, confidence in zip(
+            sample_ids,
+            y_true,
+            predictions,
+            probabilities.max(axis=1),
+        )
+    ]
 
 
 def _subject_calibration_partition(
@@ -636,7 +842,7 @@ def _calibration_support_indices(
 
 
 def _calibration_order_key(sample_id: object, *, seed: int, label: int) -> bytes:
-    value = f"{seed}\0{label}\0{sample_id}".encode("utf-8")
+    value = f"{seed}\0{label}\0{sample_id}".encode()
     return hashlib.sha256(value).digest()
 
 
@@ -667,7 +873,22 @@ def _calibration_partition_row(
     }
 
 
-def _calibrate_model(model, context: dict, indices: np.ndarray, eval_cfg: dict) -> None:
+def _calibration_adaptation_seed(
+    base_seed: int, *, dataset_id: str, subject_id: str, budget: int
+) -> int:
+    encoded = f"{base_seed}\x1f{dataset_id}\x1f{subject_id}\x1f{budget}".encode()
+    return int.from_bytes(hashlib.sha256(encoded).digest()[:4], "big")
+
+
+def _calibrate_model(
+    model,
+    context: dict,
+    indices: np.ndarray,
+    eval_cfg: dict,
+    *,
+    seed: int,
+) -> None:
+    seed_everything(seed)
     for parameter in model.parameters():
         parameter.requires_grad = False
     modules = [model.head]

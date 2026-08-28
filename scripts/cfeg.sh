@@ -12,7 +12,7 @@ Calibration-Free EEG one-click commands
 
   bash scripts/cfeg.sh setup
   bash scripts/cfeg.sh assets synthetic
-  bash scripts/cfeg.sh assets reve beta wang wearable
+  bash scripts/cfeg.sh assets reve beta wang dong2023 wearable
   bash scripts/cfeg.sh migrate-labels [--apply]
   bash scripts/cfeg.sh smoke
   bash scripts/cfeg.sh train wang-to-beta|beta-to-wang|wearable-loso|wearable-dry-to-wet|wearable-wet-to-dry|joint|synthetic
@@ -106,10 +106,15 @@ run_stress_suite() {
   local checkpoint="$1"
   local processed_dir="$2"
   local output_dir="$3"
+  local channel_override=()
+  if [[ "$processed_dir" == *wearable* ]]; then
+    channel_override+=("channel_sets=['all','wearable_native_8','occipital_4','occipital_2']")
+  fi
   python scripts/evaluate.py --config configs/eval/channel_stress.yaml \
     --ckpt "$checkpoint" \
     "data.processed_dirs=['$processed_dir']" \
-    "output_csv=$output_dir/channel_stress.csv"
+    "output_csv=$output_dir/channel_stress.csv" \
+    "${channel_override[@]}"
   python scripts/evaluate.py --config configs/eval/robustness.yaml \
     --ckpt "$checkpoint" \
     "data.processed_dirs=['$processed_dir']" \
@@ -159,8 +164,13 @@ case "$command" in
     source_runtime
     checkpoint="${1:?checkpoint is required}"
     processed_dir="${2:-data/processed/synthetic}"
+    channel_override=()
+    if [[ "$processed_dir" == *wearable* ]]; then
+      channel_override+=("channel_sets=['all','wearable_native_8','occipital_4','occipital_2']")
+    fi
     python scripts/evaluate.py --config configs/eval/channel_stress.yaml \
-      --ckpt "$checkpoint" "data.processed_dirs=['$processed_dir']"
+      --ckpt "$checkpoint" "data.processed_dirs=['$processed_dir']" \
+      "${channel_override[@]}"
     ;;
   robustness)
     source_runtime
@@ -202,38 +212,40 @@ case "$command" in
     ;;
   research)
     source_runtime
-    for required in wang_v1 beta_v1; do
-      [[ -f "$EEG_DATA_ROOT/processed/$required/signals.h5" ]] || {
-        echo "Missing $required. Run: bash scripts/cfeg.sh assets beta wang" >&2
-        exit 1
-      }
-    done
-    run_train_preset wang-to-beta
-    run_eval_preset wang-to-beta outputs/research/wang_to_beta/best.pt
+    [[ -f "$EEG_DATA_ROOT/processed/wearable_v2/signals.h5" ]] || {
+      echo "Missing wearable_v2. Run: bash scripts/cfeg.sh assets wearable" >&2
+      exit 1
+    }
+    echo "Research convenience suite runs wearable outer fold 0 only."
+    echo "Use run_ablation.py over folds 0..4 and 3-5 seeds for confirmatory results."
+    run_train_preset wearable-loso
     run_stress_suite \
-      outputs/research/wang_to_beta/best.pt \
-      "$EEG_DATA_ROOT/processed/beta_v1" \
-      outputs/research/wang_to_beta/eval
-    run_train_preset beta-to-wang
-    run_eval_preset beta-to-wang outputs/research/beta_to_wang/best.pt
-    run_stress_suite \
-      outputs/research/beta_to_wang/best.pt \
-      "$EEG_DATA_ROOT/processed/wang_v1" \
-      outputs/research/beta_to_wang/eval
-    if [[ -f "$EEG_DATA_ROOT/processed/wearable_v1/signals.h5" ]]; then
-      run_train_preset wearable-loso
+      outputs/research/wearable_subject_dg/fold0/best.pt \
+      "$EEG_DATA_ROOT/processed/wearable_v2" \
+      outputs/research/wearable_subject_dg/fold0/eval
+    run_train_preset wearable-dry-to-wet
+    run_eval_preset wearable-dry-to-wet outputs/research/wearable_dry_to_wet/best.pt
+    run_train_preset wearable-wet-to-dry
+    run_eval_preset wearable-wet-to-dry outputs/research/wearable_wet_to_dry/best.pt
+    python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
+      --ckpt outputs/research/wearable_dry_to_wet/best.pt
+
+    if [[ -f "$EEG_DATA_ROOT/processed/wang_v1/signals.h5" && \
+          -f "$EEG_DATA_ROOT/processed/beta_v1/signals.h5" ]]; then
+      run_train_preset wang-to-beta
+      run_eval_preset wang-to-beta outputs/research/wang_to_beta/best.pt
       run_stress_suite \
-        outputs/research/wearable_loso/best.pt \
-        "$EEG_DATA_ROOT/processed/wearable_v1" \
-        outputs/research/wearable_loso/eval
-      run_train_preset wearable-dry-to-wet
-      run_eval_preset wearable-dry-to-wet outputs/research/wearable_dry_to_wet/best.pt
-      run_train_preset wearable-wet-to-dry
-      run_eval_preset wearable-wet-to-dry outputs/research/wearable_wet_to_dry/best.pt
-      python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
-        --ckpt outputs/research/wearable_dry_to_wet/best.pt
+        outputs/research/wang_to_beta/best.pt \
+        "$EEG_DATA_ROOT/processed/beta_v1" \
+        outputs/research/wang_to_beta/eval
+      run_train_preset beta-to-wang
+      run_eval_preset beta-to-wang outputs/research/beta_to_wang/best.pt
+      run_stress_suite \
+        outputs/research/beta_to_wang/best.pt \
+        "$EEG_DATA_ROOT/processed/wang_v1" \
+        outputs/research/beta_to_wang/eval
     else
-      echo "Wearable data is absent; public 40-class suite completed and wearable suite was skipped."
+      echo "Wang/BETA boundary assets are incomplete; boundary suite skipped."
     fi
     ;;
   help|-h|--help) usage ;;

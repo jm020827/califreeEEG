@@ -18,12 +18,14 @@ class ConditionEncoder(nn.Module):
         fields: list[str] | None = None,
         include_continuous: bool = True,
         include_channels: bool = True,
+        force_missing: bool = False,
     ):
         super().__init__()
         self.d_model = d_model
         self.n_prompt_tokens = n_prompt_tokens
         self.include_continuous = include_continuous
         self.include_channels = include_channels
+        self.force_missing = force_missing
         selected_fields = CONDITION_CATEGORICAL_FIELDS if fields is None else fields
         self.cat_names = [
             field for field in selected_fields if field in CONDITION_CATEGORICAL_FIELDS
@@ -64,16 +66,26 @@ class ConditionEncoder(nn.Module):
         device = cond["continuous"].device
         cat_vec = torch.zeros((batch, self.d_model), device=device)
         for name in self.cat_names:
-            ids = cond[name].clamp(min=0, max=self.cat_embeddings[name].num_embeddings - 1)
+            ids = torch.zeros_like(cond[name]) if self.force_missing else cond[name]
+            ids = ids.clamp(min=0, max=self.cat_embeddings[name].num_embeddings - 1)
             cat_vec = cat_vec + self.cat_embeddings[name](ids)
         if self.include_continuous:
-            cont_in = torch.cat([cond["continuous"], cond["continuous_missing"].float()], dim=-1)
+            if self.force_missing:
+                continuous = torch.zeros_like(cond["continuous"])
+                continuous_missing = torch.ones_like(cond["continuous_missing"])
+            else:
+                continuous = cond["continuous"]
+                continuous_missing = cond["continuous_missing"]
+            cont_in = torch.cat([continuous, continuous_missing.float()], dim=-1)
             cont_vec = self.cont_mlp(cont_in)
         else:
             cont_vec = torch.zeros_like(cat_vec)
         if self.include_channels:
             condition_channel_ids = cond.get("condition_channel_ids", cond["channel_ids"])
             condition_channel_mask = cond.get("condition_channel_mask", cond["channel_mask"])
+            if self.force_missing:
+                condition_channel_ids = torch.zeros_like(condition_channel_ids)
+                condition_channel_mask = torch.zeros_like(condition_channel_mask)
             ch_emb = self.channel_embed(
                 condition_channel_ids.clamp(
                     min=0, max=self.channel_embed.num_embeddings - 1

@@ -39,7 +39,18 @@ def prepare(raw_dir: Path, out_dir: Path, cfg: dict) -> None:
     frequencies = [float(value) for value in cfg["class_frequencies"]]
     phases = [float(value) for value in cfg.get("class_phases", [0.0] * len(frequencies))]
     electrode_types = list(cfg.get("electrode_types", ["dry", "wet"]))
+    impedance_electrode_types = list(
+        cfg.get("impedance_electrode_types", ["wet", "dry"])
+    )
+    missing_impedance_types = sorted(set(electrode_types) - set(impedance_electrode_types))
+    if missing_impedance_types:
+        raise ValueError(
+            "impedance_electrode_types must map every EEG electrode type; missing "
+            f"{missing_impedance_types}."
+        )
     impedance = _load_impedance(raw_dir)
+    _validate_required_impedance(impedance, cfg)
+    require_impedance = bool(cfg.get("expected", {}).get("has_impedance", False))
 
     xs: list[np.ndarray] = []
     masks: list[np.ndarray] = []
@@ -49,8 +60,22 @@ def prepare(raw_dir: Path, out_dir: Path, cfg: dict) -> None:
         subject_index = int(re.search(r"(\d+)", file.stem).group(1)) - 1
         data = _wearable_data(_load_arrays(file))
         for electrode_index, electrode_type in enumerate(electrode_types):
+            impedance_electrode_index = _impedance_electrode_index(
+                electrode_type, impedance_electrode_types
+            )
             for block_index in range(data.shape[3]):
-                imp = _impedance_for(impedance, subject_index, electrode_index, block_index)
+                imp = _impedance_for(
+                    impedance,
+                    subject_index,
+                    impedance_electrode_index,
+                    block_index,
+                )
+                if require_impedance and imp is None:
+                    raise ValueError(
+                        "Required wearable impedance is missing or non-finite for "
+                        f"subject={subject_index + 1}, electrode={electrode_type}, "
+                        f"block={block_index + 1}."
+                    )
                 for target_index, frequency in enumerate(frequencies):
                     raw = data[:, :, electrode_index, block_index, target_index]
                     placed, mask, _ids, sfreq_processed = preprocess_trial(
@@ -91,9 +116,11 @@ def prepare(raw_dir: Path, out_dir: Path, cfg: dict) -> None:
                             "canonical_channel_ids": slot_ids,
                             "impedance_mean_kohm": None if imp is None else float(np.mean(imp)),
                             "impedance_max_kohm": None if imp is None else float(np.max(imp)),
-                            "reattach_flag": block_index == 0,
+                            "reattach_flag": None,
                             "time_since_last_session_hours": None,
-                            "environment_note_code": "unknown",
+                            "environment_note_code": cfg.get(
+                                "environment_note_code", "unknown"
+                            ),
                             "source_file": str(file),
                         }
                     )
@@ -111,13 +138,16 @@ def prepare(raw_dir: Path, out_dir: Path, cfg: dict) -> None:
         json.dump(
             {
                 "dataset_id": "wearable",
+                "dataset_revision": cfg.get("dataset_revision", "unknown"),
                 "raw_dir": str(raw_dir),
                 "processed_dir": str(out_dir),
                 "created_by": "scripts/prepare_dataset.py",
                 "source": "Figshare 13560281",
                 "schema": "[channel,time,electrode,block,target]",
                 "electrode_types": electrode_types,
+                "impedance_electrode_types": impedance_electrode_types,
                 "has_impedance": impedance is not None,
+                "acquisition_provenance": cfg.get("acquisition_provenance", {}),
             },
             handle,
             indent=2,
@@ -157,6 +187,16 @@ def _load_impedance(raw_dir: Path) -> np.ndarray | None:
     return np.moveaxis(data, axes, range(4)).astype(np.float32)
 
 
+def _validate_required_impedance(impedance: np.ndarray | None, cfg: dict) -> None:
+    if bool(cfg.get("expected", {}).get("has_impedance", False)) and impedance is None:
+        raise ValueError(
+            "configs/data/wearable.yaml requires impedance metadata, but Impedance.mat "
+            "is missing or does not contain the official 4-D [8,10,2,102] array. "
+            "Set expected.has_impedance=false only for an explicitly preregistered "
+            "metadata-exclusion run."
+        )
+
+
 def _axis_for_size(shape: tuple[int, ...], size: int) -> int:
     matches = [index for index, value in enumerate(shape) if value == size]
     if len(matches) != 1:
@@ -172,3 +212,12 @@ def _impedance_for(
     values = impedance[:, block, electrode, subject]
     values = values[np.isfinite(values)]
     return values if values.size else None
+
+
+def _impedance_electrode_index(electrode_type: str, impedance_order: list[str]) -> int:
+    try:
+        return impedance_order.index(electrode_type)
+    except ValueError as exc:
+        raise ValueError(
+            f"No impedance axis is configured for electrode_type={electrode_type!r}."
+        ) from exc

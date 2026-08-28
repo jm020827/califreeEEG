@@ -4,6 +4,7 @@ expected:
   n_subjects: 70
   n_channels: 64
   n_targets: 40
+  n_blocks_per_subject: 4
 channel_names:
 - FP1
 - FPZ
@@ -203,5 +204,17 @@ canonical_class_frequencies:
 - 15.8
 reference: cz
 hardware_id: neuroscan_synamp2
-cap_type: wet_cap
-electrode_type: gel
+cap_type: unknown
+electrode_type: unknown
+environment_note_code: non_shielded
+source_schema_variants:
+- [64, 750, 4, 40]
+- [64, 1000, 4, 40]
+distributed_variant: figshare_filtered_3_100hz
+acquisition_provenance:
+  acquisition_sfreq_hz: 1000
+  distributed_sfreq_hz: 250
+  amplifier_bandpass_hz: [0.15, 200]
+  notch_hz: 50
+  reference: cz
+  impedance_threshold_kohm: 10

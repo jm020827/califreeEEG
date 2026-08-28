@@ -17,7 +17,9 @@ from cfeg.data.preprocess import CanonicalChannelMap
 from cfeg.data.splits import (
     make_cross_condition_split,
     make_cross_dataset_split,
+    make_cross_subject_fold_split,
     make_cross_subject_split,
+    make_joint_subject_condition_split,
 )
 from cfeg.data.transforms import make_two_views
 from cfeg.losses import kl_normal, representation_consistency_loss, symmetric_kl_logits
@@ -34,20 +36,29 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     _resolve_augmentation_channel_sets(cfg)
     full_ds = EEGProcessedDataset(cfg["data"]["processed_dirs"])
     manifest = pd.DataFrame([entry[2] for entry in full_ds.entries])
+    split_seed = _resolve_split_seed(cfg)
     split_name = cfg["data"].get("split", "cross_subject")
     if split_name == "cross_subject":
         split = make_cross_subject_split(
             manifest,
-            seed=int(cfg.get("seed", 42)),
+            seed=split_seed,
             val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
             test_ratio=float(cfg["data"].get("test_ratio", 0.2)),
+        )
+    elif split_name == "cross_subject_fold":
+        split = make_cross_subject_fold_split(
+            manifest,
+            seed=split_seed,
+            n_folds=int(cfg["data"].get("n_folds", 5)),
+            fold_index=int(cfg["data"].get("fold_index", 0)),
+            val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
         )
     elif split_name == "cross_dataset":
         split = make_cross_dataset_split(
             manifest,
             train_datasets=list(cfg["data"]["train_datasets"]),
             test_datasets=list(cfg["data"]["test_datasets"]),
-            seed=int(cfg.get("seed", 42)),
+            seed=split_seed,
             val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
         )
     elif split_name == "cross_condition":
@@ -55,12 +66,22 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             manifest,
             train_filter=dict(cfg["data"]["train_filter"]),
             test_filter=dict(cfg["data"]["test_filter"]),
-            seed=int(cfg.get("seed", 42)),
+            seed=split_seed,
             val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
+        )
+    elif split_name == "joint_subject_condition":
+        split = make_joint_subject_condition_split(
+            manifest,
+            train_filter=dict(cfg["data"]["train_filter"]),
+            test_filter=dict(cfg["data"]["test_filter"]),
+            seed=split_seed,
+            val_ratio=float(cfg["data"].get("val_ratio", 0.2)),
+            test_ratio=float(cfg["data"].get("test_ratio", 0.2)),
         )
     else:
         raise ValueError(
-            f"Unknown data.split={split_name!r}; use cross_subject, cross_dataset, or cross_condition."
+            f"Unknown data.split={split_name!r}; use cross_subject, cross_subject_fold, "
+            "cross_dataset, cross_condition, or joint_subject_condition."
         )
 
     n_classes = int(cfg.get("model", {}).get("n_classes", 0))
@@ -266,6 +287,11 @@ def _resolve_augmentation_channel_sets(cfg: dict) -> None:
             raise KeyError(f"Unknown training channel set {name!r}: {sorted(registry)}")
         resolved.append(canonical.get_ids(list(registry[name])))
     augment["channel_subset_ids"] = resolved
+
+
+def _resolve_split_seed(cfg: dict) -> int:
+    """Keep participant assignment fixed across optimization/model seeds."""
+    return int(cfg.get("data", {}).get("split_seed", 42))
 
 
 def _save_split_manifest(manifest: pd.DataFrame, split, path: Path) -> None:

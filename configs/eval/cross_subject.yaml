@@ -1,5 +1,5 @@
 run_name: cross_subject
+mode: standard
 data:
-  split: cross_subject
+  split: test
 metrics: [accuracy, balanced_accuracy, macro_f1, nll, ece]
-

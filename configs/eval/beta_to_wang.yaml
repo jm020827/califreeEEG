@@ -3,6 +3,7 @@ mode: cross_dataset
 data:
   processed_dirs:
   - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  split: test
 test_datasets:
 - wang
 common_label_subset_only: true

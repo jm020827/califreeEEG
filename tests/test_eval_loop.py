@@ -6,8 +6,11 @@ import pytest
 import torch
 
 from cfeg.eval_loop import (
+    _calibration_prediction_rows,
+    _calibration_adaptation_seed,
     _calibration_support_indices,
     _held_out_evaluation_indices,
+    _metadata_shuffle_indices,
     _relative_drop,
     _robustness_perturbation,
     _sample_id_identity_sha256,
@@ -132,6 +135,39 @@ def test_calibration_fails_when_max_budget_would_consume_the_query():
         )
 
 
+def test_calibration_prediction_rows_record_query_and_subject_identity():
+    rows = _calibration_prediction_rows(
+        dataset_id="wearable",
+        subject_id="s01",
+        budget=3,
+        query_identity_sha256="abc123",
+        sample_ids=["sample-1", "sample-2"],
+        y_true=np.asarray([0, 1]),
+        logits=np.asarray([[3.0, 0.0], [0.0, 3.0]]),
+    )
+
+    assert [row["sample_id"] for row in rows] == ["sample-1", "sample-2"]
+    assert [row["prediction"] for row in rows] == [0, 1]
+    assert {row["calibration_trials_per_class"] for row in rows} == {3}
+    assert {row["query_identity_sha256"] for row in rows} == {"abc123"}
+
+
+def test_calibration_adaptation_seed_is_order_independent_and_specific() -> None:
+    first = _calibration_adaptation_seed(
+        42, dataset_id="wearable", subject_id="s01", budget=3
+    )
+
+    assert first == _calibration_adaptation_seed(
+        42, dataset_id="wearable", subject_id="s01", budget=3
+    )
+    assert first != _calibration_adaptation_seed(
+        42, dataset_id="wearable", subject_id="s02", budget=3
+    )
+    assert first != _calibration_adaptation_seed(
+        42, dataset_id="wearable", subject_id="s01", budget=5
+    )
+
+
 def test_held_out_selection_uses_checkpoint_split_csv_sample_ids(tmp_path):
     checkpoint_path = tmp_path / "run" / "best.pt"
     checkpoint_path.parent.mkdir()
@@ -156,6 +192,181 @@ def test_held_out_selection_uses_checkpoint_split_csv_sample_ids(tmp_path):
     )
 
     assert selected.tolist() == [0, 2]
+
+
+def test_calibration_selection_intersects_test_split_and_electrode_filter(tmp_path):
+    checkpoint_path = tmp_path / "joint-condition" / "best.pt"
+    checkpoint_path.parent.mkdir()
+    pd.DataFrame(
+        {
+            "sample_id": [
+                "train-dry",
+                "train-wet",
+                "val-wet",
+                "test-dry",
+                "test-wet",
+            ],
+            "split": ["train", "train", "val", "test", "test"],
+        }
+    ).to_csv(checkpoint_path.parent / "split.csv", index=False)
+    context = {
+        "checkpoint_path": checkpoint_path,
+        "manifest": pd.DataFrame(
+            {
+                "sample_id": [
+                    "train-dry",
+                    "train-wet",
+                    "val-wet",
+                    "test-dry",
+                    "test-wet",
+                ],
+                "dataset_id": ["wearable"] * 5,
+                "subject_id": ["train", "train", "val", "test", "test"],
+                "electrode_type": ["dry", "wet", "wet", "dry", "wet"],
+            }
+        ),
+    }
+
+    selected = _held_out_evaluation_indices(
+        {
+            "data": {"split": "test"},
+            "test_datasets": ["wearable"],
+            "test_filter": {"electrode_type": "wet"},
+        },
+        context,
+        mode="calibration",
+    )
+
+    selected_rows = context["manifest"].iloc[selected]
+    assert selected_rows["sample_id"].tolist() == ["test-wet"]
+    assert set(selected_rows["subject_id"]) == {"test"}
+
+
+def test_cross_condition_scenario_uses_only_test_subject_target_condition(tmp_path):
+    checkpoint_path = tmp_path / "joint-condition" / "best.pt"
+    checkpoint_path.parent.mkdir()
+    pd.DataFrame(
+        {
+            "sample_id": ["train-wet", "val-wet", "test-dry", "test-wet"],
+            "split": ["train", "val", "test", "test"],
+        }
+    ).to_csv(checkpoint_path.parent / "split.csv", index=False)
+    context = {
+        "checkpoint_path": checkpoint_path,
+        "manifest": pd.DataFrame(
+            {
+                "sample_id": ["train-wet", "val-wet", "test-dry", "test-wet"],
+                "dataset_id": ["wearable"] * 4,
+                "subject_id": ["train", "val", "test", "test"],
+                "electrode_type": ["wet", "wet", "dry", "wet"],
+            }
+        ),
+    }
+
+    scenarios = _scenarios(
+        {
+            "data": {"split": "test"},
+            "test_filter": {"dataset_id": "wearable", "electrode_type": "wet"},
+        },
+        context,
+        "cross_condition",
+    )
+
+    _, indices, perturbation = scenarios[0]
+    assert context["manifest"].iloc[indices]["sample_id"].tolist() == ["test-wet"]
+    assert perturbation is None
+
+
+def test_cross_dataset_scenario_intersects_checkpoint_test_and_target_dataset(tmp_path):
+    checkpoint_path = tmp_path / "wang-to-beta" / "best.pt"
+    checkpoint_path.parent.mkdir()
+    pd.DataFrame(
+        {
+            "sample_id": ["wang-train", "beta-test"],
+            "split": ["train", "test"],
+        }
+    ).to_csv(checkpoint_path.parent / "split.csv", index=False)
+    context = {
+        "checkpoint_path": checkpoint_path,
+        "manifest": pd.DataFrame(
+            {
+                "sample_id": ["wang-train", "beta-test"],
+                "dataset_id": ["wang", "beta"],
+                "label": [0, 0],
+            }
+        ),
+        "train_config": {"data": {"train_datasets": ["wang"]}},
+    }
+
+    scenarios = _scenarios(
+        {
+            "data": {"split": "test"},
+            "test_datasets": ["beta"],
+            "common_label_subset_only": False,
+        },
+        context,
+        "cross_dataset",
+    )
+
+    assert scenarios[0][0] == "zero_shot_beta"
+    assert context["manifest"].iloc[scenarios[0][1]]["sample_id"].tolist() == [
+        "beta-test"
+    ]
+
+
+def test_standard_scenario_refuses_implicit_whole_manifest(tmp_path):
+    context = {
+        "checkpoint_path": tmp_path / "best.pt",
+        "manifest": pd.DataFrame(
+            {
+                "sample_id": ["train-1", "test-1"],
+                "dataset_id": ["wearable", "wearable"],
+            }
+        ),
+    }
+
+    with pytest.raises(ValueError, match="no safe held-out selection"):
+        _scenarios({}, context, "standard")
+
+
+def test_metadata_shuffle_is_global_deterministic_and_changes_conditions() -> None:
+    manifest = pd.DataFrame(
+        {
+            "sample_id": [f"sample-{index}" for index in range(12)],
+            "dataset_id": ["wearable"] * 12,
+            "electrode_type": ["dry"] * 6 + ["wet"] * 6,
+            "impedance_mean_kohm": list(range(12)),
+        }
+    )
+    indices = np.arange(len(manifest))
+
+    first = _metadata_shuffle_indices(manifest, indices, seed=42)
+    second = _metadata_shuffle_indices(manifest, indices, seed=42)
+
+    np.testing.assert_array_equal(first, second)
+    assert np.count_nonzero(first != indices) == len(indices)
+    donor_electrodes = manifest.iloc[first]["electrode_type"].to_numpy()
+    target_electrodes = manifest.iloc[indices]["electrode_type"].to_numpy()
+    assert np.count_nonzero(donor_electrodes != target_electrodes) >= len(indices) // 2
+
+
+def test_held_out_selection_rejects_incomplete_checkpoint_test_manifest(tmp_path):
+    checkpoint_path = tmp_path / "run" / "best.pt"
+    checkpoint_path.parent.mkdir()
+    pd.DataFrame(
+        {"sample_id": ["test-1", "test-2"], "split": ["test", "test"]}
+    ).to_csv(checkpoint_path.parent / "split.csv", index=False)
+    context = {
+        "checkpoint_path": checkpoint_path,
+        "manifest": pd.DataFrame(
+            {"sample_id": ["test-1"], "dataset_id": ["wearable"]}
+        ),
+    }
+
+    with pytest.raises(ValueError, match="missing 1 sample_id"):
+        _held_out_evaluation_indices(
+            {"data": {"split": "test"}}, context, mode="robustness"
+        )
 
 
 def test_robustness_refuses_ambiguous_whole_manifest(tmp_path):

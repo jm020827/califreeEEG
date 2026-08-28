@@ -3,6 +3,7 @@ run_name: wang_to_beta
 output_dir: outputs/research/wang_to_beta
 assets_config: configs/assets.yaml
 data:
+  split_seed: 42
   processed_dirs:
   - ${env:EEG_DATA_ROOT}/processed/wang_v1
   - ${env:EEG_DATA_ROOT}/processed/beta_v1
@@ -28,6 +29,7 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
+    fields: [reference, electrode_type, cap_type, reattach_flag]
     include_continuous: true
     include_channels: true
   adapter:
@@ -64,6 +66,7 @@ tracking:
 evaluation:
   trial_time_sec: 2.0
 augment:
+  categorical_metadata_dropout_prob: 0.1
   make_two_views: true
   channel_dropout_prob: 0.2
   min_channels: 2

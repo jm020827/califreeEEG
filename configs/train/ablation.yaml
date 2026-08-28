@@ -1,8 +1,22 @@
 base_config: configs/train/wang_to_beta.yaml
 variants:
-  A0_eeg_only:
+  F0_backbone_linear:
     model.condition_encoder.enabled: false
     model.adapter.enabled: false
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  A0_eeg_only:
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    - reattach_flag
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: true
+    model.condition_encoder.force_missing: true
+    model.adapter.enabled: true
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
@@ -20,7 +34,6 @@ variants:
     model.condition_encoder.enabled: true
     model.condition_encoder.fields:
     - reference
-    - hardware_id
     - electrode_type
     - cap_type
     - reattach_flag
@@ -32,6 +45,11 @@ variants:
     model.condition_encoder.include_channels: true
   A3_prompt_adapter_consistency:
     model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    - reattach_flag
     model.adapter.enabled: true
     model.latent.enabled: false
     loss.lambda_cons: 0.1
@@ -40,6 +58,11 @@ variants:
     model.condition_encoder.include_channels: true
   A4_full_latent:
     model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    - reattach_flag
     model.adapter.enabled: true
     model.latent.enabled: true
     loss.lambda_cons: 0.1
@@ -48,6 +71,11 @@ variants:
     model.condition_encoder.include_channels: true
   A5_full_finetune_optional:
     model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    - reattach_flag
     model.condition_encoder.include_continuous: true
     model.condition_encoder.include_channels: true
     model.adapter.enabled: true

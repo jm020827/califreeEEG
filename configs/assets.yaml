@@ -35,8 +35,14 @@ external_sources:
     moabb_dataset: Wang2016
     note: 35 subjects, 64-channel EEG, 40-target SSVEP benchmark
     url: https://moabb.neurotechx.com/docs/generated/moabb.datasets.Wang2016.html
+  dong2023:
+    type: zenodo_or_nemar
+    zenodo_record_id: 18847318
+    note: 8-channel, 59-subject, 40-target acquisition-domain contrast for Wang/BETA
+    url: https://www.nemar.org/dataset/nm000128
   wearable:
     type: figshare_or_manual
+    figshare_article_id: 13560281
     note: 8-channel wearable SSVEP, 102 subjects, 12-target, wet/dry electrodes and impedance metadata
     url: https://figshare.com/articles/dataset/An_Open_Dataset_for_Wearable_SSVEP-Based_Brain-Computer_Interfaces/13560281
   openbci_cyton:
@@ -94,10 +100,23 @@ datasets:
     fetch:
       method: moabb
       allow_manual_fallback: true
+  dong2023:
+    type: zenodo_or_nemar
+    zenodo_record_id: 18847318
+    raw_dir: ${paths.data_root}/raw/dong2023
+    processed_dir: ${paths.data_root}/processed/dong2023_v1
+    target_sfreq: 200
+    expected:
+      n_subjects: 59
+      n_channels: 8
+      n_targets: 40
+    fetch:
+      method: zenodo
+      allow_manual_fallback: true
   wearable:
     type: figshare_or_manual
     raw_dir: ${paths.data_root}/raw/wearable
-    processed_dir: ${paths.data_root}/processed/wearable_v1
+    processed_dir: ${paths.data_root}/processed/wearable_v2
     target_sfreq: 200
     expected:
       n_subjects: 102
@@ -106,7 +125,7 @@ datasets:
       has_wet_dry: true
       has_impedance: true
     fetch:
-      method: manual_or_figshare
+      method: figshare
       allow_manual_fallback: true
   openbci:
     type: local_private

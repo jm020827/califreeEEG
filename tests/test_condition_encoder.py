@@ -13,7 +13,7 @@ def _cond(batch=2, c=64):
         "channel_ids": torch.arange(c).unsqueeze(0).repeat(batch, 1),
         "channel_mask": torch.ones(batch, c, dtype=torch.bool),
     }
-    for name, values in CATEGORICAL_VOCABS.items():
+    for name in CATEGORICAL_VOCABS:
         cond[name] = torch.zeros(batch, dtype=torch.long)
     return cond
 
@@ -105,3 +105,29 @@ def test_condition_channel_override_masks_prompt_metadata_only():
     assert not torch.allclose(prompt_full, prompt_masked)
     torch.testing.assert_close(masked["channel_ids"], cond["channel_ids"])
     torch.testing.assert_close(masked["channel_mask"], cond["channel_mask"])
+
+
+def test_force_missing_is_an_architecture_matched_metadata_null_control():
+    encoder = ConditionEncoder(
+        d_model=16,
+        n_prompt_tokens=2,
+        vocab_sizes={name: len(values) for name, values in CATEGORICAL_VOCABS.items()},
+        n_cont_features=5,
+        channel_vocab_size=65,
+        fields=["reference", "electrode_type", "cap_type", "reattach_flag"],
+        force_missing=True,
+    ).eval()
+    first = _cond(batch=2, c=4)
+    second = {key: value.clone() for key, value in first.items()}
+    for name in CATEGORICAL_VOCABS:
+        second[name].fill_(1)
+    second["continuous"].fill_(9.0)
+    second["continuous_missing"].fill_(False)
+    second["channel_ids"] = torch.flip(second["channel_ids"], dims=[1])
+    second["channel_mask"][:, 0] = False
+
+    first_prompt, first_vector = encoder(first)
+    second_prompt, second_vector = encoder(second)
+
+    torch.testing.assert_close(first_prompt, second_prompt)
+    torch.testing.assert_close(first_vector, second_vector)

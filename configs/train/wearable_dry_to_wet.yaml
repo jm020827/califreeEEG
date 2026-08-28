@@ -3,10 +3,12 @@ run_name: wearable_dry_to_wet
 output_dir: outputs/research/wearable_dry_to_wet
 assets_config: configs/assets.yaml
 data:
+  split_seed: 42
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/wearable_v1
-  split: cross_condition
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v2
+  split: joint_subject_condition
   val_ratio: 0.2
+  test_ratio: 0.2
   batch_size: 64
   num_workers: 4
   train_filter:
@@ -29,6 +31,7 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
+    fields: [reference, electrode_type, cap_type, reattach_flag]
     include_continuous: true
     include_channels: true
   adapter:
@@ -66,10 +69,11 @@ tracking:
 evaluation:
   trial_time_sec: 2.0
 augment:
+  categorical_metadata_dropout_prob: 0.1
   make_two_views: true
   channel_dropout_prob: 0.2
   min_channels: 2
-  channel_sets: [occipital_8, occipital_4, occipital_2]
+  channel_sets: [wearable_native_8, occipital_4, occipital_2]
   channel_subset_prob: 0.75
   noise_std_range: [0.01, 0.05]
   time_shift_samples: 8

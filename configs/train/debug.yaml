@@ -3,6 +3,7 @@ run_name: debug
 output_dir: outputs/debug
 assets_config: configs/assets.yaml
 data:
+  split_seed: 42
   processed_dirs: [data/processed/synthetic]
   split: cross_subject
   val_ratio: 0.2
@@ -23,6 +24,7 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
+    fields: [reference, electrode_type, cap_type, reattach_flag]
   adapter:
     enabled: true
     type: conditioned_feature_adapter
@@ -46,6 +48,7 @@ loss:
   beta_kl: 0.001
   ce_zero_weight: 0.5
 augment:
+  categorical_metadata_dropout_prob: 0.1
   make_two_views: true
   channel_dropout_prob: 0.2
   min_channels: 2

@@ -1,5 +1,9 @@
 occipital_8: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+wearable_8: [POz, PO3, PO4, PO5, PO6, Oz, O1, O2]
+wearable_native_8: [POz, PO3, PO4, PO5, PO6, Oz, O1, O2]
+dong_native_8: [POz, PO3, PO4, PO7, PO8, Oz, O1, O2]
+wang_beta_posterior_9: [Pz, PO5, PO3, POz, PO4, PO6, O1, Oz, O2]
+cross_dataset_common_6: [PO3, POz, PO4, O1, Oz, O2]
 occipital_4: [POz, O1, Oz, O2]
 occipital_2: [O1, O2]
 openbci_default_8: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
-
