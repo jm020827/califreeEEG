@@ -4,6 +4,7 @@ mode: robustness
 data:
   processed_dirs:
   - data/processed/synthetic
+  split: test
 trial_time_sec: 2.0
 perturbations:
 - name: metadata_missing_25pct

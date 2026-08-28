@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from functools import partial
 from pathlib import Path
 from typing import Callable
@@ -107,7 +108,8 @@ def run_channel_stress_eval(eval_cfg: dict, ckpt_path: str | Path) -> dict:
 
 
 def load_evaluation_context(eval_cfg: dict, ckpt_path: str | Path) -> dict:
-    ckpt = load_checkpoint(ckpt_path, map_location="cpu")
+    checkpoint_path = Path(ckpt_path).expanduser().resolve()
+    ckpt = load_checkpoint(checkpoint_path, map_location="cpu")
     cfg = ckpt["config"]
     data_dirs = eval_cfg.get("data", {}).get("processed_dirs") or cfg["data"]["processed_dirs"]
     dataset = EEGProcessedDataset(data_dirs)
@@ -120,6 +122,7 @@ def load_evaluation_context(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     manifest = pd.DataFrame([entry[2] for entry in dataset.entries])
     return {
         "checkpoint": ckpt,
+        "checkpoint_path": checkpoint_path,
         "train_config": cfg,
         "dataset": dataset,
         "manifest": manifest,
@@ -158,8 +161,9 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
     manifest = context["manifest"]
     all_indices = np.arange(len(manifest))
     if mode == "channel_stress":
+        test_indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
         return [
-            (name, all_indices, _channel_perturbation(name))
+            (name, test_indices, _channel_perturbation(name))
             for name in eval_cfg.get("channel_sets", ["all"])
         ]
     if mode == "cross_dataset":
@@ -176,12 +180,91 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
         indices = np.flatnonzero(_manifest_filter(manifest, filters))
         return [("zero_shot_condition", indices, None)]
     if mode == "robustness":
-        scenarios = [("clean", all_indices, None)]
+        test_indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
+        scenarios = [("clean", test_indices, None)]
         for spec in eval_cfg.get("perturbations", []):
             name = str(spec["name"])
-            scenarios.append((name, all_indices, _robustness_perturbation(spec)))
+            scenarios.append((name, test_indices, _robustness_perturbation(spec)))
         return scenarios
     return [("standard", all_indices, None)]
+
+
+def _held_out_evaluation_indices(eval_cfg: dict, context: dict, *, mode: str) -> np.ndarray:
+    """Resolve an auditable held-out selection for robustness-style evaluations."""
+    manifest = context["manifest"]
+    data_cfg = eval_cfg.get("data", {})
+    split_name = data_cfg.get("split")
+    test_datasets = eval_cfg.get("test_datasets") or data_cfg.get("test_datasets")
+    test_filter = eval_cfg.get("test_filter") or data_cfg.get("test_filter")
+
+    if split_name is not None and str(split_name) != "test":
+        raise ValueError(
+            f"{mode} data.split must be 'test', got {split_name!r}. "
+            "Use the checkpoint's held-out split or declare test_datasets/test_filter."
+        )
+    if split_name is None and not test_datasets and not test_filter:
+        raise ValueError(
+            f"{mode} evaluation has no safe held-out selection. Refusing to evaluate the "
+            "entire manifest because it may mix train/val/test rows. Set data.split: test "
+            "to use the checkpoint-adjacent split.csv, or declare test_datasets/test_filter."
+        )
+
+    mask = np.ones(len(manifest), dtype=bool)
+    if split_name == "test":
+        split_indices = _checkpoint_split_indices(context, split="test")
+        split_mask = np.zeros(len(manifest), dtype=bool)
+        split_mask[split_indices] = True
+        mask &= split_mask
+    if test_datasets:
+        values = test_datasets if isinstance(test_datasets, list) else [test_datasets]
+        mask &= manifest["dataset_id"].astype(str).isin([str(value) for value in values]).to_numpy()
+    if test_filter:
+        mask &= _manifest_filter(manifest, test_filter)
+
+    selected = np.flatnonzero(mask)
+    if not len(selected):
+        raise ValueError(
+            f"{mode} held-out selection contains no samples after applying split and "
+            "target filters."
+        )
+    return selected
+
+
+def _checkpoint_split_indices(context: dict, *, split: str) -> np.ndarray:
+    checkpoint_path = Path(context["checkpoint_path"])
+    split_path = checkpoint_path.parent / "split.csv"
+    if not split_path.exists():
+        raise FileNotFoundError(
+            f"Requested data.split={split!r}, but checkpoint split manifest is missing: "
+            f"{split_path}. Declare an explicit test_datasets/test_filter only when the "
+            "evaluation manifest is independently known to be held out."
+        )
+    table = pd.read_csv(split_path, dtype=str)
+    required = {"sample_id", "split"}
+    missing = sorted(required - set(table.columns))
+    if missing:
+        raise ValueError(f"Checkpoint split manifest {split_path} is missing columns: {missing}")
+    if table["sample_id"].duplicated().any():
+        duplicated = sorted(table.loc[table["sample_id"].duplicated(), "sample_id"].unique())
+        raise ValueError(
+            f"Checkpoint split manifest {split_path} contains duplicate sample_id values: "
+            f"{duplicated[:5]}"
+        )
+    selected_ids = set(
+        table.loc[table["split"].astype(str).str.lower().eq(split.lower()), "sample_id"].astype(str)
+    )
+    if not selected_ids:
+        raise ValueError(
+            f"Checkpoint split manifest {split_path} has no rows assigned to {split!r}."
+        )
+    manifest_ids = context["manifest"]["sample_id"].astype(str)
+    indices = np.flatnonzero(manifest_ids.isin(selected_ids).to_numpy())
+    if not len(indices):
+        raise ValueError(
+            f"No data in the evaluation manifest matches the {split!r} sample_id values from "
+            f"{split_path}. Check processed_dirs and checkpoint provenance."
+        )
+    return indices
 
 
 def _loader(context: dict, indices: np.ndarray) -> DataLoader:
@@ -343,40 +426,106 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     )
     if eval_cfg.get("test_filter"):
         target_mask &= _manifest_filter(manifest, eval_cfg["test_filter"])
-    subjects = sorted(manifest.loc[target_mask, "subject_id"].astype(str).unique())
+    target_groups = (
+        manifest.loc[target_mask, ["dataset_id", "subject_id"]]
+        .astype(str)
+        .drop_duplicates()
+        .sort_values(["dataset_id", "subject_id"])
+    )
+    subjects = list(target_groups.itertuples(index=False, name=None))
     max_subjects = eval_cfg.get("max_subjects")
     if max_subjects:
         subjects = subjects[: int(max_subjects)]
+    if not subjects:
+        raise ValueError("Calibration target filters contain no subjects.")
+
+    budgets = [
+        int(value)
+        for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])
+    ]
+    if not budgets:
+        raise ValueError("calibration_trials_per_class must contain at least one budget.")
+    if any(budget < 0 for budget in budgets):
+        raise ValueError(f"Calibration budgets must be non-negative, got {budgets}.")
+    max_budget = max(budgets)
+    seed = int(eval_cfg.get("seed", 42))
+
+    partitions: dict[
+        tuple[str, str], tuple[dict[int, np.ndarray], np.ndarray]
+    ] = {}
+    partition_rows: list[dict] = []
+    all_query_indices: list[np.ndarray] = []
+    for dataset_id, subject in subjects:
+        subject_indices = np.flatnonzero(
+            target_mask
+            & manifest["dataset_id"].astype(str).eq(dataset_id).to_numpy()
+            & manifest["subject_id"].astype(str).eq(subject).to_numpy()
+        )
+        support_by_label, query = _subject_calibration_partition(
+            manifest,
+            subject_indices,
+            max_budget=max_budget,
+            seed=seed,
+        )
+        partitions[(dataset_id, subject)] = (support_by_label, query)
+        all_query_indices.append(query)
+        for support_pool in support_by_label.values():
+            for rank, index in enumerate(support_pool, start=1):
+                partition_rows.append(
+                    _calibration_partition_row(
+                        manifest,
+                        int(index),
+                        partition="support_pool",
+                        support_rank=rank,
+                    )
+                )
+        for index in query:
+            partition_rows.append(
+                _calibration_partition_row(
+                    manifest, int(index), partition="query", support_rank=None
+                )
+            )
+
+    fixed_query_indices = np.concatenate(all_query_indices)
+    fixed_query_ids = manifest.iloc[fixed_query_indices]["sample_id"].astype(str).tolist()
+    query_identity_sha256 = _sample_id_identity_sha256(fixed_query_ids)
+    support_pool_count = sum(
+        len(indices)
+        for support_by_label, _ in partitions.values()
+        for indices in support_by_label.values()
+    )
     rows = []
     base_model = context["model"].to("cpu")
-    for budget in [int(value) for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])]:
+    for budget in budgets:
         all_y: list[np.ndarray] = []
         all_logits: list[np.ndarray] = []
+        observed_query_ids: list[str] = []
         evaluated_subjects = 0
-        for subject in subjects:
-            subject_indices = np.flatnonzero(
-                target_mask & manifest["subject_id"].astype(str).eq(subject).to_numpy()
-            )
-            calibration, evaluation = _subject_calibration_indices(
-                manifest, subject_indices, budget, seed=int(eval_cfg.get("seed", 42))
-            )
-            if not len(evaluation):
-                continue
+        support_count = 0
+        for dataset_id, subject in subjects:
+            support_by_label, evaluation = partitions[(dataset_id, subject)]
+            calibration = _calibration_support_indices(support_by_label, budget)
+            support_count += len(calibration)
             if budget == 0:
                 model = base_model.to(context["device"])
             else:
                 model = copy.deepcopy(base_model).to(context["device"])
                 _calibrate_model(model, context, calibration, eval_cfg)
-            y_true, logits, _ = collect_predictions(
+            y_true, logits, sample_ids = collect_predictions(
                 model, _loader(context, evaluation), context["device"]
             )
             all_y.append(y_true)
             all_logits.append(logits)
+            observed_query_ids.extend(sample_ids)
             evaluated_subjects += 1
             if budget > 0:
                 del model
-        if not all_y:
-            continue
+        observed_query_sha256 = _sample_id_identity_sha256(observed_query_ids)
+        if observed_query_sha256 != query_identity_sha256:
+            raise RuntimeError(
+                "Calibration query identity changed during evaluation; refusing incomparable "
+                f"results for k={budget}."
+            )
         base_model.to("cpu")
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -390,29 +539,132 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
                 "mode": "calibration",
                 "calibration_trials_per_class": budget,
                 "n_subjects": evaluated_subjects,
+                "n_support_trials": support_count,
+                "n_support_pool_trials": support_pool_count,
+                "n_query_trials": len(observed_query_ids),
+                "max_calibration_trials_per_class": max_budget,
+                "query_identity_sha256": query_identity_sha256,
             }
         )
         rows.append(metrics)
     output_csv = _output_path(eval_cfg, context, "calibration")
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(output_csv, index=False)
-    return {"output_csv": str(output_csv), "results": rows}
+    partition_csv = output_csv.with_name(f"{output_csv.stem}_partition.csv")
+    pd.DataFrame(partition_rows).to_csv(partition_csv, index=False)
+    return {
+        "output_csv": str(output_csv),
+        "partition_csv": str(partition_csv),
+        "query_identity_sha256": query_identity_sha256,
+        "results": rows,
+    }
+
+
+def _subject_calibration_partition(
+    manifest: pd.DataFrame,
+    indices: np.ndarray,
+    *,
+    max_budget: int,
+    seed: int,
+) -> tuple[dict[int, np.ndarray], np.ndarray]:
+    if max_budget < 0:
+        raise ValueError(f"max_budget must be non-negative, got {max_budget}.")
+    support_by_label: dict[int, np.ndarray] = {}
+    query: list[int] = []
+    for label in sorted(manifest.iloc[indices]["label"].astype(int).unique()):
+        label_mask = manifest.iloc[indices]["label"].astype(int).to_numpy() == label
+        candidates = indices[label_mask].copy()
+        candidates = np.asarray(
+            sorted(
+                candidates.tolist(),
+                key=lambda index: _calibration_order_key(
+                    manifest.iloc[int(index)]["sample_id"], seed=seed, label=label
+                ),
+            ),
+            dtype=int,
+        )
+        if len(candidates) <= max_budget:
+            subject_values = sorted(
+                set(manifest.iloc[indices]["subject_id"].astype(str).tolist())
+            )
+            subject = ",".join(subject_values)
+            raise ValueError(
+                f"Calibration subject {subject!r}, label {label} has {len(candidates)} trials, "
+                f"but max k={max_budget} would leave no fixed query trial. At least "
+                f"{max_budget + 1} trials per subject and label are required."
+            )
+        support_by_label[int(label)] = candidates[:max_budget]
+        query.extend(candidates[max_budget:].tolist())
+    if not query:
+        raise ValueError("Calibration partition leaves no fixed query samples.")
+    return support_by_label, np.asarray(query, dtype=int)
 
 
 def _subject_calibration_indices(
-    manifest: pd.DataFrame, indices: np.ndarray, budget: int, *, seed: int
+    manifest: pd.DataFrame,
+    indices: np.ndarray,
+    budget: int,
+    *,
+    seed: int,
+    max_budget: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    if budget <= 0:
-        return np.array([], dtype=int), indices
-    rng = np.random.default_rng(seed)
-    calibration: list[int] = []
-    evaluation: list[int] = []
-    for label in sorted(manifest.iloc[indices]["label"].astype(int).unique()):
-        candidates = indices[manifest.iloc[indices]["label"].astype(int).to_numpy() == label].copy()
-        rng.shuffle(candidates)
-        calibration.extend(candidates[:budget].tolist())
-        evaluation.extend(candidates[budget:].tolist())
-    return np.asarray(calibration, dtype=int), np.asarray(evaluation, dtype=int)
+    """Compatibility wrapper that supports a fixed max-budget partition."""
+    reserved_budget = budget if max_budget is None else max_budget
+    if budget > reserved_budget:
+        raise ValueError(
+            f"Calibration budget k={budget} exceeds reserved max budget k={reserved_budget}."
+        )
+    support_by_label, query = _subject_calibration_partition(
+        manifest, indices, max_budget=reserved_budget, seed=seed
+    )
+    return _calibration_support_indices(support_by_label, budget), query
+
+
+def _calibration_support_indices(
+    support_by_label: dict[int, np.ndarray], budget: int
+) -> np.ndarray:
+    if budget < 0:
+        raise ValueError(f"Calibration budget must be non-negative, got {budget}.")
+    if any(budget > len(indices) for indices in support_by_label.values()):
+        maximum = min((len(indices) for indices in support_by_label.values()), default=0)
+        raise ValueError(
+            f"Calibration budget k={budget} exceeds reserved support pool k={maximum}."
+        )
+    selected = [indices[:budget] for _, indices in sorted(support_by_label.items())]
+    nonempty = [indices for indices in selected if len(indices)]
+    return np.concatenate(nonempty) if nonempty else np.array([], dtype=int)
+
+
+def _calibration_order_key(sample_id: object, *, seed: int, label: int) -> bytes:
+    value = f"{seed}\0{label}\0{sample_id}".encode("utf-8")
+    return hashlib.sha256(value).digest()
+
+
+def _sample_id_identity_sha256(sample_ids: list[str]) -> str:
+    digest = hashlib.sha256()
+    for sample_id in sorted(str(value) for value in sample_ids):
+        encoded = sample_id.encode("utf-8")
+        digest.update(len(encoded).to_bytes(8, byteorder="big", signed=False))
+        digest.update(encoded)
+    return digest.hexdigest()
+
+
+def _calibration_partition_row(
+    manifest: pd.DataFrame,
+    index: int,
+    *,
+    partition: str,
+    support_rank: int | None,
+) -> dict:
+    row = manifest.iloc[index]
+    return {
+        "sample_id": str(row["sample_id"]),
+        "dataset_id": str(row["dataset_id"]),
+        "subject_id": str(row["subject_id"]),
+        "label": int(row["label"]),
+        "partition": partition,
+        "support_rank": support_rank,
+    }
 
 
 def _calibrate_model(model, context: dict, indices: np.ndarray, eval_cfg: dict) -> None:
