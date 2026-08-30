@@ -1,0 +1,96 @@
+seed: 42
+run_name: wearable_development
+output_dir: outputs/development/wearable_v3
+assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  governance_required: true
+  execution_phase: development
+  analysis_plan: configs/analysis/wearable_primary.yaml
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  external_continuous_schema: impedance_mean_max_v1
+data:
+  cohort_role: development
+  split_seed: 42
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v3
+  expected_revisions:
+    wearable: wearable_v3
+  expected_dataset_counts:
+    wearable:
+      n_samples: 24480
+      n_subjects: 102
+      n_targets: 12
+  require_audit_receipt: true
+  split: cross_subject_train_val
+  val_ratio: 0.34
+  batch_size: 16
+  eval_batch_size: 16
+  num_workers: 4
+  persistent_workers: false
+  pin_memory: true
+  persistent_hdf5_handles: true
+  preload_hdf5_to_memory: true
+model:
+  n_classes: 12
+  c_max: 64
+  target_sfreq: 200
+  t_len: 400
+  d_model: 256
+  patch_size: 20
+  depth: 6
+  n_heads: 8
+  backbone:
+    name: tiny_transformer
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+    fields: [reference, electrode_type, cap_type]
+    include_continuous: true
+    include_channels: false
+    external_metadata_mode: observed
+  adapter:
+    enabled: true
+    type: conditioned_feature_adapter
+    bottleneck_dim: 64
+  latent:
+    enabled: true
+    z_dim: 16
+train:
+  epochs: 100
+  lr: 0.0003
+  weight_decay: 0.01
+  amp: true
+  grad_clip_norm: 1.0
+  early_stop_patience: 15
+checkpoint:
+  save_trainable_only: true
+loss:
+  lambda_cons: 0.1
+  lambda_logit_cons: 0.05
+  beta_kl: 0.001
+  ce_zero_weight: 0.5
+tracking:
+  wandb:
+    enabled: false
+    project: calibration-free-eeg
+    entity: null
+    mode: online
+    tags: [wearable, development-only, s1-s3]
+    log_model: false
+    watch_model: false
+evaluation:
+  trial_time_sec: 2.0
+  open_test: false
+runtime:
+  device: cuda
+  probe_cuda: true
+augment:
+  categorical_metadata_dropout_prob: 0.1
+  make_two_views: true
+  channel_dropout_prob: 0.2
+  min_channels: 2
+  channel_sets: [wearable_native_8, occipital_4, occipital_2]
+  channel_subset_prob: 0.75
+  noise_std_range: [0.01, 0.05]
+  time_shift_samples: 8

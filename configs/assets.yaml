@@ -27,22 +27,25 @@ external_sources:
     url: https://huggingface.co/brain-bzh/reve-positions
   beta:
     figshare_article_id: 12264401
+    figshare_article_version: 3
     type: figshare_or_manual
     note: 64-channel EEG, 70 subjects, 40-target SSVEP
     url: https://figshare.com/articles/dataset/The_BETA_database/12264401
   wang:
-    type: moabb_or_manual
-    moabb_dataset: Wang2016
-    note: 35 subjects, 64-channel EEG, 40-target SSVEP benchmark
-    url: https://moabb.neurotechx.com/docs/generated/moabb.datasets.Wang2016.html
+    type: zenodo_or_manual
+    zenodo_record_id: 14865172
+    note: Public Zenodo MOABB re-upload; 35 subjects, 64-channel EEG, 40-target SSVEP benchmark; verify upstream rights before redistribution
+    url: https://zenodo.org/records/14865172
   dong2023:
     type: zenodo_or_nemar
     zenodo_record_id: 18847318
-    note: 8-channel, 59-subject, 40-target acquisition-domain contrast for Wang/BETA
+    note: Public Zenodo mirror and NEMAR distribution; 8-channel, 59-subject, 40-target acquisition-domain contrast for Wang/BETA
     url: https://www.nemar.org/dataset/nm000128
   wearable:
     type: figshare_or_manual
+    dataset_revision: wearable_v3
     figshare_article_id: 13560281
+    figshare_article_version: 4
     note: 8-channel wearable SSVEP, 102 subjects, 12-target, wet/dry electrodes and impedance metadata
     url: https://figshare.com/articles/dataset/An_Open_Dataset_for_Wearable_SSVEP-Based_Brain-Computer_Interfaces/13560281
   openbci_cyton:
@@ -77,10 +80,12 @@ datasets:
   beta:
     type: figshare_or_manual
     figshare_article_id: 12264401
+    figshare_article_version: 3
     raw_dir: ${paths.data_root}/raw/beta
     processed_dir: ${paths.data_root}/processed/beta_v1
     target_sfreq: 200
     expected:
+      n_samples: 11200
       n_subjects: 70
       n_channels: 64
       n_targets: 40
@@ -88,17 +93,18 @@ datasets:
       method: figshare
       allow_manual_fallback: true
   wang:
-    type: moabb_or_manual
-    moabb_dataset: Wang2016
+    type: zenodo_or_manual
+    zenodo_record_id: 14865172
     raw_dir: ${paths.data_root}/raw/wang
     processed_dir: ${paths.data_root}/processed/wang_v1
     target_sfreq: 200
     expected:
+      n_samples: 8400
       n_subjects: 35
       n_channels: 64
       n_targets: 40
     fetch:
-      method: moabb
+      method: zenodo
       allow_manual_fallback: true
   dong2023:
     type: zenodo_or_nemar
@@ -107,6 +113,7 @@ datasets:
     processed_dir: ${paths.data_root}/processed/dong2023_v1
     target_sfreq: 200
     expected:
+      n_samples: 9440
       n_subjects: 59
       n_channels: 8
       n_targets: 40
@@ -115,10 +122,20 @@ datasets:
       allow_manual_fallback: true
   wearable:
     type: figshare_or_manual
+    dataset_revision: wearable_v3
+    figshare_article_id: 13560281
+    figshare_article_version: 4
     raw_dir: ${paths.data_root}/raw/wearable
-    processed_dir: ${paths.data_root}/processed/wearable_v2
+    processed_dir: ${paths.data_root}/processed/wearable_v3
     target_sfreq: 200
+    required_manifest_columns:
+    - query_signal_std
+    - query_signal_std_by_channel
+    - impedance_kohm_by_channel
+    - headband_order
+    - condition_period
     expected:
+      n_samples: 24480
       n_subjects: 102
       n_channels: 8
       n_targets: 12

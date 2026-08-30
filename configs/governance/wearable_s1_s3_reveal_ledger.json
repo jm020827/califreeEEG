@@ -1,0 +1,13 @@
+{
+  "schema": "cfeg.development-reveal-ledger.v1",
+  "entries": [
+    {
+      "reveal_index": 1,
+      "grid_content_sha256": "070246d9e6291956e8920e05f1aa98b1c19993437f981fd1af6cc6dc1e1c469e",
+      "grid_id": "wearable-v3-s1-s3-a0-a2-fixed-epoch-v1",
+      "registered_at_utc": "2026-08-30T11:15:39.110479+00:00",
+      "scope": "all-six-fixed-epoch-validation-predictions",
+      "confirmatory_claim_allowed": false
+    }
+  ]
+}

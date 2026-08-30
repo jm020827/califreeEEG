@@ -2,6 +2,10 @@ seed: 42
 run_name: wang_to_beta
 output_dir: outputs/research/wang_to_beta
 assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  external_continuous_schema: impedance_mean_max_v1
 data:
   split_seed: 42
   processed_dirs:
@@ -29,9 +33,10 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
-    fields: [reference, electrode_type, cap_type, reattach_flag]
+    fields: [reference, electrode_type, cap_type]
     include_continuous: true
-    include_channels: true
+    include_channels: false
+    external_metadata_mode: observed
   adapter:
     enabled: true
     type: conditioned_feature_adapter

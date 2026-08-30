@@ -1,0 +1,28 @@
+{
+  "schema": "cfeg.target-free-inference-simulation.v1",
+  "status": "accepted",
+  "freeze_eligible": true,
+  "acceptance_checks_passed": true,
+  "target_outcomes_accessed": false,
+  "simulation_plan": "configs/analysis/wearable_lockbox_inference_simulation.yaml",
+  "simulation_plan_sha256": "e89af8364c4a5c09da0dfa274d92e82059be023137ab4fda23ce5098f3bf595e",
+  "full_receipt_sha256": "1f287ccd6a482eee8f18a2a3839361f2939564465fee15d16cd3ac21c277c2e5",
+  "estimand": "mean_seed_averaged_subject_balanced_accuracy_delta",
+  "n_simulations": 10000,
+  "n_subjects": 60,
+  "n_folds": 1,
+  "n_optimization_seeds": 3,
+  "sign_flip_resamples": 10000,
+  "bootstrap_resamples": 10000,
+  "simulation_seed": 20260831,
+  "core_results": {
+    "independent_symmetric": {"type_i": 0.0535, "type_i_wilson95_high": 0.0581, "coverage_wilson95_low": 0.9413, "power_at_sesoi_plus_0_03_wilson95_low": 0.8774},
+    "heavy_tailed_symmetric": {"type_i": 0.0516, "type_i_wilson95_high": 0.0561, "coverage_wilson95_low": 0.9429, "power_at_sesoi_plus_0_03_wilson95_low": 0.8885},
+    "skewed_bounded": {"type_i": 0.0413, "type_i_wilson95_high": 0.0454, "coverage_wilson95_low": 0.9540, "power_at_sesoi_plus_0_03_wilson95_low": 0.8938},
+    "paired_discrete_balanced_accuracy": {"type_i": 0.0469, "type_i_wilson95_high": 0.0512, "coverage_wilson95_low": 0.9476, "power_at_sesoi_plus_0_03_wilson95_low": 0.8769}
+  },
+  "report_only_stress": {
+    "negative_responder_mixture": {"type_i": 0.0553, "type_i_wilson95_high": 0.0600, "coverage_wilson95_low": 0.9386, "power_at_sesoi_plus_0_03_wilson95_low": 0.8624}
+  },
+  "missing_outcome_policy": "no_imputation_exact_complete_grid_or_primary_invalid"
+}

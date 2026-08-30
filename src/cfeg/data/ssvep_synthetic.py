@@ -9,9 +9,19 @@ import yaml
 
 from cfeg.data.io_hdf5 import write_processed_hdf5
 from cfeg.data.label_mapping import write_class_map
-from cfeg.data.preprocess import CanonicalChannelMap, PreprocessConfig, normalize_trial, place_on_canonical_channels
-from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write_manifest
-
+from cfeg.data.preprocess import (
+    CanonicalChannelMap,
+    PreprocessConfig,
+    normalize_trial,
+    place_channel_values,
+    place_on_canonical_channels,
+)
+from cfeg.data.schema import (
+    nullable_vector,
+    ordered_manifest_columns,
+    validate_manifest,
+    write_manifest,
+)
 
 DEFAULT_FREQS = [8.0, 10.0, 12.0, 15.0, 9.0, 11.0, 13.0, 14.0]
 DEFAULT_CHANNELS = ["Pz", "PO3", "PO4", "POz", "PO7", "O1", "Oz", "O2"]
@@ -61,11 +71,19 @@ def generate_synthetic_processed(
                 raw = np.stack(channel_rows, axis=0)
                 if rng.random() < 0.08:
                     raw[rng.integers(0, len(DEFAULT_CHANNELS))] = 0.0
+                query_std_native = np.std(raw, axis=-1).astype(np.float32)
+                query_std_by_channel = place_channel_values(
+                    query_std_native, DEFAULT_CHANNELS, cmap, c_max
+                )
+                query_signal_std = float(np.median(query_std_native))
                 raw = normalize_trial(raw)
-                placed, mask, _ids = place_on_canonical_channels(raw, DEFAULT_CHANNELS, cmap, c_max)
-                slot_ids = ((np.arange(c_max) + 1) * mask.astype(np.int64)).tolist()
+                placed, mask, slot_ids = place_on_canonical_channels(
+                    raw, DEFAULT_CHANNELS, cmap, c_max
+                )
                 h5_index = len(xs)
-                sample_id = f"synthetic_sub{subject:03d}_ses{session:02d}_cls{label:02d}_tr{trial:03d}"
+                sample_id = (
+                    f"synthetic_sub{subject:03d}_ses{session:02d}_cls{label:02d}_tr{trial:03d}"
+                )
                 xs.append(placed)
                 masks.append(mask)
                 ys.append(label)
@@ -100,6 +118,8 @@ def generate_synthetic_processed(
                         "time_since_last_session_hours": None,
                         "environment_note_code": "synthetic",
                         "source_file": "generated",
+                        "query_signal_std": query_signal_std,
+                        "query_signal_std_by_channel": nullable_vector(query_std_by_channel),
                     }
                 )
 
@@ -107,7 +127,7 @@ def generate_synthetic_processed(
     mask_arr = np.stack(masks, axis=0).astype(bool)
     y_arr = np.asarray(ys, dtype=np.int64)
     write_processed_hdf5(out_dir, x_arr, mask_arr, y_arr)
-    manifest = pd.DataFrame(rows, columns=REQUIRED_MANIFEST_COLUMNS)
+    manifest = pd.DataFrame(rows, columns=ordered_manifest_columns(rows))
     validate_manifest(manifest)
     write_manifest(manifest, out_dir)
     write_class_map(freqs, out_dir)
@@ -129,6 +149,8 @@ def generate_synthetic_processed(
         "processed_dir": str(out_dir),
         "created_by": "scripts/prepare_synthetic.py",
         "target_sfreq": float(target_sfreq),
+        "query_qc_extractor_version": "filtered_cropped_pre_zscore_channel_std_median_v1",
+        "external_continuous_schema": "impedance_mean_max_v1",
         "source": "generated synthetic non-human signal",
         "notes": "No raw human EEG is stored in repository.",
     }

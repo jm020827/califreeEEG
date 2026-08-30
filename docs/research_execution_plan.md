@@ -1,7 +1,17 @@
 # califreeEEG 연구 실행 계획
 
-기준일: 2026-08-29  
-프로토콜 버전: 0.3 (full confirmatory run 전 수정)
+기준일: 2026-08-30
+프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
+
+> Protocol 0.3의 **연구 질문**은 유지한다. 당시 5-fold split·평가·iid 추론 계약은 `DEC-20260830-002`와 `0.4-lockbox`가 대체했다. `0.4-dev`에서 structure/query-QC/external 권한 분리와 P0 wearable 복구를 구현했지만 metadata treatment는 아직 확증용으로 동결되지 않았다. 현재 구현 범위와 남은 gate는 [프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
+
+> 데이터 수를 늘리는 기준, exact-label family와 shared-frequency OOD의 구분, 최신 strict k=0 baseline, foundation-model target exposure gate는 [연구 의미·데이터 확장·최신 문헌 전략](research_significance_data_strategy.md)을 따른다.
+
+> **2026-08-30 revision 경계:** 반대로 결합된 `wearable_v2`와 그 A2 결과는 무효다. 코드는 `[dry, wet]` numeric signature와 `wearable_v3` guard로 복구했고 전체 102명 v3 acceptance audit를 통과했다. Protocol 0.4 confirmatory freeze 전에는 아래 Phase 3을 시작하지 않는다.
+
+> **DEC-20260830-001:** S1–S3는 사전 성능 노출 때문에 영구 development-only다. 전체 자산은 102명·24,480행이지만 confirmatory primary는 S4–S102의 99명·23,760행이다. 이 결정은 과거 `N=102 primary + N=99 sensitivity` 서술을 대체한다. 현재 기준원은 [프로토콜 상태](research_protocol_status.md)와 [append-only 연구일지](research_log.md)다.
+
+> **DEC-20260830-002:** N=99 5-fold primary는 폐기했다. 겹치는 training fold가 만드는 model-shared dependence를 iid subject inference가 처리하지 못했고 target-free simulation에서 Type-I inflation을 확인했다. S4–S102는 성능을 보지 않고 39명 frozen training과 60명 independent lockbox로 사전 할당한다. 과거 문서의 `5-fold×3-seed`, `N=99 independent unit`, condition별 inferential test는 이 결정이 대체한다.
 
 ## 범위 고정
 
@@ -18,7 +28,7 @@
 
 ## 사전지정 가설
 
-- Primary H1: wearable 5-fold outer participant CV의 k=0에서 A2 structured metadata가 구조와 parameter 수를 맞춘 A0 metadata-null보다 unseen-subject balanced accuracy가 높다. 모든 102명은 정확히 한 outer fold의 test가 되고, 각 test subject에는 wet/dry가 모두 있으며 condition별 결과도 분리한다.
+- Primary H1: frozen 39명 source-only training에서 만든 fixed 3-seed A2 ensemble이 완전히 독립된 60명 lockbox의 k=0 balanced accuracy에서 구조와 parameter shape를 맞춘 A0 ensemble보다 사전지정 SESOI를 초과해 높다. Wet/dry별 결과는 descriptive다.
 - H2: A3 adapter/consistency가 A0보다 held-out query의 clean→perturbed 하락을 줄인다.
 - H3 acquisition replication: Wang/BETA/Dong2023의 exact 40-class semantics에서 source-only validation 후 held-out acquisition의 A2−A0를 평가한다. Wang과 BETA만의 전이는 metadata 이득 식별이 아니라 boundary test다.
 - H4: 사전지정 성공 threshold에서 A2/A3의 `learned − forgotten` OOD cell 수가 양수이고 worst-group 성능이 개선된다.
@@ -38,6 +48,14 @@
 
 또한 Dong2023이 Wang/BETA와 같은 40개 frequency/phase semantics를 쓰면서 NeuSenW, 8채널, Fp1 reference, pre-gelled semi-dry electrode, 비차폐 환경이라는 실제 acquisition contrast를 제공함을 확인했다. 따라서 Dong2023을 acquisition-metadata external replication에 추가한다. 이 수정도 confirmatory A0/A2 결과를 보기 전에 이루어졌다. Nakanishi 12JFPM도 wearable과 exact 12-class semantics를 공유하지만 데이터 재사용 license가 명확하지 않아 허가 확인 전에는 확증 자산으로 쓰지 않는다.
 
+### 0.3 → 0.4-lockbox
+
+5-fold prediction의 participant row는 서로 다른 독립 모델에서 나온 관측이 아니다. 같은 fold participant는 같은 model shock를 공유하고 training folds도 크게 겹친다. 99개의 paired difference를 iid sign-flip/bootstrap하는 초기 설계를 target-free simulation으로 점검한 결과 fold ICC 0.05+overlap에서 null rejection 약 0.122, 결합 stress에서 약 0.204로 상승했다.
+
+따라서 confirmatory cohort를 성능 미접근 상태에서 39명 training과 60명 lockbox로 고정했다. 세 seed `[42,43,44]`의 A0/A2를 39명 전체에서 validation·early stopping 없이 10 epoch 학습하고, 여섯 completion 뒤 60명을 한 번만 예측한다. 새 독립 lockbox 추론은 10,000-replicate simulation의 네 core DGP에서 Type-I·coverage·power acceptance 기준을 통과했다. 5-fold N=99 결과는 primary가 잠긴 뒤 exploratory로만 허용한다.
+
+정확한 배정 계약은 `allocation_decision_id=DEC-20260830-002`, seed 42, `numpy_default_rng_shuffle_sorted_subject_ids_train_first_v1`, allocation SHA-256 `0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898`이다. ID 목록과 hash가 달라지면 plan·execution manifest 검증이 실패한다.
+
 ## 구현 게이트
 
 실제 데이터 결과를 만들기 전에 모두 통과해야 한다.
@@ -49,37 +67,60 @@
 - [x] canonical correlation과 filter bank를 실제 계산하는 CCA/FBCCA 기준선
 - [x] wearable dry↔wet에서 source/validation/test participant가 완전히 분리된 joint subject-condition split
 - [x] subject-level metric과 prediction artifact에 split/query identity 기록
-- [x] A0와 A2가 같은 condition-encoder/adapter parameterization을 사용하고 A0만 모든 metadata를 강제 missing 처리
-- [x] Wang raw channel order, BETA schema variants, wearable target frequency/phase 및 impedance wet/dry 축을 공식 자료와 대조
+- [x] Primary A0/A2가 같은 `physical_hybrid_v1` module graph·parameter schema·초기 state를 쓰고 `external_metadata_mode=null|observed`만 다름
+- [x] Protocol 0.4-dev의 `m_struct` backbone 공통 입력, pre-zscore query-local QC 공통 권한, external-only missing/shuffle 구현
+- [x] wearable electrode type+block impedance global FiLM과 per-channel impedance bounded gain 구현; reference/cap은 상수라 제외
+- [x] wearable impedance 조건축을 원자료 수치 signature에 맞춰 `[dry, wet]`로 수정하고 regression test 추가
+- [x] 기존 wearable v2/checkpoint를 guard로 거부하고 revisioned `wearable_v3` 경로로 분리
+- [x] S1–S3 `wearable_v3` 720행 raw→processed deep audit와 receipt 생성
+- [x] 전체 102명 `wearable_v3` 생성과 24,480-row acceptance audit
+- [x] Wang raw channel order, BETA schema variants, wearable target frequency/phase를 공식 자료와 대조
 - [x] cross-dataset/cross-condition/standard prediction이 checkpoint `split.csv`의 test ID와 target filter를 교차 적용
-- [x] optimization seed와 split seed 분리, wearable 5-fold outer participant split
-- [x] corrected wearable artifact를 `wearable_v2` 경로와 revision으로 분리하고 required impedance 누락 시 중단
+- [x] optimization seed와 allocation seed 분리, exact 39-train/60-lockbox participant split
+- [x] S1–S3 development-only와 N=99 primary cohort role/hash 고정
+- [x] 미동결 confirmatory dry-run 차단, governed training의 test-loader 제거, evaluation action allowlist
+- [x] exact A0/A2×3-seed six-job manifest, subject 내 seed-first 평균, N=60 단일 paired inference 집계기
+- [x] no-validation fixed-epoch confirmatory training과 train-only preload; lockbox prediction 전 six-completion/reveal-once gate
+- [x] confirmatory config→six-job manifest binding, 개별 prediction/eval 우회 차단, six-bundle atomic publication
+- [x] completion receipt의 final/last checkpoint·train-metric·split·development-control hash와 prediction의 manifest/reveal-receipt hash를 aggregate까지 재검증
+- [x] canonical manifest/run root를 plan에 결합하고 create-exclusive 생성·unused-draft 전용 교체 정책 적용
+- [x] generic evaluation route와 manifest staging 밖 개별 prediction을 reveal 이후에도 차단
+- [x] completion의 exact epoch/terminal/runtime/resume 계약 및 staging/final prediction bundle 재검증
+- [x] target-free inference simulation plan/receipt/hash와 frozen-plan acceptance gate
+- [x] RNG/DataLoader/terminal-state를 포함한 two-slot exact-resume 및 uninterrupted 동등성 시험
+- [x] 잘못된 impedance 조건축을 바로잡고 numeric signature·headband-order 검증을 갖춘 `wearable_v3`를 구 revision과 분리
 - [x] Dong2023 Zenodo 선택 다운로드, MD5/schema 검증 및 40-class canonical adapter
+- [x] S1–S3 physical metadata-only와 acquisition-block-coherent shuffle-train→clean-val control; missingness-only는 single-pattern invalid assay
+- [x] 정상 A2 validation-only wet↔dry counterfactual과 manifest-only donor 교환; donor EEG 미접근
+- [x] control mapping/fixed-point/coverage/field-change hash와 evaluation parent-checkpoint provenance
+- [x] 성공·dry-run·OOM 실패를 같은 schema로 남기는 synchronized CUDA peak-memory sidecar
+- [x] physical development control equivalence/mechanism/safety margin, potency threshold와 invalid-assay 정책 동결 (`development_gate_only`; confirmatory 정책은 별도 미동결)
 
 ## 비교 모델
 
 | 모델 | 역할 | Primary 여부 |
 |---|---|---|
 | CCA / generic FBCCA | training-free protocol-matched 기준선 | 필수; 실제 채널·filter parameter 기록 |
-| paper-faithful FBCCA | Chebyshev-I와 데이터셋별 문헌 고정 설정 | 확증 전 추가 필요 |
+| paper-faithful FBCCA | Chebyshev-I와 문헌 고정 설정 | strict Chen-2015 구현 완료; 데이터셋별 원 toolbox 재현 범위는 별도 표기 |
 | recent learned calibration-free baseline | 최신 직접 비교 | 필수 또는 재현 실패 사유 공개 |
-| F0 backbone + linear head | backbone 자체의 효과; REVE run에서만 frozen | 필수 |
-| A0 metadata-null | A2와 같은 구조·parameter 수, 모든 metadata 강제 missing | Primary control |
+| F0 backbone + linear head | backbone 자체의 효과; compact scratch를 깨끗한 primary anchor, REVE는 exposure/license 표시 secondary | 필수 |
+| A0 external-metadata-null | A2와 같은 구조·parameter shape와 query QC, external treatment만 missing | Primary control |
 | A1 dataset-ID-only | opaque ID 진단용 negative control | 보조 |
 | A2 structured metadata | metadata 주효과 | Primary treatment |
 | A3 A2 + adapter/consistency | robustness 가설 | Secondary |
 | A4 A3 + stochastic latent | mechanism 탐색 | Exploratory |
 
-A2 primary에는 `dataset_id`와 의미가 이전되지 않는 임의 hardware ID를 넣지 않는다. 채널 좌표/mask, sampling, reference, electrode type, impedance처럼 다른 데이터셋에서도 의미가 유지되는 정보를 사용한다. `metadata_missing_all`과 `metadata_shuffle`을 필수 negative control로 실행해 A2가 실제 metadata에 의존했는지 확인한다.
+A2 primary에는 `dataset_id`와 의미가 이전되지 않는 임의 hardware ID를 넣지 않는다. 채널 ID/mask와 time grid는 공통 구조, query scale은 공통 QC로 둔다. A2 treatment는 `electrode_type`, block impedance mean/max, channel별 impedance/availability다. Wearable에서 상수인 reference/cap은 제외한다. External missing과 acquisition-block-coherent derangement는 donor block의 exact label/window를 맞추며 mapping과 실제 변경률을 보존한다.
 
 ## 실험 순서
 
 ### Phase 0 — 코드 타당성
 
-1. P0 수정과 단위 테스트
-2. 전체 pytest 및 ruff
+1. impedance 축 `[dry, wet]` 수정, 논문 평균 261.67/19.63 kΩ numeric-signature test, 기존 processed revision 폐기
+2. P0 수정과 전체 단위 테스트·ruff
 3. synthetic frequency 신호로 CCA/FBCCA 정답 검증
 4. split·support·query·vocabulary artifact 검증
+5. subject×condition×block의 EEG condition과 impedance 방향을 전처리 전후로 감사
 
 ### Phase 1 — synthetic pipeline pilot
 
@@ -96,28 +137,53 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 1. BETA S1/S16, wearable S1–S3, Dong2023 S1로 서로 다른 raw schema·label·metadata smoke
 2. 실제 CCA/FBCCA와 Tiny backbone A0/A2 실행
 3. subject×electrode prediction/metric 산출 확인
-4. 오류가 없을 때 wearable 102명과 Wang/BETA/Dong2023 전체로 확장
+4. 오류가 없을 때 Protocol 0.4 metadata gate로 이동
+
+### Phase 2.5 — metadata protocol 0.4 동결
+
+1. [완료] channel ID/mask 같은 `m_struct`는 A0와 A2 모두에게 제공하고 treatment에서 제외한다.
+2. [완료] wearable에서 관측 가능한 electrode interface, block impedance mean/max, per-channel impedance의 schema·provenance를 확정하고 reference/cap 상수는 primary에서 제외한다.
+3. [완료] `physical_hybrid_v1`의 공통 query-QC FiLM, external global FiLM, channel-quality gain과 exact-null routing을 구현한다. Prompt/adapter는 legacy secondary다.
+4. [완료·outcome-free] six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, prediction·intervention·aggregate·gate를 함께 tree-hash하고 digest precommit→atomic rename/fsync→final receipt로 공개하는 two-phase transaction을 구현한다. 알려진 private partial artifact만 같은 동결 계산으로 삭제·재생성하고, 미신고 prefix나 digest drift는 거부한다.
+5. [승인·기준 동결 완료 / 실행 대기] `DEC-20260831-003`이 Metadata-only, shuffle-train→clean-val, block-coherent shuffle, counterfactual과 missing intervention을 단일 reveal bundle로 승인했다. Natural missingness pattern이 하나인 missingness-only는 `invalid_assay`다. Clean 방향은 3-fold mean, 나머지는 least-favourable observed fold이며 N=3 confidence bound가 아니다.
+6. Physical source를 clean annotated tag로 고정한 뒤 18-job train과 단일 `reveal`을 실행한다. Confirmatory MCID·`τ`·alpha·multiplicity·external lockbox source contract는 physical 결과의 owner review 뒤 별도로 `frozen` 선언한다. S1–S3는 계속 development-only다.
+
+### Phase 2.6 — 데이터·문헌 충분성 gate
+
+1. P0 impedance mapping 수정·전처리 재생성·numeric-signature 회귀 테스트를 완료
+2. 모든 후보를 `core_exact12`, `core_exact40`, `shared_frequency_ood`, `controlled_context`, `representation_only`, `context_robustness`, `external_lockbox`, `excluded_or_quarantined` 중 하나로 registry에 고정
+3. `(frequency_hz, phase_rad, target_semantics, stimulus_method, display_context)` class key를 원 논문·versioned archive·실제 event 파일로 대조
+4. dataset version·license·usable participant·checksum·metadata provenance와 source/derivative 변환 이력을 기록
+5. backbone revision별 raw/same-subject/label exposure matrix를 만들고 target-exposed foundation 결과를 별도 표기
+6. Nakanishi 원 repo s1–s10의 reuse 권리를 서면 확인한다. Kim2025는 frequency 10개만 겹치고 phase가 모두 π만큼 달라 exact class overlap이 0이므로 기존 `shared-10 lockbox` 역할을 폐기하고 별도 frequency-only protocol로 재지정
+7. 직접 baseline 감사 결과를 적용: DG-Conformer는 permission/port 조건부, TST-CSFR는 literature-only, TFA-Net public runner는 제외, TBMSCCN-C는 독립 구현만, SSER은 training-only augmentation ablation으로 사용
+8. source-only gate에서 `correct > shuffled`와 `correct > wrong`의 기전 민감도, `shuffle ≈ A0/null`의 capacity 진단, `wrong − A0`의 허용 안전손실을 서로 분리해 확인한 뒤 Phase 3에 진입한다. Wrong이 크게 나빠지는 것은 metadata 사용 증거일 수 있지만 동시에 배포 안전성 실패이므로 자동 성공으로 세지 않는다.
 
 ### Phase 3 — confirmatory full runs
 
-1. wearable 5-fold outer subject DG primary: 각 fold의 F0, A0, A2; k=0; 동일 fold에서 3–5 optimization seed
-2. wearable condition별 및 worst-subject 분석
-3. wearable joint subject-condition dry→wet 및 wet→dry stress test
-4. Wang/BETA/Dong2023 leave-one-acquisition-out replication; Wang↔BETA만의 전이는 boundary test
-5. A3 robustness, A4 exploratory, k>0 secondary
-6. 추가 shared-label multi-source dataset을 확보하면 leave-one-dataset-out metadata 실험
-7. 선택과 threshold를 동결한 뒤 external lockbox
+진입 조건: Phase 0의 impedance P0와 Phase 2.5/2.6의 모든 확증 gate가 완료되고 Protocol 0.4를 `frozen`으로 선언해야 한다.
+
+1. 사전 고정된 39명 전체로 parameter-matched A0/A2를 seeds `[42,43,44]`, 10 epoch, validation 없이 학습한다.
+2. 여섯 final checkpoint와 completion receipt가 모두 유효한지 검사한 뒤, 별도 60명 lockbox의 clean k=0 prediction을 첫 confirmatory 공개에서 같은 manifest 아래 함께 생성한다. 각 prediction은 staging에 머물다가 6/6 완성 뒤 원자적으로 공개한다.
+3. overall A2−A0만 primary로 검정하고 wearable condition별 및 worst-subject 결과는 descriptive로 보고한다.
+4. primary report를 잠근 뒤 wearable 99명 cross-validation, dry→wet/wet→dry, A3/A4, k>0를 exploratory/secondary로 실행한다.
+5. Wang/BETA/Dong2023 leave-one-acquisition-out replication을 별도 수행한다. Wang↔BETA만의 전이는 boundary test다.
+6. 추가 shared-label multi-source dataset을 확보하면 leave-one-dataset-out metadata 실험을 수행한다.
 
 ## 통계와 판정
 
-- 독립 단위: target subject. 각 subject는 outer test fold에 정확히 한 번만 포함한다.
+- 독립 단위: training과 model selection에서 완전히 제외된 N=60 lockbox subject.
 - Primary endpoint: subject-level balanced accuracy의 paired A2−A0
-- Optimization seed: 최소 3개, 가능하면 5개. 동일 subject×model의 seed를 먼저 평균하며 seed를 독립 피험자로 세지 않는다.
-- Split seed: 42로 고정. split 변동성은 별도의 repeated-group-CV 분석으로만 다룬다.
-- 보고: effect size, 95% CI, paired permutation 또는 Wilcoxon
-- 다중 비교: Holm correction
+- Optimization seed: `[42,43,44]`. 동일 lockbox subject×role의 seed BA를 먼저 평균하며 seed를 독립 피험자로 세지 않는다.
+- Allocation seed: 42, `numpy_default_rng_shuffle_sorted_subject_ids_train_first_v1`. 39/60 exact ID는 plan에 명시한다.
+- 보고: mean paired effect, Student-t one-sided lower confidence bound, paired subject sign-flip p-value, bootstrap-t sensitivity.
+- 다중 비교: overall A2−A0 하나만 primary이므로 correction 없음. Condition 결과는 descriptive다.
+- 누락: exact `60 subjects×12 classes×10 trials/condition×2 conditions×3 seeds×2 roles = 86,400` prediction rows를 요구한다. 일부 seed/subject가 복구 불가하면 primary를 `invalid`로 종료하고 complete-case claim을 만들지 않는다.
 - capability 분석 단위: subject×condition×window×severity cell
 - 성공 threshold와 MCID: target 결과를 보기 전에 확정
+- 현재 query에서 계산한 mean/std·signal-QC는 A0/A2 모두에 같은 권한으로 제공하며, target participant의 다른 trial이나 target-set 통계는 양쪽 모두 금지한다.
+- Metadata-only의 chance 판정은 단순 `p>0.05`가 아니라 사전 equivalence margin으로 한다. Missingness-only는 현재 natural pattern 하나라 invalid assay다. Block-coherent shuffle과 counterfactual은 label-aligned development diagnostic이며 deployable inference로 부르지 않는다.
+- 전체 metadata mechanism 주장은 primary A2−A0 성공, shortcut control 유효성, correct−shuffle, correct−wrong, wrong-metadata safety gate를 모두 만족할 때만 허용한다. `failed`, `inconclusive`, `invalid_assay`를 구분한다.
 
 평균만 개선되면 metadata efficiency로 해석한다. `learned > forgotten`, worst-group 개선, 양방향 재현까지 충족해야 OOD 적용범위 확장으로 해석한다.
 
@@ -131,6 +197,7 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 - 환경, hardware, wall time, parameter count
 - 실패·제외 run과 사유
 - aggregate 표와 learned/forgotten transition 표
+- prediction CSV/sidecar/checkpoint/train-metric/split/analysis-manifest/execution-manifest/reveal-receipt/source/environment hash ledger와 frozen analysis-plan hash
 
 ## 중단 규칙
 
@@ -139,14 +206,24 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 - 한 전이 방향에서만 효과가 있으면 dataset-specific 결과로 제한한다.
 - split/query/vocabulary provenance가 없는 run은 재실행한다.
 
-## 2026-08-29 실행 현황
+## 2026-08-30 실행 현황
 
-- 전체 단위 테스트: 93 passed; targeted Ruff, compileall, YAML parse, shell syntax, `git diff --check` 통과
+- 전체 단위 테스트: 전용 환경의 최신 수치는 최종 연구일지 검증 항목을 따른다. 신규 statistical/governance/exact-resume/manifest/spectral 경로를 포함한다. 저장소 전체 Ruff에는 기존 범위의 style debt가 남아 있어 full-clean으로 주장하지 않는다.
 - synthetic 640-trial pipeline: A0/A2 training, held-out robustness, fixed-query k=0/1/3 artifact와 동일 query hash 검증
 - BETA S1/S16 pilot: `(320, 64, 400)`, subject당 160 trials, class당 4 blocks, 750/1000-sample 원본 schema 모두 검증
 - BETA S1/S16 posterior-9, H=5 pilot: CCA BA 0.8656, generic Butterworth FBCCA BA 0.8719. 개발 sanity일 뿐이며 paper-faithful FBCCA는 아직 아니다.
-- wearable S1–S3 v2 pilot: `(720, 64, 400)`, subject당 240 trials, wet/dry×class당 10 blocks, impedance 축을 원본과 수치 대조
+- wearable S1–S3 v2 pilot: `(720, 64, 400)`, subject당 240 trials, wet/dry×class당 10 blocks. 후속 원자료 수치 감사에서 impedance mapping이 반대임을 확인했으므로 이 historical artifact와 결과는 무효다. 바로 아래 v3 deep smoke로 재전처리를 완료했다.
+- wearable S1–S3 v3 deep smoke: 720 trials를 최종 parser로 재생성했고 raw EEG, pre-zscore query-QC vector, raw→canonical impedance vector의 최대 절대오차가 모두 0이었다. Figshare v4 5개 파일 MD5와 artifact receipt도 검증했다. 세 subject가 모두 dry-first이던 pilot 한계는 아래 full audit의 wet-first 49명 확인으로 해소했다.
+- wearable full v3 acceptance: 102명·24,480 trials, dry/wet 각 12,240행, dry-first/wet-first 53/49를 확인했다. Raw EEG→processed signal, query-QC, per-channel impedance 전수 대조의 최대 절대오차가 모두 0이었고 receipt SHA-256은 `1e2c10d7922c329d8d28cd8bd3cb8ed94e0b22f6a2f3432e95c77deab3f0bc9b`다.
 - wearable S1–S3 official native-8, H=5 pilot: CCA BA 0.6125( dry 0.4667 / wet 0.7583), generic Butterworth FBCCA BA 0.5750(dry 0.4194 / wet 0.7306). 3명 결과이므로 성능 결론이 아니라 pipeline sanity check다.
 - wearable v1 pilot에서 class frequency 순서 오류 때문에 CCA/FBCCA가 chance 수준이었고, 공식 stimulation table 순서로 고친 v2에서 회복했다. v1과 그 파생 결과는 연구 결과에서 제외한다.
-- parameter-matched wearable S1–S3 Tiny 1-epoch pilot: A0/A2 모두 40,860 parameters, 동일 split hash, test BA 0.0917. 1 test subject·chance 수준이므로 효과 증거가 아니라 end-to-end control 검증이다.
+- parameter-matched wearable S1–S3 Tiny 1-epoch pilot: A0/A2 모두 40,860 parameters, 동일 split hash, test BA 0.0917. 1 test subject·chance 수준이고 A2 impedance도 반대로 결합돼 있어 효과 증거가 아니다. split/training smoke 외의 연구 결과에서는 제외한다.
+- 역사적 Protocol 0.4-dev prompt dry-run: A0/A2 모두 총/학습 parameter 6,125,900이고 fairness, parameter-schema, initial-trainable-state, split hash가 동일했다. 새 physical architecture의 증거는 아니다.
+- DEC-20260830-001 governed CUDA dry-run: S1–S3 development view에서 A0/A2 모두 cohort hash와 parameter/runtime contract가 같았고 outer-test access는 false였다. N=99 dataset access는 분석계획이 `dev_not_frozen`인 동안 dry-run도 차단된다.
+- CUDA runtime: 프로젝트 전용 Python 3.10.12/Torch 2.2.2+cu121 환경에서 CUDA 12.1, RTX 4090 forward/backward·finite-gradient probe를 통과했다.
 - Dong2023 S1 pilot: 공식 MD5와 `[8,1250,40,4]` schema, 160 trials를 검증했다. native-8 H=5에서 CCA BA 0.7813, generic FBCCA BA 0.7563이었다.
+- Wang 28명 train/7명 validation source-learning: query-local complex spectral Transformer BA 0.8220, pure F0 spectral BA 0.8107. 동일 7명·1,680-trial scope의 CCA BA 0.7875, strict Chen-2015 FBCCA BA 0.7768이었다. 모두 development/legacy evidence이며 metadata 효과는 아니다.
+- 독립 60명 lockbox inference simulation: 10,000 outer replicates와 10,000 sign-flip/bootstrap resamples에서 네 core DGP가 Type-I upper ≤0.0581, coverage lower ≥0.9413, SESOI+0.03 power lower ≥0.8769를 통과했다. Target EEG outcome은 접근하지 않았다.
+- S1–S3 fixed-epoch outcome-gated **legacy `prompt_adapter_v1`** grid: 이 grid 안에서는 6/6 training이 끝날 때까지 결과를 보류한 뒤 prediction을 함께 공개했다. A0/A2 mean BA는 0.1222/0.1042, mean delta −0.0181이었다. 세 subject delta가 모두 음수지만 N=3·각 fold train 2명이라 모집단 결론은 불가능하다. Formal cutoff가 없는 방향성 경고와 `metadata benefit not demonstrated`로 두며, 새 physical A2의 결과로 재해석하지 않고 confirmatory는 계속 봉인한다.
+
+Raw-access 상태도 분리한다. 전체 102명 raw/processed signal은 무결성 감사에서 읽혔다. 그러나 S4–S102는 모델 학습·선택·성능 계산에 쓰지 않았고, confirmatory 39명 학습과 60명 lockbox prediction은 아직 실행하지 않았다. 현재 봉인은 OS-level ACL이나 암호학적 enclave가 아니라 same-user raw access가 가능한 application/procedural gate다.

@@ -28,7 +28,11 @@ def main() -> None:
     checks = []
     if args.all:
         checks.extend(("dataset", name) for name in registry.cfg.get("datasets", {}))
-        checks.extend(("model", name) for name in registry.cfg.get("models", {}) if name != "tiny_eeg_transformer")
+        checks.extend(
+            ("model", name)
+            for name in registry.cfg.get("models", {})
+            if name != "tiny_eeg_transformer"
+        )
     elif args.dataset:
         checks.append(("dataset", args.dataset))
     elif args.model:
@@ -44,7 +48,17 @@ def main() -> None:
                 path = override or ds.get(f"{args.stage}_dir") or ds.get("processed_dir")
                 if not path:
                     raise MissingAssetError(f"No {args.stage}_dir configured for dataset {name}")
-                result = verify_raw_dir(path) if args.stage == "raw" else verify_processed_dir(Path(path))
+                result = (
+                    verify_raw_dir(path)
+                    if args.stage == "raw"
+                    else verify_processed_dir(
+                        Path(path),
+                        expected_dataset_id=name,
+                        expected_revision=ds.get("dataset_revision"),
+                        required_manifest_columns=ds.get("required_manifest_columns"),
+                        expected_counts=ds.get("expected"),
+                    )
+                )
             else:
                 model = registry.model(name)
                 if model.get("type") == "local_code":
@@ -55,7 +69,9 @@ def main() -> None:
                     )
             print(json.dumps({"ok": True, "kind": kind, "name": name, "result": result}, indent=2))
         except (MissingAssetError, AssetVerificationError, FileNotFoundError, ValueError) as exc:
-            print(json.dumps({"ok": False, "kind": kind, "name": name, "error": str(exc)}, indent=2))
+            print(
+                json.dumps({"ok": False, "kind": kind, "name": name, "error": str(exc)}, indent=2)
+            )
             if not args.all:
                 raise SystemExit(1)
 

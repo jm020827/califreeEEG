@@ -1,0 +1,42 @@
+seed: 42
+run_name: wearable_physical_mechanism
+mode: robustness
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v3
+  expected_revisions:
+    wearable: wearable_v3
+  expected_dataset_counts:
+    wearable:
+      n_samples: 24480
+      n_subjects: 102
+      n_targets: 12
+  require_audit_receipt: true
+  split: val
+trial_time_sec: 2.0
+perturbations:
+- name: all_external_missing
+  type: metadata_missing
+- name: global_external_missing
+  type: metadata_group_missing
+  categorical_fields: [electrode_type]
+  external_continuous_indices: [0, 1]
+- name: electrode_indicator_missing
+  type: metadata_group_missing
+  categorical_fields: [electrode_type]
+- name: global_impedance_summary_missing
+  type: metadata_group_missing
+  external_continuous_indices: [0, 1]
+- name: channel_impedance_missing
+  type: metadata_group_missing
+  channel_impedance: true
+- name: common_query_qc_missing
+  type: metadata_group_missing
+  query_qc_indices: [0]
+- name: block_coherent_metadata_shuffle
+  type: metadata_shuffle
+  seed: 42
+- name: joint_wet_dry_counterfactual
+  type: metadata_counterfactual_wet_dry
+  seed: 42
+output_csv: outputs/development/wearable_v3/physical_mechanism/robustness.csv

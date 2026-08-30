@@ -1,0 +1,74 @@
+base_config: configs/train/wearable_development.yaml
+control_family:
+  schema: cfeg.development-control-family.v1
+  reference_variant: A2_correct_metadata_dev
+  training_variants:
+  - A2_correct_metadata_dev
+  - NC_metadata_only
+  - NC_missingness_only
+  - NC_within_class_shuffle
+  evaluation_only_controls:
+  - counterfactual_wet_dry
+  cohort_role: development
+  confirmatory_claim_allowed: false
+variants:
+  A2_correct_metadata_dev:
+    protocol.development_control: none
+    protocol.development_control_seed: 42
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    model.condition_encoder.external_metadata_mode: observed
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: false
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  NC_metadata_only:
+    protocol.development_control: metadata_only
+    protocol.development_control_seed: 42
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    model.condition_encoder.external_metadata_mode: observed
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: false
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  NC_missingness_only:
+    protocol.development_control: missingness_only
+    protocol.development_control_seed: 42
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    model.condition_encoder.external_metadata_mode: observed
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: false
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0
+  NC_within_class_shuffle:
+    protocol.development_control: within_class_shuffle
+    protocol.development_control_seed: 42
+    model.condition_encoder.enabled: true
+    model.condition_encoder.fields:
+    - reference
+    - electrode_type
+    - cap_type
+    model.condition_encoder.external_metadata_mode: observed
+    model.condition_encoder.include_continuous: true
+    model.condition_encoder.include_channels: false
+    model.adapter.enabled: true
+    model.latent.enabled: false
+    loss.lambda_cons: 0.0
+    loss.lambda_logit_cons: 0.0

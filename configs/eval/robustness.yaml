@@ -18,25 +18,18 @@ perturbations:
   ratio: 0.75
 - name: metadata_missing_all
   type: metadata_missing
-- name: metadata_shuffle
+- name: metadata_shuffle_within_dataset_label
   type: metadata_shuffle
-- name: channel_metadata_missing
+- name: acquisition_metadata_missing
   type: metadata_group_missing
-  channels: true
-  continuous_indices: [1]
-- name: sampling_metadata_missing
-  type: metadata_group_missing
-  continuous_indices: [0]
-- name: session_metadata_missing
-  type: metadata_group_missing
-  categorical_fields: [reattach_flag]
-  continuous_indices: [4]
-- name: electrode_hardware_metadata_missing
-  type: metadata_group_missing
-  categorical_fields: [reference, hardware_id, electrode_type, cap_type]
+  categorical_fields: [reference, electrode_type, cap_type]
 - name: impedance_metadata_missing
   type: metadata_group_missing
-  continuous_indices: [2, 3]
+  external_continuous_indices: [0, 1]
+  channel_impedance: true
+- name: query_signal_qc_missing
+  type: metadata_group_missing
+  query_qc_indices: [0]
 - name: downsample_100hz
   type: downsample
   factor: 0.5

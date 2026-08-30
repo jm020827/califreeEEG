@@ -11,11 +11,17 @@ from _bootstrap import add_src_to_path
 add_src_to_path()
 
 from cfeg.baselines.evaluate import evaluate_frequency_baseline
+from cfeg.utils.config import load_config
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate training-free CCA or FBCCA.")
     parser.add_argument("--processed-dir", required=True)
+    parser.add_argument(
+        "--research-config",
+        default=None,
+        help="Required governance config for wearable_v3; use the development config pre-freeze.",
+    )
     parser.add_argument("--method", choices=["cca", "fbcca"], required=True)
     parser.add_argument(
         "--selection-csv",
@@ -68,6 +74,11 @@ def main() -> None:
         regularization=args.regularization,
         filterbank=filterbank,
         trial_time_sec=args.trial_time_sec,
+        research_config=(
+            load_config(args.research_config, strict_env=False)
+            if args.research_config
+            else None
+        ),
     )
     prefix = Path(args.out_prefix)
     prefix.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,75 @@
+schema: cfeg.target-free-inference-simulation-plan.v1
+status: frozen_before_confirmatory_outcomes
+freeze_eligible: false
+seed: 20260830
+n_simulations: 1000
+n_subjects: 99
+n_folds: 5
+n_optimization_seeds: 3
+alpha_grid: [0.025, 0.05]
+effect_above_sesoi_grid: [0.005, 0.01, 0.02, 0.03]
+sign_flip_resamples: 5000
+bootstrap_resamples: 2000
+acceptance:
+  max_null_rejection_rate: 0.06
+  power_effect_above_sesoi: 0.03
+  minimum_power: 0.80
+scenarios:
+- name: independent_symmetric
+  distribution: normal
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: heavy_tailed_symmetric
+  distribution: student_t3
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: skewed_centered
+  distribution: centered_lognormal
+  skew_sigma: 0.8
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: paired_discrete_balanced_accuracy
+  distribution: paired_binomial
+  binomial_trials: 240
+  binomial_probability: 0.5
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: negative_responder_mixture
+  distribution: negative_responder_mixture
+  negative_responder_probability: 0.2
+  negative_responder_shift: 0.08
+  mixture_residual_sd: 0.04
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: fold_icc_002
+  distribution: normal
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_icc: 0.02
+  overlap_coupling: 0.0
+- name: fold_icc_005_overlap_half
+  distribution: normal
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_icc: 0.05
+  overlap_coupling: 0.5
+- name: combined_skew_fold_overlap
+  distribution: centered_lognormal
+  skew_sigma: 0.8
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.002
+  fold_icc: 0.10
+  overlap_coupling: 1.0

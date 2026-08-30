@@ -27,6 +27,9 @@ class FilterBankConfig:
     regularization: float = 1e-8
     weight_exponent: float = 1.25
     weight_offset: float = 0.25
+    filter_family: str = "butterworth"
+    passband_ripple_db: float = 0.5
+    reproduction_contract: str = "generic"
 
 
 def _positive_integer(value: Any, name: str) -> int:
@@ -214,6 +217,9 @@ def _coerce_filterbank(filterbank: Any) -> FilterBankConfig:
             "regularization",
             "weight_exponent",
             "weight_offset",
+            "filter_family",
+            "passband_ripple_db",
+            "reproduction_contract",
         }
         unknown = set(filterbank) - allowed
         if unknown:
@@ -226,7 +232,16 @@ def _coerce_filterbank(filterbank: Any) -> FilterBankConfig:
 
 def _validated_filterbank(
     filterbank: Any, sfreq: float
-) -> tuple[tuple[tuple[float, float], ...], np.ndarray, int, int, float]:
+) -> tuple[
+    tuple[tuple[float, float], ...],
+    np.ndarray,
+    int,
+    int,
+    float,
+    str,
+    float,
+    str,
+]:
     config = _coerce_filterbank(filterbank)
     raw_bands = _default_bands(sfreq) if config.bands is None else config.bands
     if not _is_sequence(raw_bands):
@@ -265,11 +280,40 @@ def _validated_filterbank(
     order = _positive_integer(config.order, "filterbank order")
     harmonics = _positive_integer(config.n_harmonics, "n_harmonics")
     regularization = _nonnegative_float(config.regularization, "regularization")
-    return tuple(bands), weights, order, harmonics, regularization
+    family = str(config.filter_family)
+    if family not in {"butterworth", "chebyshev1"}:
+        raise ValueError("filter_family must be butterworth or chebyshev1.")
+    ripple = _positive_float(config.passband_ripple_db, "passband_ripple_db")
+    contract = str(config.reproduction_contract).strip()
+    if not contract:
+        raise ValueError("reproduction_contract must be non-empty.")
+    return (
+        tuple(bands),
+        weights,
+        order,
+        harmonics,
+        regularization,
+        family,
+        ripple,
+        contract,
+    )
 
 
-def _bandpass(x: np.ndarray, sfreq: float, band: tuple[float, float], order: int) -> np.ndarray:
-    sos = signal.butter(order, band, btype="bandpass", fs=sfreq, output="sos")
+def _bandpass(
+    x: np.ndarray,
+    sfreq: float,
+    band: tuple[float, float],
+    order: int,
+    *,
+    family: str,
+    ripple_db: float,
+) -> np.ndarray:
+    if family == "chebyshev1":
+        sos = signal.cheby1(
+            order, ripple_db, band, btype="bandpass", fs=sfreq, output="sos"
+        )
+    else:
+        sos = signal.butter(order, band, btype="bandpass", fs=sfreq, output="sos")
     # Explicitly cap padding so short, otherwise valid trials fail deterministically.
     default_padlen = 3 * (2 * len(sos) + 1)
     padlen = min(default_padlen, x.shape[-1] - 1)
@@ -279,16 +323,26 @@ def _bandpass(x: np.ndarray, sfreq: float, band: tuple[float, float], order: int
 def resolve_filterbank_parameters(filterbank: Any, sfreq: float) -> dict[str, object]:
     """Return the exact effective FBCCA parameters for provenance artifacts."""
     sampling_frequency = _positive_float(sfreq, "sfreq")
-    bands, weights, order, harmonics, regularization = _validated_filterbank(
-        filterbank, sampling_frequency
-    )
+    (
+        bands,
+        weights,
+        order,
+        harmonics,
+        regularization,
+        family,
+        ripple,
+        contract,
+    ) = _validated_filterbank(filterbank, sampling_frequency)
     return {
-        "filter_family": "zero_phase_butterworth_sos",
+        "filter_family": f"zero_phase_{family}_sos",
         "bands_hz": [list(band) for band in bands],
         "weights": weights.tolist(),
         "order": order,
         "n_harmonics": harmonics,
         "regularization": regularization,
+        "passband_ripple_db": ripple if family == "chebyshev1" else None,
+        "score_fusion": "sum_weighted_squared_canonical_correlations",
+        "reproduction_contract": contract,
     }
 
 
@@ -318,9 +372,16 @@ def predict_fbcca(x, freqs, sfreq, filterbank=None):
     eeg = _matrix(x, "x")
     sampling_frequency = _positive_float(sfreq, "sfreq")
     frequencies = _frequencies(freqs, sampling_frequency)
-    bands, weights, order, harmonics, regularization = _validated_filterbank(
-        filterbank, sampling_frequency
-    )
+    (
+        bands,
+        weights,
+        order,
+        harmonics,
+        regularization,
+        family,
+        ripple,
+        _,
+    ) = _validated_filterbank(filterbank, sampling_frequency)
     references = make_reference_signals(
         frequencies,
         sampling_frequency,
@@ -330,7 +391,14 @@ def predict_fbcca(x, freqs, sfreq, filterbank=None):
 
     scores = np.zeros(len(frequencies), dtype=np.float64)
     for weight, band in zip(weights, bands):
-        filtered = _bandpass(eeg, sampling_frequency, band, order)
+        filtered = _bandpass(
+            eeg,
+            sampling_frequency,
+            band,
+            order,
+            family=family,
+            ripple_db=ripple,
+        )
         correlations = np.asarray(
             [
                 cca_score(filtered, reference, regularization=regularization)

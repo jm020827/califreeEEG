@@ -15,10 +15,21 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
     parser.add_argument("--dry-run", action="store_true", help="Build data/model and run one forward pass only.")
+    parser.add_argument(
+        "--resume-exact",
+        action="store_true",
+        help="Create or resume the crash-safe exact epoch-boundary journal.",
+    )
     parser.add_argument("overrides", nargs="*")
     args = parser.parse_args()
     cfg = merge_overrides(load_config(args.config, strict_env=False), args.overrides)
-    print(run_training(cfg, dry_run=args.dry_run))
+    print(
+        run_training(
+            cfg,
+            dry_run=args.dry_run,
+            resume_exact=args.resume_exact,
+        )
+    )
 
 
 if __name__ == "__main__":

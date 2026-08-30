@@ -1,16 +1,36 @@
 seed: 42
 run_name: wearable_dry_to_wet
-output_dir: outputs/research/wearable_dry_to_wet
+output_dir: outputs/development/wearable_v3_dry_to_wet
 assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  governance_required: true
+  execution_phase: development
+  analysis_plan: configs/analysis/wearable_primary.yaml
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  external_continuous_schema: impedance_mean_max_v1
 data:
+  cohort_role: development
   split_seed: 42
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/wearable_v2
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v3
+  expected_revisions:
+    wearable: wearable_v3
+  expected_dataset_counts:
+    wearable:
+      n_samples: 24480
+      n_subjects: 102
+      n_targets: 12
+  require_audit_receipt: true
   split: joint_subject_condition
   val_ratio: 0.2
   test_ratio: 0.2
-  batch_size: 64
+  batch_size: 16
+  eval_batch_size: 16
   num_workers: 4
+  persistent_workers: false
+  pin_memory: true
+  persistent_hdf5_handles: true
   train_filter:
     dataset_id: wearable
     electrode_type: dry
@@ -31,9 +51,10 @@ model:
   condition_encoder:
     enabled: true
     n_prompt_tokens: 4
-    fields: [reference, electrode_type, cap_type, reattach_flag]
+    fields: [reference, electrode_type, cap_type]
     include_continuous: true
-    include_channels: true
+    include_channels: false
+    external_metadata_mode: observed
   adapter:
     enabled: true
     type: conditioned_feature_adapter
@@ -68,6 +89,10 @@ tracking:
     watch_model: false
 evaluation:
   trial_time_sec: 2.0
+  open_test: false
+runtime:
+  device: cuda
+  probe_cuda: true
 augment:
   categorical_metadata_dropout_prob: 0.1
   make_two_views: true

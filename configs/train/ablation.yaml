@@ -7,78 +7,118 @@ variants:
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
   A0_eeg_only:
+    protocol.metadata_contract_version: 0.4-dev
+    model.conditioning.architecture: physical_hybrid_v1
+    model.conditioning.hidden_dim: 64
+    model.conditioning.common_query_film.enabled: true
+    model.conditioning.common_query_film.max_scale_delta: 0.25
+    model.conditioning.common_query_film.max_shift: 0.25
+    model.conditioning.external_global_film.enabled: true
+    model.conditioning.external_global_film.max_scale_delta: 0.25
+    model.conditioning.external_global_film.max_shift: 0.25
+    model.conditioning.channel_quality.enabled: true
+    model.conditioning.channel_quality.source: channel_impedance
+    model.conditioning.channel_quality.placement: pre_channel_embedding
+    model.conditioning.channel_quality.max_gain_delta: 0.25
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 0
     model.condition_encoder.fields:
-    - reference
     - electrode_type
-    - cap_type
-    - reattach_flag
+    model.condition_encoder.external_metadata_mode: "null"
     model.condition_encoder.include_continuous: true
-    model.condition_encoder.include_channels: true
-    model.condition_encoder.force_missing: true
-    model.adapter.enabled: true
+    model.condition_encoder.include_channels: false
+    model.condition_encoder.force_missing: false
+    model.adapter.enabled: false
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
   A1_dataset_id_prompt:
+    protocol.metadata_contract_version: legacy
+    model.conditioning.architecture: prompt_adapter_v1
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 4
     model.condition_encoder.fields:
     - dataset_id
     model.adapter.enabled: true
+    model.adapter.type: conditioned_feature_adapter
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
     model.condition_encoder.include_continuous: false
     model.condition_encoder.include_channels: false
   A2_structured_condition_prompt:
+    protocol.metadata_contract_version: 0.4-dev
+    model.conditioning.architecture: physical_hybrid_v1
+    model.conditioning.hidden_dim: 64
+    model.conditioning.common_query_film.enabled: true
+    model.conditioning.common_query_film.max_scale_delta: 0.25
+    model.conditioning.common_query_film.max_shift: 0.25
+    model.conditioning.external_global_film.enabled: true
+    model.conditioning.external_global_film.max_scale_delta: 0.25
+    model.conditioning.external_global_film.max_shift: 0.25
+    model.conditioning.channel_quality.enabled: true
+    model.conditioning.channel_quality.source: channel_impedance
+    model.conditioning.channel_quality.placement: pre_channel_embedding
+    model.conditioning.channel_quality.max_gain_delta: 0.25
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 0
     model.condition_encoder.fields:
-    - reference
     - electrode_type
-    - cap_type
-    - reattach_flag
-    model.adapter.enabled: true
+    model.condition_encoder.external_metadata_mode: observed
+    model.adapter.enabled: false
     model.latent.enabled: false
     loss.lambda_cons: 0.0
     loss.lambda_logit_cons: 0.0
     model.condition_encoder.include_continuous: true
-    model.condition_encoder.include_channels: true
+    model.condition_encoder.include_channels: false
   A3_prompt_adapter_consistency:
+    protocol.metadata_contract_version: 0.4-dev
+    model.conditioning.architecture: prompt_adapter_v1
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 4
     model.condition_encoder.fields:
     - reference
     - electrode_type
     - cap_type
-    - reattach_flag
+    model.condition_encoder.external_metadata_mode: observed
     model.adapter.enabled: true
+    model.adapter.type: conditioned_feature_adapter
     model.latent.enabled: false
     loss.lambda_cons: 0.1
     loss.lambda_logit_cons: 0.05
     model.condition_encoder.include_continuous: true
-    model.condition_encoder.include_channels: true
+    model.condition_encoder.include_channels: false
   A4_full_latent:
+    protocol.metadata_contract_version: 0.4-dev
+    model.conditioning.architecture: prompt_adapter_v1
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 4
     model.condition_encoder.fields:
     - reference
     - electrode_type
     - cap_type
-    - reattach_flag
+    model.condition_encoder.external_metadata_mode: observed
     model.adapter.enabled: true
+    model.adapter.type: conditioned_feature_adapter
     model.latent.enabled: true
     loss.lambda_cons: 0.1
     loss.lambda_logit_cons: 0.05
     model.condition_encoder.include_continuous: true
-    model.condition_encoder.include_channels: true
+    model.condition_encoder.include_channels: false
   A5_full_finetune_optional:
+    protocol.metadata_contract_version: 0.4-dev
+    model.conditioning.architecture: prompt_adapter_v1
     model.condition_encoder.enabled: true
+    model.condition_encoder.n_prompt_tokens: 4
     model.condition_encoder.fields:
     - reference
     - electrode_type
     - cap_type
-    - reattach_flag
+    model.condition_encoder.external_metadata_mode: observed
     model.condition_encoder.include_continuous: true
-    model.condition_encoder.include_channels: true
+    model.condition_encoder.include_channels: false
     model.adapter.enabled: true
+    model.adapter.type: conditioned_feature_adapter
     model.latent.enabled: true
     model.backbone.freeze: false
     loss.lambda_cons: 0.1

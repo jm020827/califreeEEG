@@ -1,0 +1,111 @@
+schema: cfeg.confirmatory-plan.v3
+status: dev_not_frozen
+dataset_id: wearable
+dataset_revision: wearable_v3
+cohort_roles_config: configs/governance/wearable_cohort_roles.yaml
+cohort_roles_sha256: 432b232713aedf5ae2b96ca9c29ee0e5ab799492c0151d6c9576bcf954fc0098
+cohort_decision_id: DEC-20260830-001
+development_subject_ids: [sub001, sub002, sub003]
+primary_excluded_subject_ids: [sub001, sub002, sub003]
+confirmatory_training_subject_ids: [sub004, sub006, sub008, sub011, sub014, sub021, sub022, sub025, sub028, sub029, sub030, sub031, sub032, sub033, sub037, sub041, sub042, sub043, sub044, sub046, sub054, sub055, sub056, sub061, sub063, sub065, sub067, sub073, sub074, sub077, sub080, sub082, sub083, sub084, sub089, sub092, sub097, sub100, sub102]
+primary_included_subject_ids: [sub005, sub007, sub009, sub010, sub012, sub013, sub015, sub016, sub017, sub018, sub019, sub020, sub023, sub024, sub026, sub027, sub034, sub035, sub036, sub038, sub039, sub040, sub045, sub047, sub048, sub049, sub050, sub051, sub052, sub053, sub057, sub058, sub059, sub060, sub062, sub064, sub066, sub068, sub069, sub070, sub071, sub072, sub075, sub076, sub078, sub079, sub081, sub085, sub086, sub087, sub088, sub090, sub091, sub093, sub094, sub095, sub096, sub098, sub099, sub101]
+allocation_decision_id: DEC-20260830-002
+allocation_seed: 42
+allocation_algorithm: numpy_default_rng_shuffle_sorted_subject_ids_train_first_v1
+allocation_sha256: 0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898
+execution_manifest_path: outputs/confirmatory-primary/execution_manifest.json
+execution_output_root: outputs/confirmatory-primary/runs
+prediction_schema_version: cfeg.predictions.v3
+scenario: clean
+split_seed: 42
+split_algorithm: confirmatory_lockbox_v1
+inner_val_ratio: null
+fold_indices: [0]
+optimization_seeds: [42, 43, 44]
+asset_expected_n_samples: 24480
+asset_expected_n_subjects: 102
+confirmatory_cohort_expected_n_samples: 23760
+confirmatory_cohort_expected_n_subjects: 99
+training_expected_n_samples: 9360
+training_expected_n_subjects: 39
+expected_n_samples: 14400
+expected_n_subjects: 60
+expected_n_labels: 12
+condition_column: electrode_type
+expected_conditions: [dry, wet]
+primary_model_contract:
+  conditioning_architecture: physical_hybrid_v1
+  backbone_name: spectral_transformer
+  spectral_frequency_range_hz: [6.0, 60.0]
+  conditioning_hidden_dim: 64
+  common_query_path: zero_init_bounded_residual_film
+  external_global_fields:
+  - electrode_type
+  - impedance_mean_kohm
+  - impedance_max_kohm
+  external_global_path: zero_init_bounded_residual_film
+  channel_quality_fields:
+  - impedance_kohm_by_channel
+  - impedance_availability_by_channel
+  channel_quality_path: shared_nonmonotonic_bounded_gain_pre_channel_embedding
+  impedance_transform: log1p_kohm_over_log1p_100_clip_0_2_v1
+  null_semantics: algebraic_identity_same_checkpoint
+  max_film_scale_delta: 0.25
+  max_film_shift: 0.25
+  max_channel_gain_delta: 0.25
+  latent_enabled: false
+  excluded_constant_primary_fields: [reference, cap_type]
+  legacy_prompt_adapter_role: secondary_architecture_only
+seed_reduction: mean_subject_metric
+inference_method: paired_subject_t_bound_sign_flip_with_bootstrap_sensitivity
+training_randomness_target: conditional_fixed_seed_ensemble_42_43_44
+inference_seed: 20260829
+n_resamples: 10000
+success_threshold: null
+sesoi_balanced_accuracy: null
+inference:
+  alpha: null
+  alternative: null
+multiplicity:
+  method: single_primary_contrast_no_adjustment_conditions_descriptive
+  family: [overall_a2_minus_a0_balanced_accuracy]
+missing_outcomes:
+  primary_policy: require_exact_complete_grid
+  partial_seed_policy: rerun_or_primary_invalid
+  partial_subject_policy: primary_invalid
+  metadata_input_missingness: retain_row_use_missing_token
+  sensitivity_policy: exploratory_bounds_only
+target_free_simulation:
+  plan: configs/analysis/wearable_lockbox_inference_simulation.yaml
+  plan_sha256: e89af8364c4a5c09da0dfa274d92e82059be023137ab4fda23ce5098f3bf595e
+  accepted_receipt: configs/governance/wearable_lockbox_inference_receipt.json
+  accepted_receipt_sha256: ecb00eed7441fc5ac23d2d8cade798c76e1f1f7a09c1f4ea318e459f874073c0
+development_control_protocol:
+  schema: cfeg.development-control-decision.v3
+  control_seed: 42
+  chance_balanced_accuracy: 0.08333333333333333
+  training_controls:
+  - metadata_only
+  - within_class_shuffle
+  invalid_assays:
+  - missingness_only
+  evaluation_only_controls:
+  - within_class_shuffle
+  - counterfactual_wet_dry
+  shuffle_scope: within_split_dataset_block_derangement_label_aligned
+  counterfactual_pair_key: dataset_subject_label_block_window_opposite_electrode
+  clean_a2_mean_minimum_delta: 0.0
+  clean_a2_subject_harm_margin: 0.03
+  shortcut_equivalence_margin: 0.03
+  pairing_mechanism_margin: 0.0125
+  counterfactual_mechanism_margin: 0.0125
+  wrong_metadata_safety_harm_margin: 0.03
+  minimum_bundle_changed_fraction: 0.95
+  minimum_condition_flip_fraction: 1.0
+  missingness_single_pattern_policy: invalid_assay
+  confirmatory_control_policy: development_gate_only
+confirmatory_actions: [primary_prediction_lockbox_clean]
+primary_fairness_hash: null
+source_lock:
+  freeze_tag: null
+  implementation_contract_sha256: null

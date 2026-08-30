@@ -18,14 +18,19 @@ if [[ "$#" -eq 0 ]]; then
 No downloads started. Choose assets explicitly:
   bash scripts/prepare_k8s_assets.sh synthetic
   HF_TOKEN=... bash scripts/prepare_k8s_assets.sh reve
-  CFEG_BETA_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh beta
-  CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_k8s.sh
-  CFEG_WANG_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh wang
-  CFEG_DONG2023_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh dong2023
+  bash scripts/prepare_k8s_assets.sh beta wang dong2023 wearable
 
-Use an empty subject selector for the full public dataset.
+This helper prepares and verifies full public cohorts only. For a development subset,
+call scripts/fetch_dataset.py --subjects ... with separate raw/processed directories.
+Set CFEG_FETCH_WORKERS=8 for parallel per-file downloads.
 USAGE
   exit 0
+fi
+
+if [[ -n "${CFEG_BETA_SUBJECTS:-}${CFEG_WANG_SUBJECTS:-}${CFEG_DONG2023_SUBJECTS:-}${CFEG_WEARABLE_SUBJECTS:-}" ]]; then
+  echo "prepare_k8s_assets.sh verifies full cohorts and does not accept CFEG_*_SUBJECTS." >&2
+  echo "Use scripts/fetch_dataset.py --subjects ... with dedicated pilot directories." >&2
+  exit 2
 fi
 
 processed_ready() {
@@ -55,10 +60,7 @@ for asset in "$@"; do
       "$PYTHON" scripts/verify_assets.py --model reve_base
       ;;
     beta)
-      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta")
-      if [[ -n "${CFEG_BETA_SUBJECTS:-}" ]]; then
-        fetch_args+=(--subjects "$CFEG_BETA_SUBJECTS")
-      fi
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset beta --raw-dir "$EEG_DATA_ROOT/raw/beta" --workers "${CFEG_FETCH_WORKERS:-1}")
       "${fetch_args[@]}"
       "$PYTHON" scripts/prepare_dataset.py \
         --dataset beta \
@@ -68,14 +70,7 @@ for asset in "$@"; do
       "$PYTHON" scripts/verify_assets.py --dataset beta --stage processed
       ;;
     wang)
-      if ! "$PYTHON" -c 'import moabb' >/dev/null 2>&1; then
-        echo "MOABB is missing. Run CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_k8s.sh" >&2
-        exit 1
-      fi
-      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wang --method moabb --raw-dir "$EEG_DATA_ROOT/raw/wang")
-      if [[ -n "${CFEG_WANG_SUBJECTS:-}" ]]; then
-        fetch_args+=(--subjects "$CFEG_WANG_SUBJECTS")
-      fi
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wang --raw-dir "$EEG_DATA_ROOT/raw/wang" --workers "${CFEG_FETCH_WORKERS:-1}")
       "${fetch_args[@]}"
       "$PYTHON" scripts/prepare_dataset.py \
         --dataset wang \
@@ -85,10 +80,7 @@ for asset in "$@"; do
       "$PYTHON" scripts/verify_assets.py --dataset wang --stage processed
       ;;
     dong2023)
-      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset dong2023 --raw-dir "$EEG_DATA_ROOT/raw/dong2023")
-      if [[ -n "${CFEG_DONG2023_SUBJECTS:-}" ]]; then
-        fetch_args+=(--subjects "$CFEG_DONG2023_SUBJECTS")
-      fi
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset dong2023 --raw-dir "$EEG_DATA_ROOT/raw/dong2023" --workers "${CFEG_FETCH_WORKERS:-1}")
       "${fetch_args[@]}"
       "$PYTHON" scripts/prepare_dataset.py \
         --dataset dong2023 \
@@ -98,15 +90,12 @@ for asset in "$@"; do
       "$PYTHON" scripts/verify_assets.py --dataset dong2023 --stage processed
       ;;
     wearable)
-      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wearable --raw-dir "$EEG_DATA_ROOT/raw/wearable")
-      if [[ -n "${CFEG_WEARABLE_SUBJECTS:-}" ]]; then
-        fetch_args+=(--subjects "$CFEG_WEARABLE_SUBJECTS")
-      fi
+      fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wearable --raw-dir "$EEG_DATA_ROOT/raw/wearable" --workers "${CFEG_FETCH_WORKERS:-1}")
       "${fetch_args[@]}"
       "$PYTHON" scripts/prepare_dataset.py \
         --dataset wearable \
         --raw_dir "$EEG_DATA_ROOT/raw/wearable" \
-        --out_dir "$EEG_DATA_ROOT/processed/wearable_v2" \
+        --out_dir "$EEG_DATA_ROOT/processed/wearable_v3" \
         --config configs/data/wearable.yaml
       "$PYTHON" scripts/verify_assets.py --dataset wearable --stage processed
       ;;

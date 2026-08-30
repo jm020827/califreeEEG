@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import torch
 from torch import nn
+from torch.nn.utils.rnn import pad_sequence
 
 from cfeg.assets.errors import MissingAssetError
 from cfeg.assets.hf import hf_cache_hint, resolve_hf_hub_cache
@@ -31,7 +32,10 @@ class REVEBackbone(EEGBackbone):
         self.output_proj: nn.Module | None = None
         n_heads = _compatible_heads(self.d_model, int(cfg.get("prompt_fusion_heads", 8)))
         self.prompt_attention = nn.MultiheadAttention(
-            self.d_model, n_heads, dropout=float(cfg.get("prompt_fusion_dropout", 0.1)), batch_first=True
+            self.d_model,
+            n_heads,
+            dropout=float(cfg.get("prompt_fusion_dropout", 0.1)),
+            batch_first=True,
         )
         self.prompt_gate = nn.Sequential(nn.Linear(self.d_model, self.d_model), nn.Sigmoid())
         self.prompt_norm = nn.LayerNorm(self.d_model)
@@ -70,38 +74,106 @@ class REVEBackbone(EEGBackbone):
             sfreq.float(), torch.full_like(sfreq.float(), self.required_sample_rate_hz), atol=1e-3
         ):
             raise ValueError("REVEBackbone requires processed sample rate of 200 Hz.")
-        x_reve, positions = self._select_channels_and_positions(x, cond)
-        if self.freeze:
-            with torch.no_grad():
-                out = self._forward_reve(x_reve, positions)
-        else:
-            out = self._forward_reve(x_reve, positions)
-        tokens = extract_reve_tokens(out)
-        if tokens.shape[-1] != self.d_model:
-            if self.output_proj is None:
-                self.output_proj = nn.Linear(tokens.shape[-1], self.d_model).to(
-                    device=tokens.device, dtype=tokens.dtype
-                )
-            tokens = self.output_proj(tokens)
-        h = tokens.mean(dim=1)
-        aux: dict[str, torch.Tensor] = {}
+        tokens, token_valid = self._encode_mask_groups(x, cond)
+        valid_float = token_valid.unsqueeze(-1).to(tokens.dtype)
+        h = (tokens * valid_float).sum(dim=1) / valid_float.sum(dim=1).clamp_min(1.0)
+        aux: dict[str, torch.Tensor] = {
+            "reve_token_count": token_valid.sum(dim=1),
+        }
         if prompt_tokens is not None:
             attended, weights = self.prompt_attention(
-                self.prompt_norm(prompt_tokens), self.prompt_norm(tokens), self.prompt_norm(tokens)
+                self.prompt_norm(prompt_tokens),
+                self.prompt_norm(tokens),
+                self.prompt_norm(tokens),
+                key_padding_mask=~token_valid,
             )
             prompt_summary = attended.mean(dim=1)
             h = self.prompt_norm(h + self.prompt_gate(prompt_tokens.mean(dim=1)) * prompt_summary)
-            aux["prompt_attention_mean"] = weights.mean(dim=(1, 2))
-        returned_tokens = torch.cat([prompt_tokens, tokens], dim=1) if (
-            return_tokens and prompt_tokens is not None
-        ) else (tokens if return_tokens else None)
+            safe_weights = weights.clamp_min(torch.finfo(weights.dtype).tiny)
+            aux["prompt_attention_entropy"] = (
+                -(weights * safe_weights.log()).sum(dim=-1).mean(dim=-1)
+            )
+            aux["prompt_attention_max"] = weights.max(dim=-1).values.mean(dim=-1)
+        returned_tokens = None
+        if return_tokens:
+            if prompt_tokens is not None:
+                returned_tokens = torch.cat([prompt_tokens, tokens], dim=1)
+                prompt_valid = torch.ones(
+                    (token_valid.shape[0], prompt_tokens.shape[1]),
+                    dtype=torch.bool,
+                    device=token_valid.device,
+                )
+                aux["reve_returned_token_valid_mask"] = torch.cat(
+                    [prompt_valid, token_valid], dim=1
+                )
+            else:
+                returned_tokens = tokens
+                aux["reve_returned_token_valid_mask"] = token_valid
         return BackboneOutput(h=h, tokens=returned_tokens, aux=aux)
+
+    def _encode_mask_groups(
+        self, x: torch.Tensor, cond: dict[str, torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Run REVE on exact per-sample structures, batching only equal masks/IDs."""
+        batch_size = x.shape[0]
+        mask_cpu = cond["channel_mask"].bool().detach().cpu()
+        ids_cpu = cond["channel_ids"].detach().cpu()
+        groups: dict[tuple[tuple[int, int], ...], list[int]] = {}
+        for batch_index in range(batch_size):
+            signature = tuple(
+                (slot, int(ids_cpu[batch_index, slot].item()))
+                for slot in torch.nonzero(mask_cpu[batch_index], as_tuple=False).flatten().tolist()
+            )
+            groups.setdefault(signature, []).append(batch_index)
+
+        token_rows: list[torch.Tensor | None] = [None] * batch_size
+        for indices in groups.values():
+            index = torch.as_tensor(indices, dtype=torch.long, device=x.device)
+            group_cond = {
+                key: (
+                    value.index_select(0, index)
+                    if torch.is_tensor(value) and value.ndim > 0 and value.shape[0] == batch_size
+                    else value
+                )
+                for key, value in cond.items()
+            }
+            x_reve, positions = self._select_channels_and_positions(
+                x.index_select(0, index), group_cond
+            )
+            if self.freeze:
+                with torch.no_grad():
+                    out = self._forward_reve(x_reve, positions)
+            else:
+                out = self._forward_reve(x_reve, positions)
+            group_tokens = self._project_tokens(extract_reve_tokens(out))
+            for local_index, batch_index in enumerate(indices):
+                token_rows[batch_index] = group_tokens[local_index]
+
+        if any(row is None for row in token_rows):
+            raise RuntimeError("REVE failed to produce tokens for every batch sample.")
+        rows = [row for row in token_rows if row is not None]
+        lengths = torch.as_tensor([row.shape[0] for row in rows], dtype=torch.long, device=x.device)
+        padded = pad_sequence(rows, batch_first=True)
+        positions = torch.arange(padded.shape[1], device=x.device).unsqueeze(0)
+        valid = positions < lengths.unsqueeze(1)
+        return padded, valid
+
+    def _project_tokens(self, tokens: torch.Tensor) -> torch.Tensor:
+        if tokens.shape[-1] == self.d_model:
+            return tokens
+        if self.output_proj is None:
+            self.output_proj = nn.Linear(tokens.shape[-1], self.d_model).to(
+                device=tokens.device, dtype=tokens.dtype
+            )
+        return self.output_proj(tokens)
 
     def train(self, mode: bool = True):
         super().train(mode)
+        # The position bank is always frozen and must remain deterministic,
+        # including the optional full-REVE-finetune variant.
+        self.pos_bank.eval()
         if getattr(self, "freeze", False):
             self.reve.eval()
-            self.pos_bank.eval()
         return self
 
     def _forward_reve(self, x_reve: torch.Tensor, positions: torch.Tensor):
@@ -119,6 +191,13 @@ class REVEBackbone(EEGBackbone):
             raise ValueError("REVEBackbone received a batch with no active EEG channels.")
 
         channel_ids = cond["channel_ids"].detach().cpu()
+        unknown_active = mask.detach().cpu() & channel_ids.eq(0)
+        if unknown_active.any():
+            raise ValueError(
+                "REVEBackbone cannot silently drop active channels with unknown canonical "
+                "ID 0. Add the electrode to configs/canonical_channels.yaml or exclude "
+                "the dataset from REVE experiments."
+            )
         names: list[str] = []
         keep_slots: list[int] = []
         for slot_tensor in active_slots.detach().cpu():
@@ -130,7 +209,9 @@ class REVEBackbone(EEGBackbone):
             channel_id = int(nonzero[0].item())
             name = self.canonical_map.id_to_name.get(channel_id)
             if not name:
-                continue
+                raise ValueError(
+                    f"REVEBackbone has no electrode name for active canonical ID {channel_id}."
+                )
             names.append(name)
             keep_slots.append(slot)
 
@@ -161,9 +242,11 @@ class REVEBackbone(EEGBackbone):
 
         selected_mask = mask[:, filtered_slots].unsqueeze(-1).to(x.dtype)
         x_reve = x[:, filtered_slots, :] * selected_mask
-        positions = base_positions.to(device=x.device, dtype=x.dtype)
+        # REVE may add positional noise in-place while fine-tuning. Clone keeps
+        # the cached base immutable and avoids writes through stride-0 expand views.
+        positions = base_positions.to(device=x.device, dtype=x.dtype).clone()
         if positions.ndim == 2:
-            positions = positions.unsqueeze(0).expand(x.size(0), -1, -1)
+            positions = positions.unsqueeze(0).expand(x.size(0), -1, -1).clone()
         return x_reve, positions
 
     def _resolve_positions(self, names: list[str]) -> tuple[list[int], torch.Tensor, list[str]]:
@@ -183,7 +266,9 @@ class REVEBackbone(EEGBackbone):
         for i, name in enumerate(names):
             try:
                 pos = self._standardize_positions(self.pos_bank([name]))
-            except Exception:
+            # The optional third-party position bank does not expose one stable
+            # exception type for unknown or malformed electrode names.
+            except Exception:  # noqa: BLE001
                 missing_names.append(name)
                 continue
             if pos.shape[0] != 1:
@@ -201,12 +286,15 @@ class REVEBackbone(EEGBackbone):
             positions = torch.as_tensor(positions)
         if positions.ndim == 3:
             if positions.shape[0] != 1:
-                raise ValueError(f"Expected REVE positions batch size 1, got shape {tuple(positions.shape)}")
+                raise ValueError(
+                    f"Expected REVE positions batch size 1, got shape {tuple(positions.shape)}"
+                )
             positions = positions.squeeze(0)
         if positions.ndim != 2:
-            raise ValueError(f"Expected REVE positions with shape [channels, dim], got {tuple(positions.shape)}")
+            raise ValueError(
+                f"Expected REVE positions with shape [channels, dim], got {tuple(positions.shape)}"
+            )
         return positions
-
 
 
 def extract_reve_tokens(out) -> torch.Tensor:
@@ -237,6 +325,7 @@ def _compatible_heads(d_model: int, requested: int) -> int:
         if d_model % n_heads == 0:
             return n_heads
     return 1
+
 
 def extract_reve_representation(out):
     """Backward-compatible pooled view of the standardized REVE tokens."""

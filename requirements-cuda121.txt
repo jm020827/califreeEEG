@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# Reproducible GPU reference stack validated on the local RTX 4090 host.
+numpy==1.26.4
+torch==2.2.2+cu121

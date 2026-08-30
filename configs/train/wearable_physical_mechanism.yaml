@@ -1,0 +1,48 @@
+base_config: configs/train/wearable_physical_development_loso.yaml
+control_family:
+  schema: cfeg.development-control-family.v1
+  reference_variant: A2_structured_condition_prompt
+  training_variants:
+  - A2_structured_condition_prompt
+  - M3_full_shuffle_train
+  - M4_metadata_only
+  evaluation_only_controls:
+  - block_coherent_metadata_shuffle
+  - joint_wet_dry_counterfactual
+  cohort_role: development
+  confirmatory_claim_allowed: false
+mechanism_family:
+  schema: cfeg.physical-mechanism-family.v1
+  roles:
+  - A0_eeg_only
+  - A2_structured_condition_prompt
+  - M1_global_only
+  - M2_channel_only
+  - M3_full_shuffle_train
+  - M4_metadata_only
+  missingness_only_policy: invalid_assay_single_natural_pattern
+  population_inference_allowed: false
+variants:
+  A0_eeg_only:
+    protocol.development_control: none
+    model.condition_encoder.external_metadata_mode: "null"
+  A2_structured_condition_prompt:
+    protocol.development_control: none
+    model.condition_encoder.external_metadata_mode: observed
+  M1_global_only:
+    protocol.development_control: none
+    model.condition_encoder.external_metadata_mode: observed
+    model.conditioning.channel_quality.enabled: false
+  M2_channel_only:
+    protocol.development_control: none
+    model.condition_encoder.external_metadata_mode: observed
+    model.conditioning.external_global_film.enabled: false
+  M3_full_shuffle_train:
+    protocol.development_control: none
+    protocol.training_external_metadata_control: within_class_shuffle
+    protocol.development_control_seed: 42
+    model.condition_encoder.external_metadata_mode: observed
+  M4_metadata_only:
+    protocol.development_control: metadata_only
+    protocol.development_control_seed: 42
+    model.condition_encoder.external_metadata_mode: observed

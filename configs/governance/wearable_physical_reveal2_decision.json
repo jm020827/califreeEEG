@@ -1,0 +1,101 @@
+{
+  "schema": "cfeg.physical-development-freeze-decision.v1",
+  "decision_id": "DEC-20260831-003",
+  "status": "approved",
+  "approved_by": "active_workspace_owner",
+  "approval_recorded_at_utc": "2026-08-30T17:52:16+00:00",
+  "authority_basis": "explicit_user_approval_in_active_codex_session",
+  "approval_message": "응 너가 여러가지를 잘 설계해서 시작해보자. 승인.",
+  "scope": {
+    "grid_id": "wearable-v3-s1-s3-physical-mechanism-v2",
+    "outcome_reveal_index": 2,
+    "seed": 42,
+    "folds": [0, 1, 2],
+    "training_job_count": 18,
+    "intervention_bundle_count": 3,
+    "fixed_epochs": 10,
+    "roles": [
+      "A0_eeg_only",
+      "A2_structured_condition_prompt",
+      "M1_global_only",
+      "M2_channel_only",
+      "M3_full_shuffle_train",
+      "M4_metadata_only"
+    ],
+    "authorized_actions": [
+      "prepare_frozen_physical_grid",
+      "train_exact_18_job_grid",
+      "publish_one_atomic_reveal_bundle",
+      "aggregate_predeclared_development_gates"
+    ],
+    "forbidden_actions": [
+      "confirmatory_training",
+      "confirmatory_lockbox_prediction",
+      "population_inference_from_s1_s3",
+      "post_outcome_s1_s3_tuning"
+    ]
+  },
+  "control_values": {
+    "chance_balanced_accuracy": 0.08333333333333333,
+    "clean_a2_mean_minimum_delta": 0.0,
+    "clean_a2_subject_harm_margin": 0.03,
+    "shortcut_equivalence_margin": 0.03,
+    "pairing_mechanism_margin": 0.0125,
+    "counterfactual_mechanism_margin": 0.0125,
+    "wrong_metadata_safety_harm_margin": 0.03,
+    "minimum_bundle_changed_fraction": 0.95,
+    "minimum_condition_flip_fraction": 1.0,
+    "confirmatory_control_policy": "development_gate_only"
+  },
+  "control_contract": {
+    "gate_count": 10,
+    "missingness_only_policy": "invalid_assay_single_natural_pattern",
+    "decision_rule": "clean_mean_plus_least_favourable_observed_subject_or_fold",
+    "numeric_comparison_tolerance": 1e-12,
+    "clean_subject_harm_gate_note": "explicit audit gate mathematically redundant under the frozen counterfactual and wrong-metadata thresholds"
+  },
+  "canonical_paths": {
+    "base_config": "configs/train/wearable_physical_development_loso.yaml",
+    "mechanism_config": "configs/train/wearable_physical_mechanism.yaml",
+    "intervention_config": "configs/eval/wearable_physical_mechanism.yaml",
+    "historical_reveal_ledger": "configs/governance/wearable_s1_s3_reveal_ledger.json",
+    "global_reveal_ledger": "outputs/development-loso/reveal_ledger.json",
+    "output_root": "outputs/development-loso/physical-mechanism-v2"
+  },
+  "bound_artifacts": {
+    "mechanism_config_sha256": "4ba5e6d993f806fc216306370239bf76203d5d5ba026e5b4bb82863dcbd8f0b5",
+    "intervention_config_sha256": "2341b27043451822dd8a7c53261189afdef176cb63a73a8ee3ec3a3c2886a359",
+    "historical_reveal_ledger_sha256": "500667e9783d813ab795f4aef371e038728b26e2778d7819625c0802b0953fba",
+    "base_config_binding": "decision_receipt_sha256_is_embedded_in_base_config_and_both_are_bound_by_the_grid_manifest"
+  },
+  "source_freeze": {
+    "clean_source_required": true,
+    "annotated_tag": "physical-reveal2-freeze-20260831",
+    "manifest_must_bind_tagged_commit": true
+  },
+  "scale_note": {
+    "n_development_subjects": 3,
+    "n_samples_per_fold": 240,
+    "balanced_accuracy_step_per_correct_prediction": 0.004166666666666667,
+    "pairing_margin_correct_prediction_equivalent": 3
+  },
+  "stopping_rules": {
+    "no_partial_reveal": true,
+    "training_interruption": "resume_only_the_same_frozen_job_from_exact_state",
+    "private_evaluation_interruption": "deterministically_recompute_only_the_incomplete_known_artifacts_of_the_same_frozen_private_bundle",
+    "publication_transaction": "consume_reveal_budget_with_complete_private_bundle_digest_precommit_then_atomic_directory_rename_and_final_publication_receipt",
+    "source_or_config_change_after_training_starts": "stop_without_prediction_and_require_new_owner_decision",
+    "post_precommit_failure": "reveal_is_consumed_and_only_the_exact_precommitted_bundle_digest_may_be_published",
+    "technical_integrity_failure": "fail_closed_without_substantive_interpretation",
+    "control_potency_failure": "invalid_assay_not_negative_mechanism_evidence",
+    "any_gate_failure": "block_confirmatory_and_forbid_s1_s3_retuning",
+    "all_gates_pass": "require_separate_owner_review_before_any_confirmatory_freeze",
+    "further_s1_s3_outcome_reveals": "forbidden_by_default_after_reveal_2"
+  },
+  "interpretation": {
+    "population_inference_allowed": false,
+    "confirmatory_execution_authorized": false,
+    "decision_use": "mechanism_wiring_direction_and_observed_safety_gate_only"
+  },
+  "attestation_note": "This repository-local hash-bound receipt records the active user's explicit approval; it is not an external cryptographic identity signature."
+}

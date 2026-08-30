@@ -89,43 +89,29 @@ echo "  HF_HUB_CACHE=$HF_HUB_CACHE"
 echo "  EEG_DATA_ROOT=$EEG_DATA_ROOT"
 echo "  WANDB_DIR=$WANDB_DIR"
 
-if [[ ! -d .venv ]]; then
-  python -m venv .venv
-fi
-source .venv/bin/activate
-
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
-if [[ "$CFEG_BACKBONE" == "reve" ]]; then
-  python -m pip install -e '.[reve]'
-fi
-if [[ "$WANDB_MODE" != "disabled" ]]; then
-  python -m pip install -e '.[tracking]'
-fi
+CFEG_ENABLE_REVE=0
+if [[ "$CFEG_BACKBONE" == "reve" ]]; then CFEG_ENABLE_REVE=1; fi
+CFEG_ENABLE_TRACKING=0
+if [[ "$WANDB_MODE" != "disabled" ]]; then CFEG_ENABLE_TRACKING=1; fi
+CFEG_ENABLE_REVE="$CFEG_ENABLE_REVE" \
+CFEG_ENABLE_TRACKING="$CFEG_ENABLE_TRACKING" \
+CFEG_RUN_TESTS=0 \
+bash scripts/bootstrap_k8s.sh
+CFEG_PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
 
 if [[ -n "${HF_TOKEN:-}" ]]; then
-  python -c 'import os; from huggingface_hub import login; login(token=os.environ["HF_TOKEN"], add_to_git_credential=False)'
+  "$CFEG_PYTHON_BIN" -c 'import os; from huggingface_hub import login; login(token=os.environ["HF_TOKEN"], add_to_git_credential=False)'
 fi
 
 if [[ "$WANDB_MODE" == "online" && -n "${WANDB_API_KEY:-}" ]]; then
-  python -c 'import os, wandb; wandb.login(key=os.environ["WANDB_API_KEY"], relogin=True)'
+  "$CFEG_PYTHON_BIN" -c 'import os, wandb; wandb.login(key=os.environ["WANDB_API_KEY"], relogin=True)'
 elif [[ "$WANDB_MODE" != "disabled" && -z "${WANDB_API_KEY:-}" ]]; then
   echo "W&B key was empty; switching to offline mode."
   WANDB_MODE="offline"
 fi
 
-python - <<'PY'
-import torch
-print(f"torch={torch.__version__}")
-print(f"cuda_available={torch.cuda.is_available()}")
-print(f"cuda_device_count={torch.cuda.device_count()}")
-for i in range(torch.cuda.device_count()):
-    print(f"cuda_device_{i}={torch.cuda.get_device_name(i)}")
-PY
-
 if [[ "$CFEG_PREPARE_SYNTHETIC" =~ ^[Yy]$ ]]; then
-  python scripts/prepare_synthetic.py \
+  "$CFEG_PYTHON_BIN" scripts/prepare_synthetic.py \
     --out_dir data/processed/synthetic \
     --n_subjects "$CFEG_SYNTH_SUBJECTS" \
     --n_trials_per_class "$CFEG_SYNTH_TRIALS_PER_CLASS" \
@@ -134,14 +120,14 @@ if [[ "$CFEG_PREPARE_SYNTHETIC" =~ ^[Yy]$ ]]; then
 fi
 
 if [[ "$CFEG_FETCH_REVE" =~ ^[Yy]$ ]]; then
-  python scripts/fetch_reve.py \
+  "$CFEG_PYTHON_BIN" scripts/fetch_reve.py \
     --model brain-bzh/reve-base \
     --positions brain-bzh/reve-positions \
     --cache-dir "$HF_HUB_CACHE"
 fi
 
 train_args=(
-  python scripts/train.py
+  "$CFEG_PYTHON_BIN" scripts/train.py
   --config "$CFEG_TRAIN_CONFIG"
   "run_name=$CFEG_RUN_NAME"
   "tracking.wandb.project=$WANDB_PROJECT"

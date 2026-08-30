@@ -17,11 +17,11 @@ def main() -> None:
     parser.add_argument("--out", default="outputs/predictions.csv")
     parser.add_argument(
         "--split",
-        choices=["test", "all"],
+        choices=["val", "test", "all"],
         default="test",
         help=(
-            "Prediction selection. Default 'test' requires checkpoint-adjacent split.csv; "
-            "use 'all' only for explicit whole-manifest inference."
+            "Prediction selection. Governed development checkpoints permit only 'val'; "
+            "confirmatory checkpoints are rejected here and must use the six-job orchestrator."
         ),
     )
     parser.add_argument(

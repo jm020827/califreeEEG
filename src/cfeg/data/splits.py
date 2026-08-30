@@ -32,6 +32,109 @@ def make_cross_subject_split(
     return split
 
 
+def make_cross_subject_train_val_split(
+    manifest: pd.DataFrame,
+    *,
+    seed: int,
+    val_ratio: float,
+) -> SplitIndices:
+    """Partition a development cohort without creating an outer-test split."""
+    groups = _subject_groups(manifest)
+    unique = np.asarray(sorted(set(groups)))
+    if len(unique) < 2:
+        raise ValueError("cross-subject-train-val requires at least two development subjects.")
+    rng = np.random.default_rng(seed)
+    rng.shuffle(unique)
+    n_val = max(1, round(len(unique) * val_ratio))
+    if n_val >= len(unique):
+        n_val = len(unique) - 1
+    val_groups = set(unique[:n_val].tolist())
+    train_groups = set(unique[n_val:].tolist())
+    split = SplitIndices(
+        train=_indices_for_groups(groups, train_groups),
+        val=_indices_for_groups(groups, val_groups),
+        test=np.array([], dtype=int),
+    )
+    if not len(split.train) or not len(split.val):
+        raise ValueError(
+            "cross-subject-train-val split is empty: "
+            f"train={len(split.train)}, val={len(split.val)}."
+        )
+    return split
+
+
+def make_development_subject_fold_split(
+    manifest: pd.DataFrame,
+    *,
+    seed: int,
+    n_folds: int,
+    fold_index: int,
+) -> SplitIndices:
+    """Rotate development subjects through validation without creating a test split."""
+    groups = _subject_groups(manifest)
+    unique = np.asarray(sorted(set(groups)))
+    if n_folds < 2:
+        raise ValueError("development-subject-fold requires at least two folds.")
+    if n_folds != len(unique):
+        raise ValueError(
+            "development-subject-fold requires one validation fold per development "
+            f"subject; observed {len(unique)} subjects and n_folds={n_folds}."
+        )
+    if not 0 <= fold_index < n_folds:
+        raise ValueError(
+            f"fold_index must be within [0, {n_folds - 1}], got {fold_index}."
+        )
+    rng = np.random.default_rng(seed)
+    rng.shuffle(unique)
+    val_group = unique[fold_index]
+    val_groups = {str(val_group)}
+    train_groups = set(unique.tolist()) - val_groups
+    split = SplitIndices(
+        train=_indices_for_groups(groups, train_groups),
+        val=_indices_for_groups(groups, val_groups),
+        test=np.array([], dtype=int),
+    )
+    if not len(split.train) or not len(split.val):
+        raise ValueError(
+            "development-subject-fold split is empty: "
+            f"train={len(split.train)}, val={len(split.val)}."
+        )
+    return split
+
+
+def make_confirmatory_lockbox_split(
+    manifest: pd.DataFrame,
+    *,
+    training_subject_ids: list[str],
+    lockbox_subject_ids: list[str],
+) -> SplitIndices:
+    """Create one outcome-sealed participant lockbox with no validation access."""
+
+    training = {str(value) for value in training_subject_ids}
+    lockbox = {str(value) for value in lockbox_subject_ids}
+    if not training or not lockbox:
+        raise ValueError("confirmatory-lockbox requires non-empty training and lockbox sets.")
+    overlap = sorted(training & lockbox)
+    if overlap:
+        raise ValueError(f"Training and lockbox subject IDs overlap: {overlap[:5]}.")
+    observed = set(manifest["subject_id"].astype(str))
+    if training | lockbox != observed:
+        raise ValueError(
+            "Confirmatory lockbox IDs must partition the governed cohort exactly: "
+            f"missing={sorted(observed - training - lockbox)[:5]}, "
+            f"extra={sorted((training | lockbox) - observed)[:5]}."
+        )
+    subjects = manifest["subject_id"].astype(str)
+    split = SplitIndices(
+        train=np.flatnonzero(subjects.isin(training).to_numpy()),
+        val=np.array([], dtype=int),
+        test=np.flatnonzero(subjects.isin(lockbox).to_numpy()),
+    )
+    if not len(split.train) or not len(split.test):  # pragma: no cover - guarded above
+        raise ValueError("Confirmatory lockbox produced an empty train or test partition.")
+    return split
+
+
 def make_cross_subject_fold_split(
     manifest: pd.DataFrame,
     *,

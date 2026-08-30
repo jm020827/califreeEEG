@@ -48,6 +48,24 @@ CONDITION_CATEGORICAL_FIELDS = [
     "reattach_flag",
 ]
 
+METADATA_CONTRACT_LEGACY = "legacy"
+METADATA_CONTRACT_V04_DEV = "0.4-dev"
+QUERY_QC_EXTRACTOR_V1 = "filtered_cropped_pre_zscore_channel_std_median_v1"
+EXTERNAL_CONTINUOUS_SCHEMA_V1 = "impedance_mean_max_v1"
+
+# Protocol 0.4-dev asks only whether portable, pre-query physical descriptors
+# add information beyond the waveform and common observation/QC contract.
+PROTOCOL_V04_EXTERNAL_CATEGORICAL_FIELDS = [
+    "reference",
+    "electrode_type",
+    "cap_type",
+]
+PROTOCOL_V04_EXTERNAL_CONTINUOUS_FIELDS = [
+    "impedance_mean_kohm",
+    "impedance_max_kohm",
+]
+PROTOCOL_V04_QUERY_QC_FIELDS = ["query_signal_std"]
+
 LEAKAGE_FIELDS = {
     "label",
     "class_id",

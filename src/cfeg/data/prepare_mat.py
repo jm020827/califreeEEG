@@ -14,8 +14,17 @@ from scipy.io import loadmat
 
 from cfeg.data.io_hdf5 import write_processed_hdf5
 from cfeg.data.label_mapping import remap_source_label, write_class_map
-from cfeg.data.preprocess import CanonicalChannelMap, PreprocessConfig, preprocess_trial
-from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write_manifest
+from cfeg.data.preprocess import (
+    CanonicalChannelMap,
+    PreprocessConfig,
+    preprocess_trial_with_qc,
+)
+from cfeg.data.schema import (
+    nullable_vector,
+    ordered_manifest_columns,
+    validate_manifest,
+    write_manifest,
+)
 
 LABEL_KEYS = {"label", "labels", "y", "target", "targets", "class", "classes", "class_id"}
 CHANNEL_KEYS = {"channel", "channels", "channel_names", "chan", "chans", "chanlocs", "chaninfo"}
@@ -24,8 +33,12 @@ PHASE_KEYS = {"phase", "phases", "stimulus_phase_rad"}
 SFREQ_KEYS = {"srate", "sfreq", "sample_rate", "sampling_rate"}
 
 
-def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dataset_id: str) -> None:
-    files, duplicate_files = _dedupe_files(sorted([*raw_dir.rglob("*.mat"), *raw_dir.rglob("*.npz")]))
+def prepare_mat_directory(
+    raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dataset_id: str
+) -> None:
+    files, duplicate_files = _dedupe_files(
+        sorted([*raw_dir.rglob("*.mat"), *raw_dir.rglob("*.npz")])
+    )
     if not files:
         raise FileNotFoundError(
             f"No .mat or .npz files found under {raw_dir}. If this dataset is in another raw "
@@ -42,10 +55,10 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
     _validate_configured_channels(channel_names, expected_channels, cmap, dataset_id)
     raw_sfreq = float(cfg.get("raw_sfreq", cfg.get("sfreq", pcfg.target_sfreq)))
     n_targets = int(cfg.get("expected", {}).get("n_targets") or cfg.get("n_targets") or 0)
-    class_freqs = [float(v) for v in (cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1)))]
-    canonical_freqs = [
-        float(v) for v in (cfg.get("canonical_class_frequencies") or class_freqs)
+    class_freqs = [
+        float(v) for v in (cfg.get("class_frequencies") or _default_freqs(max(n_targets, 1)))
     ]
+    canonical_freqs = [float(v) for v in (cfg.get("canonical_class_frequencies") or class_freqs)]
     class_phases = cfg.get("class_phases")
     drop_unknown_channels = bool(cfg.get("drop_unknown_channels", False))
     dropped_unknown_names: set[str] = set()
@@ -92,15 +105,18 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
             original_ch_names = file_channel_names[: original_trial.shape[0]]
             ch_names = original_ch_names
             if drop_unknown_channels:
-                trial, ch_names, dropped = _drop_unknown_channels(original_trial, original_ch_names, cmap)
+                trial, ch_names, dropped = _drop_unknown_channels(
+                    original_trial, original_ch_names, cmap
+                )
                 new_dropped = [name for name in dropped if name not in dropped_unknown_names]
                 if new_dropped:
                     print(f"dropped unknown channel(s) from {file.name}: {', '.join(new_dropped)}")
                     dropped_unknown_names.update(new_dropped)
-            placed, mask, _ids, sfreq_processed = preprocess_trial(trial, ch_names, file_raw_sfreq, pcfg, cmap)
+            placed, mask, slot_ids, sfreq_processed, query_qc = preprocess_trial_with_qc(
+                trial, ch_names, file_raw_sfreq, pcfg, cmap
+            )
             source_label = int(labels[trial_i])
             label, freq = remap_source_label(source_label, file_class_freqs, canonical_freqs)
-            slot_ids = ((np.arange(pcfg.c_max) + 1) * mask.astype(np.int64)).tolist()
             h5_index = len(xs)
             xs.append(placed)
             masks.append(mask)
@@ -145,6 +161,8 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                     "time_since_last_session_hours": None,
                     "environment_note_code": cfg.get("environment_note_code", "unknown"),
                     "source_file": str(file),
+                    "query_signal_std": query_qc.signal_std,
+                    "query_signal_std_by_channel": nullable_vector(query_qc.signal_std_by_channel),
                 }
             )
         print(f"prepared {file} key={data_key} trials={len(trials)}")
@@ -153,7 +171,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         raise RuntimeError(f"No trials could be prepared from {raw_dir}")
     out_dir.mkdir(parents=True, exist_ok=True)
     write_processed_hdf5(out_dir, np.stack(xs), np.stack(masks), np.asarray(ys, dtype=np.int64))
-    manifest = pd.DataFrame(rows, columns=REQUIRED_MANIFEST_COLUMNS)
+    manifest = pd.DataFrame(rows, columns=ordered_manifest_columns(rows))
     validate_manifest(manifest)
     write_manifest(manifest, out_dir)
     write_class_map(canonical_freqs, out_dir)
@@ -163,6 +181,7 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
         json.dump(
             {
                 "dataset_id": dataset_id,
+                "dataset_revision": cfg.get("dataset_revision"),
                 "raw_dir": str(raw_dir),
                 "processed_dir": str(out_dir),
                 "created_by": "scripts/prepare_dataset.py",
@@ -174,6 +193,8 @@ def prepare_mat_directory(raw_dir: Path, out_dir: Path, cfg: dict[str, Any], dat
                 ],
                 "distributed_variant": cfg.get("distributed_variant"),
                 "acquisition_provenance": cfg.get("acquisition_provenance", {}),
+                "query_qc_extractor_version": ("filtered_cropped_pre_zscore_channel_std_median_v1"),
+                "external_continuous_schema": "impedance_mean_max_v1",
                 "notes": "Raw files are not copied; source labels are remapped by frequency.",
             },
             f,
@@ -299,9 +320,11 @@ def _load_arrays(path: Path) -> dict[str, Any]:
         arrays: dict[str, Any] = {}
         with h5py.File(path, "r") as h5:
             h5.visititems(
-                lambda name, obj: arrays.setdefault(name, np.asarray(obj))
-                if isinstance(obj, h5py.Dataset)
-                else None
+                lambda name, obj: (
+                    arrays.setdefault(name, np.asarray(obj))
+                    if isinstance(obj, h5py.Dataset)
+                    else None
+                )
             )
         return arrays
 
@@ -364,7 +387,9 @@ def _channel_axis(shape: tuple[int, ...], expected_channels: int) -> int:
     for i, size in enumerate(shape):
         if size == expected_channels:
             return i
-    plausible = [(abs(size - expected_channels), i) for i, size in enumerate(shape) if 2 <= size <= 128]
+    plausible = [
+        (abs(size - expected_channels), i) for i, size in enumerate(shape) if 2 <= size <= 128
+    ]
     if plausible:
         return min(plausible)[1]
     return int(np.argmin(shape))
@@ -439,7 +464,11 @@ def _strings_from_value(value: Any, expected_channels: int) -> list[str] | None:
         return None
     if arr.ndim == 1:
         strings = [str(x) for x in arr.tolist() if isinstance(x, str)]
-        return strings if len(strings) == expected_channels and _channel_name_score(strings) > 0 else None
+        return (
+            strings
+            if len(strings) == expected_channels and _channel_name_score(strings) > 0
+            else None
+        )
     candidates: list[tuple[int, list[str]]] = []
     for axis in range(arr.ndim):
         if arr.shape[axis] != expected_channels:
@@ -466,7 +495,9 @@ def _is_number_like(value: str) -> bool:
         return False
 
 
-def _extract_numeric_vector(arrays: dict[str, Any], keys: set[str], expected_len: int) -> list[float] | None:
+def _extract_numeric_vector(
+    arrays: dict[str, Any], keys: set[str], expected_len: int
+) -> list[float] | None:
     for key, value in arrays.items():
         if _last_key(key) not in keys:
             continue

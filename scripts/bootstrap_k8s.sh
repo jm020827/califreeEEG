@@ -7,44 +7,53 @@ export PROJECT_ROOT
 cd "$PROJECT_ROOT"
 source scripts/setup_gpu_pod.sh
 
-CFEG_PYTHON="${CFEG_PYTHON:-python3}"
+CFEG_PYTHON="${CFEG_PYTHON:-/usr/bin/python3}"
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is required to build the isolated CUDA environment." >&2
+  exit 1
+fi
+if [[ "$("$CFEG_PYTHON" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" != "3.10" ]]; then
+  echo "CFEG_PYTHON must be Python 3.10; got $($CFEG_PYTHON --version 2>&1)." >&2
+  exit 1
+fi
 if [[ ! -d .venv ]]; then
-  if "$CFEG_PYTHON" -c 'import torch' >/dev/null 2>&1; then
-    "$CFEG_PYTHON" -m venv --system-site-packages .venv
-  else
-    "$CFEG_PYTHON" -m venv .venv
-  fi
+  uv venv .venv --python "$CFEG_PYTHON"
 fi
-source .venv/bin/activate
-
-export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$PROJECT_ROOT/.local/pip-cache}"
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
-
-if [[ "${CFEG_ENABLE_REVE:-1}" == "1" ]]; then
-  python -m pip install -e '.[reve]'
+if [[ ! -x .venv/bin/python ]]; then
+  echo "Existing .venv is incomplete; move it aside and rerun bootstrap." >&2
+  exit 1
 fi
-if [[ "${CFEG_ENABLE_MOABB:-0}" == "1" ]]; then
-  python -m pip install -e '.[moabb]'
+if grep -Eq '^include-system-site-packages[[:space:]]*=[[:space:]]*true' .venv/pyvenv.cfg; then
+  echo "Existing .venv inherits ambient packages; move it aside and rerun bootstrap." >&2
+  exit 1
 fi
-if [[ "${CFEG_ENABLE_TRACKING:-0}" == "1" ]]; then
-  python -m pip install -e '.[tracking]'
-fi
-if [[ "${CFEG_ENABLE_OPENBCI:-0}" == "1" ]]; then
-  python -m pip install -e '.[openbci]'
+if [[ "$(.venv/bin/python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')" != "3.10" ]]; then
+  echo "Existing .venv is not Python 3.10; move it aside and rerun bootstrap." >&2
+  exit 1
 fi
 
-python - <<'PY'
-import torch
-print(f"torch={torch.__version__}")
-print(f"cuda_available={torch.cuda.is_available()}")
-if torch.cuda.is_available():
-    print(f"gpu={torch.cuda.get_device_name(0)}")
-PY
+extras=()
+if [[ "${CFEG_ENABLE_REVE:-1}" == "1" ]]; then extras+=(reve); fi
+if [[ "${CFEG_ENABLE_MOABB:-0}" == "1" ]]; then extras+=(moabb); fi
+if [[ "${CFEG_ENABLE_TRACKING:-0}" == "1" ]]; then extras+=(tracking); fi
+if [[ "${CFEG_ENABLE_OPENBCI:-0}" == "1" ]]; then extras+=(openbci); fi
+editable_target="."
+if (( ${#extras[@]} > 0 )); then
+  editable_target=".[$(IFS=,; echo "${extras[*]}")]"
+fi
+
+export UV_CACHE_DIR="${UV_CACHE_DIR:-${PIP_CACHE_DIR}/uv}"
+uv pip install \
+  --python .venv/bin/python \
+  --torch-backend cu121 \
+  --strict \
+  -r requirements-cuda121.txt \
+  -e "$editable_target"
+
+.venv/bin/python scripts/verify_cuda.py
 
 if [[ "${CFEG_RUN_TESTS:-1}" == "1" ]]; then
-  python -m pytest -q
+  .venv/bin/python -m pytest -q
 fi
 
 printf '

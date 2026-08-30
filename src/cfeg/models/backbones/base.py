@@ -16,6 +16,7 @@ class BackboneOutput:
 class EEGBackbone(nn.Module):
     d_model: int
     supports_prompt_tokens: bool = False
+    supports_channel_gain: bool = False
 
     def forward(
         self,
@@ -23,6 +24,6 @@ class EEGBackbone(nn.Module):
         cond: dict[str, torch.Tensor],
         prompt_tokens: torch.Tensor | None = None,
         return_tokens: bool = False,
+        channel_gain: torch.Tensor | None = None,
     ) -> BackboneOutput:
         raise NotImplementedError
-

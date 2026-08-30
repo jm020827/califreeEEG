@@ -1,0 +1,22 @@
+schema: cfeg.cohort-roles.v1
+status: frozen
+decision_id: DEC-20260830-001
+effective_date: 2026-08-30
+dataset_id: wearable
+dataset_revision: wearable_v3
+asset_contract:
+  expected_n_subjects: 102
+  expected_n_samples: 24480
+roles:
+  development:
+    include_subject_ids: [sub001, sub002, sub003]
+    expected_n_subjects: 3
+    expected_n_samples: 720
+    performance_access: allowed
+    purpose: implementation, falsification controls, and source-only architecture debugging
+  confirmatory_primary:
+    exclude_subject_ids: [sub001, sub002, sub003]
+    expected_n_subjects: 99
+    expected_n_samples: 23760
+    performance_access: sealed_until_analysis_plan_frozen
+    purpose: strict unseen-participant primary inference

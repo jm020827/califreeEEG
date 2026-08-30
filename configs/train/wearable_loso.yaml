@@ -1,17 +1,40 @@
 seed: 42
 run_name: wearable_subject_dg_fold0
-output_dir: outputs/research/wearable_subject_dg/fold0
+output_dir: outputs/research/wearable_v3_subject_dg/fold0
 assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  governance_required: true
+  execution_phase: confirmatory_training
+  analysis_plan: configs/analysis/wearable_primary.yaml
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  external_continuous_schema: impedance_mean_max_v1
 data:
+  cohort_role: confirmatory_primary
   split_seed: 42
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/wearable_v2
-  split: cross_subject_fold
-  n_folds: 5
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v3
+  expected_revisions:
+    wearable: wearable_v3
+  expected_dataset_counts:
+    wearable:
+      n_samples: 24480
+      n_subjects: 102
+      n_targets: 12
+  require_audit_receipt: true
+  split: confirmatory_lockbox
+  n_folds: 1
   fold_index: 0
-  val_ratio: 0.2
-  batch_size: 64
+  training_subject_ids: [sub004, sub006, sub008, sub011, sub014, sub021, sub022, sub025, sub028, sub029, sub030, sub031, sub032, sub033, sub037, sub041, sub042, sub043, sub044, sub046, sub054, sub055, sub056, sub061, sub063, sub065, sub067, sub073, sub074, sub077, sub080, sub082, sub083, sub084, sub089, sub092, sub097, sub100, sub102]
+  lockbox_subject_ids: [sub005, sub007, sub009, sub010, sub012, sub013, sub015, sub016, sub017, sub018, sub019, sub020, sub023, sub024, sub026, sub027, sub034, sub035, sub036, sub038, sub039, sub040, sub045, sub047, sub048, sub049, sub050, sub051, sub052, sub053, sub057, sub058, sub059, sub060, sub062, sub064, sub066, sub068, sub069, sub070, sub071, sub072, sub075, sub076, sub078, sub079, sub081, sub085, sub086, sub087, sub088, sub090, sub091, sub093, sub094, sub095, sub096, sub098, sub099, sub101]
+  batch_size: 256
+  eval_batch_size: 256
   num_workers: 4
+  persistent_workers: false
+  pin_memory: true
+  persistent_hdf5_handles: true
+  preload_hdf5_to_memory: false
+  preload_train_indices_to_memory: true
 model:
   n_classes: 12
   c_max: 64
@@ -19,35 +42,54 @@ model:
   t_len: 400
   d_model: 256
   patch_size: 20
-  depth: 6
+  depth: 3
   n_heads: 8
   backbone:
-    name: tiny_transformer
+    name: spectral_transformer
+    min_frequency_hz: 6.0
+    max_frequency_hz: 60.0
+  conditioning:
+    architecture: physical_hybrid_v1
+    hidden_dim: 64
+    common_query_film:
+      enabled: true
+      max_scale_delta: 0.25
+      max_shift: 0.25
+    external_global_film:
+      enabled: true
+      max_scale_delta: 0.25
+      max_shift: 0.25
+    channel_quality:
+      enabled: true
+      source: channel_impedance
+      placement: pre_channel_embedding
+      max_gain_delta: 0.25
   condition_encoder:
     enabled: true
-    n_prompt_tokens: 4
-    fields: [reference, electrode_type, cap_type, reattach_flag]
+    n_prompt_tokens: 0
+    fields: [electrode_type]
     include_continuous: true
-    include_channels: true
+    include_channels: false
+    external_metadata_mode: observed
   adapter:
-    enabled: true
-    type: conditioned_feature_adapter
+    enabled: false
     bottleneck_dim: 64
   latent:
-    enabled: true
+    enabled: false
     z_dim: 16
 train:
-  epochs: 100
+  epochs: 10
+  checkpoint_selection: fixed_epoch_sealed
   lr: 0.0003
   weight_decay: 0.01
   amp: true
   grad_clip_norm: 1.0
-  early_stop_patience: 15
+  early_stop_patience: 10
 checkpoint:
   save_trainable_only: true
 loss:
-  lambda_cons: 0.1
-  lambda_logit_cons: 0.05
+  lambda_cons: 0.0
+  lambda_logit_cons: 0.0
   beta_kl: 0.001
   ce_zero_weight: 0.5
 tracking:
@@ -61,12 +103,16 @@ tracking:
     watch_model: false
 evaluation:
   trial_time_sec: 2.0
+  open_test: false
+runtime:
+  device: cuda
+  probe_cuda: true
 augment:
-  categorical_metadata_dropout_prob: 0.1
-  make_two_views: true
-  channel_dropout_prob: 0.2
+  categorical_metadata_dropout_prob: 0.0
+  make_two_views: false
+  channel_dropout_prob: 0.0
   min_channels: 2
   channel_sets: [wearable_native_8, occipital_4, occipital_2]
-  channel_subset_prob: 0.75
-  noise_std_range: [0.01, 0.05]
-  time_shift_samples: 8
+  channel_subset_prob: 0.0
+  noise_std_range: [0.0, 0.0]
+  time_shift_samples: 0

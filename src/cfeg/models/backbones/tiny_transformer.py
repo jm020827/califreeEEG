@@ -8,6 +8,7 @@ from cfeg.models.backbones.base import BackboneOutput, EEGBackbone
 
 class TinyEEGTransformerBackbone(EEGBackbone):
     supports_prompt_tokens = True
+    supports_channel_gain = True
 
     def __init__(
         self,
@@ -52,6 +53,7 @@ class TinyEEGTransformerBackbone(EEGBackbone):
         cond: dict[str, torch.Tensor],
         prompt_tokens: torch.Tensor | None = None,
         return_tokens: bool = False,
+        channel_gain: torch.Tensor | None = None,
     ) -> BackboneOutput:
         bsz, channels, time = x.shape
         if channels != self.c_max:
@@ -60,6 +62,15 @@ class TinyEEGTransformerBackbone(EEGBackbone):
             raise ValueError(f"Expected {self.t_len} time samples, got {time}")
         patches = x.unfold(dimension=-1, size=self.patch_size, step=self.patch_size)
         tok = self.patch_embed(patches)
+        if channel_gain is not None:
+            if channel_gain.shape != (bsz, channels):
+                raise ValueError(
+                    "channel_gain must have shape [batch,channels], got "
+                    f"{tuple(channel_gain.shape)}."
+                )
+            if not torch.isfinite(channel_gain).all() or torch.any(channel_gain <= 0):
+                raise ValueError("channel_gain must contain finite positive values.")
+            tok = tok * channel_gain.to(tok.dtype).unsqueeze(-1).unsqueeze(-1)
         channel_ids = cond["channel_ids"].clamp(min=0, max=self.channel_embedding.num_embeddings - 1)
         tok = tok + self.channel_embedding(channel_ids).unsqueeze(2)
         tok = tok + self.time_embedding[:, : self.n_patches].unsqueeze(1)
@@ -79,4 +90,3 @@ class TinyEEGTransformerBackbone(EEGBackbone):
         out = self.norm(out)
         h = out[:, 0]
         return BackboneOutput(h=h, tokens=out if return_tokens else None, aux={})
-

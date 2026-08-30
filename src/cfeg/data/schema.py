@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
-
 
 REQUIRED_MANIFEST_COLUMNS = [
     "sample_id",
@@ -40,6 +40,17 @@ REQUIRED_MANIFEST_COLUMNS = [
     "source_file",
 ]
 
+# These columns preserve information needed by Protocol 0.4-dev without making
+# older processed datasets unreadable.  They are intentionally not all model
+# inputs: headband order and condition period are analysis covariates only.
+OPTIONAL_MANIFEST_COLUMNS = [
+    "query_signal_std",
+    "query_signal_std_by_channel",
+    "impedance_kohm_by_channel",
+    "headband_order",
+    "condition_period",
+]
+
 
 @dataclass
 class EEGSample:
@@ -61,6 +72,25 @@ class EEGSample:
     impedance_max_kohm: float | None
     reattach_flag: bool | None
     time_since_last_session_hours: float | None
+    query_signal_std: float | None = None
+    query_signal_std_by_channel: np.ndarray | None = None
+    impedance_kohm_by_channel: np.ndarray | None = None
+    headband_order: str | None = None
+    condition_period: str | None = None
+
+
+def ordered_manifest_columns(rows: list[dict[str, Any]]) -> list[str]:
+    """Return a stable schema while retaining versioned optional metadata."""
+    present = {key for row in rows for key in row}
+    optional = [column for column in OPTIONAL_MANIFEST_COLUMNS if column in present]
+    extras = sorted(present - set(REQUIRED_MANIFEST_COLUMNS) - set(optional))
+    return [*REQUIRED_MANIFEST_COLUMNS, *optional, *extras]
+
+
+def nullable_vector(values: np.ndarray | list[float]) -> list[float | None]:
+    """Serialize aligned numeric vectors without emitting non-standard NaN JSON."""
+    array = np.asarray(values, dtype=float).reshape(-1)
+    return [float(value) if np.isfinite(value) else None for value in array]
 
 
 def validate_manifest(manifest: pd.DataFrame) -> None:
@@ -91,10 +121,20 @@ def load_manifest(processed_dir: str | Path) -> pd.DataFrame:
 def write_manifest(manifest: pd.DataFrame, processed_dir: str | Path) -> None:
     root = Path(processed_dir)
     root.mkdir(parents=True, exist_ok=True)
-    manifest.to_json(root / "manifest.jsonl", orient="records", lines=True)
+    jsonl = root / "manifest.jsonl"
+    jsonl_tmp = root / "manifest.jsonl.tmp"
+    manifest.to_json(jsonl_tmp, orient="records", lines=True)
+    os.replace(jsonl_tmp, jsonl)
+    parquet = root / "manifest.parquet"
+    parquet_tmp = root / "manifest.parquet.tmp"
     try:
-        manifest.to_parquet(root / "manifest.parquet", index=False)
-    except Exception as exc:
+        manifest.to_parquet(parquet_tmp, index=False)
+        os.replace(parquet_tmp, parquet)
+    # Parquet support is optional and backend failures are not standardized.
+    except Exception as exc:  # noqa: BLE001
+        parquet_tmp.unlink(missing_ok=True)
+        # Never leave an older Parquet manifest shadowing the new JSONL.
+        parquet.unlink(missing_ok=True)
         print(f"Warning: failed to write manifest.parquet ({exc}); manifest.jsonl was written.")
 
 
@@ -107,4 +147,3 @@ def nullable_float(value: Any) -> float | None:
     except TypeError:
         pass
     return float(value)
-

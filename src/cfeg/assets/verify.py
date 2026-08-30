@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import h5py
 import numpy as np
-from typing import Any
 
 from cfeg.assets.errors import AssetVerificationError, MissingAssetError
 from cfeg.assets.hf import assert_hf_snapshot_present
@@ -13,7 +13,14 @@ from cfeg.data.datasets import _validate_manifest_class_map
 from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, load_manifest, validate_manifest
 
 
-def verify_processed_dir(processed_dir: str | Path) -> dict[str, Any]:
+def verify_processed_dir(
+    processed_dir: str | Path,
+    *,
+    expected_dataset_id: str | None = None,
+    expected_revision: str | None = None,
+    required_manifest_columns: list[str] | None = None,
+    expected_counts: dict[str, int] | None = None,
+) -> dict[str, Any]:
     root = Path(processed_dir)
     required = ["signals.h5", "class_map.json", "preprocess_config.yaml"]
     missing = [name for name in required if not (root / name).exists()]
@@ -29,6 +36,41 @@ def verify_processed_dir(processed_dir: str | Path) -> dict[str, Any]:
         )
     manifest = load_manifest(root)
     validate_manifest(manifest)
+    missing_columns = [
+        column for column in (required_manifest_columns or []) if column not in manifest.columns
+    ]
+    if missing_columns:
+        raise AssetVerificationError(
+            f"Processed dataset {root} is missing revision-required manifest columns: "
+            f"{missing_columns}."
+        )
+    observed_counts = {
+        "n_samples": len(manifest),
+        "n_subjects": int(manifest["subject_id"].nunique()),
+        "n_targets": int(manifest["label"].nunique()),
+    }
+    if "n_channels" in (expected_counts or {}):
+        expected_channels = int(expected_counts["n_channels"])
+        observed_channels = sorted(
+            {int(value) for value in manifest["n_channels_original"].dropna().unique()}
+        )
+        if observed_channels != [expected_channels]:
+            raise AssetVerificationError(
+                f"Processed dataset {root} has unexpected original channel counts: expected "
+                f"{expected_channels}, observed {observed_channels}."
+            )
+        observed_counts["n_channels"] = expected_channels
+    for key in ("n_samples", "n_subjects", "n_targets"):
+        if key in (expected_counts or {}) and observed_counts[key] != int(expected_counts[key]):
+            raise AssetVerificationError(
+                f"Processed dataset {root} is incomplete: {key} expected "
+                f"{int(expected_counts[key])}, observed {observed_counts[key]}."
+            )
+    asset_info = _verified_asset_info(
+        root,
+        expected_dataset_id=expected_dataset_id,
+        expected_revision=expected_revision,
+    )
     _validate_manifest_class_map(root, manifest)
     with (root / "class_map.json").open("r", encoding="utf-8") as f:
         class_map = json.load(f)
@@ -49,10 +91,42 @@ def verify_processed_dir(processed_dir: str | Path) -> dict[str, Any]:
             )
     return {
         "processed_dir": str(root),
-        "n_samples": int(len(manifest)),
-        "n_classes": int(len(class_map)),
+        "n_samples": len(manifest),
+        "n_classes": len(class_map),
         "required_columns": REQUIRED_MANIFEST_COLUMNS,
+        "dataset_revision": asset_info.get("dataset_revision"),
+        "observed_counts": observed_counts,
     }
+
+
+def _verified_asset_info(
+    root: Path,
+    *,
+    expected_dataset_id: str | None,
+    expected_revision: str | None,
+) -> dict[str, Any]:
+    path = root / "asset_info.json"
+    if not path.exists():
+        if expected_revision is not None:
+            raise AssetVerificationError(
+                f"Processed dataset {root} has no asset_info.json; provenance cannot be verified."
+            )
+        return {}
+    with path.open("r", encoding="utf-8") as handle:
+        info = json.load(handle)
+    if expected_dataset_id is not None and str(info.get("dataset_id")) != str(expected_dataset_id):
+        raise AssetVerificationError(
+            f"Processed dataset ID mismatch at {root}: expected {expected_dataset_id!r}, "
+            f"observed {info.get('dataset_id')!r}."
+        )
+    if expected_revision is not None and str(info.get("dataset_revision")) != str(
+        expected_revision
+    ):
+        raise AssetVerificationError(
+            f"Processed revision mismatch at {root}: expected {expected_revision!r}, "
+            f"observed {info.get('dataset_revision', 'missing')!r}."
+        )
+    return info
 
 
 def verify_raw_dir(raw_dir: str | Path) -> dict[str, Any]:
@@ -68,7 +142,9 @@ def verify_raw_dir(raw_dir: str | Path) -> dict[str, Any]:
     return {"raw_dir": str(root), "file_count": len(files)}
 
 
-def verify_reve_assets(model_id: str, positions_id: str, cache_dir: str | None = None) -> dict[str, Any]:
+def verify_reve_assets(
+    model_id: str, positions_id: str, cache_dir: str | None = None
+) -> dict[str, Any]:
     positions_path = assert_hf_snapshot_present(positions_id, cache_dir)
     model_path = assert_hf_snapshot_present(model_id, cache_dir)
     return {
@@ -77,4 +153,3 @@ def verify_reve_assets(model_id: str, positions_id: str, cache_dir: str | None =
         "positions_id": positions_id,
         "positions_path": str(positions_path),
     }
-

@@ -1,5 +1,5 @@
 dataset_id: wearable
-dataset_revision: wearable_v2
+dataset_revision: wearable_v3
 raw_sfreq: 250.0
 channel_names:
 - POz
@@ -26,6 +26,14 @@ expected:
   n_blocks_per_electrode: 10
   has_wet_dry: true
   has_impedance: true
+  has_headband_order: true
+  impedance_mean_kohm:
+    dry: 261.6749
+    wet: 19.6317
+  impedance_mean_tolerance_kohm: 1.0
+  headband_order_counts:
+    dry: 53
+    wet: 49
 class_frequencies:
 - 9.25
 - 11.25
@@ -56,14 +64,23 @@ electrode_types:
 - dry
 - wet
 impedance_electrode_types:
-- wet
 - dry
+- wet
 reference: forehead
 hardware_id: neuracle_neusenw
 environment_note_code: non_shielded_non_soundproof
 acquisition_provenance:
+  figshare_article_id: 13560281
+  figshare_version: 4
   acquisition_sfreq_hz: 1000
   distributed_sfreq_hz: 250
   reference: forehead
   dry_electrode_geometry: multipin
   wet_coupling: conductive_paste
+  eeg_axis_evidence:
+    official_readme: https://bci.med.tsinghua.edu.cn/upload/zhufangkun/Readme.pdf
+    author_pipeline: https://github.com/CECNL/SSVEP-DAN/blob/main/data_preprocessing.py
+    conclusion: distributed EEG condition axis is [dry, wet]
+  impedance_axis_evidence:
+    method: paper-reported condition means plus Figshare v4 numeric signature
+    note: distributed Readme axis text conflicts with its numeric values and reported means

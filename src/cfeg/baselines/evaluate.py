@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,8 @@ from cfeg.baselines.fbcca import (
 )
 from cfeg.data.datasets import EEGProcessedDataset
 from cfeg.data.preprocess import CanonicalChannelMap
+from cfeg.data.schema import load_manifest
+from cfeg.governance import GovernanceError, bind_cohort, resolve_research_access
 from cfeg.metrics import accuracy, balanced_accuracy, itr_bits_per_min, macro_f1
 
 
@@ -33,6 +36,7 @@ def evaluate_frequency_baseline(
     regularization: float = 1e-8,
     filterbank: Any = None,
     trial_time_sec: float = 2.0,
+    research_config: dict | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
     """Evaluate training-free CCA/FBCCA and return sample, subject, and summary results."""
     if method not in {"cca", "fbcca"}:
@@ -42,7 +46,40 @@ def evaluate_frequency_baseline(
         resolved_filterbank = dict(filterbank or {})
         resolved_filterbank.setdefault("n_harmonics", n_harmonics)
         resolved_filterbank.setdefault("regularization", regularization)
-    dataset = EEGProcessedDataset([processed_dir])
+    governed_access = None
+    governed_cohort = None
+    if _processed_dir_is_wearable_v3(processed_dir):
+        if research_config is None:
+            raise GovernanceError(
+                "wearable_v3 baseline access requires --research-config and a governed "
+                "development cohort."
+            )
+        governed_access = resolve_research_access(research_config)
+        if governed_access.execution_phase != "development":
+            raise GovernanceError(
+                "Confirmatory CCA/FBCCA evaluation is not registered in the frozen action plan."
+            )
+        governed_cohort = bind_cohort(load_manifest(processed_dir), governed_access)
+    dataset = EEGProcessedDataset(
+        [processed_dir],
+        allowed_subject_ids=(
+            set(governed_cohort.selected_subject_ids)
+            if governed_cohort is not None
+            else None
+        ),
+        persistent_hdf5_handles=bool(
+            (research_config or {}).get("data", {}).get(
+                "persistent_hdf5_handles", False
+            )
+        ),
+    )
+    if _is_wearable_v3(dataset):
+        if governed_access is None:
+            raise GovernanceError(
+                "wearable_v3 asset identity was not available for the required preflight gate."
+            )
+    elif governed_access is not None:
+        raise GovernanceError("Governed baseline path does not resolve to wearable_v3.")
     labels = sorted(int(label) for label in dataset.class_map)
     if labels != list(range(len(labels))):
         raise ValueError(f"class_map labels must be contiguous from zero, got {labels}.")
@@ -67,6 +104,12 @@ def evaluate_frequency_baseline(
         for index, sample_id in enumerate(manifest_sample_ids)
         if selection_ids is None or sample_id in selection_ids
     ]
+    if selection_ids is not None:
+        selected_outside_role = selection_ids - set(manifest_sample_ids)
+        if selected_outside_role:
+            raise GovernanceError(
+                "Baseline selection contains samples outside the authorized cohort role."
+            )
     if not eligible:
         raise ValueError("Baseline evaluation selection contains no samples.")
     selected_subjects = sorted(
@@ -143,9 +186,7 @@ def evaluate_frequency_baseline(
             "score_margin": margin,
             "n_channels": int(eeg.shape[0]),
         }
-        row.update(
-            {f"score_label_{label:02d}": float(scores[label]) for label in labels}
-        )
+        row.update({f"score_label_{label:02d}": float(scores[label]) for label in labels})
         rows.append(row)
 
     predictions = pd.DataFrame(rows)
@@ -179,9 +220,7 @@ def evaluate_frequency_baseline(
                 "dataset_id": str(dataset_id),
                 "subject_id": str(subject_id),
                 "electrode_type": str(condition),
-                **_prediction_metrics(
-                    group, n_classes=len(labels), trial_time_sec=trial_time_sec
-                ),
+                **_prediction_metrics(group, n_classes=len(labels), trial_time_sec=trial_time_sec),
             }
         )
     canonical = CanonicalChannelMap.from_yaml()
@@ -209,7 +248,7 @@ def evaluate_frequency_baseline(
         "regularization": float(regularization),
         "filterbank": effective_filterbanks if method == "fbcca" else None,
         "fbcca_implementation": (
-            "generic_standard_scoring_not_exact_external_toolbox_reproduction"
+            "independent_weighted_squared_correlation_implementation"
             if method == "fbcca"
             else None
         ),
@@ -222,13 +261,36 @@ def evaluate_frequency_baseline(
         "median_subject_balanced_accuracy": float(subjects["balanced_accuracy"].median()),
         "worst_subject_balanced_accuracy": float(subjects["balanced_accuracy"].min()),
         "sample_identity_sha256": _sample_identity_sha256(predictions["sample_id"]),
-        "label_frequency_identity_sha256": _label_frequency_identity_sha256(
-            predictions
-        ),
+        "label_frequency_identity_sha256": _label_frequency_identity_sha256(predictions),
         "processed_metadata_sha256": _processed_metadata_sha256(processed_dir),
+        "research_access": (
+            governed_access.contract() if governed_access is not None else None
+        ),
+        "cohort": governed_cohort.contract() if governed_cohort is not None else None,
         **aggregate,
     }
     return predictions, subjects, summary
+
+
+def _is_wearable_v3(dataset: EEGProcessedDataset) -> bool:
+    return any(
+        info.get("dataset_id") == "wearable"
+        and info.get("dataset_revision") == "wearable_v3"
+        for info in dataset.asset_infos
+    )
+
+
+def _processed_dir_is_wearable_v3(processed_dir: str | Path) -> bool:
+    path = Path(processed_dir).expanduser()
+    info_path = path / "asset_info.json"
+    if info_path.is_file():
+        try:
+            info = json.loads(info_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            info = {}
+        if info.get("dataset_id") == "wearable" and info.get("dataset_revision") == "wearable_v3":
+            return True
+    return path.name == "wearable_v3"
 
 
 def _load_selection_ids(path: str | Path, *, split: str = "test") -> set[str]:
@@ -251,9 +313,7 @@ def _load_selection_ids(path: str | Path, *, split: str = "test") -> set[str]:
     return selected
 
 
-def _resolve_channel_ids(
-    channel_set: str, channel_sets_path: str | Path
-) -> set[int] | None:
+def _resolve_channel_ids(channel_set: str, channel_sets_path: str | Path) -> set[int] | None:
     if channel_set == "all":
         return None
     with Path(channel_sets_path).open(encoding="utf-8") as handle:
@@ -322,8 +382,8 @@ def _sample_identity_sha256(sample_ids: pd.Series) -> str:
 def _label_frequency_identity_sha256(predictions: pd.DataFrame) -> str:
     digest = hashlib.sha256()
     columns = ["sample_id", "label", "true_frequency_hz"]
-    for row in predictions.loc[:, columns].sort_values("sample_id").itertuples(
-        index=False, name=None
+    for row in (
+        predictions.loc[:, columns].sort_values("sample_id").itertuples(index=False, name=None)
     ):
         encoded = "\x1f".join(str(value) for value in row).encode()
         digest.update(len(encoded).to_bytes(8, "big"))
@@ -334,6 +394,7 @@ def _label_frequency_identity_sha256(predictions: pd.DataFrame) -> str:
 def _processed_metadata_sha256(processed_dir: str | Path) -> str:
     root = Path(processed_dir)
     candidates = [
+        root / "signals.h5",
         root / "manifest.jsonl",
         root / "manifest.parquet",
         root / "class_map.json",

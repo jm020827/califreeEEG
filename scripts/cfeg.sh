@@ -15,15 +15,17 @@ Calibration-Free EEG one-click commands
   bash scripts/cfeg.sh assets reve beta wang dong2023 wearable
   bash scripts/cfeg.sh migrate-labels [--apply]
   bash scripts/cfeg.sh smoke
-  bash scripts/cfeg.sh train wang-to-beta|beta-to-wang|wearable-loso|wearable-dry-to-wet|wearable-wet-to-dry|joint|synthetic
-  bash scripts/cfeg.sh eval  wang-to-beta|beta-to-wang|wearable-dry-to-wet|wearable-wet-to-dry <checkpoint>
+  bash scripts/cfeg.sh train wang-to-beta|beta-to-wang|joint|synthetic
+  bash scripts/cfeg.sh eval  wang-to-beta|beta-to-wang <checkpoint>
   bash scripts/cfeg.sh channel-stress <checkpoint> [processed-dir]
   bash scripts/cfeg.sh robustness <checkpoint> [processed-dir]
-  bash scripts/cfeg.sh calibration <wearable-checkpoint> [wet|dry]
   bash scripts/cfeg.sh ablation [variant[,variant...]]
-  bash scripts/cfeg.sh predict <checkpoint> <processed-dir> [output.csv]
+  bash scripts/cfeg.sh predict <checkpoint> <processed-dir> [output.csv] [val|test|all]
   bash scripts/cfeg.sh record-openbci <recording arguments...>
-  bash scripts/cfeg.sh research
+
+  Governed wearable outcome commands are intentionally absent. Physical reveal #2
+  uses only the decision-receipt/tag-bound prepare|status|train|reveal orchestrator;
+  reveal atomically publishes prediction, intervention, aggregate, and gate artifacts.
 
 Environment:
   source scripts/env_k8s_interns.sh  # jm020827 interns cluster profile
@@ -76,9 +78,10 @@ run_train_preset() {
   case "$preset" in
     wang-to-beta) config="configs/train/wang_to_beta.yaml" ;;
     beta-to-wang) config="configs/train/beta_to_wang.yaml" ;;
-    wearable-loso) config="configs/train/wearable_loso.yaml" ;;
-    wearable-dry-to-wet) config="configs/train/wearable_dry_to_wet.yaml" ;;
-    wearable-wet-to-dry) config="configs/train/wearable_wet_to_dry.yaml" ;;
+    wearable-development|wearable-loso|wearable-dry-to-wet|wearable-wet-to-dry)
+      echo "This mutable wearable preset is retired; use the manifest-bound physical or confirmatory orchestrator." >&2
+      exit 2
+      ;;
     joint) config="configs/train/ssvep_pretrain.yaml" ;;
     synthetic) config="configs/train/debug.yaml" ;;
     *) echo "Unknown train preset: $preset" >&2; usage; exit 2 ;;
@@ -95,8 +98,10 @@ run_eval_preset() {
   case "$preset" in
     wang-to-beta) config="configs/eval/wang_to_beta.yaml" ;;
     beta-to-wang) config="configs/eval/beta_to_wang.yaml" ;;
-    wearable-dry-to-wet) config="configs/eval/wearable_dry_to_wet.yaml" ;;
-    wearable-wet-to-dry) config="configs/eval/wearable_wet_to_dry.yaml" ;;
+    wearable-dry-to-wet|wearable-wet-to-dry)
+      echo "This wearable evaluation preset is retired until registered as a governed post-primary action." >&2
+      exit 2
+      ;;
     *) echo "Unknown eval preset: $preset" >&2; usage; exit 2 ;;
   esac
   python scripts/evaluate.py --config "$config" --ckpt "$checkpoint"
@@ -180,17 +185,8 @@ case "$command" in
       --ckpt "$checkpoint" "data.processed_dirs=['$processed_dir']"
     ;;
   calibration)
-    source_runtime
-    checkpoint="${1:?wearable checkpoint is required}"
-    target_electrode="${2:-wet}"
-    [[ "$target_electrode" == wet || "$target_electrode" == dry ]] || {
-      echo "Calibration target must be wet or dry." >&2
-      exit 2
-    }
-    python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
-      --ckpt "$checkpoint" \
-      "test_filter.electrode_type=$target_electrode" \
-      "output_csv=outputs/research/wearable_calibration_$target_electrode.csv"
+    echo "Generic wearable calibration is retired until registered as a post-primary exploratory action." >&2
+    exit 2
     ;;
   ablation)
     source_runtime
@@ -200,53 +196,24 @@ case "$command" in
       python scripts/run_ablation.py --continue-on-error
     fi
     ;;
+  controls)
+    echo "Legacy prompt controls are retired; use the six-role manifest-bound physical orchestrator." >&2
+    exit 2
+    ;;
   predict)
     source_runtime
     python scripts/predict.py --ckpt "${1:?checkpoint is required}" \
       --processed-dir "${2:?processed-dir is required}" \
-      --out "${3:-outputs/predictions.csv}"
+      --out "${3:-outputs/predictions.csv}" \
+      --split "${4:-test}"
     ;;
   record-openbci)
     source_runtime
     python scripts/openbci_record.py "$@"
     ;;
   research)
-    source_runtime
-    [[ -f "$EEG_DATA_ROOT/processed/wearable_v2/signals.h5" ]] || {
-      echo "Missing wearable_v2. Run: bash scripts/cfeg.sh assets wearable" >&2
-      exit 1
-    }
-    echo "Research convenience suite runs wearable outer fold 0 only."
-    echo "Use run_ablation.py over folds 0..4 and 3-5 seeds for confirmatory results."
-    run_train_preset wearable-loso
-    run_stress_suite \
-      outputs/research/wearable_subject_dg/fold0/best.pt \
-      "$EEG_DATA_ROOT/processed/wearable_v2" \
-      outputs/research/wearable_subject_dg/fold0/eval
-    run_train_preset wearable-dry-to-wet
-    run_eval_preset wearable-dry-to-wet outputs/research/wearable_dry_to_wet/best.pt
-    run_train_preset wearable-wet-to-dry
-    run_eval_preset wearable-wet-to-dry outputs/research/wearable_wet_to_dry/best.pt
-    python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
-      --ckpt outputs/research/wearable_dry_to_wet/best.pt
-
-    if [[ -f "$EEG_DATA_ROOT/processed/wang_v1/signals.h5" && \
-          -f "$EEG_DATA_ROOT/processed/beta_v1/signals.h5" ]]; then
-      run_train_preset wang-to-beta
-      run_eval_preset wang-to-beta outputs/research/wang_to_beta/best.pt
-      run_stress_suite \
-        outputs/research/wang_to_beta/best.pt \
-        "$EEG_DATA_ROOT/processed/beta_v1" \
-        outputs/research/wang_to_beta/eval
-      run_train_preset beta-to-wang
-      run_eval_preset beta-to-wang outputs/research/beta_to_wang/best.pt
-      run_stress_suite \
-        outputs/research/beta_to_wang/best.pt \
-        "$EEG_DATA_ROOT/processed/wang_v1" \
-        outputs/research/beta_to_wang/eval
-    else
-      echo "Wang/BETA boundary assets are incomplete; boundary suite skipped."
-    fi
+    echo "The mutable legacy research shortcut is retired; use the canonical physical/confirmatory orchestrators." >&2
+    exit 2
     ;;
   help|-h|--help) usage ;;
   *) echo "Unknown command: $command" >&2; usage; exit 2 ;;

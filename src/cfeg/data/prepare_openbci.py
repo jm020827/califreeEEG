@@ -9,8 +9,18 @@ import yaml
 
 from cfeg.data.io_hdf5 import write_processed_hdf5
 from cfeg.data.label_mapping import write_class_map
-from cfeg.data.preprocess import CanonicalChannelMap, PreprocessConfig, preprocess_trial
-from cfeg.data.schema import REQUIRED_MANIFEST_COLUMNS, validate_manifest, write_manifest
+from cfeg.data.preprocess import (
+    CanonicalChannelMap,
+    PreprocessConfig,
+    place_channel_values,
+    preprocess_trial_with_qc,
+)
+from cfeg.data.schema import (
+    nullable_vector,
+    ordered_manifest_columns,
+    validate_manifest,
+    write_manifest,
+)
 
 
 def prepare(raw_session_dir: Path, out_dir: Path, cfg: dict) -> None:
@@ -40,16 +50,21 @@ def prepare(raw_session_dir: Path, out_dir: Path, cfg: dict) -> None:
         start = int(round(float(ev["onset_sec"]) * sfreq))
         duration = float(ev.get("duration_sec", pcfg.window_duration_sec))
         stop = start + int(round((pcfg.window_start_sec + duration + 0.05) * sfreq))
-        raw_trial = x_all[:, start:min(stop, x_all.shape[-1])]
-        placed, mask, _ids, new_sfreq = preprocess_trial(raw_trial, ch_names, sfreq, pcfg, cmap)
-        slot_ids = ((np.arange(pcfg.c_max) + 1) * mask.astype(np.int64)).tolist()
+        raw_trial = x_all[:, start : min(stop, x_all.shape[-1])]
+        placed, mask, slot_ids, new_sfreq, query_qc = preprocess_trial_with_qc(
+            raw_trial, ch_names, sfreq, pcfg, cmap
+        )
         label = int(ev.get("class_id", freq_to_label[float(ev["stimulus_frequency_hz"])]))
         h5_index = len(xs)
         xs.append(placed)
         masks.append(mask)
         ys.append(label)
         impedance = meta.get("impedance_kohm_by_channel") or {}
-        impedance_values = [float(v) for v in impedance.values()] if impedance else []
+        impedance_native = np.asarray(
+            [float(impedance.get(name, np.nan)) for name in ch_names], dtype=np.float32
+        )
+        impedance_by_channel = place_channel_values(impedance_native, ch_names, cmap, pcfg.c_max)
+        impedance_values = impedance_by_channel[np.isfinite(impedance_by_channel)]
         rows.append(
             {
                 "sample_id": f"{meta.get('session_id', raw_session_dir.name)}_{str(ev['trial_id']).zfill(4)}",
@@ -75,21 +90,37 @@ def prepare(raw_session_dir: Path, out_dir: Path, cfg: dict) -> None:
                 "channel_names_original": ch_names,
                 "channel_names_used": ch_names,
                 "canonical_channel_ids": slot_ids,
-                "impedance_mean_kohm": float(np.mean(impedance_values)) if impedance_values else None,
-                "impedance_max_kohm": float(np.max(impedance_values)) if impedance_values else None,
+                "impedance_mean_kohm": (
+                    float(np.mean(impedance_values)) if impedance_values.size else None
+                ),
+                "impedance_max_kohm": (
+                    float(np.max(impedance_values)) if impedance_values.size else None
+                ),
                 "reattach_flag": meta.get("reattach_flag"),
                 "time_since_last_session_hours": meta.get("time_since_last_session_hours"),
                 "environment_note_code": meta.get("environment_note_code", "unknown"),
                 "source_file": str(eeg_csv),
+                "query_signal_std": query_qc.signal_std,
+                "query_signal_std_by_channel": nullable_vector(query_qc.signal_std_by_channel),
+                "impedance_kohm_by_channel": nullable_vector(impedance_by_channel),
             }
         )
     out_dir.mkdir(parents=True, exist_ok=True)
     write_processed_hdf5(out_dir, np.stack(xs), np.stack(masks), np.asarray(ys))
-    manifest = pd.DataFrame(rows, columns=REQUIRED_MANIFEST_COLUMNS)
+    manifest = pd.DataFrame(rows, columns=ordered_manifest_columns(rows))
     validate_manifest(manifest)
     write_manifest(manifest, out_dir)
     write_class_map(freqs, out_dir)
     with (out_dir / "preprocess_config.yaml").open("w", encoding="utf-8") as f:
         yaml.safe_dump(pcfg.__dict__, f, sort_keys=False)
     with (out_dir / "asset_info.json").open("w", encoding="utf-8") as f:
-        json.dump({"dataset_id": "openbci", "raw_dir": str(raw_session_dir), "processed_dir": str(out_dir)}, f)
+        json.dump(
+            {
+                "dataset_id": "openbci",
+                "raw_dir": str(raw_session_dir),
+                "processed_dir": str(out_dir),
+                "query_qc_extractor_version": ("filtered_cropped_pre_zscore_channel_std_median_v1"),
+                "external_continuous_schema": "impedance_mean_max_v1",
+            },
+            f,
+        )

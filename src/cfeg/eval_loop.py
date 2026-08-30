@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -13,27 +14,57 @@ import torch.nn.functional as F
 import yaml
 from torch.utils.data import DataLoader, Subset
 
-from cfeg.constants import CONDITION_CATEGORICAL_FIELDS
-from cfeg.data.collate import build_vocabularies, collate_eeg
+from cfeg.constants import (
+    CONDITION_CATEGORICAL_FIELDS,
+    METADATA_CONTRACT_V04_DEV,
+    PROTOCOL_V04_EXTERNAL_CATEGORICAL_FIELDS,
+)
+from cfeg.data.collate import (
+    build_vocabularies,
+    collate_eeg,
+    metadata_collate_kwargs,
+    overwrite_external_metadata,
+)
 from cfeg.data.datasets import EEGProcessedDataset
+from cfeg.data.loader import resolve_loader_settings
+from cfeg.data.metadata_controls import (
+    build_development_control_plan,
+    metadata_shuffle_indices,
+)
 from cfeg.data.preprocess import CanonicalChannelMap
+from cfeg.data.schema import load_manifest
 from cfeg.data.transforms import _update_n_channels
+from cfeg.governance import (
+    GovernanceError,
+    bind_cohort,
+    current_source_revision_contract,
+    validate_checkpoint_evaluation_access,
+)
 from cfeg.metrics import classification_metrics, confusion_matrix, itr_bits_per_min
 from cfeg.models.full_model import ConditionedEEGDecoder
+from cfeg.runtime import resolve_device
 from cfeg.seed import seed_everything
-from cfeg.train_loop import _to_device
-from cfeg.utils.checkpoint import load_checkpoint
+from cfeg.train_loop import _processed_asset_provenance, _sha256_json, _to_device
+from cfeg.utils.checkpoint import load_checkpoint, load_checkpoint_model_state, save_json
 
 
-def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
+def run_evaluation(
+    eval_cfg: dict,
+    ckpt_path: str | Path,
+    *,
+    access_route: str = "generic_evaluation",
+) -> dict:
     seed_everything(int(eval_cfg.get("seed", 42)))
-    context = load_evaluation_context(eval_cfg, ckpt_path)
+    context = load_evaluation_context(eval_cfg, ckpt_path, access_route)
     mode = eval_cfg.get("mode", eval_cfg.get("run_name", "standard"))
+    _validate_fresh_governed_evaluation_output(eval_cfg, context, str(mode))
     if mode == "calibration":
         return _run_calibration(eval_cfg, context)
     scenarios = _scenarios(eval_cfg, context, mode)
     rows: list[dict] = []
     confusion_rows: list[dict] = []
+    donor_artifacts: list[tuple[str, pd.DataFrame]] = []
+    scenario_provenance: list[dict] = []
     trial_time_sec = float(eval_cfg.get("trial_time_sec", 2.0))
     baseline_accuracy, baseline_itr = _reference_metrics(
         mode, context, trial_time_sec=trial_time_sec
@@ -43,8 +74,25 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
         y_true, logits, sample_ids = collect_predictions(
             context["model"], loader, context["device"], perturb=perturb
         )
-        metrics = classification_metrics(
-            y_true, logits, trial_time_sec=trial_time_sec
+        metrics = classification_metrics(y_true, logits, trial_time_sec=trial_time_sec)
+        perturbation_audit = getattr(perturb, "audit", {}) if perturb is not None else {}
+        metrics.update(
+            {key: value for key, value in perturbation_audit.items() if not key.startswith("_")}
+        )
+        donor_mapping = perturbation_audit.get("_donor_mapping")
+        if donor_mapping is not None:
+            donor_artifacts.append((name, donor_mapping))
+        scenario_provenance.append(
+            {
+                "scenario": name,
+                "n_samples": len(sample_ids),
+                "sample_id_identity_sha256": _sample_id_identity_sha256(sample_ids),
+                "metadata_control": {
+                    key: value
+                    for key, value in perturbation_audit.items()
+                    if not key.startswith("_")
+                },
+            }
         )
         if baseline_accuracy is None:
             baseline_accuracy = metrics["accuracy"]
@@ -66,9 +114,7 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
         if baseline_itr is not None and "itr_bits_per_min" in metrics:
             metrics["reference_itr_bits_per_min"] = baseline_itr
             metrics["itr_drop"] = float(baseline_itr - metrics["itr_bits_per_min"])
-            metrics["itr_drop_rate"] = _relative_drop(
-                baseline_itr, metrics["itr_bits_per_min"]
-            )
+            metrics["itr_drop_rate"] = _relative_drop(baseline_itr, metrics["itr_bits_per_min"])
         rows.append(metrics)
         matrix = confusion_matrix(y_true, logits.argmax(axis=1), logits.shape[1])
         confusion_rows.extend(_confusion_rows(name, matrix))
@@ -77,8 +123,25 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     output_csv = _output_path(eval_cfg, context, mode)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(output_csv, index=False)
-    pd.DataFrame(confusion_rows).to_csv(output_csv.with_name(f"{output_csv.stem}_confusion.csv"), index=False)
-    return {"output_csv": str(output_csv), "results": rows}
+    pd.DataFrame(confusion_rows).to_csv(
+        output_csv.with_name(f"{output_csv.stem}_confusion.csv"), index=False
+    )
+    for scenario_name, mapping in donor_artifacts:
+        mapping.to_csv(
+            output_csv.with_name(f"{output_csv.stem}_{scenario_name}_donors.csv"), index=False
+        )
+    provenance_path = _save_evaluation_provenance(
+        eval_cfg,
+        context,
+        output_csv,
+        scenario_provenance,
+    )
+    return {
+        "output_csv": str(output_csv),
+        "results": rows,
+        "provenance_path": str(provenance_path),
+        "provenance_sha256": _sha256_file(provenance_path),
+    }
 
 
 def _reference_metrics(
@@ -95,6 +158,20 @@ def _reference_metrics(
     return accuracy, itr_bits_per_min(n_classes, accuracy, trial_time_sec)
 
 
+def _validate_fresh_governed_evaluation_output(
+    eval_cfg: dict, context: dict, mode: str
+) -> None:
+    if not context["research_access"].governed:
+        return
+    output = _output_path(eval_cfg, context, mode)
+    existing = sorted(path for path in output.parent.glob(f"{output.stem}*") if path.is_file())
+    if existing:
+        raise GovernanceError(
+            "Governed evaluation output prefix is not fresh: "
+            f"{output}. Existing artifacts are never overwritten; choose a new output_csv."
+        )
+
+
 def _relative_drop(reference: float, observed: float) -> float:
     if abs(reference) < 1e-12:
         return 0.0
@@ -107,19 +184,66 @@ def run_channel_stress_eval(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     return run_evaluation(cfg, ckpt_path)
 
 
-def load_evaluation_context(eval_cfg: dict, ckpt_path: str | Path) -> dict:
+def load_evaluation_context(
+    eval_cfg: dict,
+    ckpt_path: str | Path,
+    access_route: str = "generic_evaluation",
+) -> dict:
     checkpoint_path = Path(ckpt_path).expanduser().resolve()
     ckpt = load_checkpoint(checkpoint_path, map_location="cpu")
     cfg = ckpt["config"]
+    research_access = validate_checkpoint_evaluation_access(
+        cfg,
+        eval_cfg,
+        checkpoint_path=checkpoint_path,
+        access_route=access_route,
+    )
+    device = resolve_device(cfg)
     data_dirs = eval_cfg.get("data", {}).get("processed_dirs") or cfg["data"]["processed_dirs"]
-    dataset = EEGProcessedDataset(data_dirs)
+    asset_manifest = pd.concat([load_manifest(root) for root in data_dirs], ignore_index=True)
+    cohort = bind_cohort(asset_manifest, research_access)
+    expected_revisions = eval_cfg.get("data", {}).get("expected_revisions") or cfg.get(
+        "data", {}
+    ).get("expected_revisions")
+    _validate_checkpoint_asset_revisions(ckpt, expected_revisions or {})
+    expected_counts = eval_cfg.get("data", {}).get("expected_dataset_counts") or cfg.get(
+        "data", {}
+    ).get("expected_dataset_counts")
+    dataset = EEGProcessedDataset(
+        data_dirs,
+        expected_revisions=expected_revisions,
+        expected_protocol=cfg.get("protocol"),
+        expected_dataset_counts=expected_counts,
+        require_audit_receipt=bool(
+            eval_cfg.get("data", {}).get("require_audit_receipt")
+            or cfg.get("data", {}).get("require_audit_receipt", False)
+        ),
+        allowed_subject_ids=(
+            set(cohort.selected_subject_ids) if research_access.governed else None
+        ),
+        persistent_hdf5_handles=bool(
+            (eval_cfg.get("data") or {}).get(
+                "persistent_hdf5_handles",
+                cfg.get("data", {}).get("persistent_hdf5_handles", False),
+            )
+        ),
+        preload_hdf5_to_memory=bool(
+            (eval_cfg.get("data") or {}).get(
+                "preload_hdf5_to_memory",
+                cfg.get("data", {}).get("preload_hdf5_to_memory", False),
+            )
+        ),
+    )
+    _validate_checkpoint_dataset_provenance(ckpt, dataset)
     vocab = ckpt.get("vocabularies") or build_vocabularies()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = ConditionedEEGDecoder(cfg, vocab_sizes={key: len(value) for key, value in vocab.items()})
-    strict = not bool(ckpt.get("save_trainable_only", False))
-    model.load_state_dict(ckpt["model_state"], strict=strict)
+    model = ConditionedEEGDecoder(
+        cfg, vocab_sizes={key: len(value) for key, value in vocab.items()}
+    )
+    load_checkpoint_model_state(model, ckpt)
     model.to(device)
     manifest = pd.DataFrame([entry[2] for entry in dataset.entries])
+    if tuple(sorted(manifest["subject_id"].astype(str).unique())) != cohort.selected_subject_ids:
+        raise ValueError("Evaluation dataset cohort view differs from its governance binding.")
     return {
         "checkpoint": ckpt,
         "checkpoint_path": checkpoint_path,
@@ -129,7 +253,116 @@ def load_evaluation_context(eval_cfg: dict, ckpt_path: str | Path) -> dict:
         "vocab": vocab,
         "device": device,
         "model": model,
+        "research_access": research_access,
+        "cohort": cohort,
+        "eval_config": eval_cfg,
     }
+
+
+def _validate_checkpoint_asset_revisions(
+    checkpoint: dict, expected_revisions: dict[str, str]
+) -> None:
+    if not expected_revisions:
+        return
+    entries = checkpoint.get("asset_info", {}).get("datasets", [])
+    observed = {
+        str(entry.get("dataset_id")): str(entry.get("dataset_revision"))
+        for entry in entries
+        if entry.get("dataset_id") is not None
+    }
+    for dataset_id, expected_revision in expected_revisions.items():
+        if observed.get(str(dataset_id)) != str(expected_revision):
+            raise ValueError(
+                "Checkpoint/data revision mismatch: "
+                f"checkpoint has {dataset_id}={observed.get(str(dataset_id), 'missing')!r}, "
+                f"evaluation requires {expected_revision!r}. Retrain from the verified "
+                "processed revision instead of reusing a stale checkpoint."
+            )
+
+
+def _validate_checkpoint_dataset_provenance(checkpoint: dict, dataset) -> None:
+    checkpoint_entries = checkpoint.get("asset_info", {}).get("datasets", [])
+    checkpoint_by_id = {
+        str(entry.get("dataset_id")): entry
+        for entry in checkpoint_entries
+        if entry.get("dataset_id") is not None
+    }
+    trained_paths = [
+        str(path).lower()
+        for path in checkpoint.get("config", {}).get("data", {}).get("processed_dirs", [])
+    ]
+    checkpoint_data_cfg = checkpoint.get("config", {}).get("data", {})
+    claimed_ids = set(checkpoint_data_cfg.get("expected_revisions", {}))
+    claimed_ids.update(str(value) for value in checkpoint_data_cfg.get("train_datasets", []))
+    claimed_ids.update(str(value) for value in checkpoint_data_cfg.get("test_datasets", []))
+    protocol = checkpoint.get("config", {}).get("protocol", {})
+    if str(protocol.get("metadata_contract_version", "legacy")) == "0.4-dev":
+        current_asset_info = _processed_asset_provenance(dataset.roots)
+        checkpoint_asset_info = checkpoint.get("asset_info")
+        if checkpoint_asset_info is None or not _provenance_values_equal(
+            checkpoint_asset_info, current_asset_info
+        ):
+            raise ValueError(
+                "Protocol 0.4 checkpoint asset bytes differ from the current processed "
+                "asset provenance. Re-evaluate with the exact audited training asset."
+            )
+        expected_asset_hash = (
+            checkpoint.get("config", {}).get("runtime_contract", {}).get("asset_provenance_sha256")
+        )
+        if expected_asset_hash != _sha256_json(current_asset_info):
+            raise ValueError(
+                "Protocol 0.4 checkpoint runtime asset hash does not match its current "
+                "processed asset fingerprints."
+            )
+    provenance_fields = [
+        "dataset_revision",
+        "query_qc_extractor_version",
+        "external_continuous_schema",
+    ]
+    for current in dataset.asset_infos:
+        dataset_id = current.get("dataset_id")
+        if dataset_id is None:
+            continue
+        dataset_id = str(dataset_id)
+        previous = checkpoint_by_id.get(dataset_id)
+        checkpoint_claims_dataset = dataset_id in claimed_ids or any(
+            dataset_id.lower() in path for path in trained_paths
+        )
+        if previous is None:
+            if checkpoint_claims_dataset:
+                raise ValueError(
+                    f"Checkpoint was trained on {dataset_id!r} but has no revisioned dataset "
+                    "provenance. Refuse to combine it with a current processed asset."
+                )
+            continue
+        fields = list(provenance_fields)
+        if str(current.get("dataset_revision")) == "wearable_v3":
+            fields.extend(
+                [
+                    "impedance_numeric_signature",
+                    "processed_subject_count",
+                ]
+            )
+        for field in fields:
+            expected = previous.get(field)
+            observed = current.get(field)
+            must_compare = (
+                field == "dataset_revision"
+                or str(protocol.get("metadata_contract_version", "legacy")) == "0.4-dev"
+            )
+            if field not in provenance_fields:
+                must_compare = True
+            if must_compare and not _provenance_values_equal(expected, observed):
+                raise ValueError(
+                    f"Checkpoint/current dataset provenance mismatch for {dataset_id}.{field}: "
+                    f"checkpoint={expected!r}, current={observed!r}."
+                )
+
+
+def _provenance_values_equal(left, right) -> bool:
+    return json.dumps(left, sort_keys=True, default=str) == json.dumps(
+        right, sort_keys=True, default=str
+    )
 
 
 @torch.no_grad()
@@ -147,7 +380,12 @@ def collect_predictions(
     for batch in loader:
         batch = _to_device(batch, device)
         if perturb is not None:
-            batch["x"], batch["cond"] = perturb(batch["x"], batch["cond"])
+            if getattr(perturb, "uses_sample_ids", False):
+                batch["x"], batch["cond"] = perturb(
+                    batch["x"], batch["cond"], batch["sample_id"]
+                )
+            else:
+                batch["x"], batch["cond"] = perturb(batch["x"], batch["cond"])
         out = model(batch["x"], batch["cond"], use_latent=False)
         labels.append(batch["y"].detach().cpu().numpy())
         logits.append(out.logits.detach().float().cpu().numpy())
@@ -165,7 +403,9 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
             for name in eval_cfg.get("channel_sets", ["all"])
         ]
     if mode == "cross_dataset":
-        test_datasets = eval_cfg.get("test_datasets") or eval_cfg.get("data", {}).get("test_datasets")
+        test_datasets = eval_cfg.get("test_datasets") or eval_cfg.get("data", {}).get(
+            "test_datasets"
+        )
         if not test_datasets:
             raise ValueError("cross_dataset evaluation requires test_datasets.")
         indices = _held_out_evaluation_indices(eval_cfg, context, mode=mode)
@@ -182,8 +422,8 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
             name = str(spec["name"])
             kind = spec.get("type", spec.get("name"))
             perturbation = (
-                _global_metadata_shuffle_perturbation(spec, context, test_indices)
-                if kind == "metadata_shuffle"
+                _global_metadata_donor_perturbation(spec, context, test_indices)
+                if kind in {"metadata_shuffle", "metadata_counterfactual_wet_dry"}
                 else _robustness_perturbation(spec)
             )
             scenarios.append((name, test_indices, perturbation))
@@ -200,10 +440,10 @@ def _held_out_evaluation_indices(eval_cfg: dict, context: dict, *, mode: str) ->
     test_datasets = eval_cfg.get("test_datasets") or data_cfg.get("test_datasets")
     test_filter = eval_cfg.get("test_filter") or data_cfg.get("test_filter")
 
-    if split_name is not None and str(split_name) != "test":
+    if split_name is not None and str(split_name) not in {"test", "val"}:
         raise ValueError(
-            f"{mode} data.split must be 'test', got {split_name!r}. "
-            "Use the checkpoint's held-out split or declare test_datasets/test_filter."
+            f"{mode} data.split must be 'test' or governed development 'val', got "
+            f"{split_name!r}."
         )
     if split_name is None and not test_datasets and not test_filter:
         raise ValueError(
@@ -213,8 +453,8 @@ def _held_out_evaluation_indices(eval_cfg: dict, context: dict, *, mode: str) ->
         )
 
     mask = np.ones(len(manifest), dtype=bool)
-    if split_name == "test":
-        split_indices = _checkpoint_split_indices(context, split="test")
+    if split_name in {"test", "val"}:
+        split_indices = _checkpoint_split_indices(context, split=str(split_name))
         split_mask = np.zeros(len(manifest), dtype=bool)
         split_mask[split_indices] = True
         mask &= split_mask
@@ -253,6 +493,7 @@ def _checkpoint_split_indices(context: dict, *, split: str) -> np.ndarray:
             f"Checkpoint split manifest {split_path} contains duplicate sample_id values: "
             f"{duplicated[:5]}"
         )
+    _validate_split_assignment_contract(context, table, split_path)
     selected_ids = set(
         table.loc[table["split"].astype(str).str.lower().eq(split.lower()), "sample_id"].astype(str)
     )
@@ -283,14 +524,54 @@ def _checkpoint_split_indices(context: dict, *, split: str) -> np.ndarray:
     return indices
 
 
-def _loader(context: dict, indices: np.ndarray) -> DataLoader:
+def _validate_split_assignment_contract(
+    context: dict, table: pd.DataFrame, split_path: Path
+) -> None:
+    cfg = context.get("train_config") or context.get("checkpoint", {}).get("config") or {}
+    expected = cfg.get("runtime_contract", {}).get("split_assignment_sha256")
+    protocol_version = cfg.get("protocol", {}).get("metadata_contract_version")
+    if expected is None:
+        if protocol_version == METADATA_CONTRACT_V04_DEV:
+            raise ValueError(
+                "Protocol 0.4 checkpoint lacks runtime_contract.split_assignment_sha256."
+            )
+        return
+    assignments = [
+        {"sample_id": str(sample_id), "split": str(split).lower()}
+        for sample_id, split in table[["sample_id", "split"]].itertuples(index=False, name=None)
+        if str(split).lower() in {"train", "val", "test"}
+    ]
+    assignments.sort(key=lambda row: row["sample_id"])
+    payload = json.dumps(assignments, sort_keys=True, separators=(",", ":"), default=str)
+    observed = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    if observed != str(expected):
+        raise ValueError(
+            f"Checkpoint split manifest {split_path} no longer matches the checkpoint "
+            "runtime split-assignment contract."
+        )
+
+
+def _loader(
+    context: dict, indices: np.ndarray, *, training_role: bool = False
+) -> DataLoader:
     cfg = context["train_config"]
-    collate = partial(collate_eeg, vocabularies=context["vocab"])
+    data_cfg = {
+        **cfg["data"],
+        **((context.get("eval_config") or {}).get("data") or {}),
+    }
+    settings = resolve_loader_settings(data_cfg, device_type=context["device"].type)
+    collate = partial(
+        collate_eeg,
+        vocabularies=context["vocab"],
+        **metadata_collate_kwargs(cfg),
+    )
     return DataLoader(
         Subset(context["dataset"], indices.tolist()),
-        batch_size=int(cfg["data"].get("batch_size", 16)),
+        batch_size=(
+            settings.train_batch_size if training_role else settings.eval_batch_size
+        ),
         shuffle=False,
-        num_workers=int(cfg["data"].get("num_workers", 0)),
+        **settings.kwargs(),
         collate_fn=collate,
     )
 
@@ -309,6 +590,7 @@ def _channel_perturbation(channel_set: str):
         x = x * keep.unsqueeze(-1).to(x.dtype)
         cond["channel_mask"] = keep
         _update_n_channels(cond)
+        _invalidate_query_qc(cond)
         return x, cond
 
     return apply
@@ -352,6 +634,11 @@ def _robustness_perturbation(spec: dict):
                 categorical_fields=list(spec.get("categorical_fields", [])),
                 continuous_indices=[int(value) for value in spec.get("continuous_indices", [])],
                 channels=bool(spec.get("channels", False)),
+                external_continuous_indices=[
+                    int(value) for value in spec.get("external_continuous_indices", [])
+                ],
+                query_qc_indices=[int(value) for value in spec.get("query_qc_indices", [])],
+                channel_impedance=bool(spec.get("channel_impedance", False)),
             )
         elif kind == "metadata_shuffle":
             raise ValueError(
@@ -367,15 +654,18 @@ def _robustness_perturbation(spec: dict):
                 mode="linear",
                 align_corners=False,
             )
+            _invalidate_query_qc(cond)
         elif kind == "rereference":
             mask = cond["channel_mask"].unsqueeze(-1).to(x.dtype)
-            mean = (x * mask).sum(dim=1, keepdim=True) / mask.sum(
-                dim=1, keepdim=True
-            ).clamp_min(1.0)
+            mean = (x * mask).sum(dim=1, keepdim=True) / mask.sum(dim=1, keepdim=True).clamp_min(
+                1.0
+            )
             x = (x - mean) * mask
+            _invalidate_query_qc(cond)
         elif kind == "gaussian_noise":
             active = cond["channel_mask"].unsqueeze(-1).to(x.dtype)
             x = x + active * torch.randn_like(x) * float(spec.get("std", 0.1))
+            _invalidate_query_qc(cond)
         elif kind == "band_limited_noise":
             low, high = [float(value) for value in spec.get("band_hz", [8.0, 16.0])]
             sfreq = float(spec.get("sfreq", 200.0))
@@ -387,6 +677,7 @@ def _robustness_perturbation(spec: dict):
             scale = noise.std(dim=-1, keepdim=True).clamp_min(1e-6)
             active = cond["channel_mask"].unsqueeze(-1).to(x.dtype)
             x = x + active * float(spec.get("std", 0.1)) * noise / scale
+            _invalidate_query_qc(cond)
         else:
             raise KeyError(f"Unknown robustness perturbation: {kind}")
         return x, cond
@@ -394,119 +685,68 @@ def _robustness_perturbation(spec: dict):
     return apply
 
 
-def _global_metadata_shuffle_perturbation(
-    spec: dict, context: dict, selected_indices: np.ndarray
+def _global_metadata_donor_perturbation(
+    spec: dict,
+    context: dict,
+    selected_indices: np.ndarray,
 ):
-    source_indices = _metadata_shuffle_indices(
-        context["manifest"], selected_indices, seed=int(spec.get("seed", 42))
+    if (
+        metadata_collate_kwargs(context["train_config"])["metadata_contract_version"]
+        != METADATA_CONTRACT_V04_DEV
+    ):
+        raise ValueError("Manifest-only metadata donor controls require Protocol 0.4-dev.")
+    kind = str(spec.get("type", spec.get("name")))
+    control = (
+        "within_class_shuffle"
+        if kind == "metadata_shuffle"
+        else "counterfactual_wet_dry"
     )
-    cursor = 0
+    seed = int(spec.get("seed", 42))
+    plan = build_development_control_plan(
+        context["manifest"],
+        {"val": np.asarray(selected_indices, dtype=int)},
+        control=control,
+        seed=seed,
+    )
+    sources = plan.sources_for("val") or {}
 
-    def apply(x, cond):
-        nonlocal cursor
-        batch_size = x.shape[0]
-        batch_source_indices = source_indices[cursor : cursor + batch_size]
-        if len(batch_source_indices) != batch_size:
-            raise RuntimeError(
-                "Global metadata permutation was consumed out of order; evaluation loader "
-                "must be deterministic and unshuffled."
-            )
-        cursor += batch_size
-        source_batch = collate_eeg(
-            [context["dataset"][int(index)] for index in batch_source_indices],
-            vocabularies=context["vocab"],
-        )
-        source = source_batch["cond"]
-        shuffled = _clone_cond(cond)
-        for field in CONDITION_CATEGORICAL_FIELDS:
-            shuffled[field] = source[field].to(x.device)
-        shuffled["continuous"] = source["continuous"].to(x.device)
-        shuffled["continuous_missing"] = source["continuous_missing"].to(x.device)
-        shuffled["sfreq_processed_float"] = source["sfreq_processed_float"].to(
-            x.device
-        )
-        shuffled["condition_channel_ids"] = source["channel_ids"].to(x.device)
-        shuffled["condition_channel_mask"] = source["channel_mask"].to(x.device)
-        return x, shuffled
+    def apply(x, cond, sample_ids):
+        replaced = overwrite_external_metadata(cond, sample_ids, sources, context["vocab"])
+        return x, replaced
 
+    apply.uses_sample_ids = True
+    apply.audit = {
+        "metadata_control_schema": plan.contract["schema"],
+        "metadata_control_name": control,
+        "metadata_control_scope": plan.contract["donor_scope"],
+        "metadata_control_seed": seed,
+        "metadata_control_effective_changed_fraction": plan.contract[
+            "effective_external_metadata_changed_fraction"
+        ],
+        "metadata_control_condition_flip_fraction": plan.contract[
+            "condition_flip_fraction"
+        ],
+        "metadata_control_donor_mapping_sha256": plan.contract[
+            "donor_mapping_sha256"
+        ],
+        "metadata_control_field_changed_fraction": json.dumps(
+            plan.contract["field_changed_fraction"], sort_keys=True
+        ),
+        "_donor_mapping": plan.donor_mapping,
+    }
     return apply
 
 
 def _metadata_shuffle_indices(
-    manifest: pd.DataFrame, selected_indices: np.ndarray, *, seed: int
+    manifest: pd.DataFrame,
+    selected_indices: np.ndarray,
+    *,
+    seed: int,
+    external_only: bool = False,
 ) -> np.ndarray:
-    """Return a fixed global metadata donor for every selected target row."""
-    selected = np.asarray(selected_indices, dtype=int)
-    if len(selected) < 2:
-        raise ValueError("metadata_shuffle requires at least two held-out samples.")
-    candidate_columns = [
-        "dataset_id",
-        "reference",
-        "hardware_id",
-        "electrode_type",
-        "cap_type",
-        "reattach_flag",
-        "sfreq_processed",
-        "n_channels_used",
-        "impedance_mean_kohm",
-        "impedance_max_kohm",
-        "time_since_last_session_hours",
-        "canonical_channel_ids",
-    ]
-    columns = [column for column in candidate_columns if column in manifest]
-    view = manifest.iloc[selected]
-    categorical_columns = [
-        column
-        for column in [
-            "dataset_id",
-            "reference",
-            "hardware_id",
-            "electrode_type",
-            "cap_type",
-            "reattach_flag",
-        ]
-        if column in view
-    ]
-    if columns:
-        signatures = (
-            view[columns]
-            .fillna("<missing>")
-            .astype(str)
-            .agg("\x1f".join, axis=1)
-            .to_numpy()
-        )
-    else:
-        signatures = np.asarray([str(index) for index in selected])
-    categorical_signatures = (
-        view[categorical_columns]
-        .fillna("<missing>")
-        .astype(str)
-        .agg("\x1f".join, axis=1)
-        .to_numpy()
-        if categorical_columns
-        else np.asarray([""] * len(selected))
-    )
-    rng = np.random.default_rng(seed)
-    positions = np.arange(len(selected))
-    best = np.roll(positions, 1)
-    best_score = (-1, -1, -1)
-    for _ in range(128):
-        candidate = rng.permutation(positions)
-        score = (
-            int(
-                np.count_nonzero(
-                    categorical_signatures != categorical_signatures[candidate]
-                )
-            ),
-            int(np.count_nonzero(signatures != signatures[candidate])),
-            int(np.count_nonzero(candidate != positions)),
-        )
-        if score > best_score:
-            best = candidate
-            best_score = score
-        if score == (len(selected), len(selected), len(selected)):
-            break
-    return selected[best]
+    """Compatibility wrapper for the shared deterministic control implementation."""
+    del external_only
+    return metadata_shuffle_indices(manifest, selected_indices, seed=seed)
 
 
 def _mask_condition_metadata(
@@ -516,15 +756,28 @@ def _mask_condition_metadata(
     categorical_fields: list[str] | None = None,
     continuous_indices: list[int] | None = None,
     channels: bool = False,
+    external_continuous_indices: list[int] | None = None,
+    query_qc_indices: list[int] | None = None,
+    channel_impedance: bool = False,
     all_metadata: bool = False,
 ) -> None:
+    if _uses_v04_contract(cond):
+        _mask_v04_metadata(
+            cond,
+            rows,
+            categorical_fields=categorical_fields,
+            external_continuous_indices=external_continuous_indices,
+            query_qc_indices=query_qc_indices,
+            channels=channels,
+            channel_impedance=channel_impedance,
+            all_metadata=all_metadata,
+        )
+        return
     categorical_fields = (
         list(CONDITION_CATEGORICAL_FIELDS) if all_metadata else (categorical_fields or [])
     )
     continuous_indices = (
-        list(range(cond["continuous"].shape[1]))
-        if all_metadata
-        else (continuous_indices or [])
+        list(range(cond["continuous"].shape[1])) if all_metadata else (continuous_indices or [])
     )
     for field in categorical_fields:
         if field not in CONDITION_CATEGORICAL_FIELDS:
@@ -544,11 +797,78 @@ def _mask_condition_metadata(
         cond["condition_channel_mask"] = mask
 
 
+def _mask_v04_metadata(
+    cond: dict,
+    rows: torch.Tensor,
+    *,
+    categorical_fields: list[str] | None,
+    external_continuous_indices: list[int] | None,
+    query_qc_indices: list[int] | None,
+    channels: bool,
+    channel_impedance: bool,
+    all_metadata: bool,
+) -> None:
+    fields = (
+        list(PROTOCOL_V04_EXTERNAL_CATEGORICAL_FIELDS)
+        if all_metadata
+        else (categorical_fields or [])
+    )
+    for field in fields:
+        if field not in PROTOCOL_V04_EXTERNAL_CATEGORICAL_FIELDS:
+            raise KeyError(f"Field {field!r} is not external metadata in Protocol 0.4-dev.")
+        cond[field][rows] = 0
+
+    indices = (
+        list(range(cond["external_continuous"].shape[1]))
+        if all_metadata
+        else (external_continuous_indices or [])
+    )
+    for index in indices:
+        if index < 0 or index >= cond["external_continuous"].shape[1]:
+            raise IndexError(f"external continuous metadata index out of range: {index}")
+        cond["external_continuous"][rows, index] = 0.0
+        cond["external_continuous_missing"][rows, index] = True
+
+    if all_metadata or channel_impedance:
+        cond["channel_impedance"][rows] = 0.0
+        cond["channel_impedance_missing"][rows] = True
+
+    for index in query_qc_indices or []:
+        if index < 0 or index >= cond["query_qc"].shape[1]:
+            raise IndexError(f"query QC index out of range: {index}")
+        cond["query_qc"][rows, index] = 0.0
+        cond["query_qc_missing"][rows, index] = True
+        cond["channel_query_qc"][rows] = 0.0
+        cond["channel_query_qc_missing"][rows] = True
+
+    # Geometry/channel structure is never part of external-metadata missingness.
+    # It can only be removed by an explicitly named structure ablation.
+    if channels:
+        ids = cond.get("condition_channel_ids", cond["channel_ids"]).clone()
+        mask = cond.get("condition_channel_mask", cond["channel_mask"]).clone()
+        ids[rows] = 0
+        mask[rows] = False
+        cond["condition_channel_ids"] = ids
+        cond["condition_channel_mask"] = mask
+
+
+def _uses_v04_contract(cond: dict) -> bool:
+    return str(cond.get("metadata_contract_version", "legacy")) == METADATA_CONTRACT_V04_DEV
+
+
+def _invalidate_query_qc(cond: dict) -> None:
+    if "query_qc" not in cond:
+        return
+    cond["query_qc"] = torch.zeros_like(cond["query_qc"])
+    cond["query_qc_missing"] = torch.ones_like(cond["query_qc_missing"])
+    if "channel_query_qc" in cond:
+        cond["channel_query_qc"] = torch.zeros_like(cond["channel_query_qc"])
+        cond["channel_query_qc_missing"] = torch.ones_like(cond["channel_query_qc_missing"])
+
+
 def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     manifest = context["manifest"]
-    selected_indices = _held_out_evaluation_indices(
-        eval_cfg, context, mode="calibration"
-    )
+    selected_indices = _held_out_evaluation_indices(eval_cfg, context, mode="calibration")
     target_mask = np.zeros(len(manifest), dtype=bool)
     target_mask[selected_indices] = True
     target_groups = (
@@ -564,10 +884,7 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     if not subjects:
         raise ValueError("Calibration target filters contain no subjects.")
 
-    budgets = [
-        int(value)
-        for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])
-    ]
+    budgets = [int(value) for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])]
     if not budgets:
         raise ValueError("calibration_trials_per_class must contain at least one budget.")
     if any(budget < 0 for budget in budgets):
@@ -575,9 +892,7 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     max_budget = max(budgets)
     seed = int(eval_cfg.get("seed", 42))
 
-    partitions: dict[
-        tuple[str, str], tuple[dict[int, np.ndarray], np.ndarray]
-    ] = {}
+    partitions: dict[tuple[str, str], tuple[dict[int, np.ndarray], np.ndarray]] = {}
     partition_rows: list[dict] = []
     all_query_indices: list[np.ndarray] = []
     for dataset_id, subject in subjects:
@@ -790,9 +1105,7 @@ def _subject_calibration_partition(
             dtype=int,
         )
         if len(candidates) <= max_budget:
-            subject_values = sorted(
-                set(manifest.iloc[indices]["subject_id"].astype(str).tolist())
-            )
+            subject_values = sorted(set(manifest.iloc[indices]["subject_id"].astype(str).tolist()))
             subject = ",".join(subject_values)
             raise ValueError(
                 f"Calibration subject {subject!r}, label {label} has {len(candidates)} trials, "
@@ -901,7 +1214,7 @@ def _calibrate_model(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
         lr=float(eval_cfg.get("lr", 1e-3)),
     )
-    loader = _loader(context, indices)
+    loader = _loader(context, indices, training_role=True)
     model.train()
     for _ in range(int(eval_cfg.get("epochs", 10))):
         for batch in loader:
@@ -915,10 +1228,7 @@ def _calibrate_model(
 
 def _common_label_indices(context: dict, indices: np.ndarray) -> np.ndarray:
     class_map = context["checkpoint"].get("class_map") or {}
-    allowed = {
-        round(float(value["stimulus_frequency_hz"]), 4)
-        for value in class_map.values()
-    }
+    allowed = {round(float(value["stimulus_frequency_hz"]), 4) for value in class_map.values()}
     frequencies = context["manifest"].iloc[indices]["stimulus_frequency_hz"].astype(float)
     keep = frequencies.round(4).isin(allowed).to_numpy()
     selected = indices[keep]
@@ -968,6 +1278,50 @@ def _save_predictions(
             "confidence": probabilities.max(axis=1),
         }
     ).to_csv(path, index=False)
+
+
+def _save_evaluation_provenance(
+    eval_cfg: dict,
+    context: dict,
+    output_csv: Path,
+    scenarios: list[dict],
+) -> Path:
+    provenance_path = output_csv.with_name(f"{output_csv.stem}_provenance.json")
+    artifact_paths = sorted(
+        path
+        for path in output_csv.parent.glob(f"{output_csv.stem}*")
+        if path.is_file() and path != provenance_path
+    )
+    train_runtime = context["train_config"].get("runtime_contract", {})
+    access = context["research_access"]
+    cohort = context["cohort"]
+    payload = {
+        "schema": "cfeg.evaluation-provenance.v1",
+        "mode": str(eval_cfg.get("mode", eval_cfg.get("run_name", "standard"))),
+        "confirmatory_claim_allowed": access.execution_phase == "confirmatory_training",
+        "checkpoint_path": str(context["checkpoint_path"]),
+        "checkpoint_sha256": _sha256_file(context["checkpoint_path"]),
+        "checkpoint_runtime_contract": train_runtime,
+        "evaluation_config_sha256": _sha256_json(eval_cfg),
+        "research_access": access.contract(),
+        "cohort": cohort.contract(),
+        "current_source_revision": current_source_revision_contract(),
+        "scenarios": scenarios,
+        "artifacts": {
+            path.name: {"sha256": _sha256_file(path), "size_bytes": path.stat().st_size}
+            for path in artifact_paths
+        },
+    }
+    save_json(provenance_path, payload)
+    return provenance_path
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _confusion_rows(scenario: str, matrix: np.ndarray) -> list[dict]:

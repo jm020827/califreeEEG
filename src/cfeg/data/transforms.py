@@ -24,6 +24,7 @@ class ChannelSubset:
         x2 = x * keep.unsqueeze(-1).to(x.dtype)
         out_cond["channel_mask"] = keep
         _update_n_channels(out_cond)
+        _invalidate_query_qc(out_cond)
         return x2, out_cond
 
 
@@ -56,6 +57,7 @@ class RandomChannelDropout:
         x2 = x * keep.unsqueeze(-1).to(x.dtype)
         out_cond["channel_mask"] = keep
         _update_n_channels(out_cond)
+        _invalidate_query_qc(out_cond)
         return x2, out_cond
 
 
@@ -69,7 +71,9 @@ class GaussianNoise:
             return x, cond
         std = random.uniform(*self.std_range)
         noise = torch.randn_like(x) * std
-        return x + noise * cond["channel_mask"].unsqueeze(-1).to(x.dtype), cond
+        out_cond = _clone_cond(cond)
+        _invalidate_query_qc(out_cond)
+        return x + noise * cond["channel_mask"].unsqueeze(-1).to(x.dtype), out_cond
 
 
 class TimeShift:
@@ -81,7 +85,9 @@ class TimeShift:
         if random.random() > self.p or self.max_shift_samples <= 0:
             return x, cond
         shift = random.randint(-self.max_shift_samples, self.max_shift_samples)
-        return torch.roll(x, shifts=shift, dims=-1), cond
+        out_cond = _clone_cond(cond)
+        _invalidate_query_qc(out_cond)
+        return torch.roll(x, shifts=shift, dims=-1), out_cond
 
 
 def make_two_views(
@@ -95,12 +101,10 @@ def make_two_views(
     time_shift_samples: int = 8,
 ) -> tuple[tuple[torch.Tensor, dict], tuple[torch.Tensor, dict]]:
     weak_x, weak_cond = GaussianNoise((0.0, 0.01), p=0.5)(x, cond)
-    strong_x, strong_cond = RandomChannelSubset(
-        channel_subsets, p=channel_subset_prob
-    )(x, cond)
-    strong_x, strong_cond = RandomChannelDropout(
-        channel_dropout_prob, min_channels
-    )(strong_x, strong_cond)
+    strong_x, strong_cond = RandomChannelSubset(channel_subsets, p=channel_subset_prob)(x, cond)
+    strong_x, strong_cond = RandomChannelDropout(channel_dropout_prob, min_channels)(
+        strong_x, strong_cond
+    )
     strong_x, strong_cond = GaussianNoise(noise_std_range, p=0.8)(strong_x, strong_cond)
     strong_x, strong_cond = TimeShift(time_shift_samples, p=0.8)(strong_x, strong_cond)
     return (weak_x, weak_cond), (strong_x, strong_cond)
@@ -117,3 +121,13 @@ def _update_n_channels(cond: dict) -> None:
     cond["continuous"][:, 1] = torch.log1p(n_channels) / math.log1p(float(c_max))
     cond["continuous_missing"] = cond["continuous_missing"].clone()
     cond["continuous_missing"][:, 1] = False
+
+
+def _invalidate_query_qc(cond: dict) -> None:
+    if "query_qc" not in cond:
+        return
+    cond["query_qc"] = torch.zeros_like(cond["query_qc"])
+    cond["query_qc_missing"] = torch.ones_like(cond["query_qc_missing"])
+    if "channel_query_qc" in cond:
+        cond["channel_query_qc"] = torch.zeros_like(cond["channel_query_qc"])
+        cond["channel_query_qc_missing"] = torch.ones_like(cond["channel_query_qc_missing"])

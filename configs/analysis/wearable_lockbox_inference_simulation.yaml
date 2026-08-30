@@ -1,0 +1,58 @@
+schema: cfeg.target-free-inference-simulation-plan.v1
+status: full_freeze_candidate_before_confirmatory_outcomes
+freeze_eligible: true
+seed: 20260831
+n_simulations: 10000
+n_subjects: 60
+n_folds: 1
+n_optimization_seeds: 3
+alpha_grid: [0.05]
+effect_above_sesoi_grid: [0.005, 0.01, 0.02, 0.03, 0.05]
+sign_flip_resamples: 10000
+bootstrap_resamples: 10000
+acceptance:
+  max_null_rejection_rate: 0.06
+  minimum_one_sided_coverage: 0.94
+  maximum_absolute_mean_bias: 0.002
+  maximum_type_i_mcse: 0.0025
+  power_effect_above_sesoi: 0.03
+  minimum_power: 0.80
+scenarios:
+- name: independent_symmetric
+  distribution: normal
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: heavy_tailed_symmetric
+  distribution: student_t3
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: skewed_bounded
+  distribution: bounded_beta
+  beta_alpha: 2.0
+  beta_beta: 5.0
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: paired_discrete_balanced_accuracy
+  distribution: paired_binomial
+  binomial_trials: 240
+  binomial_probability: 0.5
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0
+- name: negative_responder_mixture
+  acceptance_role: report_only
+  distribution: negative_responder_mixture
+  negative_responder_probability: 0.2
+  negative_responder_shift: 0.08
+  mixture_residual_sd: 0.04
+  subject_sd: 0.08
+  seed_subject_sd: 0.02
+  seed_global_sd: 0.0
+  fold_seed_sd: 0.0

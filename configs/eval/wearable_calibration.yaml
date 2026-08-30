@@ -2,7 +2,9 @@ run_name: calibration
 mode: calibration
 data:
   processed_dirs:
-  - ${env:EEG_DATA_ROOT}/processed/wearable_v2
+  - ${env:EEG_DATA_ROOT}/processed/wearable_v3
+  expected_revisions:
+    wearable: wearable_v3
   # Intersect the electrode filter below with the checkpoint's held-out subjects.
   # Without this, joint-condition runs would mix train/val subjects into calibration.
   split: test
@@ -20,4 +22,4 @@ epochs: 10
 lr: 0.001
 tune_adapter: true
 trial_time_sec: 2.0
-output_csv: outputs/research/wearable_calibration.csv
+output_csv: outputs/research/wearable_v3_calibration.csv

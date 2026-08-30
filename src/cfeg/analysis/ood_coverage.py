@@ -1,25 +1,113 @@
 from __future__ import annotations
 
+import hashlib
 import itertools
 from collections.abc import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 
+from cfeg.analysis.provenance import (
+    PRIMARY_ANALYSIS_MANIFEST_COLUMNS,
+    PRIMARY_ANALYSIS_MANIFEST_SCHEMA,
+    VerifiedPredictionBundle,
+    primary_analysis_manifest_sha256,
+)
 from cfeg.metrics import balanced_accuracy
 
 REQUIRED_PREDICTION_COLUMNS = ("sample_id", "label", "prediction")
+PRIMARY_PROVENANCE_COLUMNS = (
+    "prediction_schema_version",
+    "scenario",
+    "selection_split",
+    "sample_identity_sha256",
+    "checkpoint_sha256",
+    "execution_job_id",
+    "execution_contract_sha256",
+    "execution_manifest_content_sha256",
+    "lockbox_reveal_receipt_sha256",
+    "planned_config_sha256",
+    "training_completion_sha256",
+    "primary_ablation_role",
+    "primary_fairness_hash",
+    "metadata_contract_version",
+    "conditioning_architecture",
+    "external_metadata_mode",
+    "optimization_seed",
+    "split_seed",
+    "n_folds",
+    "fold_index",
+    "parameter_schema_sha256",
+    "initial_trainable_state_sha256",
+    "split_assignment_sha256",
+    "vocabulary_sha256",
+    "asset_provenance_sha256",
+    "execution_phase",
+    "analysis_plan_sha256",
+    "cohort_roles_sha256",
+    "cohort_sha256",
+    "outer_test_access_during_training",
+    "source_commit_sha",
+    "source_dirty",
+    "source_tree_sha256",
+    "environment_sha256",
+    "inference_environment_sha256",
+    "checkpoint_role",
+    "checkpoint_selection_split",
+    "checkpoint_selection_metric",
+    "analysis_manifest_schema",
+    "analysis_manifest_sha256",
+    "split_manifest_sha256",
+)
+PRIMARY_EQUAL_COLUMNS = (
+    "prediction_schema_version",
+    "scenario",
+    "selection_split",
+    "sample_identity_sha256",
+    "execution_contract_sha256",
+    "execution_manifest_content_sha256",
+    "lockbox_reveal_receipt_sha256",
+    "primary_fairness_hash",
+    "metadata_contract_version",
+    "conditioning_architecture",
+    "optimization_seed",
+    "split_seed",
+    "n_folds",
+    "fold_index",
+    "parameter_schema_sha256",
+    "initial_trainable_state_sha256",
+    "split_assignment_sha256",
+    "vocabulary_sha256",
+    "asset_provenance_sha256",
+    "execution_phase",
+    "analysis_plan_sha256",
+    "cohort_roles_sha256",
+    "cohort_sha256",
+    "outer_test_access_during_training",
+    "source_commit_sha",
+    "source_dirty",
+    "source_tree_sha256",
+    "environment_sha256",
+    "inference_environment_sha256",
+    "checkpoint_role",
+    "checkpoint_selection_split",
+    "checkpoint_selection_metric",
+    "analysis_manifest_schema",
+    "analysis_manifest_sha256",
+    "split_manifest_sha256",
+)
 
 
 def compare_ood_coverage(
-    baseline_predictions: pd.DataFrame,
-    candidate_predictions: pd.DataFrame,
+    baseline_predictions: pd.DataFrame | VerifiedPredictionBundle,
+    candidate_predictions: pd.DataFrame | VerifiedPredictionBundle,
     manifest: pd.DataFrame,
     *,
     cell_columns: Sequence[str],
     success_threshold: float,
     expected_n_labels: int | None = None,
     tags: Mapping[str, object] | None = None,
+    require_primary_contract: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
     """Compare two models on exactly paired samples.
 
@@ -34,16 +122,36 @@ def compare_ood_coverage(
         raise ValueError("cell_columns must contain at least one column.")
     if expected_n_labels is not None and expected_n_labels < 2:
         raise ValueError("expected_n_labels must be at least 2 when provided.")
+    if require_primary_contract and not (
+        isinstance(baseline_predictions, VerifiedPredictionBundle)
+        and isinstance(candidate_predictions, VerifiedPredictionBundle)
+    ):
+        raise ValueError("Primary comparison requires VerifiedPredictionBundle inputs.")
+    baseline_frame = (
+        baseline_predictions.frame
+        if isinstance(baseline_predictions, VerifiedPredictionBundle)
+        else baseline_predictions
+    )
+    candidate_frame = (
+        candidate_predictions.frame
+        if isinstance(candidate_predictions, VerifiedPredictionBundle)
+        else candidate_predictions
+    )
 
-    baseline = _validate_predictions(baseline_predictions, "baseline")
-    candidate = _validate_predictions(candidate_predictions, "candidate")
+    baseline = _validate_predictions(baseline_frame, "baseline")
+    candidate = _validate_predictions(candidate_frame, "candidate")
+    primary_contract = (
+        validate_primary_contract_pair(baseline_frame, candidate_frame)
+        if require_primary_contract
+        else None
+    )
     metadata = _validate_manifest(manifest)
     tag_values = dict(tags or {})
 
     reserved_tags = (
         set(metadata.columns)
-        | set(baseline_predictions.columns)
-        | set(candidate_predictions.columns)
+        | set(baseline_frame.columns)
+        | set(candidate_frame.columns)
         | {
             "baseline_balanced_accuracy",
             "candidate_balanced_accuracy",
@@ -72,6 +180,18 @@ def compare_ood_coverage(
             "Prediction sample sets differ; comparisons must be paired exactly. "
             f"Only baseline={only_baseline}, only candidate={only_candidate}"
         )
+    if require_primary_contract:
+        unsupported_cells = sorted(set(cell_columns) - set(PRIMARY_ANALYSIS_MANIFEST_COLUMNS))
+        if unsupported_cells:
+            raise ValueError(
+                "Primary cell columns are not bound by the analysis manifest contract: "
+                f"{unsupported_cells}."
+            )
+        observed_manifest_hash = primary_analysis_manifest_sha256(metadata, baseline_ids)
+        if primary_contract["analysis_manifest_sha256"] != observed_manifest_hash:
+            raise ValueError(
+                "Supplied analysis manifest does not match the prediction artifact contract."
+            )
 
     paired = baseline.rename(
         columns={"label": "baseline_label", "prediction": "baseline_prediction"}
@@ -92,13 +212,16 @@ def compare_ood_coverage(
     subject_columns = ["subject_id"]
     if "dataset_id" in metadata.columns:
         subject_columns.insert(0, "dataset_id")
-    metadata_columns = list(
-        dict.fromkeys(["sample_id", *cell_columns, *subject_columns])
-    )
+    metadata_columns = list(dict.fromkeys(["sample_id", *cell_columns, *subject_columns]))
     paired = paired.merge(metadata[metadata_columns], on="sample_id", validate="one_to_one")
     if len(paired) != len(baseline):
         missing = sorted(baseline_ids - set(paired["sample_id"]))[:5]
         raise ValueError(f"Manifest has no metadata for prediction samples: {missing}")
+    if "label" in metadata.columns:
+        manifest_labels = metadata.set_index("sample_id")["label"]
+        expected_labels = paired["sample_id"].map(manifest_labels).astype(int).to_numpy()
+        if not np.array_equal(paired["baseline_label"].astype(int).to_numpy(), expected_labels):
+            raise ValueError("Prediction labels do not match the supplied manifest labels.")
     for name, value in tag_values.items():
         paired[name] = value
 
@@ -123,11 +246,11 @@ def compare_ood_coverage(
         "n_valid_cells": len(valid_cells),
         "insufficient_cells": int((cells["transition"] == "insufficient").sum()),
         "expected_n_labels": expected_n_labels,
+        "primary_contract": primary_contract,
         "baseline_coverage": float(valid_cells["baseline_success"].mean()),
         "candidate_coverage": float(valid_cells["candidate_success"].mean()),
         "coverage_delta": float(
-            valid_cells["candidate_success"].mean()
-            - valid_cells["baseline_success"].mean()
+            valid_cells["candidate_success"].mean() - valid_cells["baseline_success"].mean()
         ),
         "learned_cells": int((valid_cells["transition"] == "learned").sum()),
         "forgotten_cells": int((valid_cells["transition"] == "forgotten").sum()),
@@ -196,6 +319,152 @@ def _validate_predictions(frame: pd.DataFrame, name: str) -> pd.DataFrame:
     return result
 
 
+def validate_primary_contract_pair(
+    baseline: pd.DataFrame, candidate: pd.DataFrame
+) -> dict[str, object]:
+    baseline_contract = _constant_contract(baseline, "baseline")
+    candidate_contract = _constant_contract(candidate, "candidate")
+    if (
+        baseline_contract["primary_ablation_role"] != "A0_eeg_only"
+        or baseline_contract["external_metadata_mode"] != "null"
+    ):
+        raise ValueError("Primary baseline must be A0_eeg_only with external metadata null.")
+    if (
+        candidate_contract["primary_ablation_role"] != "A2_structured_condition_prompt"
+        or candidate_contract["external_metadata_mode"] != "observed"
+    ):
+        raise ValueError(
+            "Primary candidate must be A2_structured_condition_prompt with external metadata observed."
+        )
+    if baseline_contract["selection_split"] != "test":
+        raise ValueError("Primary comparison requires checkpoint-held-out selection_split=test.")
+    if baseline_contract["metadata_contract_version"] != "0.4-dev":
+        raise ValueError("Primary comparison requires metadata_contract_version=0.4-dev.")
+    if baseline_contract["conditioning_architecture"] != "physical_hybrid_v1":
+        raise ValueError("Primary comparison requires physical_hybrid_v1 conditioning.")
+    if baseline_contract["execution_phase"] != "confirmatory_training":
+        raise ValueError("Primary comparison requires confirmatory_training checkpoints.")
+    if bool(baseline_contract["outer_test_access_during_training"]):
+        raise ValueError("Primary training must not open outer-test performance.")
+    if baseline_contract["prediction_schema_version"] != "cfeg.predictions.v3":
+        raise ValueError("Primary comparison requires cfeg.predictions.v3 artifacts.")
+    if (
+        baseline_contract["checkpoint_role"] != "confirmatory_fixed_epoch"
+        or baseline_contract["checkpoint_selection_split"] != "none"
+    ):
+        raise ValueError(
+            "Primary comparison requires the pre-registered fixed-epoch lockbox checkpoint."
+        )
+    if baseline_contract["checkpoint_selection_metric"] != "fixed_epoch":
+        raise ValueError("Primary checkpoint selection metric must be fixed_epoch.")
+    if baseline_contract["analysis_manifest_schema"] != PRIMARY_ANALYSIS_MANIFEST_SCHEMA:
+        raise ValueError("Primary analysis manifest schema is unsupported.")
+    if bool(baseline_contract["source_dirty"]):
+        raise ValueError("Primary comparison requires artifacts trained from a clean Git tree.")
+
+    mismatched = [
+        column
+        for column in PRIMARY_EQUAL_COLUMNS
+        if baseline_contract[column] != candidate_contract[column]
+    ]
+    if mismatched:
+        raise ValueError(
+            f"Primary prediction contracts differ outside treatment access: {mismatched}."
+        )
+    if baseline_contract["checkpoint_sha256"] == candidate_contract["checkpoint_sha256"]:
+        raise ValueError("Primary A0/A2 predictions unexpectedly use the same checkpoint.")
+
+    for name, frame, contract in (
+        ("baseline", baseline, baseline_contract),
+        ("candidate", candidate, candidate_contract),
+    ):
+        expected_identity = _sample_identity_sha256(frame["sample_id"].astype(str))
+        if contract["sample_identity_sha256"] != expected_identity:
+            raise ValueError(f"{name} sample_identity_sha256 does not match its sample IDs.")
+        for column in (
+            "checkpoint_sha256",
+            "execution_contract_sha256",
+            "execution_manifest_content_sha256",
+            "lockbox_reveal_receipt_sha256",
+            "planned_config_sha256",
+            "training_completion_sha256",
+            "primary_fairness_hash",
+            "parameter_schema_sha256",
+            "initial_trainable_state_sha256",
+            "split_assignment_sha256",
+            "vocabulary_sha256",
+            "asset_provenance_sha256",
+            "analysis_plan_sha256",
+            "cohort_roles_sha256",
+            "cohort_sha256",
+            "source_tree_sha256",
+            "environment_sha256",
+            "inference_environment_sha256",
+            "analysis_manifest_sha256",
+            "split_manifest_sha256",
+        ):
+            if not _is_sha256(contract[column]):
+                raise ValueError(f"{name} {column} is not a valid SHA-256 digest.")
+        commit = str(contract["source_commit_sha"])
+        if len(commit) not in {40, 64} or any(
+            char not in "0123456789abcdef" for char in commit.lower()
+        ):
+            raise ValueError(f"{name} source_commit_sha is not a valid Git object ID.")
+    return {
+        **{column: baseline_contract[column] for column in PRIMARY_EQUAL_COLUMNS},
+        "baseline_checkpoint_sha256": baseline_contract["checkpoint_sha256"],
+        "candidate_checkpoint_sha256": candidate_contract["checkpoint_sha256"],
+        "baseline_execution_job_id": baseline_contract["execution_job_id"],
+        "candidate_execution_job_id": candidate_contract["execution_job_id"],
+        "baseline_planned_config_sha256": baseline_contract["planned_config_sha256"],
+        "candidate_planned_config_sha256": candidate_contract["planned_config_sha256"],
+        "baseline_training_completion_sha256": baseline_contract[
+            "training_completion_sha256"
+        ],
+        "candidate_training_completion_sha256": candidate_contract[
+            "training_completion_sha256"
+        ],
+        "baseline_role": baseline_contract["primary_ablation_role"],
+        "candidate_role": candidate_contract["primary_ablation_role"],
+    }
+
+
+def _constant_contract(frame: pd.DataFrame, name: str) -> dict[str, object]:
+    missing = [column for column in PRIMARY_PROVENANCE_COLUMNS if column not in frame.columns]
+    if missing:
+        raise ValueError(f"{name} predictions missing primary provenance columns: {missing}")
+    contract: dict[str, object] = {}
+    for column in PRIMARY_PROVENANCE_COLUMNS:
+        values = frame[column]
+        if values.isna().any() or values.nunique(dropna=False) != 1:
+            raise ValueError(
+                f"{name} prediction provenance {column} must be one non-missing constant."
+            )
+        value = values.iloc[0]
+        value = value.item() if isinstance(value, np.generic) else value
+        if column == "source_dirty":
+            normalized = str(value).strip().lower()
+            if normalized not in {"true", "false"}:
+                raise ValueError(f"{name} source_dirty must be a boolean constant.")
+            value = normalized == "true"
+        contract[column] = value
+    return contract
+
+
+def _sample_identity_sha256(sample_ids: pd.Series) -> str:
+    digest = hashlib.sha256()
+    for sample_id in sorted(sample_ids.astype(str)):
+        encoded = sample_id.encode("utf-8")
+        digest.update(len(encoded).to_bytes(8, byteorder="big", signed=False))
+        digest.update(encoded)
+    return digest.hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    text = str(value)
+    return len(text) == 64 and all(char in "0123456789abcdef" for char in text.lower())
+
+
 def _validate_manifest(manifest: pd.DataFrame) -> pd.DataFrame:
     if "sample_id" not in manifest.columns:
         raise ValueError("Manifest missing sample_id.")
@@ -240,9 +509,7 @@ def _group_metrics(
                 "baseline_success": base_success,
                 "candidate_success": candidate_success,
                 "transition": (
-                    _transition(base_success, candidate_success)
-                    if complete
-                    else "insufficient"
+                    _transition(base_success, candidate_success) if complete else "insufficient"
                 ),
             }
         )

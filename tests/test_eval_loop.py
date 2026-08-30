@@ -6,8 +6,8 @@ import pytest
 import torch
 
 from cfeg.eval_loop import (
-    _calibration_prediction_rows,
     _calibration_adaptation_seed,
+    _calibration_prediction_rows,
     _calibration_support_indices,
     _held_out_evaluation_indices,
     _metadata_shuffle_indices,
@@ -17,7 +17,13 @@ from cfeg.eval_loop import (
     _scenarios,
     _subject_calibration_indices,
     _subject_calibration_partition,
+    _validate_checkpoint_asset_revisions,
+    _validate_checkpoint_dataset_provenance,
+    _validate_fresh_governed_evaluation_output,
+    _validate_split_assignment_contract,
 )
+from cfeg.governance import GovernanceError
+from cfeg.train_loop import _sha256_json
 
 
 def _condition(batch: int = 4, channels: int = 8):
@@ -39,12 +45,28 @@ def _condition(batch: int = 4, channels: int = 8):
     return cond
 
 
+def _condition_v04(batch: int = 4, channels: int = 8):
+    cond = _condition(batch=batch, channels=channels)
+    cond.update(
+        {
+            "metadata_contract_version": "0.4-dev",
+            "external_continuous": torch.ones(batch, 2),
+            "external_continuous_missing": torch.zeros(batch, 2, dtype=torch.bool),
+            "query_qc": torch.ones(batch, 1),
+            "query_qc_missing": torch.zeros(batch, 1, dtype=torch.bool),
+            "channel_query_qc": torch.ones(batch, channels),
+            "channel_query_qc_missing": torch.zeros(batch, channels, dtype=torch.bool),
+            "channel_impedance": torch.ones(batch, channels),
+            "channel_impedance_missing": torch.zeros(batch, channels, dtype=torch.bool),
+        }
+    )
+    return cond
+
+
 def test_metadata_missing_masks_prompt_channels_not_backbone_channels():
     x = torch.ones(4, 8, 20)
     cond = _condition()
-    _, masked = _robustness_perturbation(
-        {"type": "metadata_missing", "name": "missing"}
-    )(x, cond)
+    _, masked = _robustness_perturbation({"type": "metadata_missing", "name": "missing"})(x, cond)
 
     assert masked["channel_mask"].all()
     assert masked["channel_ids"].ne(0).all()
@@ -53,9 +75,121 @@ def test_metadata_missing_masks_prompt_channels_not_backbone_channels():
     assert masked["continuous_missing"].all()
 
 
+def test_protocol_v04_metadata_missing_preserves_structure_and_query_qc():
+    x = torch.ones(4, 8, 20)
+    cond = _condition_v04()
+    _, masked = _robustness_perturbation({"type": "metadata_missing", "name": "missing"})(x, cond)
+
+    torch.testing.assert_close(masked["channel_ids"], cond["channel_ids"])
+    torch.testing.assert_close(masked["channel_mask"], cond["channel_mask"])
+    torch.testing.assert_close(masked["query_qc"], cond["query_qc"])
+    torch.testing.assert_close(masked["query_qc_missing"], cond["query_qc_missing"])
+    assert "condition_channel_ids" not in masked
+    assert masked["external_continuous"].eq(0).all()
+    assert masked["external_continuous_missing"].all()
+    assert masked["channel_impedance"].eq(0).all()
+    assert masked["channel_impedance_missing"].all()
+    assert masked["reference"].eq(0).all()
+    assert masked["electrode_type"].eq(0).all()
+    assert masked["cap_type"].eq(0).all()
+
+
+def test_protocol_v04_query_qc_missing_is_separate_from_external_metadata():
+    x = torch.ones(4, 8, 20)
+    cond = _condition_v04()
+    _, masked = _robustness_perturbation(
+        {
+            "type": "metadata_group_missing",
+            "name": "query_qc_missing",
+            "query_qc_indices": [0],
+        }
+    )(x, cond)
+
+    assert masked["query_qc"].eq(0).all()
+    assert masked["query_qc_missing"].all()
+    torch.testing.assert_close(masked["external_continuous"], cond["external_continuous"])
+
+
 def test_generalization_drop_is_relative_to_reference():
     assert _relative_drop(0.8, 0.6) == pytest.approx(0.25)
     assert _relative_drop(0.0, 0.0) == 0.0
+
+
+def test_governed_evaluation_refuses_existing_output_prefix(tmp_path):
+    output = tmp_path / "robustness.csv"
+    output.with_name("robustness_clean_predictions.csv").write_text(
+        "sample_id\nexisting\n", encoding="utf-8"
+    )
+    context = {
+        "research_access": type("Access", (), {"governed": True})(),
+        "train_config": {},
+    }
+
+    with pytest.raises(GovernanceError, match="output prefix is not fresh"):
+        _validate_fresh_governed_evaluation_output(
+            {"output_csv": str(output)}, context, "robustness"
+        )
+
+
+def test_evaluation_rejects_stale_checkpoint_revision():
+    with pytest.raises(ValueError, match="Checkpoint/data revision mismatch"):
+        _validate_checkpoint_asset_revisions(
+            {
+                "asset_info": {
+                    "datasets": [
+                        {
+                            "dataset_id": "wearable",
+                            "dataset_revision": "wearable_v2",
+                        }
+                    ]
+                }
+            },
+            {"wearable": "wearable_v3"},
+        )
+
+
+def test_evaluation_compares_matching_wearable_runtime_provenance(monkeypatch):
+    signature = {"axis_labels": ["dry", "wet"], "axis_mean_kohm": [261.67, 19.63]}
+    entry = {
+        "dataset_id": "wearable",
+        "dataset_revision": "wearable_v3",
+        "query_qc_extractor_version": "filtered_cropped_pre_zscore_channel_std_median_v1",
+        "external_continuous_schema": "impedance_mean_max_v1",
+        "impedance_numeric_signature": signature,
+        "processed_subject_count": 102,
+    }
+    asset_info = {"processed_dirs": [], "datasets": [entry]}
+    checkpoint = {
+        "config": {
+            "protocol": {"metadata_contract_version": "0.4-dev"},
+            "data": {"expected_revisions": {"wearable": "wearable_v3"}},
+            "runtime_contract": {"asset_provenance_sha256": _sha256_json(asset_info)},
+        },
+        "asset_info": asset_info,
+    }
+    dataset = type("Dataset", (), {"asset_infos": [dict(entry)], "roots": []})()
+    monkeypatch.setattr("cfeg.eval_loop._processed_asset_provenance", lambda roots: asset_info)
+
+    _validate_checkpoint_dataset_provenance(checkpoint, dataset)
+
+    dataset.asset_infos[0]["processed_subject_count"] = 3
+    with pytest.raises(ValueError, match="processed_subject_count"):
+        _validate_checkpoint_dataset_provenance(checkpoint, dataset)
+
+
+def test_evaluation_rejects_legacy_checkpoint_without_claimed_dataset_provenance():
+    checkpoint = {
+        "config": {"data": {"processed_dirs": ["data/processed/wearable_v2"]}},
+        "asset_info": {"processed_dirs": ["data/processed/wearable_v2"]},
+    }
+    dataset = type(
+        "Dataset",
+        (),
+        {"asset_infos": [{"dataset_id": "wearable", "dataset_revision": "wearable_v3"}]},
+    )()
+
+    with pytest.raises(ValueError, match="no revisioned dataset provenance"):
+        _validate_checkpoint_dataset_provenance(checkpoint, dataset)
 
 
 def _calibration_manifest() -> pd.DataFrame:
@@ -153,9 +287,7 @@ def test_calibration_prediction_rows_record_query_and_subject_identity():
 
 
 def test_calibration_adaptation_seed_is_order_independent_and_specific() -> None:
-    first = _calibration_adaptation_seed(
-        42, dataset_id="wearable", subject_id="s01", budget=3
-    )
+    first = _calibration_adaptation_seed(42, dataset_id="wearable", subject_id="s01", budget=3)
 
     assert first == _calibration_adaptation_seed(
         42, dataset_id="wearable", subject_id="s01", budget=3
@@ -187,9 +319,7 @@ def test_held_out_selection_uses_checkpoint_split_csv_sample_ids(tmp_path):
         ),
     }
 
-    selected = _held_out_evaluation_indices(
-        {"data": {"split": "test"}}, context, mode="robustness"
-    )
+    selected = _held_out_evaluation_indices({"data": {"split": "test"}}, context, mode="robustness")
 
     assert selected.tolist() == [0, 2]
 
@@ -309,9 +439,7 @@ def test_cross_dataset_scenario_intersects_checkpoint_test_and_target_dataset(tm
     )
 
     assert scenarios[0][0] == "zero_shot_beta"
-    assert context["manifest"].iloc[scenarios[0][1]]["sample_id"].tolist() == [
-        "beta-test"
-    ]
+    assert context["manifest"].iloc[scenarios[0][1]]["sample_id"].tolist() == ["beta-test"]
 
 
 def test_standard_scenario_refuses_implicit_whole_manifest(tmp_path):
@@ -329,13 +457,30 @@ def test_standard_scenario_refuses_implicit_whole_manifest(tmp_path):
         _scenarios({}, context, "standard")
 
 
+def test_protocol_v04_rejects_split_csv_not_bound_to_checkpoint(tmp_path):
+    split_path = tmp_path / "split.csv"
+    table = pd.DataFrame({"sample_id": ["train-1", "test-1"], "split": ["test", "test"]})
+    context = {
+        "train_config": {
+            "protocol": {"metadata_contract_version": "0.4-dev"},
+            "runtime_contract": {"split_assignment_sha256": "0" * 64},
+        }
+    }
+
+    with pytest.raises(ValueError, match="split-assignment contract"):
+        _validate_split_assignment_contract(context, table, split_path)
+
+
 def test_metadata_shuffle_is_global_deterministic_and_changes_conditions() -> None:
     manifest = pd.DataFrame(
         {
             "sample_id": [f"sample-{index}" for index in range(12)],
             "dataset_id": ["wearable"] * 12,
-            "electrode_type": ["dry"] * 6 + ["wet"] * 6,
-            "impedance_mean_kohm": list(range(12)),
+            "subject_id": [f"sub{index:03d}" for index in range(1, 5) for _ in range(3)],
+            "run_id": ["block01"] * 12,
+            "label": [0, 1, 2] * 4,
+            "electrode_type": [value for value in ("dry", "wet", "dry", "wet") for _ in range(3)],
+            "impedance_mean_kohm": [value for value in range(4) for _ in range(3)],
         }
     )
     indices = np.arange(len(manifest))
@@ -345,28 +490,25 @@ def test_metadata_shuffle_is_global_deterministic_and_changes_conditions() -> No
 
     np.testing.assert_array_equal(first, second)
     assert np.count_nonzero(first != indices) == len(indices)
-    donor_electrodes = manifest.iloc[first]["electrode_type"].to_numpy()
-    target_electrodes = manifest.iloc[indices]["electrode_type"].to_numpy()
-    assert np.count_nonzero(donor_electrodes != target_electrodes) >= len(indices) // 2
+    np.testing.assert_array_equal(
+        manifest.iloc[first]["label"].to_numpy(),
+        manifest.iloc[indices]["label"].to_numpy(),
+    )
 
 
 def test_held_out_selection_rejects_incomplete_checkpoint_test_manifest(tmp_path):
     checkpoint_path = tmp_path / "run" / "best.pt"
     checkpoint_path.parent.mkdir()
-    pd.DataFrame(
-        {"sample_id": ["test-1", "test-2"], "split": ["test", "test"]}
-    ).to_csv(checkpoint_path.parent / "split.csv", index=False)
+    pd.DataFrame({"sample_id": ["test-1", "test-2"], "split": ["test", "test"]}).to_csv(
+        checkpoint_path.parent / "split.csv", index=False
+    )
     context = {
         "checkpoint_path": checkpoint_path,
-        "manifest": pd.DataFrame(
-            {"sample_id": ["test-1"], "dataset_id": ["wearable"]}
-        ),
+        "manifest": pd.DataFrame({"sample_id": ["test-1"], "dataset_id": ["wearable"]}),
     }
 
     with pytest.raises(ValueError, match="missing 1 sample_id"):
-        _held_out_evaluation_indices(
-            {"data": {"split": "test"}}, context, mode="robustness"
-        )
+        _held_out_evaluation_indices({"data": {"split": "test"}}, context, mode="robustness")
 
 
 def test_robustness_refuses_ambiguous_whole_manifest(tmp_path):
