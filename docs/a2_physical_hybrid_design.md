@@ -1,7 +1,7 @@
 # A2 physical-hybrid 설계 계약
 
-기준일: 2026-08-30
-상태: **DEC-20260901-004로 S1–S3 reveal #2 validator-only exact restart 승인·기준 동결 / confirmatory 미동결**
+기준일: 2026-09-01
+상태: **S1–S3 reveal #2 완료 — valid physical assay / diagnostic no-go / confirmatory 차단**
 
 이 문서는 primary A0/A2의 현재 모델 계약을 설명한다. 연구 질문과 39명
 training·60명 lockbox 배정은 바꾸지 않는다. 바뀐 것은 metadata를 모델에 넣는
@@ -125,24 +125,47 @@ S1–S3는 모집단 효과 검정에 너무 작다. 두 번째 reveal을 승인
 - global-only와 channel-only 중 어떤 경로가 작동 가능성을 보이는가
 
 정확한 margin, 중단 규칙, output root와 단일 reveal 절차는 `DEC-20260901-004`로
-고정했다. 현재 남은 실행 전 gate는 전체 source를 clean commit과 annotated freeze tag로
-결합하고 테스트를 다시 통과하는 것이다.
+고정했다. Source commit `7bb8afc64c02e45beda7e245370563eac0e021e2`와 annotated tag
+`physical-reveal2-freeze-20260901-r1`에서 18개 job과 세 intervention bundle을 완성하고
+reveal index 2를 공개했다.
 
-## 현재 구현과 남은 gate
+## Reveal #2 판정
+
+| 지표 | 관찰값 | 판정 |
+|---|---:|---|
+| mean A0 BA | 0.1292 | descriptive |
+| mean Full A2 BA | 0.1194 | descriptive |
+| mean Full−A0 | −0.0097 | clean directional gate 실패 |
+| mean Global-only−A0 | −0.0083 | descriptive |
+| mean Channel-only−A0 | +0.0014 | descriptive |
+| mean Full−shuffle-train | 약 0 | training pairing gate 실패 |
+| metadata-only excess over chance | 0 | shortcut screen 통과 |
+
+Counterfactual flip과 train/inference donor-bundle potency는 모두 fold별 `1.0`이라 assay는
+유효하다. Clean observed-subject harm와 wrong-metadata safety screen도 통과했다. 그러나
+`clean_a2_directional_mean`, `counterfactual_reliance`, `inference_pairing_shuffle`,
+`training_pairing_shuffle` 네 substantive gate가 실패했다. 따라서 결과는
+`diagnostic_no_go_one_or_more_substantive_gates_failed`다. N=3이므로 모집단 효과의 부재나
+안전성을 주장하지 않지만, 현재 physical routing이 correct metadata 이득·의존성을
+보였다고도 주장할 수 없다.
+
+## 현재 구현과 중단 경계
 
 구현 파일은 `src/cfeg/models/physical_conditioning.py`, primary config는
 `configs/train/wearable_loso.yaml`, 개발 matrix는
 `configs/train/wearable_physical_mechanism.yaml`이다. Block-coherent donor 구현은
 `src/cfeg/data/metadata_controls.py`에 있다.
 
-Confirmatory 진입 전 남은 필수 항목은 다음이다.
+현재 상태는 다음과 같다.
 
 - [완료] owner가 두 번째 S1–S3 assay와 reveal 사용을 승인하고 mechanism/safety margin을 고정
-- metadata 측정 시점·단위·transform과 block alignment provenance를 최종 서명
-- 구현된 six-role/18-job+각 fold당 Full A2 intervention bundle 하나(총 세 개), 전역 event-hash ledger, root-wide lock·atomic publish의 outcome-free 검증은 완료
-- prediction→checkpoint/config/completion/reveal provenance, main/intervention clean 교차검증과 least-favourable N=3 gate 적용은 완료
-- clean commit/tag 및 최종 implementation hash
-- SESOI, alpha/alternative, operational threshold, multiplicity, fairness/source lock 확정
-- 승인된 두 번째 개발 결과가 freeze gate를 통과할 때만 39/60 plan을 `frozen`으로 변경
+- [완료] metadata provenance, canonical donor reconstruction, six-role/18-job·3-bundle 계약과 atomic publication 검증
+- [완료] clean execution commit/tag와 18/18 training, 3/3 intervention, public receipt/ledger 검증
+- [완료] potency-valid assay에서 네 substantive gate 실패와 diagnostic no-go 적용
+- [금지] 동일 S1–S3 threshold 조정, 재학습, 추가 reveal 또는 결과 기반 architecture 선택
+- [차단] 현재 `physical_hybrid_v1`의 39명 training·60명 lockbox prediction
+- [새 연구 필요] 독립 development data와 외부 근거로 새 후보·gate·decision contract를 결과 보기 전에 정의
 
-39명 training이나 60명 lockbox prediction은 이 문서 추가만으로 허용되지 않는다.
+SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock을 채우는 것만으로
+이 no-go를 해제할 수 없다. 39명 training이나 60명 lockbox prediction은 별도의 새 연구설계가
+사전등록되고 독립 개발 근거를 통과하기 전까지 허용되지 않는다.

@@ -2,7 +2,7 @@
 
 업데이트: 2026-09-01
 
-> DEC-20260830-001에 따라 S1–S3는 영구 development-only다. DEC-20260830-002에 따라 S4–S102 N=99는 39명 confirmatory training과 60명 independent lockbox로 고정됐고, 이전 N=99 5-fold primary는 superseded됐다. DEC-20260901-004는 공개 전 validator-only 정정 뒤 동일한 physical reveal #2 exact restart만 승인한다. 전체 N=102·24,480행은 자산 계약이다. 현재 권한·gate는 [프로토콜 상태](docs/research_protocol_status.md)와 [append-only 연구일지](docs/research_log.md)를 우선한다.
+> DEC-20260830-001에 따라 S1–S3는 영구 development-only다. DEC-20260830-002에 따라 S4–S102 N=99는 39명 confirmatory training과 60명 independent lockbox로 고정됐고, 이전 N=99 5-fold primary는 superseded됐다. DEC-20260901-004의 physical reveal #2 exact restart는 18/18 training·3/3 intervention·atomic publication까지 완료됐으며, 유효 assay에서 substantive gate 네 개가 실패해 diagnostic no-go다. 현 `physical_hybrid_v1`의 39/60 confirmatory는 차단한다. 전체 N=102·24,480행은 자산 계약이다. 현재 권한·gate는 [프로토콜 상태](docs/research_protocol_status.md)와 [append-only 연구일지](docs/research_log.md)를 우선한다.
 
 예전 구현 지시서 v2를 현재 상태에 맞춘 체크리스트로 대체한다. 체크 완료는 코드·설정·테스트 경로가 repository에 있다는 뜻이다. 외부 데이터/REVE 항목은 서버 실험을 끝내야 연구 결과까지 완료된다.
 
@@ -72,6 +72,8 @@ Protocol 0.3에서 primary를 Wang→BETA에서 wearable participant DG로 옮�
 - [x] natural missingness pattern 하나인 missingness-only를 `invalid_assay`로 명시
 - [x] control donor-map potency/hash 및 parent-checkpoint evaluation provenance sidecar
 - [x] physical six-role×3-fold 18-job canonical manifest, 전역 reveal ledger와 generic 실행/eval 우회 차단
+- [x] `physical-reveal2-freeze-20260901-r1`에서 18/18 train·3/3 intervention·reveal #2 atomic publication
+- [x] potency-valid 10-gate 결과 판정: A0 0.1292, Full A2 0.1194, Δ −0.0097, substantive 4개 실패로 diagnostic no-go
 
 ### 실행
 
@@ -94,7 +96,7 @@ Protocol 0.3에서 primary를 Wang→BETA에서 wearable participant DG로 옮�
 - [x] BETA S1/S16과 wearable S1–S3 공개 pilot 전처리·baseline 검증
 - [x] BETA/Wang/Wearable/Dong2023 공개자료 전처리·자산 검증
 - [ ] 실제 REVE 1-epoch smoke
-- [ ] primary wearable 39명 train의 A0/A2×seeds `[42,43,44]` 6 jobs 후 독립 60명 lockbox subject-level paired 통계
+- [x] **차단 적용:** 현 physical A2로 39명 A0/A2×seeds `[42,43,44]` 6 jobs 및 독립 60명 lockbox 통계를 실행하지 않음
 - [ ] Dong/Wang/BETA leave-one-acquisition-out replication
 - [ ] Wang↔BETA boundary 및 joint condition stress 각각 3개 이상 seed
 - [ ] A3/A4와 robustness 전체
@@ -122,20 +124,17 @@ bash scripts/cfeg.sh smoke
 bash scripts/cfeg.sh assets reve beta
 CFEG_ENABLE_MOABB=1 bash scripts/cfeg.sh setup
 bash scripts/cfeg.sh assets wang
-# 아래 두 명령은 outcome을 계산하지 않는다.
-python scripts/run_physical_mechanism_loso.py prepare
-python scripts/run_physical_mechanism_loso.py status
+# Physical reveal #2는 완료·소비됐다. 아래 dry-run만 새 output에 outcome 없이 사용할 수 있다.
 EEG_DATA_ROOT=/path/to/eeg-data python scripts/run_ablation.py \
   --config configs/train/wearable_physical_mechanism.yaml \
   --output-root outputs/development/wearable_v3/physical_contract_dryrun \
   --only A0_eeg_only,A2_structured_condition_prompt,M1_global_only,M2_channel_only,M3_full_shuffle_train,M4_metadata_only \
   --dry-run
 
-# 첫 prompt grid는 완료된 역사적 artifact라 mutable config로 재생성하지 않는다.
-# 두 번째 physical grid는 DEC-20260901-004와 새 annotated freeze tag에서 동일한 18-job exact restart만 허용된다.
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py status
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py train
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py reveal
+# 첫 prompt grid와 두 번째 physical grid는 완료된 역사적 artifact다.
+# S1–S3 train/reveal을 다시 실행하지 않는다. 공개 결과만 읽는다.
+jq '.mean_metrics, .predeclared_gate_evaluation' \
+  outputs/development-loso/physical-mechanism-v2/reveal-bundle/analysis/revealed_summary.json
 ~~~
 
 Wearable 원본은 자동 다운로드하거나 기존 파일을 검증한 뒤 전처리한다.
@@ -144,8 +143,8 @@ Wearable 원본은 자동 다운로드하거나 기존 파일을 검증한 뒤 �
 python scripts/fetch_dataset.py --dataset wearable --subjects 1,2,3 --probe-remote
 python scripts/fetch_dataset.py --dataset wearable
 bash scripts/cfeg.sh assets wearable
-# Confirmatory 명령은 plan 값·clean source tag와 physical contract를 동결한 뒤에만 허용된다.
-python scripts/run_confirmatory_primary.py status
+# 현 candidate의 confirmatory 명령은 substantive no-go로 차단된다.
+# 새 독립 development study와 별도 decision contract 전에는 실행하지 않는다.
 ~~~
 
 ## 판정 규칙
@@ -158,7 +157,7 @@ python scripts/run_confirmatory_primary.py status
 - Tiny는 pipeline/baseline이고 REVE와 구분한다.
 - Frequency overlap 없는 class id와 label-frequency가 어긋난 예전 processed asset을 거부한다.
 
-외부 자산을 실행하지 않은 상태에서는 연구 결과 완료로 표시하지 않는다.
+Physical N=3 개발 진단 결과는 완료됐지만 전체 연구의 confirmatory 결과는 없다. 외부 replication이나 새 독립 development evidence를 실행하지 않은 상태에서 broad acquisition-OOD 또는 모집단 metadata benefit을 완료된 연구 결과로 표시하지 않는다.
 
 서버 표준값은 `HF_HOME=/mnt/nvme/cache/interns/hf`,
 `HF_HUB_CACHE=/mnt/nvme/cache/interns/hf/hub`,

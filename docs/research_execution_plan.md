@@ -5,6 +5,8 @@
 
 > Protocol 0.3의 **연구 질문**은 유지한다. 당시 5-fold split·평가·iid 추론 계약은 `DEC-20260830-002`와 `0.4-lockbox`가 대체했다. `0.4-dev`에서 structure/query-QC/external 권한 분리와 P0 wearable 복구를 구현했지만 metadata treatment는 아직 확증용으로 동결되지 않았다. 현재 구현 범위와 남은 gate는 [프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
 
+> **2026-09-01 실행 결과:** `DEC-20260901-004`의 physical reveal #2는 18/18 training·3/3 intervention·atomic publication까지 완료됐다. Assay potency는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 네 substantive gate가 실패했다. 사전 중단 규칙에 따라 현 `physical_hybrid_v1`의 Phase 3은 no-go이며 39/60 confirmatory는 봉인한다. 같은 S1–S3를 재튜닝·재공개하지 않는다.
+
 > 데이터 수를 늘리는 기준, exact-label family와 shared-frequency OOD의 구분, 최신 strict k=0 baseline, foundation-model target exposure gate는 [연구 의미·데이터 확장·최신 문헌 전략](research_significance_data_strategy.md)을 따른다.
 
 > **2026-08-30 revision 경계:** 반대로 결합된 `wearable_v2`와 그 A2 결과는 무효다. 코드는 `[dry, wet]` numeric signature와 `wearable_v3` guard로 복구했고 전체 102명 v3 acceptance audit를 통과했다. Protocol 0.4 confirmatory freeze 전에는 아래 Phase 3을 시작하지 않는다.
@@ -93,6 +95,8 @@
 - [x] S1–S3 physical metadata-only와 acquisition-block-coherent shuffle-train→clean-val control; missingness-only는 single-pattern invalid assay
 - [x] 정상 A2 validation-only wet↔dry counterfactual과 manifest-only donor 교환; donor EEG 미접근
 - [x] control mapping/fixed-point/coverage/field-change hash와 evaluation parent-checkpoint provenance
+- [x] execution tag `physical-reveal2-freeze-20260901-r1`에서 18/18 training, 3/3 intervention, reveal-budget precommit과 atomic publication 완료
+- [x] potency-valid 10-gate 판정: substantive 4개 실패로 `diagnostic no-go`, confirmatory authorization false
 - [x] 성공·dry-run·OOM 실패를 같은 schema로 남기는 synchronized CUDA peak-memory sidecar
 - [x] physical development control equivalence/mechanism/safety margin, potency threshold, invalid-assay와 `development_gate_only` 정책 동결(confirmatory 전체 분석계획은 별도 미동결)
 
@@ -145,8 +149,8 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 2. [완료] wearable에서 관측 가능한 electrode interface, block impedance mean/max, per-channel impedance의 schema·provenance를 확정하고 reference/cap 상수는 primary에서 제외한다.
 3. [완료] `physical_hybrid_v1`의 공통 query-QC FiLM, external global FiLM, channel-quality gain과 exact-null routing을 구현한다. Prompt/adapter는 legacy secondary다.
 4. [완료·outcome-free] six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, prediction·intervention·aggregate·gate를 함께 tree-hash한다. Donor mapping/potency는 canonical manifest에서 재구성하고 private tree와 staging parent를 fsync한 뒤 digest precommit→atomic rename/fsync→final receipt로 공개한다. 알려진 private partial artifact만 같은 동결 계산으로 삭제·재생성하고, 미신고 prefix나 digest drift는 거부한다.
-5. [재승인·기준 동결 완료 / exact restart 대기] `DEC-20260901-004`가 공개 전 counterfactual scope validator-only 오류를 정정하고 동일한 reveal #2를 재승인했다. 모델·grid·seed·fold·margin·gate는 바꾸지 않는다. Metadata-only, shuffle-train→clean-val, block-coherent shuffle, counterfactual과 missing intervention은 단일 reveal bundle에 포함된다. Natural missingness pattern이 하나인 missingness-only는 `invalid_assay`다. Clean 방향은 3-fold mean, 나머지는 least-favourable observed fold이며 N=3 confidence bound가 아니다.
-6. Physical source를 clean annotated tag로 고정한 뒤 18-job train과 단일 `reveal`을 실행한다. Confirmatory MCID·`τ`·alpha·multiplicity·external lockbox source contract는 physical 결과의 owner review 뒤 별도로 `frozen` 선언한다. S1–S3는 계속 development-only다.
+5. [완료] `DEC-20260901-004`의 validator-only 정정 뒤 동일 모델·grid·seed·fold·margin·gate로 reveal #2를 재승인·동결했다. Natural missingness-only는 사전 선언대로 `invalid_assay`다.
+6. [완료·no-go] Clean annotated tag에서 18-job train과 단일 reveal을 완료했다. Potency는 통과했지만 clean direction·counterfactual reliance·inference pairing·training pairing gate가 실패했다. S1–S3는 계속 development-only이고 reveal #2는 소비됐으며 추가 tuning/reveal은 금지한다.
 
 ### Phase 2.6 — 데이터·문헌 충분성 gate
 
@@ -157,11 +161,11 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 5. backbone revision별 raw/same-subject/label exposure matrix를 만들고 target-exposed foundation 결과를 별도 표기
 6. Nakanishi 원 repo s1–s10의 reuse 권리를 서면 확인한다. Kim2025는 frequency 10개만 겹치고 phase가 모두 π만큼 달라 exact class overlap이 0이므로 기존 `shared-10 lockbox` 역할을 폐기하고 별도 frequency-only protocol로 재지정
 7. 직접 baseline 감사 결과를 적용: DG-Conformer는 permission/port 조건부, TST-CSFR는 literature-only, TFA-Net public runner는 제외, TBMSCCN-C는 독립 구현만, SSER은 training-only augmentation ablation으로 사용
-8. source-only gate에서 `correct > shuffled`와 `correct > wrong`의 기전 민감도, `shuffle ≈ A0/null`의 capacity 진단, `wrong − A0`의 허용 안전손실을 서로 분리해 확인한 뒤 Phase 3에 진입한다. Wrong이 크게 나빠지는 것은 metadata 사용 증거일 수 있지만 동시에 배포 안전성 실패이므로 자동 성공으로 세지 않는다.
+8. [현 candidate 실패] Source-only gate에서 safety는 통과했지만 `correct > shuffled`와 `correct > wrong`의 기전 민감도를 보이지 못했다. 따라서 현 candidate로 Phase 3에 진입하지 않는다. 새 독립 data/model study가 생기면 이 gate를 결과 전에 다시 정의해야 한다.
 
 ### Phase 3 — confirmatory full runs
 
-진입 조건: Phase 0의 impedance P0와 Phase 2.5/2.6의 모든 확증 gate가 완료되고 Protocol 0.4를 `frozen`으로 선언해야 한다.
+상태: **현재 계약에서 unauthorized/blocked.** Phase 2.5의 substantive gate가 실패했으므로 아래 항목은 실행 절차 기록일 뿐 현 candidate에 대한 작업 목록이 아니다. 새 독립 development 근거와 별도 사전등록 계약이 승인·통과되기 전에는 Protocol 0.4를 `frozen`으로 선언하지 않는다.
 
 1. 사전 고정된 39명 전체로 parameter-matched A0/A2를 seeds `[42,43,44]`, 10 epoch, validation 없이 학습한다.
 2. 여섯 final checkpoint와 completion receipt가 모두 유효한지 검사한 뒤, 별도 60명 lockbox의 clean k=0 prediction을 첫 confirmatory 공개에서 같은 manifest 아래 함께 생성한다. 각 prediction은 staging에 머물다가 6/6 완성 뒤 원자적으로 공개한다.

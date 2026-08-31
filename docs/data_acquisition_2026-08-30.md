@@ -65,6 +65,7 @@ Wearable primary의 full deep audit도 통과했다. 102명×wet/dry×10 blocks�
 ## 다음 gate
 
 1. BETA/Wang/Dong subject metadata를 analysis-only covariate로 보존할지 결정
-2. DEC-20260830-001의 S1–S3 development source에서 metadata falsification controls와 baseline 고정
-3. MCID·성공 threshold·multiplicity를 채워 analysis plan을 `frozen`으로 전환
-4. 그 뒤 39명 six-job training을 모두 끝낸 후에만 60명 lockbox prediction을 첫 manifest-wide reveal로 연다
+2. [완료·no-go] S1–S3 physical falsification control을 reveal #2로 판정했다. Potency는 유효했지만 네 substantive gate가 실패했다.
+3. 현 candidate의 analysis plan을 `frozen`으로 전환하지 않는다. 같은 S1–S3 재튜닝·추가 reveal도 금지한다.
+4. 독립 wearable-like development data 또는 외부 source-only 근거로 새 candidate·gate를 사전등록할지 결정한다.
+5. 새 연구가 development gate를 통과하기 전에는 39명 training과 60명 lockbox prediction을 열지 않는다.

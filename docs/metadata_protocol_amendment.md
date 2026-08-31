@@ -2,11 +2,11 @@
 
 기준일: 2026-08-29
 
-상태: **Protocol 0.4-dev physical-hybrid 구현 — 두 번째 development reveal 승인·기준 동결 / confirmatory freeze 전**
+상태: **Protocol 0.4-dev reveal #2 완료 — valid assay / diagnostic no-go / confirmatory 차단**
 
 연구주제: 변경하지 않음
 
-> **구현 갱신:** 배포 문구와 모순되는 Figshare v4 impedance numeric order를 `[dry, wet]`으로 교정하고, signature·per-channel 보존·headband parsing·`wearable_v3` deep receipt/revision guard를 구현했다. 전체 102명·24,480행 acceptance audit도 통과했다. Primary 후보 `physical_hybrid_v1`은 A0/A2 공통 query-QC FiLM, A2의 electrode type+block impedance global FiLM, 채널별 impedance bounded gain, exact-null routing으로 구현됐다. Reference/cap은 wearable에서 상수라 treatment에서 제외한다. `DEC-20260901-004`는 공개 전 발견한 counterfactual scope validator 오류만 정정해 exact grid 재시작을 승인했다. Confirmatory freeze는 별도다. 상세 변경은 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)을 따른다.
+> **구현·결과 갱신:** 배포 문구와 모순되는 Figshare v4 impedance numeric order를 `[dry, wet]`으로 교정하고, signature·per-channel 보존·headband parsing·`wearable_v3` deep receipt/revision guard를 구현했다. 전체 102명·24,480행 acceptance audit도 통과했다. `physical_hybrid_v1`은 공통 query-QC FiLM, external global FiLM, 채널별 impedance gain, exact-null routing으로 구현됐다. `DEC-20260901-004`의 exact restart는 완료됐지만 valid N=3 assay에서 A0 `0.1292`, Full A2 `0.1194`, Δ `−0.0097`이고 네 substantive gate가 실패했다. 현 candidate의 confirmatory는 차단한다. 상세 상태는 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)을 따른다.
 
 > **후속 DEC-20260830-002:** 아래의 N=99 5-fold primary는 target-free simulation에서 model-shared dependence와 Type-I inflation이 드러나 폐기됐다. 현재 primary는 39명 fixed training·60명 independent lockbox이며 [연구 프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
 
@@ -14,16 +14,17 @@
 
 ## 1. 먼저 내리는 판정
 
-현재 실험설계는 **physical development 판정값과 실행 승인은 고정됐지만 confirmatory는 아직 고정되지 않았다.** Protocol 0.3에서 연구 질문과 평가 골격을 고정했고, 0.4-dev에서 physical treatment의 표현·주입·반증 경로까지 구현했다. 두 번째 development reveal은 `DEC-20260901-004`로 재승인됐고, confirmatory SESOI·alpha·operational threshold·multiplicity·source freeze는 미결정이다.
+현재 실험설계는 **physical development 실행과 판정이 끝났고, 그 결과 현 candidate는 confirmatory no-go다.** Protocol 0.3에서 연구 질문과 평가 골격을 고정했고, 0.4-dev에서 physical treatment의 표현·주입·반증 경로까지 구현했다. 두 번째 development reveal의 potency는 유효했지만 correct metadata의 방향성 이득과 pairing/counterfactual reliance를 보이지 못했다. Confirmatory SESOI 등은 여전히 미결정이지만 그것만 채워 no-go를 해제할 수 없다.
 
 | 상태 | 항목 |
 |---|---|
 | 유지·동결 | closed-set SSVEP, strict inductive `k=0`, target-set 통계·adaptation 금지, wearable held-out-participant 평가, A0 대 A2, subject-level balanced accuracy, fixed query, source-only model selection |
 | 구현·개발 기준 동결 | metadata schema, 구조 정보와 treatment의 경계, physical A2 주입, exact-null, block-coherent shuffle, metadata-only control, wrong-metadata intervention |
-| 아직 수치 결정 필요 | MCID, capability 성공 threshold `τ`, seed 수의 최종값, 외부 lockbox 사용 횟수와 실패 판정 |
+| 현 candidate no-go | clean direction, counterfactual reliance, inference pairing, training pairing gate 실패; 동일 S1–S3 재튜닝·추가 reveal 금지 |
+| 새 연구에서 수치 결정 필요 | MCID, capability 성공 threshold `τ`, seed 수, 외부 lockbox 사용 횟수와 실패 판정 |
 | 탐색으로 유지 | A3/A4, GroupDRO·selective consistency, LUPI teacher, 고용량 domain prompt/hypernetwork, LLM 유추 |
 
-따라서 지금은 Protocol 0.3을 그대로 확증 실행할 때가 아니라, 아래의 0.4 amendment를 먼저 잠그고 실행할 때다. 이 수정은 연구주제를 바꾸는 것이 아니라 **무엇을 metadata 효과라고 부를 수 있는지 식별 가능하게 만드는 수정**이다.
+따라서 지금은 Protocol 0.3을 그대로 확증 실행할 때가 아니다. 같은 연구 질문을 유지하려면 독립 외부 development data나 새 사전근거로 별도 candidate와 gate를 정의해야 한다. 기존 결과에 맞춰 아래 0.4 기준을 바꾸지 않는다.
 
 ## 2. 연구 가설을 가장 쉽게 설명하면
 
@@ -214,12 +215,14 @@ manufacturer/model은 관측 가능해도 dataset token이 되기 쉬우므로 p
 3. wearable에서 per-channel impedance와 headband order를 보존한다.
 4. `m_struct`, `m_acq`, `m_quality`, confound, forbidden proxy를 schema에서 분리한다.
 5. participant 경계를 먼저 지키며 source primitive는 모두 보되 `electrode × impedance-bin × channel-mask` 일부 조합만 숨긴 compositional pseudo-OOD를 만든다.
-6. 구현된 physical six-role(A0/full/global-only/channel-only/shuffle-train/metadata-only)×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 사전 margin으로 판정한다.
-7. `DEC-20260901-004`로 재승인된 reveal #2와 사전 margin만 사용해 결과를 한 번에 공개한다. Prompt 방식은 legacy secondary 비교로만 둔다.
+6. [완료] Physical six-role(A0/full/global-only/channel-only/shuffle-train/metadata-only)×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 사전 margin으로 판정했다.
+7. [완료·no-go] `DEC-20260901-004`의 reveal #2로 결과를 한 번에 공개했다. Potency는 유효했지만 substantive gate 네 개가 실패했다. Prompt 방식은 legacy secondary 비교로만 두고 동일 S1–S3를 다시 조정하지 않는다.
 
 DEC-20260830-001은 S1–S3를 영구 development-only로 정했다. S1–S3에서 본 v2 1-epoch 결과는 impedance가 잘못 결합된 무효 artifact였지만, 성능 노출 자체는 되돌릴 수 없다. DEC-20260830-002는 남은 S4–S102를 39명 training·60명 lockbox로 다시 고정했다. 전체 N=102와 N=99 outer CV는 post-primary exploratory다.
 
 ### E1. primary unseen-participant 실험
+
+상태: **현 `physical_hybrid_v1`에는 실행 권한 없음.** 아래는 superseded되지 않은 목표 설계의 기록이지만, 새 독립 development 근거와 별도 decision contract 없이는 39/60을 시작하지 않는다.
 
 > H1-W: strict `k=0` wearable held-out-participant 평가에서 factorized electrode-interface와 pre-query contact metadata를 사용하는 최종 A2가 구조 정보를 동일하게 받는 A0보다 subject-level balanced accuracy를 높인다.
 
@@ -286,6 +289,7 @@ Protocol 0.4는 다음이 모두 기록되기 전에는 `frozen`으로 표시하
 - [x] wearable impedance axis numeric-signature regression과 새 processed revision
 - [ ] source-only architecture-selection split
 - [x] 구현된 physical negative controls와 판정 margin의 owner 승인 (`DEC-20260901-004`)
+- [x] Physical reveal #2 실행·판정 — potency-valid, substantive 네 gate 실패, diagnostic no-go
 - [ ] MCID, `τ`, seed, multiplicity family
 - [x] S1–S3 개발 전용 여부 — DEC-20260830-001로 영구 development-only 확정
 - [ ] Dong 및 최종 external lockbox의 단일 사용 규칙
@@ -300,6 +304,8 @@ Protocol 0.4는 다음이 모두 기록되기 전에는 `frozen`으로 표시하
 4. factorized descriptor를 가진 외부 acquisition에서 재현된다.
 
 1–2만 만족하면 “acquisition context가 효율을 개선했다”고 한다. 3–4까지 만족해야 “OOD 적용 범위를 확장했다”고 한다. 개별 reference·electrode·impedance의 인과효과는 factorial intervention이 없는 한 주장하지 않는다.
+
+현재 physical candidate는 1과 2를 만족하지 못했다. 따라서 이 candidate에 대해 acquisition context 효율 개선이나 OOD 범위 확장을 주장하지 않으며, 39/60 confirmatory로 진행하지 않는다.
 
 ## 11. 조사 범위와 한계
 

@@ -7,23 +7,23 @@
 
 대상: 저장소의 연구 질문, split/evaluation 구현, 실험 체크리스트, 공개 데이터 계획, 2025–2026 관련 연구
 
-> **현재 상태 요약:** 연구 질문과 A0/A2 treatment는 유지한다. Query-local complex spectral backbone, paper-faithful Chen-2015 FBCCA, exact resume, confirmatory six-job execution manifest, target-free inference simulation을 구현했다. A2는 이제 공통 query-QC FiLM, external global FiLM, per-channel impedance bounded gain을 갖는 `physical_hybrid_v1`이며 A0는 같은 graph의 exact-null 경로다. 겹치는 outer-fold 모델의 의존성 때문에 5-fold primary는 폐기하고 39명 train/60명 lockbox로 바꿨다. `DEC-20260901-004`는 physical reveal #2, 10개 개발 gate와 validator-only exact restart를 승인·동결했다. S4–S102 성능은 아직 열지 않았고 confirmatory SESOI·alpha·operational threshold·multiplicity·source freeze는 별도 미결정이다.
+> **현재 상태 요약:** 연구 질문과 A0/A2 treatment 정의는 유지한다. Query-local complex spectral backbone, physical-hybrid routing, exact resume, confirmatory manifest와 target-free inference simulation을 구현했다. `DEC-20260901-004`의 reveal #2는 clean tag에서 18/18 training·3/3 intervention·atomic publication까지 완료됐다. Assay는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 clean direction·counterfactual reliance·inference pairing·training pairing gate가 실패했다. 따라서 현 candidate는 diagnostic no-go이며 39/60 confirmatory는 차단한다. S4–S102 성능은 계속 미접근이다.
 
-> **Metadata 동결 상태:** 최소 정보권한과 채널별 impedance reliability 경로는 구현됐지만 완전히 동결되지는 않았다. 현 wearable primary의 treatment는 electrode type, block impedance mean/max, per-channel impedance/availability로 좁혀졌고 상수 reference/cap은 제외됐다. Six-role/18-job mechanism 결과와 충분한 외부 factor 반복이 아직 없기 때문이다. 현재 구현과 남은 gate는 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)에 정리했다.
+> **Metadata 동결 상태:** 최소 정보권한과 채널별 impedance 경로는 구현됐고 development 계약대로 시험했다. Six-role/18-job 결과는 potency-valid였지만 correct metadata 이득·의존성을 보이지 못했다. 이 실패 뒤 같은 S1–S3에서 표현이나 threshold를 다시 고르지 않으며, 새 독립 factor 반복과 사전근거 없이는 confirmatory treatment로 동결하지 않는다. 현재 경계는 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)에 정리했다.
 
 > **재정독 결과:** 원자료 수치, 최신 직접 방법의 공개 코드, foundation-model 선행연구까지 다시 감사한 변경 결론은 [2026-08-29 재정독 감사](deep_read_reassessment_2026-08-29.md)가 우선한다.
 
 ## 1. 최종 판정
 
-최초 연구설계는 **아이디어 검증용 파일럿으로는 목적에 부합했지만 그대로는 “metadata가 calibration-free SSVEP의 일반화 범위를 확장한다”는 결론을 지지하기에 충분하지 않았다.** Protocol 0.3은 split·query·평가를, 0.4-dev는 P0 결합·정보권한·physical global/channel mechanism을 고쳤다. 전체 `wearable_v3` acceptance도 완료됐다. Physical 실행의 immediate gate는 clean annotated source와 preflight이고, confirmatory 차단 사유는 physical 결과 review, protocol-matched 최신 기준선 일부, 통계·source freeze의 미동결이다.
+최초 연구설계는 **아이디어 검증용 파일럿으로는 목적에 부합했지만 그대로는 “metadata가 calibration-free SSVEP의 일반화 범위를 확장한다”는 결론을 지지하기에 충분하지 않았다.** Protocol 0.3은 split·query·평가를, 0.4-dev는 P0 결합·정보권한·physical global/channel mechanism을 고쳤고 전체 `wearable_v3` acceptance와 physical reveal도 완료했다. 이제 confirmatory의 선행 차단 사유는 미완성 구현이 아니라, potency-valid assay에서 관찰된 substantive no-go다.
 
 | 평가축 | 판정 | 이유 |
 |---|---|---|
 | 연구 질문과 모델의 정합성 | 높음 | EEG-only와 metadata-conditioned 모델을 같은 backbone에서 비교하려는 구조가 질문에 맞음 |
-| 내부 타당도 | 구현 검증 통과, 단일 development reveal 대기 | split/query/P0 mapping/full asset/physical 권한·margin은 동결; 공개 전 validator-only 정정본을 재검증함 |
+| 내부 타당도 | development assay 유효, substantive no-go | split/query/P0 mapping/full asset/physical 권한·margin과 조작 potency는 검증; 네 핵심 gate 실패 |
 | 외부 타당도 | 보통 이상 | wearable outer folds가 unseen subject를 보장하고 Dong이 실제 acquisition contrast를 제공; 완전 외부 lockbox는 남음 |
 | 신규성 입증 | 아직 부족 | 2025–2026의 학습형·alignment·online-adaptive calibration-free SSVEP 기준선과의 비교가 빠짐 |
-| 실행 가능성 | physical 높음 / confirmatory 조건부 | 개발 승인·판정값은 동결; confirmatory는 결과 review와 별도 통계/source freeze 필요 |
+| 실행 가능성 | physical 완료 / 현 confirmatory 차단 | 동일 S1–S3 재튜닝·추가 reveal 금지; 새 독립 development study가 필요 |
 | 강한 결론 가능성 | full run 후 판정 | 39명 fixed training·60명 independent lockbox의 3-seed paired 결과와 외부 재현이 필요함 |
 
 핵심은 피험자 수를 무작정 늘리는 것이 아니다. **같은 시험 trial, 같은 자원, 같은 backbone, 같은 target-data 접근권한**에서 metadata 하나가 무엇을 바꾸는지 분리해야 한다.
@@ -366,7 +366,7 @@ trial을 합쳐 하나의 accuracy와 p-value를 계산하면 표본 수를 과�
 | REVE base | Hugging Face gated access | montage-aware frozen backbone 후보; SSVEP zero-shot 성능은 별도 검증 필요 |
 | 제3 SSVEP/OpenBCI | 공개 데이터 또는 신규 수집 필요 | 모든 설계 선택 후 external lockbox |
 
-공개 원자료는 대체로 확보 가능하다. P0 mapping, 전체 wearable_v3 acceptance, physical 0.4-dev 경로와 reveal #2 승인·margin 동결은 완료됐다. 현재 첫 병목은 **clean annotated source에서 exact 18-job+single reveal transaction을 실행·판정하는 것**이다. 그 다음이 confirmatory source freeze, Nakanishi data license, protocol-matched baseline, REVE 접근·weights 조건, 대용량 반복 실행이다.
+공개 원자료는 대체로 확보 가능하다. P0 mapping, 전체 wearable_v3 acceptance, physical 0.4-dev 경로와 reveal #2 실행·판정은 완료됐다. 현재 첫 병목은 **현 no-go를 재사용하지 않고 새 candidate를 시험할 독립 wearable-like development data와 사전근거를 확보하는 것**이다. 그 다음이 Nakanishi data license, protocol-matched baseline, REVE 접근·weights 조건과 새 연구계약이다. 기존 39/60 source freeze는 현재 후보에 대해 진행하지 않는다.
 
 ## 11. 구현·실행 우선순위
 
@@ -380,9 +380,9 @@ trial을 합쳐 하나의 accuracy와 p-value를 계산하면 표본 수를 과�
 8. [x] **P0 code:** impedance order `[dry, wet]`, numeric-signature test, `wearable_v3` revision guard를 구현한다.
 9. [x] Protocol 0.4-dev의 공통 `m_struct`, external-only treatment, A0/A2 공통 query-local QC를 구현한다.
 10. [x] 전체 `wearable_v3` acceptance와 per-channel `m_quality` physical mechanism을 구현한다.
-11. [재승인·기준 동결 / exact restart 대기] Clean tagged source에서 exact 18-job development와 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, aggregate와 10-gate 결과를 reveal #2로 한 번 공개한다 (`DEC-20260901-004`).
+11. [x, diagnostic no-go] Clean tagged source에서 exact 18-job development와 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, aggregate와 10-gate 결과를 reveal #2로 공개했다. Potency는 통과했고 substantive gate 네 개가 실패했다 (`DEC-20260901-004`).
 12. [ ] Fast SSVEP, 허가/독립 port된 DG-Conformer 계열을 protocol-matched로 재현한다. Paper-faithful FBCCA는 구현 완료다.
-13. [ ] Confirmatory SESOI·alpha/alternative·operational threshold·multiplicity와 fairness/source lock을 잠근 뒤 wearable 39-train/60-lockbox primary를 실행한다. Physical margin과 `development_gate_only`는 이미 동결됐고, Dong/5-fold는 별도 replication/exploratory다.
+13. [blocked] 현 candidate의 wearable 39-train/60-lockbox primary는 실행하지 않는다. 새 독립 development evidence와 별도 사전등록 candidate가 gate를 통과할 경우에만 SESOI·alpha/alternative·operational threshold·multiplicity와 fairness/source lock을 새로 검토한다.
 
 ## 12. 주장 가능한 범위
 
@@ -400,4 +400,4 @@ P0–P1 수정과 E0–E7 후에는 다음 주장을 검토할 수 있다.
 
 ## 13. 검토 한계
 
-이 문서는 코드와 설계의 audit 및 protocol amendment이지 physical A2 성능 결과 보고서가 아니다. 전체 wearable 원자료는 전수 무결성 감사했다. Physical six-role 최초 실행은 private prediction/intervention 계산 뒤 공개 전 validator에서 중단됐고 성능 outcome을 공개·검토하지 않은 채 격리했으므로 metadata 효과 크기는 아직 알 수 없다. 39명 confirmatory training과 60명 lockbox prediction도 실행하지 않았다. Strict Chen-2015 FBCCA는 구현했지만 모든 데이터셋 원 논문의 toolbox 설정까지 재현한 것은 아니다. 2026 OAST-CCA와 Cross-domain Correlation Analysis는 공식 metadata/abstract로 관련성을 확인했지만 PDF 접근 실패로 target-data timing과 세부 통계는 provisional이다. arXiv:2608.11829와 Fast SSVEP Detection은 PDF 원문을 선택 구간까지 확인했다. 따라서 검색은 최신 직접 경쟁 연구를 추가한 evidence-grounded review이지만 완전한 systematic review로 주장하지 않는다.
+이 문서는 코드와 설계의 audit 및 protocol amendment이며 정식 모집단 결과 보고서가 아니다. 전체 wearable 원자료는 전수 무결성 감사했다. Physical 최초 시도는 공개 전 validator에서 중단·격리했지만, 정정된 exact restart는 공개됐고 N=3에서 Full A2−A0 `−0.0097`과 네 substantive gate 실패를 보였다. 이는 유효한 개발 진단 no-go이지 모집단 효과 추정이 아니다. 39명 confirmatory training과 60명 lockbox prediction은 실행하지 않았다. Strict Chen-2015 FBCCA는 구현했지만 모든 데이터셋 원 논문의 toolbox 설정까지 재현한 것은 아니다. 2026 OAST-CCA와 Cross-domain Correlation Analysis는 공식 metadata/abstract로 관련성을 확인했지만 PDF 접근 실패로 target-data timing과 세부 통계는 provisional이다. arXiv:2608.11829와 Fast SSVEP Detection은 PDF 원문을 선택 구간까지 확인했다. 따라서 검색은 최신 직접 경쟁 연구를 추가한 evidence-grounded review이지만 완전한 systematic review로 주장하지 않는다.

@@ -1,7 +1,7 @@
 # Protocol 0.4-dev 구현·의사결정 기록
 
 기준일: 2026-08-30
-상태: physical A2 구현·정적 계약 통과, 두 번째 S1–S3 mechanism assay와 confirmatory freeze 전
+상태: physical A2 reveal #2 완료, valid diagnostic assay에서 substantive no-go, confirmatory 차단
 
 > **2026-08-30 update / DEC-20260830-001·002:** 이 문서의 과거 `N=102 primary + N=99 sensitivity`와 `N=99 5-fold primary` 결정은 superseded됐다. S1–S3는 영구 development-only이고 S4–S102는 39명 training·60명 independent lockbox다. 현재 권한·실행 상태는 [연구 프로토콜 현재 상태](research_protocol_status.md)와 [연구일지](research_log.md)를 우선한다.
 
@@ -89,20 +89,20 @@ F0는 condition module이 없는 더 작은 signal baseline이고 A0의 대체�
 - padding token을 mean pooling과 prompt attention에서 제외한다.
 - REVE의 in-place position noise가 cache를 변형하거나 expanded view를 쓰지 못하도록 clone하고, active unknown channel은 조용히 버리지 않고 중단한다.
 
-## 5. 아직 구현하지 않았거나 확증용으로 동결하지 않은 것
+## 5. 완료된 physical assay와 남은 연구 항목
 
 - [완료] physical six-role/18-job grid(A0/full/global-only/channel-only/full-shuffle-train/metadata-only)의 두 번째 reveal 승인과 margin 동결, validator-only 재시작 승인 (`DEC-20260901-004`)
-- channel gain과 global FiLM의 S1–S3 mechanism/safety 결과 및 사전 margin 판정
+- [완료·no-go] 18/18 train·3/3 intervention·atomic publication과 사전 margin 판정. Potency와 observed shortcut/safety screen은 통과했지만 clean direction·counterfactual reliance·inference pairing·training pairing gate가 실패
 - factorized continuous descriptors의 충분한 외부 데이터 반복
 - compact scratch backbone의 nominal xyz registry와 provenance 계약
 - 최신 learned strict-k=0 baseline 전체(paper-faithful Chen-2015 FBCCA와 spectral scratch anchor는 구현 완료)
 - source-only pseudo-OOD로 정한 architecture/MCID/success threshold/multiplicity와 `configs/analysis/wearable_primary.yaml`의 confirmatory freeze
-- 39-train/60-lockbox six-job confirmatory 실행
+- [차단] 현 candidate의 39-train/60-lockbox six-job confirmatory 실행
 - confirmatory SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock의 최종 동결(physical margin과 `development_gate_only`는 완료)
 - REVE에서 sample-wise random montage가 만드는 직렬 forward/cache 증가에 대한 성능 gate
 - frozen REVE/position-bank Hugging Face snapshot revision·remote-code·weight byte fingerprint를 checkpoint와 evaluation에 묶는 provenance gate
 
-즉 현재 코드는 `완성된 보편적 acquisition mechanism`이 아니라, 물리 위치에 맞춘 fusion과 exact fallback을 구현한 **검증 전 physical-hybrid 후보**다. 첫 prompt grid의 음의 delta는 이 새 architecture의 결과가 아니다.
+즉 현재 코드는 `완성된 보편적 acquisition mechanism`이 아니다. 물리 위치에 맞춘 fusion과 exact fallback은 구현·검증됐지만, **유효한 N=3 mechanism assay에서 correct metadata 이득과 의존성을 보이지 못한 physical-hybrid 후보**다. 첫 prompt grid와 두 번째 physical grid 모두 개발 결과이며 모집단 결론은 아니다.
 
 ## 6. 연구 시작 순서
 
@@ -113,9 +113,9 @@ F0는 condition module이 없는 더 작은 signal baseline이고 A0의 대체�
 5. [완료·역사적] Prompt A0/A2의 첫 fixed-epoch S1–S3 grid는 A0/A2 BA 0.1222/0.1042, delta −0.0181이었다. 이는 directional warning이며 새 physical A2 성능이 아니다.
 6. [완료·outcome-free] `physical_hybrid_v1`, exact-null unit contract와 block-coherent donor mapping을 구현했다. Reference/cap은 primary에서 제외했다.
 7. [완료·outcome-free] Six-role×3-fold 18-job manifest, Full A2의 사전 고정 missing/shuffle/wrong-metadata 개입 3개 fold bundle, prediction·intervention·aggregate·gate를 함께 tree-hash하는 hidden staging을 구현했다. 완성 digest의 ledger/precommit receipt로 reveal 예산을 먼저 소비하고, atomic rename·parent fsync 뒤 final publication receipt를 쓰는 two-phase 공개와 동일 private artifact의 deterministic crash recovery를 결합했다.
-8. [완료] Mechanism/safety margin·중단 규칙과 owner 승인 ID/시각을 `DEC-20260901-004` decision receipt에 고정했다. 첫 기술 실행은 공개·ledger precommit 전에 counterfactual scope validator 오류로 중단됐고, 성능 결과를 검토하지 않은 채 quarantine했다. 정정본은 canonical manifest에서 donor mapping·potency를 재구성하고 private tree와 staging parent를 fsync한 뒤 reveal 예산을 precommit한다.
-9. 그 결과가 사전 gate를 통과한 경우에만 confirmatory SESOI·success threshold·alpha/alternative·multiplicity와 fairness/source lock을 확정하고, exact 39/60×seed `[42,43,44]` plan을 `frozen`으로 바꾼 뒤 Protocol 0.4 confirmatory tag를 만든다. Physical margin과 `development_gate_only`는 재결정하지 않는다.
-10. 그 뒤 39명에서 여섯 training job을 모두 완료하고, 단일 manifest-wide reveal로 60명 lockbox prediction을 함께 생성한다. 5-fold는 primary 보고 뒤 exploratory다.
+8. [완료] Mechanism/safety margin·중단 규칙과 owner 승인 ID/시각을 `DEC-20260901-004` decision receipt에 고정했다. 첫 기술 실행은 공개 전 validator 오류로 격리했고, 정정본은 clean tag에서 처음부터 18개 job을 재학습했다.
+9. [완료·no-go] 정정 실행의 potency와 publication은 유효했으나 네 substantive gate가 실패했다. Reveal #2는 소비됐고 동일 S1–S3에서 physical margin·model·epoch·seed를 재결정하거나 추가 reveal하지 않는다.
+10. [차단] 현 candidate로 exact 39/60×seed `[42,43,44]` plan을 `frozen`으로 바꾸거나 training/lockbox prediction을 수행하지 않는다. 계속하려면 독립 외부 development data와 별도 사전등록 모델/decision contract가 필요하다.
 
 전체 asset acceptance 명령은 다음과 같다.
 
@@ -130,11 +130,11 @@ python scripts/audit_wearable_processed.py \
 
 ## 7. 연구목표를 실제로 바꿔야 하는 조건
 
-다음 중 하나가 나오기 전에는 연구목표를 바꾸지 않는다.
+다음은 연구목표를 재검토하게 만드는 사전 조건이었다. Reveal #2에서는 현재 candidate와 S1–S3에 한해 첫 두 조건에 해당하는 관찰이 나왔다.
 
 - A0에 공통 query QC를 준 뒤 A2 이득이 반복적으로 0에 가까움
 - shuffled/wrong metadata가 correct metadata만큼 좋음
 - 효과가 participant ID나 dataset missingness shortcut으로만 설명됨
 - wearable의 wet/dry 한쪽에서만 불안정하게 나타나고 외부 acquisition에서 방향이 뒤집힘
 
-그 경우에도 먼저 가능한 결론은 “외부 metadata가 불필요하다” 또는 “signal-derived QC가 핵심이다”라는 유용한 부정 결과다. 새로운 class discovery/OOD detection 주제로 즉시 이동하는 것은 이 실험의 실패를 해결하지 않는다.
+현재 가능한 결론은 **`physical_hybrid_v1`이 이 N=3 assay에서 external metadata benefit이나 correct-pairing reliance를 보이지 않았다**는 데 한정한다. 외부 metadata가 모집단에서 불필요하다거나 signal-derived QC가 핵심이라고 일반화할 수 없다. 새로운 class discovery/OOD detection 주제로 즉시 이동하는 것도 이 candidate의 실패를 해결하지 않는다.

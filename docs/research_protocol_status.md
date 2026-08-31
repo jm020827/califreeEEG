@@ -1,7 +1,7 @@
 # Calibration-Free EEG 연구 프로토콜 현재 상태
 
 기준일: 2026-09-01
-현재 상태: **S1–S3 첫 prompt grid 방향성 경고 / physical A2 reveal #2 validator-only exact restart 승인·동결 / confirmatory 봉인**
+현재 상태: **physical A2 reveal #2 완료 — valid assay / diagnostic no-go / 현 39/60 confirmatory 경로 봉인**
 현재 기준원: `DEC-20260830-001`, `DEC-20260830-002`, `DEC-20260901-004` (`DEC-20260831-003`은 superseded history)
 
 이 문서는 현재 설계의 단일 요약본이다. 세부 이력은 [append-only 연구일지](research_log.md), 실행 절차는 [연구 실행 계획](research_execution_plan.md), 기계 판독 계약은 `configs/analysis/wearable_primary.yaml`을 따른다. 과거 문서의 `5-fold N=99 primary` 서술은 역사적 기록이며 `DEC-20260830-002`가 대체한다.
@@ -31,10 +31,10 @@ Reference/cap은 wearable에서 상수라 primary 입력에서 제외한다. Sta
 | 역할 | 피험자 | 행 | 지금 가능한 작업 | 금지된 작업 |
 |---|---:|---:|---|---|
 | 전체 자산 감사 | 102명 | 24,480 | checksum, schema, raw↔processed, metadata 품질 감사 | 성능 기반 선택 |
-| development | S1–S3 | 720 | 역사적 prompt A0/A2 6-job은 완료; physical 18-job 최초 실행은 공개 전 validator 오류로 격리됐고 동일 grid exact restart만 승인 | 모집단 효과 주장, 결과 기반 변경 |
-| confirmatory training | 사전 추출한 S4–S102 중 39명 | 9,360 | plan/source 완전 동결 뒤 A0/A2×3 seeds 학습 | validation, checkpoint 선택, lockbox 신호 접근 |
-| primary lockbox | 나머지 60명 | 14,400 | 여섯 training completion 확인 뒤 clean prediction 한 번 | 동결 전 접근, 재튜닝, 재분할, 누락값 완성 분석 |
-| post-primary exploratory | S4–S102 전체 99명 | 23,760 | primary 보고서 잠금 뒤 명시적 exploratory 분석 | primary와 혼합 |
+| development | S1–S3 | 720 | 역사적 prompt 6-job과 physical six-role×3-fold 18-job·3 intervention bundle 공개 완료; reveal #2 소비, valid diagnostic no-go | 모집단 효과 주장, S1–S3 재튜닝·추가 reveal |
+| confirmatory training | 사전 추출한 S4–S102 중 39명 | 9,360 | 현 candidate에는 없음; 새 독립 study가 gate를 통과할 때만 재승인 검토 | 현재 학습, validation, checkpoint 선택, lockbox 신호 접근 |
+| primary lockbox | 나머지 60명 | 14,400 | 현 candidate에는 없음 | prediction, 재튜닝, 재분할, 누락값 완성 분석 |
+| post-primary exploratory | S4–S102 전체 99명 | 23,760 | 현 candidate에는 없음; 새 계약 전까지 봉인 | 성능 계산, primary와 혼합 |
 
 39/60 ID는 `DEC-20260830-002`, `allocation_seed=42`, 정렬한 S4–S102를 NumPy `default_rng`로 한 번 shuffle한 `confirmatory_lockbox_v1` 결과로 plan에 명시돼 있다. Canonical allocation SHA-256은 `0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898`이다. 성능을 보고 분할하지 않았고 바꿀 수 없다.
 
@@ -75,8 +75,8 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 - Channel gain은 spectral signal projection 뒤·channel identity embedding 앞에만 적용한다. Unknown categorical은 fixed-neutral 0이고, 높은 impedance를 나쁘다고 hard-code하지 않는다.
 - External metadata shuffle은 row별 mosaic가 아니라 subject×session×electrode×run acquisition block을 derange하고 exact label/window로 donor를 맞춘다. 공개 validator는 producer의 scope 문자열만 믿지 않고 canonical asset manifest에서 shuffle/counterfactual mapping과 changed/flip potency를 다시 만든다.
 - Physical mechanism grid는 A0/full/global-only/channel-only/shuffle-train/metadata-only의 exact 18 jobs다. Shuffle role은 donor metadata로 train하고 correct metadata의 clean validation으로 평가한다. 자연 missingness pattern 하나인 missingness-only는 invalid assay다.
-- Full A2의 all/global/channel/query-QC missing, block shuffle, wet↔dry counterfactual은 **각 fold당 intervention bundle 하나, 총 세 개**로 사전 고정됐다. 18개 clean prediction과 함께 hidden staging에서 전부 검증되고 tree hash가 고정된 뒤 하나의 directory rename으로 공개된다.
-- 첫 reveal receipt를 tracked immutable ledger로 묶고 새 grid를 canonical 전역 ledger의 reveal #2로 고정했다. Reveal #2는 owner decision receipt로 private staging 접근을 허가한다. 18개 prediction·3개 intervention·aggregate·10-gate 결과와 file-tree hash가 모두 완성되면 private tree의 파일·하위 디렉터리와 staging parent를 fsync하고, 그 digest의 ledger precommit과 precommit receipt가 reveal 예산을 소비한다. 그 뒤에만 directory atomic rename·parent fsync를 수행하고 별도 final publication receipt를 쓴다. 장애 복구는 같은 digest에만 허용된다. 과거 v1의 mutable 재실행, CLI protected-field 변경, generic training/evaluation 우회는 코드에서 거부한다.
+- Full A2의 all/global/channel/query-QC missing, block shuffle, wet↔dry counterfactual은 **각 fold당 intervention bundle 하나, 총 세 개**로 사전 고정됐고, 18개 clean prediction과 함께 hidden staging에서 검증된 뒤 하나의 directory rename으로 공개됐다.
+- 첫 reveal receipt를 tracked immutable ledger로 묶고 새 grid를 canonical 전역 ledger의 reveal #2로 고정했다. 18개 prediction·3개 intervention·aggregate·10-gate 결과와 file-tree hash를 완성하고 private tree의 파일·하위 디렉터리와 staging parent를 fsync한 뒤, ledger precommit과 precommit receipt로 reveal 예산을 소비했다. 이후 directory atomic rename·parent fsync와 final publication receipt 검증까지 완료했다. Reveal #2의 재실행, 과거 v1 mutable 재생성, CLI protected-field 변경, generic training/evaluation 우회는 코드에서 거부한다.
 - 미동결 confirmatory는 dry-run도 dataset 생성 전에 차단한다.
 - 39명 training split과 60명 lockbox split을 exact ID로 검증한다.
 - confirmatory training은 validation/test loader 없이 fixed 10 epoch final checkpoint만 만든다.
@@ -92,22 +92,20 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 
 이 봉인은 암호학적 data enclave가 아니다. 같은 OS 사용자에게 raw HDF5가 읽기 가능하므로 보호 수준은 **application/procedural gate + hash provenance + append-only decision record**다. 기계적 상태를 구분하면 `(1)` raw audit 접근 완료, `(2)` confirmatory training 접근 미실행, `(3)` lockbox prediction/reveal 미실행이다.
 
-## 아직 필요한 결정과 외부 요청
+## 현재 중단 상태와 다음 결정
 
-Confirmatory plan은 의도적으로 `dev_not_frozen`이다. 값별 의미·권고안·승인 순서는 [confirmatory freeze 결정표](confirmatory_freeze_decision_sheet.md)에 정리했다. 다음은 lockbox를 열기 전에 사람의 과학적 판단 또는 외부 권한이 필요하다.
+Confirmatory plan은 `dev_not_frozen`이며 현재 physical A2 경로는 사전등록 중단 규칙에 따라 no-go다. 아래 완료 항목은 결과를 승인한다는 뜻이 아니라 실행·공개·검토가 계약대로 끝났다는 뜻이다.
 
 - [완료] physical six-role mechanism assay와 권고상 마지막 한 번의 S1–S3 reveal 사용 승인
 - [완료] Full A2 개입의 8개 numeric 기준, 10-gate 판정과 중단 규칙 동결
-- clean annotated physical freeze tag `physical-reveal2-freeze-20260901-r1`와 exact 18-job manifest의 실행 전 검증
-- reveal 뒤 global S1–S3 ledger, complete bundle와 aggregate의 owner 검토
-- SESOI: 어느 BA 증가를 실제로 의미 있다고 볼지
-- alpha와 단측 대립가설의 최종 승인
-- learned/forgotten용 operational success threshold
-- clean Git commit/tag와 최종 implementation/fairness hash
-- multiplicity, fairness와 external source lock
+- [완료] clean annotated physical freeze tag `physical-reveal2-freeze-20260901-r1`와 exact 18-job manifest 검증
+- [완료] 18/18 train, 3/3 intervention, global S1–S3 ledger precommit, atomic publication과 complete aggregate 검토
+- [완료] valid assay에서 substantive gate 네 개 실패를 확인하고 현 `physical_hybrid_v1` confirmatory 진입을 차단
+- [결정 필요] 현재 연구 경로를 종료할지, 독립 외부 development data와 새 사전근거로 별도 모델/설계를 시작할지
+- [새 연구에만 필요] SESOI, alpha/alternative, operational threshold, multiplicity, fairness와 external source lock
 - 선택 사항: Nakanishi 재사용 허가, REVE gated model 접근, 추가 외부 데이터 license 확인
 
-Nakanishi·REVE·외부 제3 데이터는 논문 범위를 강화하지만 현재 wearable primary를 시작하는 필수 조건은 아니다. 반면 SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source freeze는 필수 blocker다.
+현재 decision contract에서는 owner review가 실패한 substantive gate를 통과로 바꾸지 않는다. SESOI 등 나머지 confirmatory 값을 채우거나 clean tag를 새로 만드는 것만으로 39/60 실행을 허용할 수 없다. Nakanishi·REVE·외부 제3 데이터는 현 결과를 덮어쓰기 위한 것이 아니라, 새 독립 development study를 정당화·검증할 때만 사용한다.
 
 ## S1–S3 첫 outcome-gated grid 결과
 
@@ -121,13 +119,36 @@ Nakanishi·REVE·외부 제3 데이터는 논문 범위를 강화하지만 현�
 
 이것은 S1–S3 개발 config가 허용한 recommended 2회·absolute 3회 중 **첫 grid outcome reveal**이다. 이 grid의 A2는 legacy `prompt_adapter_v1`이므로 새 physical A2의 성능으로 간주하지 않는다. Confirmatory를 자동 진행하지 않는다. 두 번째 reveal은 근거 없이 양의 결과를 찾는 용도가 아니라, 사전 선언한 physical routing mechanism/safety assay 또는 추가 wearable-like development data에만 사용한다.
 
+## S1–S3 physical reveal #2 결과
+
+`DEC-20260901-004`와 execution tag `physical-reveal2-freeze-20260901-r1`에서 18/18 fixed-epoch job과 3/3 Full-A2 intervention bundle을 완성하고 reveal index 2를 원자적으로 공개했다.
+
+| 역할 | 3명 평균 BA | A0 대비 |
+|---|---:|---:|
+| A0 external-null | 0.1292 | — |
+| Full A2 observed | 0.1194 | −0.0097 |
+| Global-only | 0.1208 | −0.0083 |
+| Channel-only | 0.1306 | +0.0014 |
+| Shuffle-train→clean-val | 0.1194 | −0.0097 |
+| Metadata-only | 0.0833 | chance excess 0.0000 |
+
+Assay는 유효했다. Counterfactual condition flip과 train/inference bundle changed fraction은 모든 fold에서 `1.0`이었고 potency gate를 모두 통과했다. Metadata-only shortcut, observed clean-subject harm, wrong-metadata safety screen도 통과했다. 그럼에도 다음 네 substantive gate가 실패했다.
+
+- clean A2 directional mean: `−0.0097222 < 0`
+- counterfactual reliance: least-favourable `−0.0041667 < 0.0125`
+- inference pairing shuffle: least-favourable `0.0000000 < 0.0125`
+- training pairing shuffle: least-favourable `−0.0041667 < 0.0125`
+
+피험자별 Full−A0는 sub001 `−0.0125`, sub002 `0`, sub003 `−0.0167`이다. 이는 N=3 wiring/mechanism 진단이므로 모집단에서 metadata 효과가 없다는 결론은 아니다. 그러나 조작 potency가 충분한데도 correct metadata의 방향성 이득과 pairing/counterfactual reliance를 보이지 못했으므로 사전 중단 규칙상 `valid assay / diagnostic no-go`이며 현재 A2로 confirmatory를 진행할 수 없다.
+
 ## 다음 연구 루프
 
 1. [완료] Outcome-free 단계에서 physical algebra, 정보 reachability, block mapping, CUDA forward/schema와 전체 회귀검증을 통과시킨다.
 2. [완료] Six-role 질문·10 epoch·8개 numeric 기준·10-gate 중단 규칙·canonical output과 reveal index 2를 `DEC-20260901-004`로 재승인했다. 최초 exact 실행은 공개·precommit 전에 validator-only 오류로 중단됐고 성능 결과를 검토하지 않은 채 mode-0700 quarantine으로 옮겼다.
-3. 새 clean annotated tag에서 동일한 18개 S1–S3 job을 처음부터 재학습하고 단일 `reveal` transaction으로 prediction·intervention·aggregate를 한 번에 공개한다. Clean 방향은 3-fold 평균, 나머지는 least-favourable observed fold 규칙으로 population effect가 아니라 wiring·reliance·shortcut·catastrophic harm만 판정한다.
-4. SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock을 target-free 효용 기준으로 승인한다.
-5. 방향성 경고와 mechanism 결과를 검토하고 clean commit/tag가 만들어진 뒤에만 39명 A0/A2×3-seed training을 허용한다.
-6. 여섯 completion 확인 후 60명 lockbox를 한 번 예측·집계하고, 결과를 본 뒤 모델·threshold·분할을 바꾸지 않는다.
+3. [완료] Clean annotated tag `physical-reveal2-freeze-20260901-r1`에서 18개 job을 처음부터 재학습하고 단일 transaction으로 18개 prediction·3개 intervention·aggregate를 공개했다. Reveal #2는 소비됐다.
+4. [완료] Potency가 유효한 상태에서 네 substantive gate 실패를 확인해 `diagnostic no-go`를 적용했다.
+5. [중단] 같은 S1–S3에서 threshold·architecture·seed·epoch를 바꾸거나 추가 reveal로 양의 결과를 탐색하지 않는다.
+6. [차단] 현 A2의 39명 training과 60명 lockbox prediction은 실행하지 않는다.
+7. [다음 결정] 연구를 여기서 종료하거나, S4–S102를 열지 않은 채 독립 wearable-like data·외부 source-only evidence로 새 후보를 개발하고 새 질문·gate·reveal budget을 별도 사전등록한다.
 
 현재까지 S4–S102 성능 outcome과 60명 lockbox prediction은 모두 미접근 상태다. 최신 검증 수는 최종 연구일지 항목과 저장소 테스트 실행 결과를 따른다.

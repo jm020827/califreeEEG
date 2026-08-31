@@ -1,11 +1,11 @@
 # 연구 의미·데이터 확장·최신 문헌 전략
 
-> **2026-09-01 상태 갱신:** impedance mapping과 전체 wearable_v3 acceptance, physical-hybrid A2 및 six-role/18-job mechanism 경로는 구현됐다. DEC-20260830-001에 따라 S1–S3는 development-only이고, DEC-20260830-002에 따라 나머지 N=99는 39명 training·60명 independent lockbox다. DEC-20260901-004는 공개 전 counterfactual scope validator-only 정정과 reveal #2 exact restart를 승인했지만 confirmatory/lockbox는 계속 봉인한다. 이 문서의 문헌·데이터 확장 논리는 유지하되 실행 권한은 [프로토콜 현재 상태](research_protocol_status.md)를 따른다.
+> **2026-09-01 상태 갱신:** impedance mapping, 전체 wearable_v3 acceptance와 physical-hybrid six-role/18-job 경로를 구현했고 `DEC-20260901-004`의 reveal #2도 완료했다. Assay potency는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 substantive gate 네 개가 실패해 diagnostic no-go다. S1–S3 재튜닝·추가 reveal과 현 candidate의 39/60 confirmatory는 차단한다. 이 문서의 문헌·데이터 확장 논리는 유지하되 실행 권한은 [프로토콜 현재 상태](research_protocol_status.md)를 따른다.
 
 기준일: 2026-08-29
 적용 범위: 연구 주제는 바꾸지 않고, Protocol 0.3의 평가 골격과 Protocol 0.4 metadata amendment를 보강한다.
 
-> **한 줄 판정:** 이 연구는 의미가 있다. 다만 현재 자료만으로 강하게 주장할 수 있는 것은 “새 participant의 wet/dry interface bundle에서 pre-query acquisition metadata가 strict k=0 성능에 주는 증분 가치”다. 과거 반대였던 impedance mapping은 `[dry, wet]`로 수정·재전처리·전수 감사까지 완료했다. 일반적인 unseen-device/site OOD까지 주장하려면 피험자 수보다 **독립적인 획득 regime와 같은 metadata factor의 반복**을 더 확보해야 한다.
+> **한 줄 판정:** 연구 질문은 여전히 의미가 있지만 현재 구현은 개발 gate를 통과하지 못했다. 이 no-go는 `physical_hybrid_v1`이 S1–S3에서 benefit·pairing reliance를 보이지 않았다는 candidate-specific 진단이며, metadata가 일반적으로 도움이 되지 않는 조건을 확립한 결과는 아니다. 계속하려면 피험자 수만 늘리기보다 **독립적인 획득 regime와 같은 metadata factor의 반복**으로 새 candidate를 outcome-blind하게 개발해야 한다.
 
 > 원자료 숫자, 직접 경쟁법의 공개 코드, foundation 선행연구까지 재정독한 변경 결론은 [2026-08-29 재정독 감사](deep_read_reassessment_2026-08-29.md)가 우선한다.
 
@@ -14,7 +14,7 @@
 | 질문 | 판정 | 바로 해야 할 일 |
 |---|---|---|
 | 연구가 과학적으로 의미가 있는가? | **조건부 Yes** | “decoder 하나 더”가 아니라, factorized physical metadata의 증분 가치와 실패 조건을 검증하는 연구로 claim을 고정한다. |
-| 현재 4개 데이터셋으로 시작할 수 있는가? | **P0 완료, physical 실행 Yes / confirmatory 아직 No** | Physical 18-job reveal과 기준은 승인됐다. 그 결과를 판정한 뒤 SESOI·alpha·clean confirmatory source를 별도 동결해야 39-train/60-lockbox 6-job primary를 열 수 있다. |
+| 현재 4개 데이터셋으로 시작할 수 있는가? | **Physical 완료 / 현 confirmatory No** | Valid assay의 substantive no-go로 39/60을 열지 않는다. 독립 wearable-like development data 또는 새 사전근거가 먼저다. |
 | 현재 데이터로 broad device/site OOD를 주장할 수 있는가? | **No** | 서로 독립적인 acquisition regime, 반복된 factor level, untouched external target을 추가한다. |
 | 데이터셋을 더 많이 받아야 하는가? | **Yes, 그러나 선별적으로** | exact-label family, shared-frequency OOD, controlled-context, representation-only 역할을 분리한다. |
 | 관련 연구 조사가 충분한가? | **설계 변경에는 충분, systematic review는 아님** | 핵심 12편의 원문/코드를 감사해 baseline과 novelty를 재분류했다. 미확보 원문·저자 clarification은 계속 추적한다. |
@@ -348,17 +348,17 @@ correct metadata > shuffled ≈ metadata-null > deliberately wrong metadata
 ### 1주 내
 
 1. [완료·outcome-free] Protocol 0.4의 A0/A2 공통 `m_struct`와 query-local QC, global `m_acq`, per-channel `m_quality`를 `physical_hybrid_v1`으로 구현한다.
-2. [validator-only exact restart 승인·기준 동결 / 실행 대기] `DEC-20260901-004`의 exact six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 reveal #2 하나로 실행해 correct/null/global-only/channel-only/block-shuffle/metadata-only 및 missing/shuffle/wrong-metadata gate를 판정한다. 모델·margin·gate는 최초 실행과 동일하며 이 canonical physical intervention에는 signal-noise gate가 없다.
+2. [완료·diagnostic no-go] `DEC-20260901-004`의 exact six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 reveal #2로 공개했다. Potency·shortcut·observed safety screen은 통과했고 네 substantive gate가 실패했다.
 3. paper-faithful FBCCA, Fast SSVEP, permission/independent-port DG-Conformer 계열을 공통 protocol로 실행한다.
 4. MobileBCI는 OSF source의 modality typing을 복원하고, Guttmann은 40-trial/10–13 Hz 교정 manifest로 selective schema pilot을 한다.
 5. AR는 v8 binocular codebook을 사용하되 impedance와 hardware BIDS field를 acquisition ground truth로 사용하지 않는다.
 
 ### protocol 동결 후
 
-1. DEC-20260830-001로 S1–S3를 영구 development-only로, DEC-20260830-002로 S4–S102를 39명 training·60명 independent lockbox로 고정했다. Confirmatory는 39명에서 A0/A2×seeds `[42,43,44]` 6 jobs를 완료한 뒤 60명을 한 manifest-wide reveal로 평가한다. N=99 5-fold와 full N=102는 primary 보고서 잠금 뒤 exploratory다.
+1. DEC-20260830-001로 S1–S3를 영구 development-only로, DEC-20260830-002로 S4–S102를 39명 training·60명 independent lockbox로 고정했다. 그러나 현 candidate는 no-go이므로 이 allocation을 학습·평가에 사용하지 않는다. 새 독립 development study와 decision contract가 통과할 때만 confirmatory 절차를 다시 검토한다.
 2. Wang/BETA/Dong exact-40 replication을 실행한다.
 3. 동결한 external dataset을 한 번만 연다.
 4. subject-level paired inference와 learned/forgotten coverage를 산출한다.
 5. 결과에 따라 narrow paper로 마감할지, prospective crossover를 수집해 causal/transportability claim으로 확장할지 결정한다.
 
-지금은 수십–수백 GB를 한꺼번에 받는 단계가 아니다. **P0 복구·full asset audit(완료) → exact-family·권리·provenance audit → outcome-free physical 검증(완료) → 승인된 18-job mechanism reveal → Protocol 0.4 freeze → 39명 full training → untouched 60명 lockbox** 순서가 가장 싸고 강한 연구 경로다.
+지금은 현 candidate를 39/60으로 확대하거나 수십–수백 GB를 무차별 다운로드할 단계가 아니다. **완료된 no-go 보존 → 독립 wearable-like data·권리·provenance 확보 → 새 candidate와 gate 사전등록 → 독립 development 판정 → 통과할 때만 새 confirmatory freeze**가 현재의 가장 싸고 강한 연구 경로다.

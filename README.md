@@ -1,8 +1,8 @@
 # Calibration-Free EEG Decoding
 
-EEG와 획득조건 metadata를 함께 사용해 calibration-free SSVEP decoding을 평가하는 연구 코드다. 현재의 방어 가능한 주장은 임의의 모든 device/site OOD가 아니라, **처음 보는 participant에서 query 전에 관측한 물리 metadata가 waveform·공통 구조·query-local QC만 쓰는 모델에 순증분을 주는지**다. 외부 pretraining 노출이 없는 compact scratch model을 primary anchor, REVE를 exposure·weight-license를 명시한 secondary로 둔다.
+EEG와 획득조건 metadata를 함께 사용해 calibration-free SSVEP decoding을 평가하는 연구 코드다. 현재의 방어 가능한 질문은 임의의 모든 device/site OOD가 아니라, **처음 보는 participant에서 query 전에 관측한 물리 metadata가 waveform·공통 구조·query-local QC만 쓰는 모델에 순증분을 주는지**다. 두 번째 S1–S3 physical development reveal은 유효한 assay였지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`였고 사전등록 substantive gate 네 개가 실패해 **diagnostic no-go**로 끝났다. 이는 N=3 모집단 결론은 아니지만 현재 `physical_hybrid_v1`의 39/60 confirmatory 진행을 차단한다. 외부 pretraining 노출이 없는 compact scratch model을 primary anchor, REVE를 exposure·weight-license를 명시한 secondary로 둔다.
 
-Primary는 **사전 할당한 39명에서 A0 external-null과 A2 external-observed의 fixed 3-seed ensemble을 학습하고, 모델 학습·선택·성능 평가에 사용하지 않은 독립 60명 lockbox에서 k=0 paired balanced-accuracy 차이를 첫 confirmatory 공개로 검정하는 설계**다. A2는 global electrode/impedance FiLM과 per-channel impedance gain을 분리한 `physical_hybrid_v1`이며, A0에서는 두 external branch가 정확한 identity가 된다. 원시 신호는 전체 자산 무결성 감사에서 읽혔지만 성능 기반 선택에는 쓰지 않았다. 사전 노출된 S1–S3는 영구 development-only이고, S4–S102의 나머지 N=99는 39명 training·60명 lockbox로 고정됐다. 전체 자산 계약은 계속 N=102·24,480행이다. 겹치는 5-fold model dependence가 target-free simulation에서 Type-I inflation을 보였기 때문에 과거 N=99 5-fold primary는 exploratory로 내렸다. `DEC-20260901-004`는 새 A2의 두 번째 개발 assay, 10개 진단 gate와 validator-only 재시작을 승인·동결했지만, SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock은 아직 최종 승인·동결되지 않아 분석계획은 확증용으로 동결되지 않았다. 모델의 쉬운 설명과 정확한 불변식은 [A2 physical-hybrid 설계 계약](docs/a2_physical_hybrid_design.md), 현재 단일 상태 요약은 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 승인할 값은 [confirmatory freeze 결정표](docs/confirmatory_freeze_decision_sheet.md), 결정·실행 이력은 [append-only 연구일지](docs/research_log.md), 세부 절차는 [연구 실행 계획](docs/research_execution_plan.md)에 있다.
+원래 confirmatory 설계는 **사전 할당한 39명에서 A0 external-null과 A2 external-observed의 fixed 3-seed ensemble을 학습하고, 모델 학습·선택·성능 평가에 사용하지 않은 독립 60명 lockbox에서 k=0 paired balanced-accuracy 차이를 첫 공개로 검정**하는 것이었다. A2는 global electrode/impedance FiLM과 per-channel impedance gain을 분리한 `physical_hybrid_v1`이며, A0에서는 두 external branch가 정확한 identity가 된다. 원시 신호는 전체 자산 무결성 감사에서 읽혔지만 성능 기반 선택에는 쓰지 않았다. 사전 노출된 S1–S3는 영구 development-only이고, S4–S102의 N=99는 39명 training·60명 lockbox로 고정됐으며 성능은 계속 미접근이다. 다만 `DEC-20260901-004`의 중단 규칙에 따라 유효 assay의 substantive gate 실패는 confirmatory no-go이므로, SESOI 등 미결정값을 채우는 것만으로 이 경로를 재개할 수 없다. 새 독립 development 근거와 별도 사전등록 설계가 없는 한 39/60은 봉인한다. 모델 계약은 [A2 physical-hybrid 설계](docs/a2_physical_hybrid_design.md), 현재 상태는 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 결과와 결정 이력은 [append-only 연구일지](docs/research_log.md)에 있다.
 
 > **P0 revision 경계:** 배포 Readme의 impedance-axis 문구는 실제 수치·원 논문 Figure 9의 조건 평균과 모순된다. 수치상 axis 0/1은 각각 dry/wet(`261.67/19.63 kΩ`)이므로 코드가 이 signature를 fail-closed로 검증한다. 반대로 결합된 기존 `wearable_v2`와 그 A2 결과는 무효이며, raw-to-processed deep audit를 통과한 `wearable_v3`만 Protocol 0.4-dev 실행에 사용한다.
 
@@ -138,9 +138,9 @@ CFEG_BACKBONE=tiny_transformer bash scripts/cfeg.sh train wang-to-beta
 CFEG_BACKBONE=reve WANDB_MODE=online bash scripts/cfeg.sh train wang-to-beta
 ~~~
 
-지원하는 mutable train preset은 `wang-to-beta`, `beta-to-wang`, `joint`, `synthetic`뿐이다. Wearable development/LOSO/dry↔wet preset과 `controls`/`research` shortcut은 폐기했으며 호출하면 fail-closed다. 첫 prompt-based S1–S3 outcome grid는 `scripts/run_development_loso.py`의 v1 manifest로 완료된 역사적 개발 실험이다. 새 physical six-role grid는 `DEC-20260901-004`로 기술정정·재승인됐으며 clean annotated source tag에서만 전용 orchestrator가 실행한다. Governed wearable은 physical 또는 confirmatory 전용 manifest orchestrator만 사용한다.
+지원하는 mutable train preset은 `wang-to-beta`, `beta-to-wang`, `joint`, `synthetic`뿐이다. Wearable development/LOSO/dry↔wet preset과 `controls`/`research` shortcut은 폐기했으며 호출하면 fail-closed다. 첫 prompt-based grid와 두 번째 physical six-role grid는 모두 완료된 역사적 S1–S3 개발 실험이다. Physical reveal #2는 `DEC-20260901-004`와 clean annotated source tag에서 실행·소비됐으므로 다시 실행하지 않는다. Governed wearable은 전용 manifest orchestrator만 사용한다.
 
-Legacy/외부 데이터 run은 `split.csv`, source-validation checkpoint, held-out metric을 저장한다. Governed wearable run은 학습 중 test loader나 `metrics_test.json`을 만들지 않는다. Development는 S1–S3 train/val만 쓰고, confirmatory outer-test prediction은 동결 후 별도 등록 action으로만 연다.
+Legacy/외부 데이터 run은 `split.csv`, source-validation checkpoint, held-out metric을 저장한다. Governed wearable run은 학습 중 test loader나 `metrics_test.json`을 만들지 않는다. Development는 S1–S3 train/val만 썼고, 현재 candidate의 confirmatory outer-test prediction은 substantive no-go로 봉인돼 있다.
 
 Wang과 BETA label은 raw index가 아니라 stimulus frequency로 canonical 40-class 8.0, 8.2, ..., 15.8Hz에 정렬된다. 학습 strong view는 8/4/2채널 subset을 명시적으로 포함한다. Source validation만 checkpoint 선택에 쓰며 target은 test-only다.
 
@@ -161,19 +161,9 @@ bash scripts/cfeg.sh robustness outputs/research/wang_to_beta/best.pt \
 
 Robustness는 external metadata 결측 25/50/75/100%, acquisition-block 단위 derangement shuffle, global/channel/query-QC 분리 제거, downsample, re-reference, broadband/band-limited noise와 복합 4채널 조건을 평가한다. External missing/shuffle은 channel ID/mask, sampling/time grid, query QC를 바꾸지 않는다. Shuffle은 donor block 하나의 12개 label을 label/window 정렬로 함께 교환하고 donor mapping CSV·mapping hash·실제 metadata 변경률을 저장하므로 불가능한 row mosaic와 상수-metadata no-op을 구분한다. Signal perturbation 뒤에는 저장된 query QC를 invalid 처리한다. checkpoint 옆 `split.csv`의 held-out test ID 또는 명시적 target filter가 없으면 실행을 거부한다.
 
-Calibration은 피험자별 k=0/1/3/5이며 모든 k에서 같은 fixed query를 사용하고 support와 query를 분리한다. 다만 wearable_v3의 calibration/robustness/condition-filter action은 현재 confirmatory plan에 등록되지 않았으므로 target lock이 거부한다. S1–S3 validation control로 재설계하거나 primary 보고 뒤 exploratory로 등록하기 전에는 실행하지 않는다.
+Calibration은 피험자별 k=0/1/3/5이며 모든 k에서 같은 fixed query를 사용하고 support와 query를 분리한다. 다만 wearable_v3의 calibration/robustness/condition-filter action은 현재 confirmatory plan에 등록되지 않았으므로 target lock이 거부한다. Reveal #2 뒤 동일 S1–S3를 새 validation control로 재설계하거나 outcome을 더 열지 않는다. 이런 분석은 새 독립 development asset과 별도 사전등록 계약에서만 검토한다.
 
-Training-free CCA/FBCCA baseline은 실제 canonical correlation과 sub-band filter bank를 계산한다.
-
-~~~bash
-python scripts/evaluate_frequency_baseline.py \
-  --processed-dir "$EEG_DATA_ROOT/processed/wearable_v3" \
-  --research-config configs/train/wearable_development.yaml \
-  --method fbcca --channel-set wearable_8 \
-  --out-prefix outputs/development/baselines/wearable_s1_s3_fbcca
-~~~
-
-wearable_v3 CCA/FBCCA도 S1–S3 development role만 허용한다. Confirmatory baseline action은 현재 plan에 등록되지 않아 N=99를 열 수 없다.
+Training-free CCA/FBCCA baseline은 실제 canonical correlation과 sub-band filter bank를 계산한다. 다만 wearable S1–S3 outcome을 새로 계산하는 예시는 reveal budget 소진 뒤 제거했다. 현재 candidate에서 S1–S3 baseline을 추가 실행하지 않으며, confirmatory baseline action도 등록되지 않아 S4–S102를 열 수 없다.
 
 ## Ablation과 전체 suite
 
@@ -184,9 +174,8 @@ python scripts/run_ablation.py --include-optional --continue-on-error
 # 과거 prompt v1 manifest/result는 immutable historical artifact다.
 # run_development_loso.py prepare와 mutable run_ablation 재생성은 명시적으로 거부된다.
 
-# 새 physical 18-job manifest를 outcome 없이 준비하고 상태만 확인
-python scripts/run_physical_mechanism_loso.py prepare
-python scripts/run_physical_mechanism_loso.py status
+# physical reveal #2는 완료·소비됐으며 재실행하지 않는다.
+# 공개 결과: outputs/development-loso/physical-mechanism-v2/reveal-bundle/analysis/revealed_summary.json
 
 # 새 physical 6개 역할의 outcome-free forward/schema 확인만 허용
 python scripts/run_ablation.py \
@@ -198,7 +187,7 @@ python scripts/run_ablation.py \
 # 완료된 S1-S3 prompt grid를 cfeg.sh research로 다시 실행하지 않는다.
 ~~~
 
-`run_ablation.py`는 `--config`, `--base-config`, `--output-root`, 반복 가능한 `--override KEY=VALUE`를 지원한다. Primary A0/A2는 `physical_hybrid_v1`의 전체 module graph와 parameter 수, protocol/fairness, parameter schema, 초기 trainable state, split, vocabulary, exact asset bytes, source tree, 실행환경 hash가 모두 같아야 한 pair로 완료된다. 안정적인 artifact ID `A2_structured_condition_prompt`는 남지만 primary에서 prompt token/legacy adapter는 쓰지 않는다. Development control family도 이 계약을 공유하며, dynamic elapsed/peak-memory 값은 동일성 조건이 아니라 별도 `runtime_metrics.json` 증거로 남긴다. Metadata-only는 EEG·structure·query-QC를 우회하는 shortcut 진단이고, 자연 missingness pattern이 하나뿐인 missingness-only는 현재 invalid assay다. Shuffle-train은 split-local acquisition-block donor를 쓰고 clean validation으로 평가하며, wet↔dry counterfactual은 correct-trained A2 validation에만 적용한다. Confirmatory training 39명과 lockbox 60명은 analysis plan의 exact ID만 사용하며 동결 전에는 어느 쪽도 실행하지 않는다.
+`run_ablation.py`는 `--config`, `--base-config`, `--output-root`, 반복 가능한 `--override KEY=VALUE`를 지원한다. Primary A0/A2는 `physical_hybrid_v1`의 전체 module graph와 parameter 수, protocol/fairness, parameter schema, 초기 trainable state, split, vocabulary, exact asset bytes, source tree, 실행환경 hash가 모두 같아야 한 pair로 완료된다. 안정적인 artifact ID `A2_structured_condition_prompt`는 남지만 primary에서 prompt token/legacy adapter는 쓰지 않는다. Development control family도 이 계약을 공유하며, dynamic elapsed/peak-memory 값은 동일성 조건이 아니라 별도 `runtime_metrics.json` 증거로 남긴다. Metadata-only는 EEG·structure·query-QC를 우회하는 shortcut 진단이고, 자연 missingness pattern이 하나뿐인 missingness-only는 invalid assay였다. Shuffle-train과 wet↔dry counterfactual은 사전 계약대로 평가됐지만 correct metadata reliance gate를 통과하지 못했다. Confirmatory 39명 training과 60명 lockbox는 현재 no-go로 실행하지 않는다.
 
 `analyze_ood_coverage.py`는 한 seed의 진단용 비교다. CSV sidecar, checkpoint, split, analysis manifest, source revision이 모두 연결된 prediction bundle만 받는다. 최종 primary는 정확한 A0/A2×seeds `[42,43,44]`의 6 jobs를 모아 lockbox subject 안에서 seed BA를 먼저 평균한 N=60 표다.
 
@@ -210,25 +199,15 @@ python scripts/analyze_ood_coverage.py \
   --success-threshold <preregistered-BA> \
   --out-prefix outputs/analysis/a0_vs_a2
 
-# physical 개발 grid: DEC-20260901-004와 annotated source tag에서만 실행한다.
-# reveal은 private bundle digest로 예산을 먼저 소비하고, atomic rename 뒤 최종 공개 영수증을 쓴다.
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py prepare
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py status
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py train
-EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py reveal
+# physical development 결과는 이 공개 bundle에서 읽는다. Reveal #2는 이미 소비됐다.
+jq '.mean_metrics, .predeclared_gate_evaluation' \
+  outputs/development-loso/physical-mechanism-v2/reveal-bundle/analysis/revealed_summary.json
 
-# confirmatory: plan/tag freeze 뒤 기존 unused dev draft를 canonical manifest로 한 번 교체한다.
-python scripts/build_primary_run_manifest.py generate --replace-unexecuted-draft
-python scripts/run_confirmatory_primary.py train
-python scripts/run_confirmatory_primary.py predict
-python scripts/aggregate_primary_confirmatory.py \
-  --execution-manifest outputs/confirmatory-primary/execution_manifest.json \
-  --processed-dir "$EEG_DATA_ROOT/processed/wearable_v3" \
-  --plan configs/analysis/wearable_primary.yaml \
-  --out-prefix outputs/analysis/wearable_primary
+# 현 stopping rule에서 confirmatory train/predict/aggregate는 금지된다.
+# 새 독립 development study와 별도 owner decision이 생기기 전에는 실행하지 않는다.
 ~~~
 
-집계기는 누락·중복 run, 60명 lockbox drift, 변조된 CSV/sidecar/checkpoint/train-metric/split/execution manifest/reveal receipt, 현재 plan/role/source와 다른 contract를 거부한다. Plan은 canonical manifest와 run root를 하나만 허용하고 manifest는 create-exclusive다. 여섯 completion의 exact epoch/runtime/resume 계약이 맞기 전에는 lockbox가 열리지 않으며, generic evaluation과 canonical hidden staging 밖 개별 prediction은 reveal 이후에도 dataset 생성 전에 실패한다. 6개 prediction은 staging과 공개 후 final 위치에서 모두 검증된다. 이 보호는 같은 OS 사용자의 raw-file 읽기까지 막는 암호학적 봉인이 아니라 application/procedural gate와 hash provenance다. Physical margin과 `development_gate_only`는 이미 동결됐다. Confirmatory의 `success_threshold`, SESOI, alpha/alternative, multiplicity, fairness hash와 clean source tag를 target-free로 정하고 plan을 `frozen`으로 바꾸기 전에는 confirmatory를 실행할 수 없다. Seed는 독립 피험자로 세지 않으며 S1–S3와 39명 training participant는 primary table에 포함하지 않는다.
+집계기는 누락·중복 run, 60명 lockbox drift, 변조된 CSV/sidecar/checkpoint/train-metric/split/execution manifest/reveal receipt, 현재 plan/role/source와 다른 contract를 거부한다. Plan은 canonical manifest와 run root를 하나만 허용하고 manifest는 create-exclusive다. 여섯 completion의 exact epoch/runtime/resume 계약이 맞기 전에는 lockbox가 열리지 않으며, generic evaluation과 canonical hidden staging 밖 개별 prediction은 reveal 이후에도 dataset 생성 전에 실패한다. 6개 prediction은 staging과 공개 후 final 위치에서 모두 검증된다. 이 보호는 같은 OS 사용자의 raw-file 읽기까지 막는 암호학적 봉인이 아니라 application/procedural gate와 hash provenance다. Physical margin과 `development_gate_only`는 이미 동결됐고 사전 substantive gate가 실패했다. Confirmatory 값과 source tag를 채우는 것만으로는 현 no-go를 해제할 수 없다. Seed는 독립 피험자로 세지 않으며 S1–S3와 39명 training participant는 primary table에 포함하지 않는다.
 
 ## 규칙
 
