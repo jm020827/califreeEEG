@@ -145,6 +145,9 @@ def test_counterfactual_pair_is_exact_opposite_electrode_involution() -> None:
 
     assert plan.contract["condition_flip_fraction"] == 1.0
     assert plan.contract["pair_coverage"] == 1.0
+    assert plan.contract["donor_scope"] == (
+        "same_dataset_subject_label_block_window_opposite_electrode"
+    )
     for sample_id, row in mapping.iterrows():
         donor_id = row["donor_sample_id"]
         assert mapping.loc[donor_id, "donor_sample_id"] == sample_id

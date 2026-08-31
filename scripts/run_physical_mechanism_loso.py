@@ -5,6 +5,7 @@ import argparse
 import copy
 import datetime as dt
 import fcntl
+import hashlib
 import json
 import math
 import os
@@ -29,13 +30,17 @@ from cfeg.analysis.physical_mechanism import (
     aggregate_complete_physical_mechanism,
     evaluate_predeclared_physical_gates,
 )
+from cfeg.data.metadata_controls import build_development_control_plan
 from cfeg.eval_loop import run_evaluation
 from cfeg.execution_manifest import (
     resolved_config_sha256,
     sha256_json,
     validate_primary_pair_and_hash,
 )
-from cfeg.governance import current_source_revision_contract
+from cfeg.governance import (
+    WEARABLE_V3_PHYSICAL_FREEZE_TAG,
+    current_source_revision_contract,
+)
 from cfeg.prediction import load_verified_prediction_bundle, run_prediction
 from cfeg.train_loop import _resolve_augmentation_channel_sets, run_training
 from cfeg.utils.checkpoint import save_json
@@ -49,7 +54,7 @@ CANONICAL_OUTPUT_ROOT = REPO / "outputs/development-loso/physical-mechanism-v2"
 CANONICAL_DECISION_RECEIPT = (
     REPO / "configs/governance/wearable_physical_reveal2_decision.json"
 )
-PHYSICAL_FREEZE_TAG = "physical-reveal2-freeze-20260831"
+PHYSICAL_FREEZE_TAG = WEARABLE_V3_PHYSICAL_FREEZE_TAG
 
 _FREEZE_MARGIN_KEYS = (
     "clean_a2_mean_minimum_delta",
@@ -76,6 +81,7 @@ def main() -> None:
     parser.add_argument("--root", default="outputs/development-loso/physical-mechanism-v2")
     args = parser.parse_args()
 
+    _reject_symlink_components(CANONICAL_OUTPUT_ROOT)
     root = _repository_path(args.root)
     manifest_path = root / "grid_manifest.json"
     if args.command == "prepare":
@@ -88,6 +94,8 @@ def main() -> None:
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     validate_grid_manifest(manifest, manifest_path=manifest_path)
+    if current_source_revision_contract() != manifest["source_contract"]:
+        raise ValueError("Current source differs from the prepared physical grid manifest.")
     if args.command == "status":
         print_status(manifest, root)
         return
@@ -96,10 +104,12 @@ def main() -> None:
             "Physical mechanism design is not frozen. Owner approval, margins, and the "
             "second-reveal decision must be recorded before outcome training."
         )
-    if current_source_revision_contract() != manifest["source_contract"]:
-        raise ValueError("Current source differs from the prepared physical grid manifest.")
-
     if args.command == "train":
+        _preflight_global_reveal(
+            manifest,
+            root=root,
+            allow_receipt_recovery=False,
+        )
         for job in manifest["jobs"]:
             completion = Path(job["output_dir"]) / "training_completion.json"
             if completion.is_file():
@@ -126,6 +136,8 @@ def _stage_aggregate_and_publish(
     authorization = _private_staging_authorization(manifest, manifest_path=manifest_path)
     final_dir = root / "reveal-bundle"
     staging_dir = root / ".reveal-staging"
+    if root.is_symlink() or staging_dir.is_symlink() or final_dir.is_symlink():
+        raise ValueError("Physical reveal root and bundle paths cannot be symlinks.")
     precommitted_digest = _preflight_global_reveal(manifest, root=root)
     if final_dir.exists():
         if staging_dir.exists():
@@ -204,8 +216,28 @@ def _stage_aggregate_and_publish(
         raise ValueError(
             "Recovered private physical bundle differs from the precommitted reveal digest."
         )
+    _publish_prepared_bundle(
+        manifest,
+        root=root,
+        staging_dir=staging_dir,
+        final_dir=final_dir,
+        bundle_digest=bundle_digest,
+    )
+
+
+def _publish_prepared_bundle(
+    manifest: dict,
+    *,
+    root: Path,
+    staging_dir: Path,
+    final_dir: Path,
+    bundle_digest: str,
+) -> None:
+    """Durably precommit one validated private tree, then publish and finalize it."""
+
     _validate_reveal_bundle_layout(manifest, use_staging=True)
     _validate_bundle_manifest(staging_dir, manifest, expected_digest=bundle_digest)
+    _fsync_bundle_tree(staging_dir)
     register_global_reveal(
         manifest,
         root,
@@ -318,6 +350,7 @@ def _prepare_private_intervention(
 
 
 def build_grid_manifest(config_path: str, mechanism_path: str, root: Path) -> dict:
+    _reject_symlink_components(CANONICAL_OUTPUT_ROOT)
     base_path = _repository_path(config_path)
     mechanism_config_path = _repository_path(mechanism_path)
     if base_path != CANONICAL_BASE_CONFIG.resolve():
@@ -658,12 +691,14 @@ def _validate_design_freeze_authorization(base: dict) -> dict:
     decision = json.loads(decision_path.read_text(encoding="utf-8"))
     scope = decision.get("scope") or {}
     stopping = decision.get("stopping_rules") or {}
+    correction = decision.get("technical_correction") or {}
     paths = decision.get("canonical_paths") or {}
     bound = decision.get("bound_artifacts") or {}
     if (
         decision.get("schema") != "cfeg.physical-development-freeze-decision.v1"
         or decision.get("status") != "approved"
         or decision.get("decision_id") != authorization["decision_id"]
+        or decision.get("supersedes_decision_id") != "DEC-20260831-003"
         or decision.get("approved_by") != authorization["approved_by"]
         or decision.get("approval_recorded_at_utc") != authorization["approved_at_utc"]
         or decision.get("authority_basis") != authorization["authorization_source"]
@@ -683,6 +718,26 @@ def _validate_design_freeze_authorization(base: dict) -> dict:
         != "require_separate_owner_review_before_any_confirmatory_freeze"
         or stopping.get("further_s1_s3_outcome_reveals")
         != "forbidden_by_default_after_reveal_2"
+        or correction.get("prior_attempt_stopped_before_reveal_budget_precommit")
+        is not True
+        or correction.get("prior_attempt_global_ledger_entry_created") is not False
+        or correction.get("prior_attempt_public_bundle_created") is not False
+        or correction.get("performance_outcomes_reviewed") is not False
+        or correction.get("prior_attempt_source_commit")
+        != "ed5e7dce385fc456b33350079a98baa4aac88ec0"
+        or correction.get("diagnostic_access_limited_to")
+        != "donor_mapping_and_control_provenance_fields_only"
+        or correction.get("quarantine_path")
+        != (
+            "outputs/development-loso/quarantine/"
+            "physical-mechanism-v2-aborted-precommit-ed5e7dc-20260901"
+        )
+        or correction.get("quarantine_mode") != "0700"
+        or correction.get("restart_rule")
+        != (
+            "retrain_the_exact_18_job_grid_from_scratch_and_reuse_reveal_index_2_"
+            "without_threshold_or_model_changes"
+        )
         or (decision.get("source_freeze") or {}).get("annotated_tag")
         != PHYSICAL_FREEZE_TAG
         or paths.get("base_config")
@@ -1047,6 +1102,11 @@ def _validate_intervention_directory(
     field = "staging_output_csv" if use_staging else "output_csv"
     expected_files: set[Path] = set()
     expected_scenarios: set[str] | None = None
+    interventions = list(manifest.get("interventions") or [])
+    if not interventions:
+        raise ValueError("Physical A2 intervention matrix is empty.")
+    processed_dir = resolve_processed_dir(interventions[0]["config"])
+    asset_manifest = pd.read_parquet(Path(processed_dir) / "manifest.parquet")
     for intervention in manifest.get("interventions") or []:
         output = Path(intervention[field])
         provenance_path = output.with_name(f"{output.stem}_provenance.json")
@@ -1198,10 +1258,19 @@ def _validate_intervention_directory(
             changed_fraction = float(
                 result["metadata_control_effective_changed_fraction"]
             )
-            expected_control = (
-                "within_class_shuffle"
-                if scenario == "block_coherent_metadata_shuffle"
-                else "counterfactual_wet_dry"
+            expected_control, expected_scope = _expected_intervention_control_contract(
+                scenario
+            )
+            rebuilt_control = _rebuild_donor_control_contract(
+                asset_manifest,
+                donors,
+                control=expected_control,
+                seed=int(intervention["config"]["seed"]),
+                observed_mapping_sha256=file_sha256(donors_path),
+            )
+            expected_mapping_sha256 = str(rebuilt_control["donor_mapping_sha256"])
+            expected_changed_fraction = float(
+                rebuilt_control["effective_external_metadata_changed_fraction"]
             )
             if (
                 len(donors) != 240
@@ -1213,20 +1282,20 @@ def _validate_intervention_directory(
                 )
                 or set(donors["sample_id"].astype(str)) != set(clean_identity["sample_id"])
                 or result["metadata_control_name"] != expected_control
-                or result["metadata_control_scope"]
-                != "within_dataset_block_derangement_label_aligned"
+                or result["metadata_control_scope"] != expected_scope
                 or int(result["metadata_control_seed"]) != int(intervention["config"]["seed"])
                 or result["metadata_control_donor_mapping_sha256"]
                 != file_sha256(donors_path)
+                or file_sha256(donors_path) != expected_mapping_sha256
                 or audit.get("metadata_control_name") != expected_control
-                or audit.get("metadata_control_scope")
-                != "within_dataset_block_derangement_label_aligned"
+                or audit.get("metadata_control_scope") != expected_scope
                 or int(audit.get("metadata_control_seed", -1))
                 != int(intervention["config"]["seed"])
                 or audit.get("metadata_control_donor_mapping_sha256")
                 != file_sha256(donors_path)
                 or float(audit.get("metadata_control_effective_changed_fraction", -1.0))
                 != changed_fraction
+                or changed_fraction != expected_changed_fraction
                 or not math.isfinite(changed_fraction)
                 or not 0.0 <= changed_fraction <= 1.0
             ):
@@ -1237,6 +1306,9 @@ def _validate_intervention_directory(
                 condition_flip = float(
                     result["metadata_control_condition_flip_fraction"]
                 )
+                expected_condition_flip = float(
+                    rebuilt_control["condition_flip_fraction"]
+                )
                 if (
                     not math.isfinite(condition_flip)
                     or not 0.0 <= condition_flip <= 1.0
@@ -1244,6 +1316,7 @@ def _validate_intervention_directory(
                         audit.get("metadata_control_condition_flip_fraction", -1.0)
                     )
                     != condition_flip
+                    or condition_flip != expected_condition_flip
                 ):
                     raise ValueError("Physical counterfactual condition-flip potency failed.")
     if len(manifest.get("interventions") or []) != 3 or expected_scenarios is None:
@@ -1252,6 +1325,55 @@ def _validate_intervention_directory(
     observed_files = {path.resolve() for path in directory.iterdir() if path.is_file()}
     if observed_files != expected_files:
         raise ValueError("Physical intervention directory has missing or undeclared artifacts.")
+
+
+def _expected_intervention_control_contract(scenario: str) -> tuple[str, str]:
+    contracts = {
+        "block_coherent_metadata_shuffle": (
+            "within_class_shuffle",
+            "within_dataset_block_derangement_label_aligned",
+        ),
+        "joint_wet_dry_counterfactual": (
+            "counterfactual_wet_dry",
+            "same_dataset_subject_label_block_window_opposite_electrode",
+        ),
+    }
+    try:
+        return contracts[scenario]
+    except KeyError as exc:
+        raise ValueError(f"Unknown physical donor scenario: {scenario}.") from exc
+
+
+def _rebuild_donor_control_contract(
+    asset_manifest: pd.DataFrame,
+    donors: pd.DataFrame,
+    *,
+    control: str,
+    seed: int,
+    observed_mapping_sha256: str,
+) -> dict:
+    """Recreate one donor map from canonical rows instead of trusting its claims."""
+
+    if "sample_id" not in asset_manifest or asset_manifest["sample_id"].astype(str).duplicated().any():
+        raise ValueError("Canonical physical asset sample identities are invalid.")
+    if "sample_id" not in donors or "donor_sample_id" not in donors:
+        raise ValueError("Physical donor mapping lacks sample identities.")
+    sample_ids = asset_manifest["sample_id"].astype(str)
+    lookup = pd.Series(range(len(asset_manifest)), index=sample_ids)
+    target_ids = donors["sample_id"].astype(str)
+    donor_ids = donors["donor_sample_id"].astype(str)
+    positions = lookup.reindex(target_ids)
+    if positions.isna().any() or lookup.reindex(donor_ids).isna().any():
+        raise ValueError("Physical donor mapping references a non-canonical sample.")
+    rebuilt = build_development_control_plan(
+        asset_manifest,
+        {"val": positions.astype(int).to_numpy()},
+        control=control,
+        seed=int(seed),
+    )
+    if rebuilt.contract.get("donor_mapping_sha256") != observed_mapping_sha256:
+        raise ValueError("Physical donor mapping does not match canonical reconstruction.")
+    return rebuilt.contract
 
 
 def _aggregate_intervention_results(
@@ -1358,6 +1480,8 @@ def _directory_file_contract(directory: Path) -> dict[str, dict[str, object]]:
 
 
 def _bundle_manifest_payload(bundle: Path, manifest: dict) -> dict:
+    if bundle.is_symlink():
+        raise ValueError("Physical reveal bundle root cannot be a symlink.")
     files: dict[str, dict[str, object]] = {}
     manifest_path = bundle / "bundle_manifest.json"
     allowed_directories = {
@@ -1442,6 +1566,8 @@ def _validate_complete_publication(manifest: dict, *, root: Path) -> None:
 def _validate_reveal_bundle_layout(manifest: dict, *, use_staging: bool) -> None:
     root = Path(manifest["canonical_output_root"])
     bundle = root / (".reveal-staging" if use_staging else "reveal-bundle")
+    if root.is_symlink() or bundle.is_symlink():
+        raise ValueError("Physical reveal root and bundle paths cannot be symlinks.")
     expected = {
         (bundle / "predictions").resolve(),
         (bundle / "interventions").resolve(),
@@ -1473,8 +1599,6 @@ def _validate_reveal_bundle_layout(manifest: dict, *, use_staging: bool) -> None
 
 
 def _sample_identity_sha256(sample_ids) -> str:
-    import hashlib
-
     digest = hashlib.sha256()
     for sample_id in sorted(str(value) for value in sample_ids):
         encoded = sample_id.encode("utf-8")
@@ -1487,8 +1611,12 @@ def _sample_identity_sha256(sample_ids) -> str:
 def _exclusive_reveal_publication(root: Path):
     """Serialize ledger registration, staging writes, and atomic publication."""
 
+    if root.is_symlink():
+        raise ValueError("Physical reveal root cannot be a symlink.")
     root.mkdir(parents=True, exist_ok=True)
     lock_path = root / ".reveal-publication.lock"
+    if lock_path.is_symlink():
+        raise ValueError("Physical reveal publication lock cannot be a symlink.")
     with lock_path.open("a+", encoding="utf-8") as lock:
         lock_path.chmod(0o600)
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
@@ -1498,9 +1626,16 @@ def _exclusive_reveal_publication(root: Path):
             fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
 
-def _preflight_global_reveal(manifest: dict, *, root: Path) -> str | None:
+def _preflight_global_reveal(
+    manifest: dict,
+    *,
+    root: Path,
+    allow_receipt_recovery: bool = True,
+) -> str | None:
     historical = _load_reveal_ledger(Path(manifest["historical_reveal_ledger"]))
     global_path = Path(manifest["global_reveal_ledger"])
+    if global_path.is_symlink() or (global_path.exists() and not global_path.is_file()):
+        raise ValueError("Physical global reveal ledger path is invalid.")
     global_ledger = (
         _load_reveal_ledger(global_path)
         if global_path.exists()
@@ -1537,18 +1672,21 @@ def _preflight_global_reveal(manifest: dict, *, root: Path) -> str | None:
             manifest,
             root=root,
             entry=entry,
-            allow_create=True,
+            allow_create=allow_receipt_recovery,
         )
-        if (root / "reveal_receipt.json").exists() and not (
+        final_receipt = root / "reveal_receipt.json"
+        if (final_receipt.exists() or final_receipt.is_symlink()) and not (
             root / "reveal-bundle"
         ).is_dir():
             raise ValueError(
                 "Physical final reveal receipt exists before public bundle publication."
             )
         return bundle_digest
-    if (root / "reveal_precommit_receipt.json").exists():
+    precommit_receipt = root / "reveal_precommit_receipt.json"
+    final_receipt = root / "reveal_receipt.json"
+    if precommit_receipt.exists() or precommit_receipt.is_symlink():
         raise ValueError("Physical precommit receipt has no matching reveal ledger event.")
-    if (root / "reveal_receipt.json").exists():
+    if final_receipt.exists() or final_receipt.is_symlink():
         raise ValueError("Physical final reveal receipt has no matching reveal ledger event.")
     expected_index = len(combined) + 1
     if expected_index != int(manifest["outcome_reveal_index"]):
@@ -1571,10 +1709,15 @@ def register_global_reveal(
     bundle_content_sha256: str,
 ) -> dict:
     expected_private_bundle = (root / ".reveal-staging").resolve()
-    if bundle_path.resolve() == expected_private_bundle and bundle_path.is_dir():
+    if (
+        not bundle_path.is_symlink()
+        and bundle_path.resolve() == expected_private_bundle
+        and bundle_path.is_dir()
+    ):
         _validate_reveal_bundle_layout(manifest, use_staging=True)
     if (
         bundle_path.resolve() != expected_private_bundle
+        or bundle_path.is_symlink()
         or not bundle_path.is_dir()
         or _validate_bundle_manifest(bundle_path, manifest) != bundle_content_sha256
     ):
@@ -1742,6 +1885,8 @@ def _write_or_validate_precommit_reveal_receipt(
 ) -> None:
     expected = _precommit_reveal_receipt_payload(manifest, entry=entry)
     receipt_path = root / "reveal_precommit_receipt.json"
+    if receipt_path.is_symlink():
+        raise ValueError("Physical reveal precommit receipt cannot be a symlink.")
     if receipt_path.exists():
         if json.loads(receipt_path.read_text(encoding="utf-8")) != expected:
             raise ValueError(
@@ -1786,6 +1931,8 @@ def _finalize_reveal_publication(
         bundle_digest=bundle_digest,
     )
     receipt_path = root / "reveal_receipt.json"
+    if receipt_path.is_symlink():
+        raise ValueError("Physical final reveal receipt cannot be a symlink.")
     if receipt_path.exists():
         _validate_published_reveal_receipt(
             manifest,
@@ -1818,6 +1965,8 @@ def _validate_published_reveal_receipt(
         bundle_digest=bundle_digest,
     )
     receipt_path = root / "reveal_receipt.json"
+    if receipt_path.is_symlink():
+        raise ValueError("Physical final reveal receipt cannot be a symlink.")
     if not receipt_path.is_file():
         raise ValueError("Physical final reveal receipt is missing.")
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
@@ -1889,6 +2038,30 @@ def _fsync_directory(path: Path) -> None:
         os.close(directory_fd)
 
 
+def _fsync_bundle_tree(bundle: Path) -> None:
+    """Durably flush a validated private bundle before reveal-budget precommit."""
+
+    if bundle.is_symlink():
+        raise ValueError("Physical reveal bundle root cannot be a symlink.")
+    directories = [bundle]
+    for path in sorted(bundle.rglob("*")):
+        if path.is_symlink():
+            raise ValueError("Physical reveal bundle cannot contain symlinks.")
+        if path.is_dir():
+            directories.append(path)
+            continue
+        if not path.is_file():
+            raise ValueError("Physical reveal bundle contains a non-regular artifact.")
+        file_descriptor = os.open(path, os.O_RDONLY)
+        try:
+            os.fsync(file_descriptor)
+        finally:
+            os.close(file_descriptor)
+    for directory in sorted(directories, key=lambda item: len(item.parts), reverse=True):
+        _fsync_directory(directory)
+    _fsync_directory(bundle.parent)
+
+
 def resolve_processed_dir(cfg: dict) -> str:
     value = os.path.expandvars(str(cfg["data"]["processed_dirs"][0]))
     if "${env:" in value or not Path(value).is_dir():
@@ -1904,17 +2077,28 @@ def print_status(manifest: dict, root: Path) -> None:
     intervened = sum(
         Path(item["output_csv"]).is_file() for item in manifest.get("interventions") or []
     )
-    global_path = Path(manifest["global_reveal_ledger"])
-    reveal_budget_consumed = False
-    if global_path.is_file():
-        ledger = _load_reveal_ledger(global_path)
-        reveal_budget_consumed = any(
-            entry.get("grid_content_sha256") == manifest["grid_content_sha256"]
-            for entry in ledger["entries"]
-        )
-    public_bundle_published = (
-        (root / "reveal-bundle").is_dir() and (root / "reveal_receipt.json").is_file()
+    precommitted_digest = _preflight_global_reveal(
+        manifest,
+        root=root,
+        allow_receipt_recovery=False,
     )
+    reveal_budget_consumed = precommitted_digest is not None
+    public_bundle = root / "reveal-bundle"
+    final_receipt = root / "reveal_receipt.json"
+    public_present = public_bundle.exists() or public_bundle.is_symlink()
+    receipt_present = final_receipt.exists() or final_receipt.is_symlink()
+    if public_present != receipt_present:
+        raise ValueError("Physical public bundle/final receipt state is incomplete.")
+    if public_present and (
+        public_bundle.is_symlink()
+        or final_receipt.is_symlink()
+        or not public_bundle.is_dir()
+        or not final_receipt.is_file()
+    ):
+        raise ValueError("Physical public bundle/final receipt types are invalid.")
+    public_bundle_published = public_present
+    if public_bundle_published:
+        _validate_complete_publication(manifest, root=root)
     print(
         json.dumps(
             {
@@ -1961,6 +2145,17 @@ def _load_reveal_ledger(path: Path) -> dict:
 def _repository_path(value: str | Path) -> Path:
     path = Path(value).expanduser()
     return path.resolve() if path.is_absolute() else (REPO / path).resolve()
+
+
+def _reject_symlink_components(path: Path) -> None:
+    """Reject lexical path aliases before callers erase them with resolve()."""
+
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current /= component
+        if current.is_symlink():
+            raise ValueError(f"Physical canonical output path contains a symlink: {current}.")
 
 
 def file_sha256(path: Path) -> str:

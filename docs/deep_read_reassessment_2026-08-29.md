@@ -6,7 +6,7 @@
 상태: 설계·원자료·직접 경쟁법·foundation 선행연구 재감사 완료, confirmatory run 차단
 적용 범위: 연구 주제는 유지한다. 즉, **target 사용자 EEG로 적응하지 않는 SSVEP 분류에서 물리적 획득 metadata의 증분 가치**를 검증한다.
 
-> **후속 구현 상태:** 이 문서는 패치 전 blocker를 기록한 감사다. P0 impedance 축·`wearable_v3` guard, 전체 102명 asset acceptance, structure/query-QC/external 권한 분리, `physical_hybrid_v1`의 per-channel impedance bounded gain, spectral scratch anchor와 strict FBCCA는 이후 구현됐다. Physical six-role/18-job outcome과 owner 승인, SESOI/control/source freeze는 남아 있다. 첫 legacy prompt grid 결과는 새 physical architecture의 증거가 아니다. 현재 상태는 [연구 프로토콜 현재 상태](research_protocol_status.md)를 따른다.
+> **후속 구현 상태:** 이 문서는 패치 전 blocker를 기록한 감사다. P0 impedance 축·`wearable_v3` guard, 전체 102명 asset acceptance, structure/query-QC/external 권한 분리, `physical_hybrid_v1`의 per-channel impedance bounded gain, spectral scratch anchor와 strict FBCCA는 이후 구현됐다. Physical six-role/18-job 개발 기준과 reveal #2는 `DEC-20260901-004`로 재승인됐다. 남은 confirmatory 판단은 SESOI·alpha/alternative·operational threshold·multiplicity와 fairness/source lock이다. 첫 legacy prompt grid 결과는 새 physical architecture의 증거가 아니다. 현재 상태는 [연구 프로토콜 현재 상태](research_protocol_status.md)를 따른다.
 
 ## 1. 결론부터
 

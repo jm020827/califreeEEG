@@ -10,8 +10,9 @@ import pandas as pd
 import pytest
 
 from cfeg.analysis.physical_mechanism import evaluate_predeclared_physical_gates
+from cfeg.data.metadata_controls import build_development_control_plan
 from cfeg.execution_manifest import sha256_json
-from cfeg.governance import GovernanceError
+from cfeg.governance import WEARABLE_V3_PHYSICAL_FREEZE_TAG, GovernanceError
 from cfeg.utils.config import load_config
 
 REPO = Path(__file__).resolve().parents[1]
@@ -23,10 +24,15 @@ from run_ablation import (
     _validate_physical_mechanism_family,
 )
 from run_physical_mechanism_loso import (
+    _expected_intervention_control_contract,
     _finalize_reveal_publication,
+    _fsync_bundle_tree,
     _preflight_global_reveal,
     _prepare_private_intervention,
     _prepare_private_prediction,
+    _publish_prepared_bundle,
+    _rebuild_donor_control_contract,
+    _reject_symlink_components,
     _validate_bundle_manifest,
     _validate_design_freeze_authorization,
     _write_bundle_manifest,
@@ -42,6 +48,20 @@ def _allow_unit_test_source_freeze(monkeypatch: pytest.MonkeyPatch) -> None:
         physical_runner,
         "_validate_clean_source_freeze",
         lambda _source, _decision: None,
+    )
+
+
+def test_physical_freeze_tag_has_one_cross_module_authority() -> None:
+    decision = json.loads(
+        (REPO / "configs/governance/wearable_physical_reveal2_decision.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert physical_runner.PHYSICAL_FREEZE_TAG == WEARABLE_V3_PHYSICAL_FREEZE_TAG
+    assert (
+        decision["source_freeze"]["annotated_tag"]
+        == WEARABLE_V3_PHYSICAL_FREEZE_TAG
     )
 
 
@@ -478,6 +498,291 @@ def test_partial_private_intervention_is_removed_and_deterministically_recompute
     _prepare_private_intervention(intervention, authorization={"fixed": "yes"})
     assert len(called) == 1
     assert called[0][0]["development_authorization"] == {"fixed": "yes"}
+
+
+def test_physical_intervention_validator_uses_distinct_frozen_donor_scopes() -> None:
+    assert _expected_intervention_control_contract(
+        "block_coherent_metadata_shuffle"
+    ) == (
+        "within_class_shuffle",
+        "within_dataset_block_derangement_label_aligned",
+    )
+    assert _expected_intervention_control_contract("joint_wet_dry_counterfactual") == (
+        "counterfactual_wet_dry",
+        "same_dataset_subject_label_block_window_opposite_electrode",
+    )
+
+
+def _semantic_donor_asset() -> pd.DataFrame:
+    rows = []
+    for subject_index, subject_id in enumerate(("sub001", "sub002"), start=1):
+        for electrode_index, electrode in enumerate(("dry", "wet"), start=1):
+            impedance = float(100 * electrode_index + subject_index)
+            for label in (0, 1):
+                rows.append(
+                    {
+                        "sample_id": f"{subject_id}-{electrode}-label{label}",
+                        "dataset_id": "wearable",
+                        "subject_id": subject_id,
+                        "session_id": "session0",
+                        "run_id": "run0",
+                        "label": label,
+                        "window_start_sec": 0.0,
+                        "window_duration_sec": 2.0,
+                        "electrode_type": electrode,
+                        "reference": "forehead",
+                        "cap_type": "wearable",
+                        "impedance_mean_kohm": impedance,
+                        "impedance_max_kohm": impedance + 1.0,
+                        "impedance_kohm_by_channel": [impedance, impedance + 1.0],
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+@pytest.mark.parametrize("control", ["within_class_shuffle", "counterfactual_wet_dry"])
+def test_physical_donor_validator_rebuilds_exact_semantics(control: str) -> None:
+    asset = _semantic_donor_asset()
+    plan = build_development_control_plan(
+        asset,
+        {"val": pd.Series(range(len(asset))).to_numpy()},
+        control=control,
+        seed=42,
+    )
+
+    rebuilt = _rebuild_donor_control_contract(
+        asset,
+        plan.donor_mapping,
+        control=control,
+        seed=42,
+        observed_mapping_sha256=plan.contract["donor_mapping_sha256"],
+    )
+    assert rebuilt["donor_mapping_sha256"] == plan.contract["donor_mapping_sha256"]
+    assert rebuilt["effective_external_metadata_changed_fraction"] == plan.contract[
+        "effective_external_metadata_changed_fraction"
+    ]
+
+    tampered = plan.donor_mapping.copy()
+    tampered.loc[0, "external_bundle_changed"] = not bool(
+        tampered.loc[0, "external_bundle_changed"]
+    )
+    with pytest.raises(ValueError, match="canonical reconstruction"):
+        tampered_sha256 = hashlib.sha256(
+            tampered.to_csv(index=False).encode("utf-8")
+        ).hexdigest()
+        _rebuild_donor_control_contract(
+            asset,
+            tampered,
+            control=control,
+            seed=42,
+            observed_mapping_sha256=tampered_sha256,
+        )
+
+
+def test_physical_bundle_tree_fsync_includes_staging_parent(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bundle = tmp_path / "grid" / ".reveal-staging"
+    child = bundle / "analysis"
+    child.mkdir(parents=True)
+    (child / "artifact.json").write_text("{}\n", encoding="utf-8")
+    synced = []
+    monkeypatch.setattr(
+        physical_runner,
+        "_fsync_directory",
+        lambda directory: synced.append(directory),
+    )
+
+    _fsync_bundle_tree(bundle)
+
+    assert child in synced
+    assert bundle in synced
+    assert synced[-1] == bundle.parent
+
+
+def test_physical_bundle_rejects_symlink_root(tmp_path: Path) -> None:
+    target = tmp_path / "mutable-target"
+    for name in ("predictions", "interventions", "analysis"):
+        (target / name).mkdir(parents=True, exist_ok=True)
+    bundle = tmp_path / "reveal-bundle"
+    bundle.symlink_to(target, target_is_directory=True)
+    manifest = {
+        "grid_content_sha256": "a" * 64,
+        "decision_receipt_sha256": "b" * 64,
+        "outcome_reveal_index": 2,
+    }
+
+    with pytest.raises(ValueError, match="root cannot be a symlink"):
+        _write_bundle_manifest(bundle, manifest)
+    with pytest.raises(ValueError, match="root cannot be a symlink"):
+        _fsync_bundle_tree(bundle)
+
+
+def test_physical_canonical_path_rejects_symlink_before_resolve(tmp_path: Path) -> None:
+    target = tmp_path / "target"
+    target.mkdir()
+    alias = tmp_path / "canonical-alias"
+    alias.symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="contains a symlink"):
+        _reject_symlink_components(alias / "physical-mechanism-v2")
+
+
+def _status_manifest(tmp_path: Path) -> dict:
+    historical_path = tmp_path / "historical.json"
+    historical_path.write_text(
+        json.dumps(
+            {
+                "schema": "cfeg.development-reveal-ledger.v1",
+                "entries": [
+                    {
+                        "reveal_index": 1,
+                        "grid_content_sha256": "a" * 64,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "jobs": [],
+        "interventions": [],
+        "historical_reveal_ledger": str(historical_path),
+        "global_reveal_ledger": str(tmp_path / "global.json"),
+        "grid_content_sha256": "b" * 64,
+        "outcome_reveal_index": 2,
+        "recommended_max_outcome_reveals": 2,
+        "absolute_max_outcome_reveals": 3,
+        "design_status": "frozen",
+        "expected_job_count": 18,
+        "expected_intervention_count": 3,
+    }
+
+
+def test_physical_status_rejects_orphan_precommit_receipt(tmp_path: Path) -> None:
+    root = tmp_path / "grid"
+    root.mkdir()
+    (root / "reveal_precommit_receipt.json").write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="no matching reveal ledger event"):
+        physical_runner.print_status(_status_manifest(tmp_path), root)
+
+
+def test_physical_status_rejects_symlinked_final_receipt(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = tmp_path / "grid"
+    (root / "reveal-bundle").mkdir(parents=True)
+    external = tmp_path / "external-receipt.json"
+    external.write_text("{}\n", encoding="utf-8")
+    (root / "reveal_receipt.json").symlink_to(external)
+    monkeypatch.setattr(
+        physical_runner,
+        "_preflight_global_reveal",
+        lambda *_args, **_kwargs: None,
+    )
+
+    with pytest.raises(ValueError, match="types are invalid"):
+        physical_runner.print_status(_status_manifest(tmp_path), root)
+
+
+def test_physical_readiness_rejects_reveal_index_consumed_by_other_grid(
+    tmp_path: Path,
+) -> None:
+    manifest = _status_manifest(tmp_path)
+    Path(manifest["global_reveal_ledger"]).write_text(
+        json.dumps(
+            {
+                "schema": "cfeg.development-reveal-ledger.v1",
+                "entries": [
+                    {
+                        "reveal_index": 2,
+                        "grid_content_sha256": "c" * 64,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="reveal index must be 2"):
+        _preflight_global_reveal(
+            manifest,
+            root=tmp_path / "grid",
+            allow_receipt_recovery=False,
+        )
+
+
+def test_physical_publication_fsyncs_tree_before_budget_precommit(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = tmp_path / "grid"
+    staging = root / ".reveal-staging"
+    final = root / "reveal-bundle"
+    calls = []
+
+    monkeypatch.setattr(
+        physical_runner,
+        "_validate_reveal_bundle_layout",
+        lambda _manifest, *, use_staging: calls.append(("layout", use_staging)),
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "_validate_bundle_manifest",
+        lambda _bundle, _manifest, *, expected_digest=None: calls.append(
+            ("tree_hash", expected_digest)
+        )
+        or "d" * 64,
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "_fsync_bundle_tree",
+        lambda _bundle: calls.append(("fsync_tree", None)),
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "register_global_reveal",
+        lambda *_args, **_kwargs: calls.append(("budget_precommit", None)),
+    )
+    monkeypatch.setattr(
+        physical_runner.os,
+        "replace",
+        lambda _source, _target: calls.append(("rename", None)),
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "_fsync_directory",
+        lambda _directory: calls.append(("fsync_parent", None)),
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "_finalize_reveal_publication",
+        lambda *_args, **_kwargs: calls.append(("final_receipt", None)),
+    )
+    monkeypatch.setattr(
+        physical_runner,
+        "_validate_complete_publication",
+        lambda *_args, **_kwargs: calls.append(("final_validate", None)),
+    )
+
+    _publish_prepared_bundle(
+        {},
+        root=root,
+        staging_dir=staging,
+        final_dir=final,
+        bundle_digest="d" * 64,
+    )
+
+    assert [name for name, _ in calls] == [
+        "layout",
+        "tree_hash",
+        "fsync_tree",
+        "budget_precommit",
+        "rename",
+        "fsync_parent",
+        "final_receipt",
+        "final_validate",
+    ]
 
 
 def test_physical_reveal_two_phase_publication_is_idempotent_and_rejects_forgery(

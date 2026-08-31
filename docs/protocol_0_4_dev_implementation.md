@@ -91,14 +91,14 @@ F0는 condition module이 없는 더 작은 signal baseline이고 A0의 대체�
 
 ## 5. 아직 구현하지 않았거나 확증용으로 동결하지 않은 것
 
-- [완료] physical six-role/18-job grid(A0/full/global-only/channel-only/full-shuffle-train/metadata-only)의 두 번째 reveal 승인과 margin 동결 (`DEC-20260831-003`)
+- [완료] physical six-role/18-job grid(A0/full/global-only/channel-only/full-shuffle-train/metadata-only)의 두 번째 reveal 승인과 margin 동결, validator-only 재시작 승인 (`DEC-20260901-004`)
 - channel gain과 global FiLM의 S1–S3 mechanism/safety 결과 및 사전 margin 판정
 - factorized continuous descriptors의 충분한 외부 데이터 반복
 - compact scratch backbone의 nominal xyz registry와 provenance 계약
 - 최신 learned strict-k=0 baseline 전체(paper-faithful Chen-2015 FBCCA와 spectral scratch anchor는 구현 완료)
 - source-only pseudo-OOD로 정한 architecture/MCID/success threshold/multiplicity와 `configs/analysis/wearable_primary.yaml`의 confirmatory freeze
 - 39-train/60-lockbox six-job confirmatory 실행
-- control equivalence/mechanism/safety margin과 confirmatory-once 여부의 최종 동결
+- confirmatory SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock의 최종 동결(physical margin과 `development_gate_only`는 완료)
 - REVE에서 sample-wise random montage가 만드는 직렬 forward/cache 증가에 대한 성능 gate
 - frozen REVE/position-bank Hugging Face snapshot revision·remote-code·weight byte fingerprint를 checkpoint와 evaluation에 묶는 provenance gate
 
@@ -113,8 +113,8 @@ F0는 condition module이 없는 더 작은 signal baseline이고 A0의 대체�
 5. [완료·역사적] Prompt A0/A2의 첫 fixed-epoch S1–S3 grid는 A0/A2 BA 0.1222/0.1042, delta −0.0181이었다. 이는 directional warning이며 새 physical A2 성능이 아니다.
 6. [완료·outcome-free] `physical_hybrid_v1`, exact-null unit contract와 block-coherent donor mapping을 구현했다. Reference/cap은 primary에서 제외했다.
 7. [완료·outcome-free] Six-role×3-fold 18-job manifest, Full A2의 사전 고정 missing/shuffle/wrong-metadata 개입 3개 fold bundle, prediction·intervention·aggregate·gate를 함께 tree-hash하는 hidden staging을 구현했다. 완성 digest의 ledger/precommit receipt로 reveal 예산을 먼저 소비하고, atomic rename·parent fsync 뒤 final publication receipt를 쓰는 two-phase 공개와 동일 private artifact의 deterministic crash recovery를 결합했다.
-8. [완료] Mechanism/safety margin·중단 규칙과 owner 승인 ID/시각을 `DEC-20260831-003` decision receipt에 고정하고 두 번째 S1–S3 reveal을 명시 승인했다. 실행 전 clean annotated source tag 검증은 별도 gate다.
-9. 그 결과가 사전 gate를 통과한 경우에만 SESOI·success threshold·alpha·control margin을 확정하고, exact 39/60×seed `[42,43,44]` plan을 `frozen`으로 바꾼 뒤 Protocol 0.4 confirmatory tag를 만든다.
+8. [완료] Mechanism/safety margin·중단 규칙과 owner 승인 ID/시각을 `DEC-20260901-004` decision receipt에 고정했다. 첫 기술 실행은 공개·ledger precommit 전에 counterfactual scope validator 오류로 중단됐고, 성능 결과를 검토하지 않은 채 quarantine했다. 정정본은 canonical manifest에서 donor mapping·potency를 재구성하고 private tree와 staging parent를 fsync한 뒤 reveal 예산을 precommit한다.
+9. 그 결과가 사전 gate를 통과한 경우에만 confirmatory SESOI·success threshold·alpha/alternative·multiplicity와 fairness/source lock을 확정하고, exact 39/60×seed `[42,43,44]` plan을 `frozen`으로 바꾼 뒤 Protocol 0.4 confirmatory tag를 만든다. Physical margin과 `development_gate_only`는 재결정하지 않는다.
 10. 그 뒤 39명에서 여섯 training job을 모두 완료하고, 단일 manifest-wide reveal로 60명 lockbox prediction을 함께 생성한다. 5-fold는 primary 보고 뒤 exploratory다.
 
 전체 asset acceptance 명령은 다음과 같다.

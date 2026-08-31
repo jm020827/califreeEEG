@@ -1,11 +1,12 @@
 {
   "schema": "cfeg.physical-development-freeze-decision.v1",
-  "decision_id": "DEC-20260831-003",
+  "decision_id": "DEC-20260901-004",
+  "supersedes_decision_id": "DEC-20260831-003",
   "status": "approved",
   "approved_by": "active_workspace_owner",
-  "approval_recorded_at_utc": "2026-08-30T17:52:16+00:00",
+  "approval_recorded_at_utc": "2026-08-31T17:38:18+00:00",
   "authority_basis": "explicit_user_approval_in_active_codex_session",
-  "approval_message": "응 너가 여러가지를 잘 설계해서 시작해보자. 승인.",
+  "approval_message": "응",
   "scope": {
     "grid_id": "wearable-v3-s1-s3-physical-mechanism-v2",
     "outcome_reveal_index": 2,
@@ -26,7 +27,8 @@
       "prepare_frozen_physical_grid",
       "train_exact_18_job_grid",
       "publish_one_atomic_reveal_bundle",
-      "aggregate_predeclared_development_gates"
+      "aggregate_predeclared_development_gates",
+      "quarantine_failed_precommit_attempt_and_restart_exact_grid_after_validator_only_correction"
     ],
     "forbidden_actions": [
       "confirmatory_training",
@@ -70,8 +72,28 @@
   },
   "source_freeze": {
     "clean_source_required": true,
-    "annotated_tag": "physical-reveal2-freeze-20260831",
+    "annotated_tag": "physical-reveal2-freeze-20260901-r1",
     "manifest_must_bind_tagged_commit": true
+  },
+  "technical_correction": {
+    "reason": "counterfactual donor provenance correctly recorded opposite-electrode scope but the publication validator incorrectly required the shuffle scope",
+    "code_change_scope": [
+      "validate_counterfactual_scope_as_same_dataset_subject_label_block_window_opposite_electrode",
+      "reconstruct_donor_semantics_and_potency_from_canonical_manifest",
+      "add_regressions_for_distinct_shuffle_and_counterfactual_scopes",
+      "fsync_complete_private_bundle_tree_and_parent_before_reveal_budget_precommit",
+      "make_status_validate_live_source_full_ledger_and_publication_receipts",
+      "reject_symlinked_reveal_roots"
+    ],
+    "prior_attempt_source_commit": "ed5e7dce385fc456b33350079a98baa4aac88ec0",
+    "prior_attempt_stopped_before_reveal_budget_precommit": true,
+    "prior_attempt_global_ledger_entry_created": false,
+    "prior_attempt_public_bundle_created": false,
+    "performance_outcomes_reviewed": false,
+    "diagnostic_access_limited_to": "donor_mapping_and_control_provenance_fields_only",
+    "quarantine_path": "outputs/development-loso/quarantine/physical-mechanism-v2-aborted-precommit-ed5e7dc-20260901",
+    "quarantine_mode": "0700",
+    "restart_rule": "retrain_the_exact_18_job_grid_from_scratch_and_reuse_reveal_index_2_without_threshold_or_model_changes"
   },
   "scale_note": {
     "n_development_subjects": 3,

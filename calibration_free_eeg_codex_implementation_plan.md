@@ -1,8 +1,8 @@
 # Calibration-Free EEG 구현·실험 체크리스트 v5
 
-업데이트: 2026-08-30
+업데이트: 2026-09-01
 
-> DEC-20260830-001에 따라 S1–S3는 영구 development-only다. DEC-20260830-002에 따라 S4–S102 N=99는 39명 confirmatory training과 60명 independent lockbox로 고정됐고, 이전 N=99 5-fold primary는 superseded됐다. 전체 N=102·24,480행은 자산 계약이다. 현재 권한·gate는 [프로토콜 상태](docs/research_protocol_status.md)와 [append-only 연구일지](docs/research_log.md)를 우선한다.
+> DEC-20260830-001에 따라 S1–S3는 영구 development-only다. DEC-20260830-002에 따라 S4–S102 N=99는 39명 confirmatory training과 60명 independent lockbox로 고정됐고, 이전 N=99 5-fold primary는 superseded됐다. DEC-20260901-004는 공개 전 validator-only 정정 뒤 동일한 physical reveal #2 exact restart만 승인한다. 전체 N=102·24,480행은 자산 계약이다. 현재 권한·gate는 [프로토콜 상태](docs/research_protocol_status.md)와 [append-only 연구일지](docs/research_log.md)를 우선한다.
 
 예전 구현 지시서 v2를 현재 상태에 맞춘 체크리스트로 대체한다. 체크 완료는 코드·설정·테스트 경로가 repository에 있다는 뜻이다. 외부 데이터/REVE 항목은 서버 실험을 끝내야 연구 결과까지 완료된다.
 
@@ -132,7 +132,7 @@ EEG_DATA_ROOT=/path/to/eeg-data python scripts/run_ablation.py \
   --dry-run
 
 # 첫 prompt grid는 완료된 역사적 artifact라 mutable config로 재생성하지 않는다.
-# 두 번째 physical grid는 DEC-20260831-003 승인·freeze 뒤 단일 train→reveal 경로만 허용된다.
+# 두 번째 physical grid는 DEC-20260901-004와 새 annotated freeze tag에서 동일한 18-job exact restart만 허용된다.
 EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py status
 EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py train
 EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py reveal

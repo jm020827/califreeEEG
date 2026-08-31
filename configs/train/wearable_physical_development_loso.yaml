@@ -20,12 +20,12 @@ development_grid:
   interpretation: mechanism_and_safety_only_population_inference_forbidden
   freeze_authorization:
     status: approved
-    decision_id: DEC-20260831-003
+    decision_id: DEC-20260901-004
     approved_by: active_workspace_owner
-    approved_at_utc: '2026-08-30T17:52:16+00:00'
+    approved_at_utc: '2026-08-31T17:38:18+00:00'
     authorization_source: explicit_user_approval_in_active_codex_session
     decision_receipt: configs/governance/wearable_physical_reveal2_decision.json
-    decision_receipt_sha256: 15fb6de894d173dd26061e6ddf52b07708d498fc569ee7a3ab18916a30e22eee
+    decision_receipt_sha256: ae7a6cdc49009462f0da836dafb81c1b4ffd3434c4db6a2f62f793d5dc4b1b59
     outcome_reveal_2_approved: true
 seed: 42
 run_name: wearable_physical_development_loso

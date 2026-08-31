@@ -94,7 +94,7 @@
 - [x] 정상 A2 validation-only wet↔dry counterfactual과 manifest-only donor 교환; donor EEG 미접근
 - [x] control mapping/fixed-point/coverage/field-change hash와 evaluation parent-checkpoint provenance
 - [x] 성공·dry-run·OOM 실패를 같은 schema로 남기는 synchronized CUDA peak-memory sidecar
-- [x] physical development control equivalence/mechanism/safety margin, potency threshold와 invalid-assay 정책 동결 (`development_gate_only`; confirmatory 정책은 별도 미동결)
+- [x] physical development control equivalence/mechanism/safety margin, potency threshold, invalid-assay와 `development_gate_only` 정책 동결(confirmatory 전체 분석계획은 별도 미동결)
 
 ## 비교 모델
 
@@ -144,8 +144,8 @@ Synthetic 결과는 사람 EEG에 대한 연구 증거가 아니라 pipeline 검
 1. [완료] channel ID/mask 같은 `m_struct`는 A0와 A2 모두에게 제공하고 treatment에서 제외한다.
 2. [완료] wearable에서 관측 가능한 electrode interface, block impedance mean/max, per-channel impedance의 schema·provenance를 확정하고 reference/cap 상수는 primary에서 제외한다.
 3. [완료] `physical_hybrid_v1`의 공통 query-QC FiLM, external global FiLM, channel-quality gain과 exact-null routing을 구현한다. Prompt/adapter는 legacy secondary다.
-4. [완료·outcome-free] six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, prediction·intervention·aggregate·gate를 함께 tree-hash하고 digest precommit→atomic rename/fsync→final receipt로 공개하는 two-phase transaction을 구현한다. 알려진 private partial artifact만 같은 동결 계산으로 삭제·재생성하고, 미신고 prefix나 digest drift는 거부한다.
-5. [승인·기준 동결 완료 / 실행 대기] `DEC-20260831-003`이 Metadata-only, shuffle-train→clean-val, block-coherent shuffle, counterfactual과 missing intervention을 단일 reveal bundle로 승인했다. Natural missingness pattern이 하나인 missingness-only는 `invalid_assay`다. Clean 방향은 3-fold mean, 나머지는 least-favourable observed fold이며 N=3 confidence bound가 아니다.
+4. [완료·outcome-free] six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, prediction·intervention·aggregate·gate를 함께 tree-hash한다. Donor mapping/potency는 canonical manifest에서 재구성하고 private tree와 staging parent를 fsync한 뒤 digest precommit→atomic rename/fsync→final receipt로 공개한다. 알려진 private partial artifact만 같은 동결 계산으로 삭제·재생성하고, 미신고 prefix나 digest drift는 거부한다.
+5. [재승인·기준 동결 완료 / exact restart 대기] `DEC-20260901-004`가 공개 전 counterfactual scope validator-only 오류를 정정하고 동일한 reveal #2를 재승인했다. 모델·grid·seed·fold·margin·gate는 바꾸지 않는다. Metadata-only, shuffle-train→clean-val, block-coherent shuffle, counterfactual과 missing intervention은 단일 reveal bundle에 포함된다. Natural missingness pattern이 하나인 missingness-only는 `invalid_assay`다. Clean 방향은 3-fold mean, 나머지는 least-favourable observed fold이며 N=3 confidence bound가 아니다.
 6. Physical source를 clean annotated tag로 고정한 뒤 18-job train과 단일 `reveal`을 실행한다. Confirmatory MCID·`τ`·alpha·multiplicity·external lockbox source contract는 physical 결과의 owner review 뒤 별도로 `frozen` 선언한다. S1–S3는 계속 development-only다.
 
 ### Phase 2.6 — 데이터·문헌 충분성 gate

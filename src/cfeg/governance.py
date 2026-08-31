@@ -41,7 +41,7 @@ WEARABLE_V3_PHYSICAL_INTERVENTION_CONFIG = "configs/eval/wearable_physical_mecha
 WEARABLE_V3_PHYSICAL_DECISION_RECEIPT = (
     "configs/governance/wearable_physical_reveal2_decision.json"
 )
-WEARABLE_V3_PHYSICAL_FREEZE_TAG = "physical-reveal2-freeze-20260831"
+WEARABLE_V3_PHYSICAL_FREEZE_TAG = "physical-reveal2-freeze-20260901-r1"
 WEARABLE_V3_DEVELOPMENT_REVEAL_LEDGER = "outputs/development-loso/reveal_ledger.json"
 WEARABLE_V3_FIRST_REVEAL_LEDGER = "configs/governance/wearable_s1_s3_reveal_ledger.json"
 PHYSICAL_MECHANISM_ROLES = (

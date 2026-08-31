@@ -2,11 +2,11 @@
 
 기준일: 2026-08-29
 
-상태: **Protocol 0.4-dev physical-hybrid 구현 — 두 번째 development reveal 및 confirmatory freeze 전**
+상태: **Protocol 0.4-dev physical-hybrid 구현 — 두 번째 development reveal 승인·기준 동결 / confirmatory freeze 전**
 
 연구주제: 변경하지 않음
 
-> **구현 갱신:** 배포 문구와 모순되는 Figshare v4 impedance numeric order를 `[dry, wet]`으로 교정하고, signature·per-channel 보존·headband parsing·`wearable_v3` deep receipt/revision guard를 구현했다. 전체 102명·24,480행 acceptance audit도 통과했다. Primary 후보 `physical_hybrid_v1`은 A0/A2 공통 query-QC FiLM, A2의 electrode type+block impedance global FiLM, 채널별 impedance bounded gain, exact-null routing으로 구현됐다. Reference/cap은 wearable에서 상수라 treatment에서 제외한다. Physical six-role/18-job 결과는 아직 열지 않았고 `DEC-20260831-003`으로 reveal #2·개발 기준만 승인했다. Confirmatory freeze는 별도다. 상세 변경은 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)을 따른다.
+> **구현 갱신:** 배포 문구와 모순되는 Figshare v4 impedance numeric order를 `[dry, wet]`으로 교정하고, signature·per-channel 보존·headband parsing·`wearable_v3` deep receipt/revision guard를 구현했다. 전체 102명·24,480행 acceptance audit도 통과했다. Primary 후보 `physical_hybrid_v1`은 A0/A2 공통 query-QC FiLM, A2의 electrode type+block impedance global FiLM, 채널별 impedance bounded gain, exact-null routing으로 구현됐다. Reference/cap은 wearable에서 상수라 treatment에서 제외한다. `DEC-20260901-004`는 공개 전 발견한 counterfactual scope validator 오류만 정정해 exact grid 재시작을 승인했다. Confirmatory freeze는 별도다. 상세 변경은 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)을 따른다.
 
 > **후속 DEC-20260830-002:** 아래의 N=99 5-fold primary는 target-free simulation에서 model-shared dependence와 Type-I inflation이 드러나 폐기됐다. 현재 primary는 39명 fixed training·60명 independent lockbox이며 [연구 프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
 
@@ -14,12 +14,12 @@
 
 ## 1. 먼저 내리는 판정
 
-현재 실험설계는 **physical development 판정값과 실행 승인은 고정됐지만 confirmatory는 아직 고정되지 않았다.** Protocol 0.3에서 연구 질문과 평가 골격을 고정했고, 0.4-dev에서 physical treatment의 표현·주입·반증 경로까지 구현했다. 두 번째 development reveal은 `DEC-20260831-003`으로 승인됐고, confirmatory SESOI·alpha·operational threshold·source freeze는 미결정이다.
+현재 실험설계는 **physical development 판정값과 실행 승인은 고정됐지만 confirmatory는 아직 고정되지 않았다.** Protocol 0.3에서 연구 질문과 평가 골격을 고정했고, 0.4-dev에서 physical treatment의 표현·주입·반증 경로까지 구현했다. 두 번째 development reveal은 `DEC-20260901-004`로 재승인됐고, confirmatory SESOI·alpha·operational threshold·multiplicity·source freeze는 미결정이다.
 
 | 상태 | 항목 |
 |---|---|
 | 유지·동결 | closed-set SSVEP, strict inductive `k=0`, target-set 통계·adaptation 금지, wearable held-out-participant 평가, A0 대 A2, subject-level balanced accuracy, fixed query, source-only model selection |
-| 구현 완료·결과 전 승인 대기 | metadata schema, 구조 정보와 treatment의 경계, physical A2 주입, exact-null, block-coherent shuffle, metadata-only control, wrong-metadata intervention |
+| 구현·개발 기준 동결 | metadata schema, 구조 정보와 treatment의 경계, physical A2 주입, exact-null, block-coherent shuffle, metadata-only control, wrong-metadata intervention |
 | 아직 수치 결정 필요 | MCID, capability 성공 threshold `τ`, seed 수의 최종값, 외부 lockbox 사용 횟수와 실패 판정 |
 | 탐색으로 유지 | A3/A4, GroupDRO·selective consistency, LUPI teacher, 고용량 domain prompt/hypernetwork, LLM 유추 |
 
@@ -215,7 +215,7 @@ manufacturer/model은 관측 가능해도 dataset token이 되기 쉬우므로 p
 4. `m_struct`, `m_acq`, `m_quality`, confound, forbidden proxy를 schema에서 분리한다.
 5. participant 경계를 먼저 지키며 source primitive는 모두 보되 `electrode × impedance-bin × channel-mask` 일부 조합만 숨긴 compositional pseudo-OOD를 만든다.
 6. 구현된 physical six-role(A0/full/global-only/channel-only/shuffle-train/metadata-only)×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 사전 margin으로 판정한다.
-7. owner가 reveal #2와 margin을 승인한 뒤에만 결과를 한 번에 공개하고, 통과 시 architecture와 threshold를 동결한다. Prompt 방식은 legacy secondary 비교로만 둔다.
+7. `DEC-20260901-004`로 재승인된 reveal #2와 사전 margin만 사용해 결과를 한 번에 공개한다. Prompt 방식은 legacy secondary 비교로만 둔다.
 
 DEC-20260830-001은 S1–S3를 영구 development-only로 정했다. S1–S3에서 본 v2 1-epoch 결과는 impedance가 잘못 결합된 무효 artifact였지만, 성능 노출 자체는 되돌릴 수 없다. DEC-20260830-002는 남은 S4–S102를 39명 training·60명 lockbox로 다시 고정했다. 전체 N=102와 N=99 outer CV는 post-primary exploratory다.
 
@@ -285,7 +285,7 @@ Protocol 0.4는 다음이 모두 기록되기 전에는 `frozen`으로 표시하
 - [x] per-channel impedance 보존 및 bounded channel-gain 경로
 - [x] wearable impedance axis numeric-signature regression과 새 processed revision
 - [ ] source-only architecture-selection split
-- [ ] 구현된 negative controls·corruption severity의 owner 승인과 판정 margin
+- [x] 구현된 physical negative controls와 판정 margin의 owner 승인 (`DEC-20260901-004`)
 - [ ] MCID, `τ`, seed, multiplicity family
 - [x] S1–S3 개발 전용 여부 — DEC-20260830-001로 영구 development-only 확정
 - [ ] Dong 및 최종 external lockbox의 단일 사용 규칙

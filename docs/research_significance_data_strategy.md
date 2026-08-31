@@ -1,6 +1,6 @@
 # 연구 의미·데이터 확장·최신 문헌 전략
 
-> **2026-08-31 상태 갱신:** impedance mapping과 전체 wearable_v3 acceptance, physical-hybrid A2 및 six-role/18-job mechanism 경로는 outcome-free로 구현됐다. DEC-20260830-001에 따라 S1–S3는 development-only이고, DEC-20260830-002에 따라 나머지 N=99는 39명 training·60명 independent lockbox다. DEC-20260831-003은 physical reveal #2와 개발 gate를 승인·동결했지만 confirmatory/lockbox는 계속 봉인한다. 이 문서의 문헌·데이터 확장 논리는 유지하되 실행 권한은 [프로토콜 현재 상태](research_protocol_status.md)를 따른다.
+> **2026-09-01 상태 갱신:** impedance mapping과 전체 wearable_v3 acceptance, physical-hybrid A2 및 six-role/18-job mechanism 경로는 구현됐다. DEC-20260830-001에 따라 S1–S3는 development-only이고, DEC-20260830-002에 따라 나머지 N=99는 39명 training·60명 independent lockbox다. DEC-20260901-004는 공개 전 counterfactual scope validator-only 정정과 reveal #2 exact restart를 승인했지만 confirmatory/lockbox는 계속 봉인한다. 이 문서의 문헌·데이터 확장 논리는 유지하되 실행 권한은 [프로토콜 현재 상태](research_protocol_status.md)를 따른다.
 
 기준일: 2026-08-29
 적용 범위: 연구 주제는 바꾸지 않고, Protocol 0.3의 평가 골격과 Protocol 0.4 metadata amendment를 보강한다.
@@ -348,7 +348,7 @@ correct metadata > shuffled ≈ metadata-null > deliberately wrong metadata
 ### 1주 내
 
 1. [완료·outcome-free] Protocol 0.4의 A0/A2 공통 `m_struct`와 query-local QC, global `m_acq`, per-channel `m_quality`를 `physical_hybrid_v1`으로 구현한다.
-2. [승인·기준 동결 / 실행 대기] Exact six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 reveal #2 하나로 실행해 correct/null/global-only/channel-only/block-shuffle/metadata-only 및 missing/shuffle/wrong-metadata gate를 판정한다. 이 canonical physical intervention에는 signal-noise gate가 없다.
+2. [validator-only exact restart 승인·기준 동결 / 실행 대기] `DEC-20260901-004`의 exact six-role×3-fold 18-job과 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**를 reveal #2 하나로 실행해 correct/null/global-only/channel-only/block-shuffle/metadata-only 및 missing/shuffle/wrong-metadata gate를 판정한다. 모델·margin·gate는 최초 실행과 동일하며 이 canonical physical intervention에는 signal-noise gate가 없다.
 3. paper-faithful FBCCA, Fast SSVEP, permission/independent-port DG-Conformer 계열을 공통 protocol로 실행한다.
 4. MobileBCI는 OSF source의 modality typing을 복원하고, Guttmann은 40-trial/10–13 Hz 교정 manifest로 selective schema pilot을 한다.
 5. AR는 v8 binocular codebook을 사용하되 impedance와 hardware BIDS field를 acquisition ground truth로 사용하지 않는다.

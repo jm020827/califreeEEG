@@ -1,7 +1,7 @@
 # A2 physical-hybrid 설계 계약
 
 기준일: 2026-08-30
-상태: **DEC-20260831-003으로 S1–S3 reveal #2 승인·기준 동결 / 실행 전 source freeze / confirmatory 미동결**
+상태: **DEC-20260901-004로 S1–S3 reveal #2 validator-only exact restart 승인·기준 동결 / confirmatory 미동결**
 
 이 문서는 primary A0/A2의 현재 모델 계약을 설명한다. 연구 질문과 39명
 training·60명 lockbox 배정은 바꾸지 않는다. 바뀐 것은 metadata를 모델에 넣는
@@ -111,8 +111,9 @@ acquisition block의 12 label을 서로 다른 donor로 찢지 않고, donor blo
 prediction과 같은 hidden staging bundle에서 완전성·hash를 확인한 뒤 한 번에 공개한다.
 승인과 수치 기준은 `configs/governance/wearable_physical_reveal2_decision.json`에
 hash-bound로 동결한다. Outcome은 prediction·intervention·aggregate·gate를 모두 private
-staging에서 완성하고 tree hash를 검증한다. 그 digest의 reveal-budget precommit을 먼저
-기록한 뒤 단일 디렉터리 atomic rename·parent fsync로 공개하고 final receipt를 쓴다.
+staging에서 완성하고 canonical manifest에서 donor mapping·potency를 재구성한 뒤 tree hash를
+검증한다. Tree와 staging parent를 fsync한 다음 그 digest의 reveal-budget precommit을 먼저
+기록하고 단일 디렉터리 atomic rename·parent fsync로 공개한 뒤 final receipt를 쓴다.
 Precommit 뒤 복구에서는 같은 digest만 허용한다.
 
 S1–S3는 모집단 효과 검정에 너무 작다. 두 번째 reveal을 승인하더라도 다음만 판정한다.
@@ -123,7 +124,7 @@ S1–S3는 모집단 효과 검정에 너무 작다. 두 번째 reveal을 승인
 - all-missing/wrong metadata가 사전 허용 harm margin을 넘지 않는가
 - global-only와 channel-only 중 어떤 경로가 작동 가능성을 보이는가
 
-정확한 margin, 중단 규칙, output root와 단일 reveal 절차는 `DEC-20260831-003`으로
+정확한 margin, 중단 규칙, output root와 단일 reveal 절차는 `DEC-20260901-004`로
 고정했다. 현재 남은 실행 전 gate는 전체 source를 clean commit과 annotated freeze tag로
 결합하고 테스트를 다시 통과하는 것이다.
 
@@ -141,7 +142,7 @@ Confirmatory 진입 전 남은 필수 항목은 다음이다.
 - 구현된 six-role/18-job+각 fold당 Full A2 intervention bundle 하나(총 세 개), 전역 event-hash ledger, root-wide lock·atomic publish의 outcome-free 검증은 완료
 - prediction→checkpoint/config/completion/reveal provenance, main/intervention clean 교차검증과 least-favourable N=3 gate 적용은 완료
 - clean commit/tag 및 최종 implementation hash
-- SESOI, alpha/alternative, operational threshold, confirmatory control policy 확정
+- SESOI, alpha/alternative, operational threshold, multiplicity, fairness/source lock 확정
 - 승인된 두 번째 개발 결과가 freeze gate를 통과할 때만 39/60 plan을 `frozen`으로 변경
 
 39명 training이나 60명 lockbox prediction은 이 문서 추가만으로 허용되지 않는다.

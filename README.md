@@ -2,7 +2,7 @@
 
 EEG와 획득조건 metadata를 함께 사용해 calibration-free SSVEP decoding을 평가하는 연구 코드다. 현재의 방어 가능한 주장은 임의의 모든 device/site OOD가 아니라, **처음 보는 participant에서 query 전에 관측한 물리 metadata가 waveform·공통 구조·query-local QC만 쓰는 모델에 순증분을 주는지**다. 외부 pretraining 노출이 없는 compact scratch model을 primary anchor, REVE를 exposure·weight-license를 명시한 secondary로 둔다.
 
-Primary는 **사전 할당한 39명에서 A0 external-null과 A2 external-observed의 fixed 3-seed ensemble을 학습하고, 모델 학습·선택·성능 평가에 사용하지 않은 독립 60명 lockbox에서 k=0 paired balanced-accuracy 차이를 첫 confirmatory 공개로 검정하는 설계**다. A2는 global electrode/impedance FiLM과 per-channel impedance gain을 분리한 `physical_hybrid_v1`이며, A0에서는 두 external branch가 정확한 identity가 된다. 원시 신호는 전체 자산 무결성 감사에서 읽혔지만 성능 기반 선택에는 쓰지 않았다. 사전 노출된 S1–S3는 영구 development-only이고, S4–S102의 나머지 N=99는 39명 training·60명 lockbox로 고정됐다. 전체 자산 계약은 계속 N=102·24,480행이다. 겹치는 5-fold model dependence가 target-free simulation에서 Type-I inflation을 보였기 때문에 과거 N=99 5-fold primary는 exploratory로 내렸다. `DEC-20260831-003`은 새 A2의 두 번째 개발 assay와 10개 진단 gate를 승인·동결했지만, SESOI/alpha/operational threshold와 confirmatory source lock은 아직 비어 있어 분석계획은 확증용으로 동결되지 않았다. 모델의 쉬운 설명과 정확한 불변식은 [A2 physical-hybrid 설계 계약](docs/a2_physical_hybrid_design.md), 현재 단일 상태 요약은 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 승인할 값은 [confirmatory freeze 결정표](docs/confirmatory_freeze_decision_sheet.md), 결정·실행 이력은 [append-only 연구일지](docs/research_log.md), 세부 절차는 [연구 실행 계획](docs/research_execution_plan.md)에 있다.
+Primary는 **사전 할당한 39명에서 A0 external-null과 A2 external-observed의 fixed 3-seed ensemble을 학습하고, 모델 학습·선택·성능 평가에 사용하지 않은 독립 60명 lockbox에서 k=0 paired balanced-accuracy 차이를 첫 confirmatory 공개로 검정하는 설계**다. A2는 global electrode/impedance FiLM과 per-channel impedance gain을 분리한 `physical_hybrid_v1`이며, A0에서는 두 external branch가 정확한 identity가 된다. 원시 신호는 전체 자산 무결성 감사에서 읽혔지만 성능 기반 선택에는 쓰지 않았다. 사전 노출된 S1–S3는 영구 development-only이고, S4–S102의 나머지 N=99는 39명 training·60명 lockbox로 고정됐다. 전체 자산 계약은 계속 N=102·24,480행이다. 겹치는 5-fold model dependence가 target-free simulation에서 Type-I inflation을 보였기 때문에 과거 N=99 5-fold primary는 exploratory로 내렸다. `DEC-20260901-004`는 새 A2의 두 번째 개발 assay, 10개 진단 gate와 validator-only 재시작을 승인·동결했지만, SESOI·alpha/alternative·operational threshold·multiplicity·fairness/source lock은 아직 최종 승인·동결되지 않아 분석계획은 확증용으로 동결되지 않았다. 모델의 쉬운 설명과 정확한 불변식은 [A2 physical-hybrid 설계 계약](docs/a2_physical_hybrid_design.md), 현재 단일 상태 요약은 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 승인할 값은 [confirmatory freeze 결정표](docs/confirmatory_freeze_decision_sheet.md), 결정·실행 이력은 [append-only 연구일지](docs/research_log.md), 세부 절차는 [연구 실행 계획](docs/research_execution_plan.md)에 있다.
 
 > **P0 revision 경계:** 배포 Readme의 impedance-axis 문구는 실제 수치·원 논문 Figure 9의 조건 평균과 모순된다. 수치상 axis 0/1은 각각 dry/wet(`261.67/19.63 kΩ`)이므로 코드가 이 signature를 fail-closed로 검증한다. 반대로 결합된 기존 `wearable_v2`와 그 A2 결과는 무효이며, raw-to-processed deep audit를 통과한 `wearable_v3`만 Protocol 0.4-dev 실행에 사용한다.
 
@@ -138,7 +138,7 @@ CFEG_BACKBONE=tiny_transformer bash scripts/cfeg.sh train wang-to-beta
 CFEG_BACKBONE=reve WANDB_MODE=online bash scripts/cfeg.sh train wang-to-beta
 ~~~
 
-지원하는 mutable train preset은 `wang-to-beta`, `beta-to-wang`, `joint`, `synthetic`뿐이다. Wearable development/LOSO/dry↔wet preset과 `controls`/`research` shortcut은 폐기했으며 호출하면 fail-closed다. 첫 prompt-based S1–S3 outcome grid는 `scripts/run_development_loso.py`의 v1 manifest로 완료된 역사적 개발 실험이다. 새 physical six-role grid는 `DEC-20260831-003`으로 승인됐으며 clean annotated source tag에서만 전용 orchestrator가 실행한다. Governed wearable은 physical 또는 confirmatory 전용 manifest orchestrator만 사용한다.
+지원하는 mutable train preset은 `wang-to-beta`, `beta-to-wang`, `joint`, `synthetic`뿐이다. Wearable development/LOSO/dry↔wet preset과 `controls`/`research` shortcut은 폐기했으며 호출하면 fail-closed다. 첫 prompt-based S1–S3 outcome grid는 `scripts/run_development_loso.py`의 v1 manifest로 완료된 역사적 개발 실험이다. 새 physical six-role grid는 `DEC-20260901-004`로 기술정정·재승인됐으며 clean annotated source tag에서만 전용 orchestrator가 실행한다. Governed wearable은 physical 또는 confirmatory 전용 manifest orchestrator만 사용한다.
 
 Legacy/외부 데이터 run은 `split.csv`, source-validation checkpoint, held-out metric을 저장한다. Governed wearable run은 학습 중 test loader나 `metrics_test.json`을 만들지 않는다. Development는 S1–S3 train/val만 쓰고, confirmatory outer-test prediction은 동결 후 별도 등록 action으로만 연다.
 
@@ -210,7 +210,7 @@ python scripts/analyze_ood_coverage.py \
   --success-threshold <preregistered-BA> \
   --out-prefix outputs/analysis/a0_vs_a2
 
-# physical 개발 grid: DEC-20260831-003과 annotated source tag에서만 실행한다.
+# physical 개발 grid: DEC-20260901-004와 annotated source tag에서만 실행한다.
 # reveal은 private bundle digest로 예산을 먼저 소비하고, atomic rename 뒤 최종 공개 영수증을 쓴다.
 EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py prepare
 EEG_DATA_ROOT=/home/whwovy/eeg-data python scripts/run_physical_mechanism_loso.py status
@@ -228,7 +228,7 @@ python scripts/aggregate_primary_confirmatory.py \
   --out-prefix outputs/analysis/wearable_primary
 ~~~
 
-집계기는 누락·중복 run, 60명 lockbox drift, 변조된 CSV/sidecar/checkpoint/train-metric/split/execution manifest/reveal receipt, 현재 plan/role/source와 다른 contract를 거부한다. Plan은 canonical manifest와 run root를 하나만 허용하고 manifest는 create-exclusive다. 여섯 completion의 exact epoch/runtime/resume 계약이 맞기 전에는 lockbox가 열리지 않으며, generic evaluation과 canonical hidden staging 밖 개별 prediction은 reveal 이후에도 dataset 생성 전에 실패한다. 6개 prediction은 staging과 공개 후 final 위치에서 모두 검증된다. 이 보호는 같은 OS 사용자의 raw-file 읽기까지 막는 암호학적 봉인이 아니라 application/procedural gate와 hash provenance다. `success_threshold`, SESOI, alpha/alternative, control margin, fairness hash, clean source tag를 target-free로 정하고 plan을 `frozen`으로 바꾸기 전에는 실행할 수 없다. Seed는 독립 피험자로 세지 않으며 S1–S3와 39명 training participant는 primary table에 포함하지 않는다.
+집계기는 누락·중복 run, 60명 lockbox drift, 변조된 CSV/sidecar/checkpoint/train-metric/split/execution manifest/reveal receipt, 현재 plan/role/source와 다른 contract를 거부한다. Plan은 canonical manifest와 run root를 하나만 허용하고 manifest는 create-exclusive다. 여섯 completion의 exact epoch/runtime/resume 계약이 맞기 전에는 lockbox가 열리지 않으며, generic evaluation과 canonical hidden staging 밖 개별 prediction은 reveal 이후에도 dataset 생성 전에 실패한다. 6개 prediction은 staging과 공개 후 final 위치에서 모두 검증된다. 이 보호는 같은 OS 사용자의 raw-file 읽기까지 막는 암호학적 봉인이 아니라 application/procedural gate와 hash provenance다. Physical margin과 `development_gate_only`는 이미 동결됐다. Confirmatory의 `success_threshold`, SESOI, alpha/alternative, multiplicity, fairness hash와 clean source tag를 target-free로 정하고 plan을 `frozen`으로 바꾸기 전에는 confirmatory를 실행할 수 없다. Seed는 독립 피험자로 세지 않으며 S1–S3와 39명 training participant는 primary table에 포함하지 않는다.
 
 ## 규칙
 

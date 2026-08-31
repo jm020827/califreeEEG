@@ -1,9 +1,9 @@
 # Confirmatory freeze 결정표
 
-기준일: 2026-08-30
-상태: **physical reveal #2 승인·개발 gate 동결 — confirmatory/lockbox 봉인 유지**
+기준일: 2026-09-01
+상태: **physical reveal #2 validator-only exact restart 승인·개발 gate 동결 — confirmatory/lockbox 봉인 유지**
 
-이 문서는 `configs/analysis/wearable_primary.yaml`의 남은 confirmatory `null`과 별개로, physical reveal #2의 개발 진단값을 결과 전에 고정한 승인표다. `DEC-20260831-003`은 개발 실행만 승인하며 `plan.status=dev_not_frozen`과 lockbox 봉인은 유지한다. 불변 기준원은 `configs/governance/wearable_physical_reveal2_decision.json`이다.
+이 문서는 `configs/analysis/wearable_primary.yaml`의 남은 confirmatory `null`과 별개로, physical reveal #2의 개발 진단값을 결과 전에 고정한 승인표다. `DEC-20260901-004`는 validator-only 정정 뒤 같은 개발 실행을 재승인하며 `plan.status=dev_not_frozen`과 lockbox 봉인은 유지한다. 불변 기준원은 `configs/governance/wearable_physical_reveal2_decision.json`이다.
 
 ## 현재 증거
 
@@ -52,8 +52,8 @@ Clean 방향은 세 fold 평균이 0 이상일 때 통과한다. 나머지 effec
 
 1. 위 값과 physical development reveal #2의 owner decision ID·승인 시각·중단 규칙을 hash-bound decision receipt와 append-only 연구일지에 남긴다.
 2. Physical grid를 exact six-role×3-fold 18 jobs로 동결한다. **각 fold당 Full A2 intervention bundle 하나, 총 세 개**의 missing/shuffle/wet↔dry 개입, block-coherent donor 규칙, metadata-only shortcut control, `missingness_only=invalid_assay`도 같은 계약에 묶는다.
-3. Clean commit과 annotated tag `physical-reveal2-freeze-20260831`에서 canonical manifest를 다시 만들고 `prepare`/`status`를 확인한다.
-4. 18개 학습을 모두 완료한 뒤 단일 `reveal` 명령이 18개 clean prediction, 3개 Full A2 intervention bundle, subject/intervention aggregate와 10-gate 판정을 모두 private staging에서 완성한다. 전체 file-tree hash를 검증한 뒤 그 digest를 ledger와 precommit receipt에 먼저 기록해 reveal #2를 소비하고, 디렉터리를 atomic rename·parent fsync로 공개한 뒤 별도 final publication receipt를 쓴다. Precommit 뒤 장애가 나면 같은 digest만 복구·공개할 수 있다. 분리된 `predict`·`aggregate` 경로는 허용하지 않는다.
+3. Clean commit과 annotated tag `physical-reveal2-freeze-20260901-r1`에서 canonical manifest를 다시 만들고 `prepare`/`status`를 확인한다.
+4. 18개 학습을 모두 완료한 뒤 단일 `reveal` 명령이 18개 clean prediction, 3개 Full A2 intervention bundle, subject/intervention aggregate와 10-gate 판정을 모두 private staging에서 완성한다. Canonical manifest로 donor mapping·potency를 재구성하고 전체 file-tree hash를 검증한 뒤 tree와 staging parent를 fsync한다. 그 다음에만 digest를 ledger와 precommit receipt에 기록해 reveal #2를 소비하고, 디렉터리를 atomic rename·parent fsync로 공개한 뒤 별도 final publication receipt를 쓴다. Precommit 뒤 장애가 나면 같은 digest만 복구·공개할 수 있다. 분리된 `predict`·`aggregate` 경로는 허용하지 않는다.
 5. 사전 margin으로 mechanism·shortcut·safety를 판정하고, 통과 여부와 관계없이 결과를 연구일지에 남긴다. 이 N=3 결과를 모집단 효과로 해석하지 않는다.
 6. Confirmatory 진행을 승인하면 `primary_fairness_hash`를 최종 A0/A2 config에서 재계산하고, 전체 변경을 clean commit과 annotated freeze tag로 고정한다.
 7. `source_lock.freeze_tag`와 `source_lock.implementation_contract_sha256`를 채우고 `plan.status=frozen` validator를 통과시킨다.
@@ -68,4 +68,4 @@ Clean 방향은 세 fold 평균이 0 이상일 때 통과한다. 나머지 effec
 - REVE secondary는 Hugging Face gated access와 `HF_TOKEN`이 필요하다.
 - Dong2023은 CC BY-NC 4.0이므로 상업적 사용은 별도 허가가 필요하다.
 
-이 세 외부 요청은 wearable primary의 필수 진입조건이 아니다. 반면 위 통계·control 값과 clean source freeze는 필수다.
+이 세 외부 요청은 wearable primary의 필수 진입조건이 아니다. 반면 SESOI·alpha/alternative·operational threshold·multiplicity·fairness와 clean source freeze는 필수다. Physical development control 값과 `development_gate_only` 정책은 이미 동결됐다.
