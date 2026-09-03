@@ -74,37 +74,48 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
 
     vocab = build_vocabularies()
     collate = partial(collate_eeg, vocabularies=vocab)
+    num_workers = int(cfg["data"].get("num_workers", 0))
+    loader_runtime = {
+        "num_workers": num_workers,
+        "persistent_workers": num_workers > 0,
+        "pin_memory": torch.cuda.is_available(),
+    }
     train_loader = DataLoader(
         Subset(full_ds, split.train.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=True,
-        num_workers=int(cfg["data"].get("num_workers", 0)),
         collate_fn=collate,
+        **loader_runtime,
     )
     val_loader = DataLoader(
         Subset(full_ds, split.val.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=False,
-        num_workers=int(cfg["data"].get("num_workers", 0)),
         collate_fn=collate,
+        **loader_runtime,
     )
     test_loader = DataLoader(
         Subset(full_ds, split.test.tolist()),
         batch_size=int(cfg["data"].get("batch_size", 16)),
         shuffle=False,
-        num_workers=int(cfg["data"].get("num_workers", 0)),
         collate_fn=collate,
+        **loader_runtime,
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ConditionedEEGDecoder(cfg).to(device)
+    amp_enabled = bool(cfg["train"].get("amp", True)) and device.type == "cuda"
 
     batch = next(iter(train_loader))
     batch = _to_device(batch, device)
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
         out = model(batch["x"], batch["cond"])
     params = count_parameters(model)
-    dry_result = {"n_samples": len(full_ds), "logits_shape": tuple(out.logits.shape), "params": params}
+    dry_result = {
+        "n_samples": len(full_ds),
+        "logits_shape": tuple(out.logits.shape),
+        "params": params,
+    }
     if dry_run:
         return dry_result
 
@@ -113,13 +124,13 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
         lr=float(cfg["train"].get("lr", 3e-4)),
         weight_decay=float(cfg["train"].get("weight_decay", 0.01)),
     )
-    amp_enabled = bool(cfg["train"].get("amp", True)) and device.type == "cuda"
     if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
         scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
     else:
         scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
 
-    output_dir = Path(cfg.get("output_dir", "outputs/debug"))
+    default_root = Path(os.environ.get("CFEG_EXPERIMENT_ROOT", "outputs"))
+    output_dir = Path(cfg.get("output_dir", default_root / "debug"))
     output_dir.mkdir(parents=True, exist_ok=True)
     save_config(cfg, output_dir / "config.yaml")
     _save_split_manifest(manifest, split, output_dir / "split.csv")
@@ -127,7 +138,13 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     save_json(output_dir / "params.json", params)
     save_json(output_dir / "class_map.json", full_ds.class_map)
     wandb_run = _init_wandb(
-        cfg, output_dir, params, len(split.train), len(split.val), len(train_loader), len(val_loader)
+        cfg,
+        output_dir,
+        params,
+        len(split.train),
+        len(split.val),
+        len(train_loader),
+        len(val_loader),
     )
     if wandb_run is not None and cfg.get("tracking", {}).get("wandb", {}).get("watch_model", False):
         _watch_wandb(model)
@@ -151,7 +168,7 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
             epoch=epoch,
             global_step=global_step,
         )
-        val = evaluate_loader(model, val_loader, device)
+        val = evaluate_loader(model, val_loader, device, amp_enabled=amp_enabled)
         row = {"epoch": epoch, "train_loss": train_loss, **{f"val_{k}": v for k, v in val.items()}}
         metrics_rows.append(row)
         pd.DataFrame(metrics_rows).to_csv(output_dir / "metrics_val.csv", index=False)
@@ -206,7 +223,11 @@ def run_training(cfg: dict, *, dry_run: bool = False) -> dict:
     )
     trial_time_sec = float(cfg.get("evaluation", {}).get("trial_time_sec", 2.0))
     test_metrics = evaluate_loader(
-        model, test_loader, device, trial_time_sec=trial_time_sec
+        model,
+        test_loader,
+        device,
+        trial_time_sec=trial_time_sec,
+        amp_enabled=amp_enabled,
     )
     reference_itr = itr_bits_per_min(n_classes, best_acc, trial_time_sec)
     test_metrics.update(
@@ -317,7 +338,9 @@ def _train_epoch(
         total += loss_value * batch["x"].shape[0]
         count += batch["x"].shape[0]
         global_step += 1
-        if log_interval and (batch_idx == 1 or batch_idx % log_interval == 0 or batch_idx == n_batches):
+        if log_interval and (
+            batch_idx == 1 or batch_idx % log_interval == 0 or batch_idx == n_batches
+        ):
             running_loss = total / max(count, 1)
             print(
                 f"epoch {epoch} batch {batch_idx}/{n_batches} "
@@ -349,7 +372,9 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
         if out.logits_zero is not None:
             loss = loss + ce_zero_weight * F.cross_entropy(out.logits_zero, y)
         if out.mu is not None:
-            loss = loss + float(loss_cfg.get("beta_kl", 0.001)) * kl_normal(out.mu, out.logvar).to(loss.device)
+            loss = loss + float(loss_cfg.get("beta_kl", 0.001)) * kl_normal(out.mu, out.logvar).to(
+                loss.device
+            )
         return loss
 
     (x1, cond1), (x2, cond2) = make_two_views(
@@ -370,7 +395,9 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
         loss = loss + ce_zero_weight * (
             F.cross_entropy(out1.logits_zero, y) + F.cross_entropy(out2.logits_zero, y)
         )
-    loss = loss + float(loss_cfg.get("lambda_cons", 0.1)) * representation_consistency_loss(out1.h, out2.h)
+    loss = loss + float(loss_cfg.get("lambda_cons", 0.1)) * representation_consistency_loss(
+        out1.h, out2.h
+    )
     loss = loss + float(loss_cfg.get("lambda_logit_cons", 0.05)) * symmetric_kl_logits(
         out1.logits, out2.logits
     )
@@ -384,14 +411,22 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
 
 @torch.no_grad()
 def evaluate_loader(
-    model, loader, device, *, trial_time_sec: float | None = None
+    model,
+    loader,
+    device,
+    *,
+    trial_time_sec: float | None = None,
+    amp_enabled: bool | None = None,
 ) -> dict[str, float]:
     model.eval()
+    if amp_enabled is None:
+        amp_enabled = device.type == "cuda"
     labels = []
     logits = []
     for batch in loader:
         batch = _to_device(batch, device)
-        out = model(batch["x"], batch["cond"], use_latent=False)
+        with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
+            out = model(batch["x"], batch["cond"], use_latent=False)
         labels.append(batch["y"].detach().cpu())
         logits.append(out.logits.detach().float().cpu())
     if not labels:
@@ -414,10 +449,7 @@ def _to_device(batch, device):
     out = dict(batch)
     out["x"] = batch["x"].to(device)
     out["y"] = batch["y"].to(device)
-    out["cond"] = {
-        k: v.to(device) if torch.is_tensor(v) else v
-        for k, v in batch["cond"].items()
-    }
+    out["cond"] = {k: v.to(device) if torch.is_tensor(v) else v for k, v in batch["cond"].items()}
     return out
 
 

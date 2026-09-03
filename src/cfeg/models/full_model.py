@@ -10,7 +10,7 @@ from cfeg.models.adapters import BottleneckAdapter, ConditionedAdapter
 from cfeg.models.backbones.reve import REVEBackbone
 from cfeg.models.backbones.tiny_transformer import TinyEEGTransformerBackbone
 from cfeg.models.condition_encoder import ConditionEncoder
-from cfeg.models.heads import ClassificationHead
+from cfeg.models.heads import ClassificationHead, HarmonicPowerPrior
 from cfeg.models.latent_nuisance import LatentNuisanceEncoder
 
 
@@ -100,6 +100,27 @@ class ConditionedEEGDecoder(nn.Module):
         else:
             self.latent = None
         self.head = ClassificationHead(d_model, int(model_cfg.get("n_classes", 4)), self.z_dim)
+        spectral_cfg = model_cfg.get("spectral_prior", {})
+        if spectral_cfg.get("enabled", False):
+            frequencies = spectral_cfg.get("frequencies_hz")
+            if frequencies is None:
+                start = float(spectral_cfg.get("frequency_start_hz", 8.0))
+                step = float(spectral_cfg.get("frequency_step_hz", 0.2))
+                frequencies = [
+                    start + step * index for index in range(int(model_cfg.get("n_classes", 4)))
+                ]
+            self.spectral_prior = HarmonicPowerPrior(
+                frequencies_hz=[float(value) for value in frequencies],
+                sample_rate_hz=float(model_cfg.get("target_sfreq", 200.0)),
+                n_samples=int(model_cfg.get("t_len", 400)),
+                n_harmonics=int(spectral_cfg.get("n_harmonics", 5)),
+                channel_ids=spectral_cfg.get("channel_ids"),
+                logit_scale=float(spectral_cfg.get("logit_scale", 1.0)),
+                trainable_scale=bool(spectral_cfg.get("trainable_scale", True)),
+                harmonic_weighting=str(spectral_cfg.get("harmonic_weighting", "inverse")),
+            )
+        else:
+            self.spectral_prior = None
 
     def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
         projection_weight = state_dict.get("backbone.output_proj.weight")
@@ -149,6 +170,12 @@ class ConditionedEEGDecoder(nn.Module):
             logits_zero = self.head(h, zero_z)
         else:
             logits = self.head(h, None)
+        spectral_logits = None
+        if self.spectral_prior is not None:
+            spectral_logits = self.spectral_prior(x, cond["channel_mask"])
+            logits = logits + spectral_logits.to(logits.dtype)
+            if logits_zero is not None:
+                logits_zero = logits_zero + spectral_logits.to(logits_zero.dtype)
         return ModelOutput(
             logits=logits,
             logits_zero=logits_zero,
@@ -158,5 +185,8 @@ class ConditionedEEGDecoder(nn.Module):
             z=z,
             mu=mu,
             logvar=logvar,
-            aux=backbone_out.aux,
+            aux={
+                **backbone_out.aux,
+                **({"spectral_logits": spectral_logits} if spectral_logits is not None else {}),
+            },
         )

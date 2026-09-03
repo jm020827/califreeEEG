@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import copy
+import os
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -42,9 +43,7 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
         y_true, logits, sample_ids = collect_predictions(
             context["model"], loader, context["device"], perturb=perturb
         )
-        metrics = classification_metrics(
-            y_true, logits, trial_time_sec=trial_time_sec
-        )
+        metrics = classification_metrics(y_true, logits, trial_time_sec=trial_time_sec)
         if baseline_accuracy is None:
             baseline_accuracy = metrics["accuracy"]
         if baseline_itr is None:
@@ -65,9 +64,7 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
         if baseline_itr is not None and "itr_bits_per_min" in metrics:
             metrics["reference_itr_bits_per_min"] = baseline_itr
             metrics["itr_drop"] = float(baseline_itr - metrics["itr_bits_per_min"])
-            metrics["itr_drop_rate"] = _relative_drop(
-                baseline_itr, metrics["itr_bits_per_min"]
-            )
+            metrics["itr_drop_rate"] = _relative_drop(baseline_itr, metrics["itr_bits_per_min"])
         rows.append(metrics)
         matrix = confusion_matrix(y_true, logits.argmax(axis=1), logits.shape[1])
         confusion_rows.extend(_confusion_rows(name, matrix))
@@ -76,7 +73,9 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     output_csv = _output_path(eval_cfg, context, mode)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(output_csv, index=False)
-    pd.DataFrame(confusion_rows).to_csv(output_csv.with_name(f"{output_csv.stem}_confusion.csv"), index=False)
+    pd.DataFrame(confusion_rows).to_csv(
+        output_csv.with_name(f"{output_csv.stem}_confusion.csv"), index=False
+    )
     return {"output_csv": str(output_csv), "results": rows}
 
 
@@ -113,7 +112,9 @@ def load_evaluation_context(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     dataset = EEGProcessedDataset(data_dirs)
     vocab = ckpt.get("vocabularies") or build_vocabularies()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = ConditionedEEGDecoder(cfg, vocab_sizes={key: len(value) for key, value in vocab.items()})
+    model = ConditionedEEGDecoder(
+        cfg, vocab_sizes={key: len(value) for key, value in vocab.items()}
+    )
     strict = not bool(ckpt.get("save_trainable_only", False))
     model.load_state_dict(ckpt["model_state"], strict=strict)
     model.to(device)
@@ -145,7 +146,8 @@ def collect_predictions(
         batch = _to_device(batch, device)
         if perturb is not None:
             batch["x"], batch["cond"] = perturb(batch["x"], batch["cond"])
-        out = model(batch["x"], batch["cond"], use_latent=False)
+        with torch.amp.autocast(device_type=device.type, enabled=device.type == "cuda"):
+            out = model(batch["x"], batch["cond"], use_latent=False)
         labels.append(batch["y"].detach().cpu().numpy())
         logits.append(out.logits.detach().float().cpu().numpy())
         sample_ids.extend(batch["sample_id"])
@@ -163,7 +165,9 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
             for name in eval_cfg.get("channel_sets", ["all"])
         ]
     if mode == "cross_dataset":
-        test_datasets = eval_cfg.get("test_datasets") or eval_cfg.get("data", {}).get("test_datasets")
+        test_datasets = eval_cfg.get("test_datasets") or eval_cfg.get("data", {}).get(
+            "test_datasets"
+        )
         if not test_datasets:
             raise ValueError("cross_dataset evaluation requires test_datasets.")
         mask = manifest["dataset_id"].astype(str).isin(test_datasets).to_numpy()
@@ -264,7 +268,7 @@ def _robustness_perturbation(spec: dict):
             cond["condition_channel_mask"] = cond["channel_mask"][order]
         elif kind == "downsample":
             factor = float(spec.get("factor", 0.5))
-            length = max(2, int(round(x.shape[-1] * factor)))
+            length = max(2, round(x.shape[-1] * factor))
             x = F.interpolate(
                 F.interpolate(x, size=length, mode="linear", align_corners=False),
                 size=x.shape[-1],
@@ -273,9 +277,9 @@ def _robustness_perturbation(spec: dict):
             )
         elif kind == "rereference":
             mask = cond["channel_mask"].unsqueeze(-1).to(x.dtype)
-            mean = (x * mask).sum(dim=1, keepdim=True) / mask.sum(
-                dim=1, keepdim=True
-            ).clamp_min(1.0)
+            mean = (x * mask).sum(dim=1, keepdim=True) / mask.sum(dim=1, keepdim=True).clamp_min(
+                1.0
+            )
             x = (x - mean) * mask
         elif kind == "gaussian_noise":
             active = cond["channel_mask"].unsqueeze(-1).to(x.dtype)
@@ -311,9 +315,7 @@ def _mask_condition_metadata(
         list(CONDITION_CATEGORICAL_FIELDS) if all_metadata else (categorical_fields or [])
     )
     continuous_indices = (
-        list(range(cond["continuous"].shape[1]))
-        if all_metadata
-        else (continuous_indices or [])
+        list(range(cond["continuous"].shape[1])) if all_metadata else (continuous_indices or [])
     )
     for field in categorical_fields:
         if field not in CONDITION_CATEGORICAL_FIELDS:
@@ -349,7 +351,9 @@ def _run_calibration(eval_cfg: dict, context: dict) -> dict:
         subjects = subjects[: int(max_subjects)]
     rows = []
     base_model = context["model"].to("cpu")
-    for budget in [int(value) for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])]:
+    for budget in [
+        int(value) for value in eval_cfg.get("calibration_trials_per_class", [0, 1, 3, 5])
+    ]:
         all_y: list[np.ndarray] = []
         all_logits: list[np.ndarray] = []
         evaluated_subjects = 0
@@ -428,24 +432,25 @@ def _calibrate_model(model, context: dict, indices: np.ndarray, eval_cfg: dict) 
         [parameter for parameter in model.parameters() if parameter.requires_grad],
         lr=float(eval_cfg.get("lr", 1e-3)),
     )
+    amp_enabled = context["device"].type == "cuda"
+    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
     loader = _loader(context, indices)
     model.train()
     for _ in range(int(eval_cfg.get("epochs", 10))):
         for batch in loader:
             batch = _to_device(batch, context["device"])
             optimizer.zero_grad(set_to_none=True)
-            out = model(batch["x"], batch["cond"], use_latent=False)
-            loss = F.cross_entropy(out.logits, batch["y"])
-            loss.backward()
-            optimizer.step()
+            with torch.amp.autocast(device_type=context["device"].type, enabled=amp_enabled):
+                out = model(batch["x"], batch["cond"], use_latent=False)
+                loss = F.cross_entropy(out.logits, batch["y"])
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
 
 def _common_label_indices(context: dict, indices: np.ndarray) -> np.ndarray:
     class_map = context["checkpoint"].get("class_map") or {}
-    allowed = {
-        round(float(value["stimulus_frequency_hz"]), 4)
-        for value in class_map.values()
-    }
+    allowed = {round(float(value["stimulus_frequency_hz"]), 4) for value in class_map.values()}
     frequencies = context["manifest"].iloc[indices]["stimulus_frequency_hz"].astype(float)
     keep = frequencies.round(4).isin(allowed).to_numpy()
     selected = indices[keep]
@@ -469,7 +474,8 @@ def _output_path(eval_cfg: dict, context: dict, mode: str) -> Path:
     configured = eval_cfg.get("output_csv")
     if configured:
         return Path(configured)
-    output_dir = Path(context["train_config"].get("output_dir", "outputs/debug"))
+    default_root = Path(os.environ.get("CFEG_EXPERIMENT_ROOT", "outputs"))
+    output_dir = Path(context["train_config"].get("output_dir", default_root / "debug"))
     return output_dir / "eval" / f"{mode}.csv"
 
 
