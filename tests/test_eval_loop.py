@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pandas as pd
 import pytest
 import torch
@@ -8,6 +10,7 @@ from cfeg.eval_loop import (
     _relative_drop,
     _robustness_perturbation,
     _saved_split_scenarios,
+    _select_prediction_logits,
 )
 
 
@@ -81,3 +84,50 @@ def test_saved_split_scenarios_keep_only_held_out_samples_by_dataset(tmp_path):
         ("saved_test_wang", [1]),
         ("saved_test_beta", [3]),
     ]
+
+
+def test_prediction_branch_separates_learned_and_spectral_logits():
+    spectral = torch.tensor([[0.5, -0.5]])
+    learned = torch.tensor([[1.0, 2.0]])
+    output = SimpleNamespace(
+        logits=learned + spectral,
+        aux={"spectral_logits": spectral},
+    )
+
+    assert torch.equal(_select_prediction_logits(output, "combined"), learned + spectral)
+    assert torch.equal(_select_prediction_logits(output, "learned"), learned)
+    assert torch.equal(_select_prediction_logits(output, "spectral"), spectral)
+
+
+def test_saved_split_scenarios_add_noise_only_to_held_out_samples(tmp_path):
+    manifest = pd.DataFrame(
+        [
+            {"sample_id": "train", "dataset_id": "beta"},
+            {"sample_id": "test", "dataset_id": "beta"},
+        ]
+    )
+    split_csv = tmp_path / "split.csv"
+    pd.DataFrame(
+        [
+            {"sample_id": "train", "split": "train"},
+            {"sample_id": "test", "split": "test"},
+        ]
+    ).to_csv(split_csv, index=False)
+
+    scenarios = _saved_split_scenarios(
+        {
+            "split_csv": str(split_csv),
+            "test_datasets": ["beta"],
+            "perturbations": [
+                {"name": "noise_01", "type": "gaussian_noise", "std": 0.1}
+            ],
+        },
+        {"manifest": manifest},
+    )
+
+    assert [(name, indices.tolist()) for name, indices, _ in scenarios] == [
+        ("saved_test_beta", [1]),
+        ("saved_test_beta_noise_01", [1]),
+    ]
+    assert scenarios[0][2] is None
+    assert callable(scenarios[1][2])

@@ -41,7 +41,11 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
     for name, indices, perturb in scenarios:
         loader = _loader(context, indices)
         y_true, logits, sample_ids = collect_predictions(
-            context["model"], loader, context["device"], perturb=perturb
+            context["model"],
+            loader,
+            context["device"],
+            perturb=perturb,
+            prediction_branch=str(eval_cfg.get("prediction_branch", "combined")),
         )
         metrics = classification_metrics(y_true, logits, trial_time_sec=trial_time_sec)
         if baseline_accuracy is None:
@@ -137,6 +141,7 @@ def collect_predictions(
     device,
     *,
     perturb: Callable[[torch.Tensor, dict], tuple[torch.Tensor, dict]] | None = None,
+    prediction_branch: str = "combined",
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     model.eval()
     labels: list[np.ndarray] = []
@@ -148,12 +153,31 @@ def collect_predictions(
             batch["x"], batch["cond"] = perturb(batch["x"], batch["cond"])
         with torch.amp.autocast(device_type=device.type, enabled=device.type == "cuda"):
             out = model(batch["x"], batch["cond"], use_latent=False)
+        selected_logits = _select_prediction_logits(out, prediction_branch)
         labels.append(batch["y"].detach().cpu().numpy())
-        logits.append(out.logits.detach().float().cpu().numpy())
+        logits.append(selected_logits.detach().float().cpu().numpy())
         sample_ids.extend(batch["sample_id"])
     if not labels:
         raise ValueError("Evaluation selection contains no samples.")
     return np.concatenate(labels), np.concatenate(logits), sample_ids
+
+
+def _select_prediction_logits(output, prediction_branch: str) -> torch.Tensor:
+    branch = str(prediction_branch).lower()
+    if branch == "combined":
+        return output.logits
+    spectral = output.aux.get("spectral_logits")
+    if spectral is None:
+        raise ValueError(
+            f"prediction_branch={branch!r} requires model.spectral_prior.enabled=true."
+        )
+    if branch == "spectral":
+        return spectral.to(output.logits.dtype)
+    if branch == "learned":
+        return output.logits - spectral.to(output.logits.dtype)
+    raise ValueError(
+        f"Unknown prediction_branch={prediction_branch!r}; use combined, learned, or spectral."
+    )
 
 
 def _scenarios(eval_cfg: dict, context: dict, mode: str):
@@ -218,20 +242,33 @@ def _saved_split_scenarios(eval_cfg: dict, context: dict):
         )
     base_mask = sample_ids.isin(selected_ids).to_numpy()
     datasets = eval_cfg.get("test_datasets")
+    selections = []
     if not datasets:
-        return [(f"saved_{split_name}", np.flatnonzero(base_mask), None)]
+        selections.append((f"saved_{split_name}", np.flatnonzero(base_mask)))
+    else:
+        dataset_values = manifest["dataset_id"].astype(str)
+        for dataset_id in [str(value) for value in datasets]:
+            indices = np.flatnonzero(base_mask & dataset_values.eq(dataset_id).to_numpy())
+            if not len(indices):
+                raise ValueError(
+                    f"saved split contains no {split_name!r} samples for dataset {dataset_id!r}."
+                )
+            selections.append((f"saved_{split_name}_{dataset_id}", indices))
 
+    perturbations = list(eval_cfg.get("perturbations", []))
     scenarios = []
-    dataset_values = manifest["dataset_id"].astype(str)
-    for dataset_id in [str(value) for value in datasets]:
-        indices = np.flatnonzero(base_mask & dataset_values.eq(dataset_id).to_numpy())
-        if not len(indices):
-            raise ValueError(
-                f"saved split contains no {split_name!r} samples for dataset {dataset_id!r}."
+    for name, indices in selections:
+        scenarios.append((name, indices, None))
+        for spec in perturbations:
+            perturbation_name = str(spec["name"])
+            scenarios.append(
+                (
+                    f"{name}_{perturbation_name}",
+                    indices,
+                    _robustness_perturbation(spec),
+                )
             )
-        scenarios.append((f"saved_{split_name}_{dataset_id}", indices, None))
     return scenarios
-
 
 def _loader(context: dict, indices: np.ndarray) -> DataLoader:
     cfg = context["train_config"]

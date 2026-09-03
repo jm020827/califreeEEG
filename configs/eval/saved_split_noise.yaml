@@ -1,0 +1,29 @@
+run_name: saved_split_noise
+mode: saved_split
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+split_csv: null
+split_name: test
+test_datasets:
+- wang
+- beta
+prediction_branch: combined
+perturbations:
+- name: gaussian_010
+  type: gaussian_noise
+  std: 0.10
+- name: gaussian_020
+  type: gaussian_noise
+  std: 0.20
+- name: ssvep_band_noise_010
+  type: band_limited_noise
+  band_hz: [8.0, 16.0]
+  sfreq: 200.0
+  std: 0.10
+- name: occipital_4
+  type: channel_subset
+  channel_set: occipital_4
+trial_time_sec: 2.0
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/saved_split/noise_by_dataset.csv
