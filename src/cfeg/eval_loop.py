@@ -48,10 +48,13 @@ def run_evaluation(eval_cfg: dict, ckpt_path: str | Path) -> dict:
             prediction_branch=str(eval_cfg.get("prediction_branch", "combined")),
         )
         metrics = classification_metrics(y_true, logits, trial_time_sec=trial_time_sec)
-        if baseline_accuracy is None:
-            baseline_accuracy = metrics["accuracy"]
-        if baseline_itr is None:
-            baseline_itr = metrics.get("itr_bits_per_min")
+        baseline_accuracy, baseline_itr = _scenario_reference_metrics(
+            mode,
+            perturb,
+            metrics,
+            baseline_accuracy=baseline_accuracy,
+            baseline_itr=baseline_itr,
+        )
         accuracy_drop = float(baseline_accuracy - metrics["accuracy"])
         accuracy_drop_rate = _relative_drop(baseline_accuracy, metrics["accuracy"])
         metrics.update(
@@ -95,6 +98,24 @@ def _reference_metrics(
     accuracy = float(value)
     n_classes = int(context["train_config"]["model"]["n_classes"])
     return accuracy, itr_bits_per_min(n_classes, accuracy, trial_time_sec)
+
+
+def _scenario_reference_metrics(
+    mode: str,
+    perturb,
+    metrics: dict,
+    *,
+    baseline_accuracy: float | None,
+    baseline_itr: float | None,
+) -> tuple[float, float | None]:
+    """Reset robustness references at each clean saved-split dataset scenario."""
+    if mode == "saved_split" and perturb is None:
+        return float(metrics["accuracy"]), metrics.get("itr_bits_per_min")
+    if baseline_accuracy is None:
+        baseline_accuracy = float(metrics["accuracy"])
+    if baseline_itr is None:
+        baseline_itr = metrics.get("itr_bits_per_min")
+    return baseline_accuracy, baseline_itr
 
 
 def _relative_drop(reference: float, observed: float) -> float:

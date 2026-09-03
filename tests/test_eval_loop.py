@@ -10,6 +10,7 @@ from cfeg.eval_loop import (
     _relative_drop,
     _robustness_perturbation,
     _saved_split_scenarios,
+    _scenario_reference_metrics,
     _select_prediction_logits,
 )
 
@@ -50,6 +51,35 @@ def test_metadata_missing_masks_prompt_channels_not_backbone_channels():
 def test_generalization_drop_is_relative_to_reference():
     assert _relative_drop(0.8, 0.6) == pytest.approx(0.25)
     assert _relative_drop(0.0, 0.0) == 0.0
+
+
+def test_saved_split_reference_resets_for_each_dataset_clean_scenario():
+    reference_accuracy, reference_itr = _scenario_reference_metrics(
+        "saved_split",
+        None,
+        {"accuracy": 0.8, "itr_bits_per_min": 80.0},
+        baseline_accuracy=None,
+        baseline_itr=None,
+    )
+    reference_accuracy, reference_itr = _scenario_reference_metrics(
+        "saved_split",
+        object(),
+        {"accuracy": 0.6, "itr_bits_per_min": 50.0},
+        baseline_accuracy=reference_accuracy,
+        baseline_itr=reference_itr,
+    )
+    assert reference_accuracy == pytest.approx(0.8)
+    assert reference_itr == pytest.approx(80.0)
+
+    reference_accuracy, reference_itr = _scenario_reference_metrics(
+        "saved_split",
+        None,
+        {"accuracy": 0.5, "itr_bits_per_min": 40.0},
+        baseline_accuracy=reference_accuracy,
+        baseline_itr=reference_itr,
+    )
+    assert reference_accuracy == pytest.approx(0.5)
+    assert reference_itr == pytest.approx(40.0)
 
 
 def test_saved_split_scenarios_keep_only_held_out_samples_by_dataset(tmp_path):
