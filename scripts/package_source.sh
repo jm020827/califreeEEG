@@ -3,7 +3,7 @@ set -euo pipefail
 
 CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
-ARCHIVE_PATH="${1:-$(dirname -- "$PROJECT_ROOT")/califreeEEG-k8s.tar.gz}"
+ARCHIVE_PATH="${1:-$(dirname -- "$PROJECT_ROOT")/califreeEEG-source.tar.gz}"
 mkdir -p "$(dirname -- "$ARCHIVE_PATH")"
 
 tar -C "$PROJECT_ROOT" -czf "$ARCHIVE_PATH" \
@@ -15,6 +15,17 @@ tar -C "$PROJECT_ROOT" -czf "$ARCHIVE_PATH" \
   --exclude='./data/manifests/*' \
   --exclude='./outputs/*' \
   --exclude='./checkpoints/*' \
+  --exclude='./runs/*' \
+  --exclude='./wandb/*' \
+  --exclude='./artifacts/*' \
+  --exclude='./*.pt' \
+  --exclude='./*.pth' \
+  --exclude='./*.ckpt' \
+  --exclude='./*.safetensors' \
+  --exclude='./*.h5' \
+  --exclude='./*.hdf5' \
+  --exclude='./*.mat' \
+  --exclude='./*.parquet' \
   --exclude='./__pycache__' \
   --exclude='*/__pycache__' \
   --exclude='./.pytest_cache' \

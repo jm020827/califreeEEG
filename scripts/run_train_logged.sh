@@ -8,8 +8,9 @@ set -euo pipefail
 CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
 cd "$PROJECT_ROOT"
+source "$CFEG_SCRIPT_DIR/setup_server.sh" >/dev/null
 
-log_dir="${CFEG_LOG_DIR:-$PROJECT_ROOT/outputs/logs}"
+log_dir="${CFEG_LOG_DIR:-$CFEG_EXPERIMENT_ROOT/logs}"
 mkdir -p "$log_dir"
 timestamp="$(date +%Y%m%d_%H%M%S)"
 log_file="$log_dir/train_${timestamp}.log"

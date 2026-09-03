@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# One-command local/GPU runner from any clone location:
-#   bash scripts/run_gpu_pod_full.sh
+# One-command runner for the current multi-GPU server:
+#   bash scripts/run_full_pipeline.sh
 #
 # Non-interactive use is also supported by pre-setting env vars such as:
-#   WANDB_API_KEY=... HF_TOKEN=... CFEG_TRAIN_CONFIG=configs/train/debug.yaml bash scripts/run_gpu_pod_full.sh
+#   WANDB_API_KEY=... HF_TOKEN=... CFEG_TRAIN_CONFIG=configs/train/debug.yaml bash scripts/run_full_pipeline.sh
 
 CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
 export PROJECT_ROOT
 cd "$PROJECT_ROOT"
-source scripts/setup_gpu_pod.sh
+source scripts/setup_server.sh
 
 prompt_default() {
   local var_name="$1"
@@ -146,7 +146,7 @@ train_args=(
   "run_name=$CFEG_RUN_NAME"
   "tracking.wandb.project=$WANDB_PROJECT"
   "tracking.wandb.mode=$WANDB_MODE"
-  "tracking.wandb.tags=[\"gpu-pod\"]"
+  "tracking.wandb.tags=[\"multi-gpu-server\"]"
 )
 
 if [[ "$WANDB_MODE" == "disabled" ]]; then
@@ -186,7 +186,7 @@ echo "Starting training:"
 printf ' %q' "${train_args[@]}"
 echo
 
-log_dir="${CFEG_LOG_DIR:-$PROJECT_ROOT/outputs/logs}"
+log_dir="${CFEG_LOG_DIR:-$CFEG_EXPERIMENT_ROOT/logs}"
 mkdir -p "$log_dir"
 log_file="$log_dir/train_${CFEG_RUN_NAME}_$(date +%Y%m%d_%H%M%S).log"
 echo "Logging train output to: $log_file"

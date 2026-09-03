@@ -1,6 +1,6 @@
 seed: 42
 run_name: ssvep_pretrain
-output_dir: outputs/ssvep_pretrain
+output_dir: ${env:CFEG_EXPERIMENT_ROOT}/ssvep_pretrain
 assets_config: configs/assets.yaml
 data:
   processed_dirs:

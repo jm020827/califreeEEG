@@ -1,6 +1,6 @@
 seed: 42
 run_name: beta_to_wang
-output_dir: outputs/research/beta_to_wang
+output_dir: ${env:CFEG_EXPERIMENT_ROOT}/research/beta_to_wang
 assets_config: configs/assets.yaml
 data:
   processed_dirs:

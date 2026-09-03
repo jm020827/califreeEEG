@@ -1,6 +1,6 @@
 seed: 42
 run_name: wearable_wet_to_dry
-output_dir: outputs/research/wearable_wet_to_dry
+output_dir: ${env:CFEG_EXPERIMENT_ROOT}/research/wearable_wet_to_dry
 assets_config: configs/assets.yaml
 data:
   processed_dirs:

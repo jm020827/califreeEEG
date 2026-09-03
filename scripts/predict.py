@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import torch
-
 from _bootstrap import add_src_to_path
 
 add_src_to_path()
@@ -19,7 +19,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run calibration-free inference on processed EEG.")
     parser.add_argument("--ckpt", required=True)
     parser.add_argument("--processed-dir", required=True)
-    parser.add_argument("--out", default="outputs/predictions.csv")
+    parser.add_argument("--out")
     args = parser.parse_args()
 
     eval_cfg = {"data": {"processed_dirs": [args.processed_dir]}}
@@ -34,10 +34,9 @@ def main() -> None:
     predicted = probabilities.argmax(axis=1)
     class_map = context["checkpoint"].get("class_map") or {}
     frequencies = [
-        (class_map.get(str(int(label))) or {}).get("stimulus_frequency_hz")
-        for label in predicted
+        (class_map.get(str(int(label))) or {}).get("stimulus_frequency_hz") for label in predicted
     ]
-    output = Path(args.out)
+    output = Path(args.out or Path(os.environ["CFEG_EXPERIMENT_ROOT"]) / "predictions.csv")
     output.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(
         {

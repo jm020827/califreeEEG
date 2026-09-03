@@ -5,7 +5,7 @@ CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
 export PROJECT_ROOT
 cd "$PROJECT_ROOT"
-source scripts/setup_gpu_pod.sh
+source scripts/setup_server.sh
 
 CFEG_PYTHON="${CFEG_PYTHON:-python3}"
 if [[ ! -d .venv ]]; then
@@ -17,7 +17,6 @@ if [[ ! -d .venv ]]; then
 fi
 source .venv/bin/activate
 
-export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$PROJECT_ROOT/.local/pip-cache}"
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
@@ -48,9 +47,9 @@ if [[ "${CFEG_RUN_TESTS:-1}" == "1" ]]; then
 fi
 
 printf '
-Kubernetes runtime ready. No model or EEG dataset was downloaded.
+Server runtime ready. No model or EEG dataset was downloaded.
 '
 printf 'Prepare only the assets you need, for example:
 '
-printf '  HF_TOKEN=... bash scripts/prepare_k8s_assets.sh reve beta
+printf '  HF_TOKEN=... bash scripts/prepare_assets.sh reve beta
 '

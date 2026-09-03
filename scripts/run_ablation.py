@@ -7,7 +7,6 @@ import traceback
 from pathlib import Path
 
 import pandas as pd
-
 from _bootstrap import add_src_to_path
 
 add_src_to_path()
@@ -25,14 +24,15 @@ def main() -> None:
     parser.add_argument("--continue-on-error", action="store_true")
     args = parser.parse_args()
 
-    suite = load_config(args.config, strict_env=False)
+    suite = load_config(args.config, strict_env=True)
     base_config = os.environ.get("CFEG_ABLATION_BASE_CONFIG", suite["base_config"])
-    base = load_config(base_config, strict_env=False)
+    base = load_config(base_config, strict_env=True)
     _apply_runtime_environment(base)
     selected = set(args.only.split(",")) if args.only else None
     optional = set(suite.get("optional_variants", []))
     rows = []
     failed = False
+    output_root = Path(os.environ["CFEG_EXPERIMENT_ROOT"]) / "ablation"
     for name, overrides in suite.get("variants", {}).items():
         if selected is not None and name not in selected:
             continue
@@ -41,7 +41,7 @@ def main() -> None:
             continue
         cfg = merge_overrides(base, [f"{key}={value!r}" for key, value in overrides.items()])
         cfg["run_name"] = name
-        cfg["output_dir"] = str(Path("outputs/ablation") / name)
+        cfg["output_dir"] = str(output_root / name)
         wandb_cfg = cfg.setdefault("tracking", {}).setdefault("wandb", {})
         tags = list(wandb_cfg.get("tags") or [])
         wandb_cfg["tags"] = sorted(set(tags + ["ablation", name]))
@@ -56,14 +56,14 @@ def main() -> None:
                     "output_dir": result.get("output_dir", cfg["output_dir"]),
                 }
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             failed = True
             rows.append({"variant": name, "status": "failed", "error": str(exc)})
             traceback.print_exc()
             if not args.continue_on_error:
                 break
 
-    out = Path("outputs/ablation/summary.csv")
+    out = output_root / "summary.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(out, index=False)
     print(out)

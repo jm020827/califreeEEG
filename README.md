@@ -2,7 +2,7 @@
 
 EEG와 획득조건 metadata를 함께 사용해 unseen subject, dataset, channel layout, wet/dry electrode에서 calibration-free SSVEP decoding을 평가하는 연구 코드다. Tiny Transformer는 smoke용이고 최종 구성은 frozen REVE token과 metadata prompt를 trainable cross-attention으로 결합한다.
 
-## Kubernetes quickstart
+## 현재 서버 quickstart
 
 ~~~bash
 git clone https://github.com/jm020827/califreeEEG.git
@@ -10,12 +10,8 @@ git clone https://github.com/jm020827/califreeEEG.git
 # git clone git@github.com:jm020827/califreeEEG.git
 cd califreeEEG
 
-# jm020827 interns cluster: exact NVMe/DDN paths
-source scripts/env_k8s_interns.sh
-
-# Existing legacy cache/data: inspect first, then migrate once.
-bash scripts/migrate_server_storage.sh
-bash scripts/migrate_server_storage.sh --apply
+# 현재 서버의 데이터, 모델 cache, W&B 경로 설정
+source scripts/env_server.sh
 
 bash scripts/cfeg.sh setup
 bash scripts/cfeg.sh assets synthetic
@@ -27,36 +23,26 @@ Setup은 의존성만 준비하고 데이터와 weight를 받지 않는다.
 
 ## 서버 저장 경로
 
-`scripts/env_k8s_interns.sh`는 현재 interns Kubernetes mount를 다음처럼 고정한다.
+`scripts/env_server.sh`는 현재 서버의 대용량 자산을 repository 밖에 둔다.
 
 | 용도 | 경로 |
 |---|---|
-| Hugging Face 상위 설정 | `/mnt/nvme/cache/interns/hf` |
-| 실제 Hub model/dataset cache | `/mnt/nvme/cache/interns/hf/hub` |
-| EEG raw/processed/MNE | `/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/eeg_data` |
-| W&B 지속 로그 | `/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/wandb` |
-| 임시 파일 | `/mnt/nvme/cache/interns/tmp/jm020827/califreeEEG` |
-| pip cache | `/mnt/nvme/cache/interns/pip/jm020827/califreeEEG` |
+| Hugging Face 상위 설정 | `/mnt/ssd3/jm020827/cache/huggingface` |
+| 실제 Hub model/dataset cache | `/mnt/ssd3/jm020827/cache/huggingface/hub` |
+| EEG raw/processed/MNE | `/mnt/ssd3/jm020827/califreeEEG/eeg_data` |
+| W&B 지속 로그 | `/mnt/ssd3/jm020827/califreeEEG/wandb` |
+| 실험 결과와 checkpoint | `/mnt/ssd3/jm020827/califreeEEG/experiments` |
+| 임시 파일 | `/mnt/ssd3/jm020827/califreeEEG/tmp` |
+| pip cache | `/mnt/ssd3/jm020827/cache/pip/califreeEEG` |
 
 `HF_HOME`은 Hugging Face 전체 상위 경로이고 `HF_HUB_CACHE=$HF_HOME/hub`가
 `models--*`, `datasets--*`, `.locks`의 실제 위치다. 예전 코드가 만든 빈
-`eeg_models/`는 사용하지 않는다. 기존 HF 루트의 REVE cache와 DDN의
-`.local/eeg_data`는 `migrate_server_storage.sh`가 대상 덮어쓰기나 파일시스템 간
-이동 없이 정리한다. 기본 실행은 dry-run이고 `--apply`에서만 `mv`한다.
-
-일반 PVC 환경은 서버 프로필 대신 직접 지정한다.
-
-~~~bash
-export HF_HOME=/mnt/pvc/hf
-export HF_HUB_CACHE=/mnt/pvc/hf/hub
-export CFEG_HF_ROOT=/mnt/pvc/hf
-export EEG_DATA_ROOT=/mnt/pvc/eeg
-export WANDB_DIR=/mnt/pvc/wandb
-~~~
+`eeg_models/`와 repository 내부 `.local/`은 사용하지 않는다. 다른 서버에서는
+`CFEG_SERVER_ROOT`와 `CFEG_SERVER_CACHE_ROOT`만 재정의하면 된다.
 
 ## HF와 W&B
 
-Secret은 Pod 환경변수로 주입한다.
+Secret은 환경변수나 각 CLI의 저장된 인증을 사용한다.
 
 ~~~bash
 export HF_TOKEN=hf_...
@@ -68,13 +54,7 @@ export WANDB_ENTITY=jm020827
 
 WANDB_API_KEY가 있으면 scripts/cfeg.sh는 online logging을 켜고, 없으면 disabled다. WANDB_MODE=offline도 지원한다.
 
-~~~bash
-kubectl -n <namespace> create secret generic califree-credentials \
-  --from-literal=HF_TOKEN='<token>' \
-  --from-literal=WANDB_API_KEY='<key>'
-~~~
-
-Pod spec에는 secretRef로 연결한다. Token은 Git에 저장하지 않는다.
+Token은 Git에 저장하지 않는다.
 
 ## Asset
 
@@ -126,16 +106,16 @@ Wang과 BETA label은 raw index가 아니라 stimulus frequency로 canonical 40-
 ## Evaluate, robustness, calibration, inference
 
 ~~~bash
-bash scripts/cfeg.sh eval wang-to-beta outputs/research/wang_to_beta/best.pt
-bash scripts/cfeg.sh eval beta-to-wang outputs/research/beta_to_wang/best.pt
+bash scripts/cfeg.sh eval wang-to-beta $CFEG_EXPERIMENT_ROOT/research/wang_to_beta/best.pt
+bash scripts/cfeg.sh eval beta-to-wang $CFEG_EXPERIMENT_ROOT/research/beta_to_wang/best.pt
 
-bash scripts/cfeg.sh channel-stress outputs/research/wang_to_beta/best.pt \
+bash scripts/cfeg.sh channel-stress $CFEG_EXPERIMENT_ROOT/research/wang_to_beta/best.pt \
   "$EEG_DATA_ROOT/processed/beta_v1"
-bash scripts/cfeg.sh robustness outputs/research/wang_to_beta/best.pt \
+bash scripts/cfeg.sh robustness $CFEG_EXPERIMENT_ROOT/research/wang_to_beta/best.pt \
   "$EEG_DATA_ROOT/processed/beta_v1"
 
-bash scripts/cfeg.sh calibration outputs/research/wearable_dry_to_wet/best.pt
-bash scripts/cfeg.sh predict <checkpoint.pt> <processed-dir> outputs/predictions.csv
+bash scripts/cfeg.sh calibration $CFEG_EXPERIMENT_ROOT/research/wearable_dry_to_wet/best.pt
+bash scripts/cfeg.sh predict <checkpoint.pt> <processed-dir> $CFEG_EXPERIMENT_ROOT/predictions.csv
 ~~~
 
 Robustness는 metadata 결측 25/50/75/100%, 그룹별 제거, shuffle, downsample, re-reference, broadband/band-limited noise와 복합 4채널 조건을 평가한다. Channel metadata를 가려도 backbone의 실제 electrode 위치 입력은 보존한다. CSV에는 accuracy, balanced accuracy, macro-F1, NLL, ECE, ITR, 기준 대비 절대 저하와 상대 저하율, confusion matrix가 저장된다. Calibration은 피험자별 k=0/1/3/5다.

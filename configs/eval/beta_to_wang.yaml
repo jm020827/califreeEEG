@@ -7,4 +7,4 @@ test_datasets:
 - wang
 common_label_subset_only: true
 trial_time_sec: 2.0
-output_csv: outputs/research/beta_to_wang/eval/zero_shot.csv
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/research/beta_to_wang/eval/zero_shot.csv

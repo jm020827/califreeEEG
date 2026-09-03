@@ -17,7 +17,7 @@ def main() -> None:
     parser.add_argument("--ckpt", required=True)
     parser.add_argument("overrides", nargs="*")
     args = parser.parse_args()
-    cfg = merge_overrides(load_config(args.config, strict_env=False), args.overrides)
+    cfg = merge_overrides(load_config(args.config, strict_env=True), args.overrides)
     print(run_evaluation(cfg, args.ckpt))
 
 

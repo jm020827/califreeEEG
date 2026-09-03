@@ -1,6 +1,6 @@
 seed: 42
 run_name: debug
-output_dir: outputs/debug
+output_dir: ${env:CFEG_EXPERIMENT_ROOT}/debug
 assets_config: configs/assets.yaml
 data:
   processed_dirs: [data/processed/synthetic]

@@ -7,4 +7,4 @@ test_filter:
   dataset_id: wearable
   electrode_type: wet
 trial_time_sec: 2.0
-output_csv: outputs/research/wearable_dry_to_wet/eval/zero_shot.csv
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/research/wearable_dry_to_wet/eval/zero_shot.csv

@@ -5,10 +5,10 @@ CFEG_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd -- "$CFEG_SCRIPT_DIR/.." && pwd)}"
 export PROJECT_ROOT
 cd "$PROJECT_ROOT"
-source scripts/setup_gpu_pod.sh
+source scripts/setup_server.sh
 
 if [[ ! -x .venv/bin/python ]]; then
-  echo "Missing .venv. Run: bash scripts/bootstrap_k8s.sh" >&2
+  echo "Missing .venv. Run: bash scripts/bootstrap_server.sh" >&2
   exit 1
 fi
 PYTHON="$PROJECT_ROOT/.venv/bin/python"
@@ -16,11 +16,11 @@ PYTHON="$PROJECT_ROOT/.venv/bin/python"
 if [[ "$#" -eq 0 ]]; then
   cat <<'USAGE'
 No downloads started. Choose assets explicitly:
-  bash scripts/prepare_k8s_assets.sh synthetic
-  HF_TOKEN=... bash scripts/prepare_k8s_assets.sh reve
-  CFEG_BETA_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh beta
-  CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_k8s.sh
-  CFEG_WANG_SUBJECTS=1,2 bash scripts/prepare_k8s_assets.sh wang
+  bash scripts/prepare_assets.sh synthetic
+  HF_TOKEN=... bash scripts/prepare_assets.sh reve
+  CFEG_BETA_SUBJECTS=1,2 bash scripts/prepare_assets.sh beta
+  CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_server.sh
+  CFEG_WANG_SUBJECTS=1,2 bash scripts/prepare_assets.sh wang
 
 Use empty CFEG_BETA_SUBJECTS/CFEG_WANG_SUBJECTS for the full public dataset.
 Wearable SSVEP remains a manual Figshare download.
@@ -69,7 +69,7 @@ for asset in "$@"; do
       ;;
     wang)
       if ! "$PYTHON" -c 'import moabb' >/dev/null 2>&1; then
-        echo "MOABB is missing. Run CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_k8s.sh" >&2
+        echo "MOABB is missing. Run CFEG_ENABLE_MOABB=1 bash scripts/bootstrap_server.sh" >&2
         exit 1
       fi
       fetch_args=("$PYTHON" scripts/fetch_dataset.py --dataset wang --method moabb --raw-dir "$EEG_DATA_ROOT/raw/wang")

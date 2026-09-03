@@ -13,16 +13,13 @@ def _env_example() -> dict[str, str]:
     return values
 
 
-def test_interns_env_uses_real_nvme_and_ddn_mounts():
+def test_server_env_uses_current_ssd3_mount():
     env = _env_example()
-    assert env["PROJECT_ROOT"] == "/root/work/jm020827/califreeEEG"
-    assert env["HF_HOME"] == "/mnt/nvme/cache/interns/hf"
-    assert env["HF_HUB_CACHE"] == "/mnt/nvme/cache/interns/hf/hub"
-    assert env["EEG_DATA_ROOT"] == (
-        "/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/eeg_data"
-    )
-    assert env["WANDB_DIR"] == (
-        "/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/wandb"
-    )
+    assert env["PROJECT_ROOT"] == "/home/jm020827/califreeEEG"
+    assert env["HF_HOME"] == "/mnt/ssd3/jm020827/cache/huggingface"
+    assert env["HF_HUB_CACHE"] == "/mnt/ssd3/jm020827/cache/huggingface/hub"
+    assert env["EEG_DATA_ROOT"] == ("/mnt/ssd3/jm020827/califreeEEG/eeg_data")
+    assert env["WANDB_DIR"] == ("/mnt/ssd3/jm020827/califreeEEG/wandb")
+    assert env["CFEG_EXPERIMENT_ROOT"] == "/mnt/ssd3/jm020827/califreeEEG/experiments"
     assert env["WANDB_ENTITY"] == "jm020827"
     assert env["WANDB_PROJECT"] == "calibration-free-eeg"

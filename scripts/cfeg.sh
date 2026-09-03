@@ -26,15 +26,15 @@ Calibration-Free EEG one-click commands
   bash scripts/cfeg.sh research
 
 Environment:
-  source scripts/env_k8s_interns.sh  # jm020827 interns cluster profile
+  source scripts/env_server.sh  # current jm020827 multi-GPU server profile
   CFEG_BACKBONE=tiny_transformer|reve
   WANDB_API_KEY=... WANDB_MODE=online WANDB_PROJECT=calibration-free-eeg WANDB_ENTITY=...
-  EEG_DATA_ROOT=/mnt/pvc/eeg HF_HOME=/mnt/pvc/hf HF_HUB_CACHE=/mnt/pvc/hf/hub
+  CFEG_SERVER_ROOT=/mnt/ssd3/jm020827/califreeEEG CFEG_SERVER_CACHE_ROOT=/mnt/ssd3/jm020827/cache
 EOF
 }
 
 source_runtime() {
-  source scripts/setup_gpu_pod.sh
+  source scripts/setup_server.sh
   if [[ ! -x .venv/bin/python ]]; then
     echo "Runtime is missing. Run: bash scripts/cfeg.sh setup" >&2
     exit 1
@@ -122,12 +122,12 @@ case "$command" in
   setup)
     CFEG_ENABLE_REVE="${CFEG_ENABLE_REVE:-1}" \
       CFEG_ENABLE_TRACKING="${CFEG_ENABLE_TRACKING:-1}" \
-      bash scripts/bootstrap_k8s.sh
+      bash scripts/bootstrap_server.sh
     ;;
   assets)
     source_runtime
     [[ "$#" -gt 0 ]] || { echo "Choose at least one asset." >&2; usage; exit 2; }
-    bash scripts/prepare_k8s_assets.sh "$@"
+    bash scripts/prepare_assets.sh "$@"
     ;;
   migrate-labels)
     source_runtime
@@ -137,15 +137,15 @@ case "$command" in
     ;;
   smoke)
     source_runtime
-    bash scripts/prepare_k8s_assets.sh synthetic
+    bash scripts/prepare_assets.sh synthetic
     tracking_args
     python scripts/train.py --config configs/train/debug.yaml \
       "train.epochs=${CFEG_SMOKE_EPOCHS:-1}" \
-      output_dir=outputs/smoke run_name=smoke "${TRACKING_ARGS[@]}"
+      "output_dir=$CFEG_EXPERIMENT_ROOT/smoke" run_name=smoke "${TRACKING_ARGS[@]}"
     python scripts/evaluate.py --config configs/eval/channel_stress.yaml \
-      --ckpt outputs/smoke/best.pt output_csv=outputs/smoke/eval/channel_stress.csv
+      --ckpt "$CFEG_EXPERIMENT_ROOT/smoke/best.pt" "output_csv=$CFEG_EXPERIMENT_ROOT/smoke/eval/channel_stress.csv"
     python scripts/evaluate.py --config configs/eval/robustness.yaml \
-      --ckpt outputs/smoke/best.pt output_csv=outputs/smoke/eval/robustness.csv
+      --ckpt "$CFEG_EXPERIMENT_ROOT/smoke/best.pt" "output_csv=$CFEG_EXPERIMENT_ROOT/smoke/eval/robustness.csv"
     ;;
   train)
     source_runtime
@@ -180,7 +180,7 @@ case "$command" in
     python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
       --ckpt "$checkpoint" \
       "test_filter.electrode_type=$target_electrode" \
-      "output_csv=outputs/research/wearable_calibration_$target_electrode.csv"
+      "output_csv="$CFEG_EXPERIMENT_ROOT/research/wearable_calibration_$target_electrode.csv""
     ;;
   ablation)
     source_runtime
@@ -194,7 +194,7 @@ case "$command" in
     source_runtime
     python scripts/predict.py --ckpt "${1:?checkpoint is required}" \
       --processed-dir "${2:?processed-dir is required}" \
-      --out "${3:-outputs/predictions.csv}"
+      --out "${3:-$CFEG_EXPERIMENT_ROOT/predictions.csv}"
     ;;
   record-openbci)
     source_runtime
@@ -209,29 +209,29 @@ case "$command" in
       }
     done
     run_train_preset wang-to-beta
-    run_eval_preset wang-to-beta outputs/research/wang_to_beta/best.pt
+    run_eval_preset wang-to-beta "$CFEG_EXPERIMENT_ROOT/research/wang_to_beta/best.pt"
     run_stress_suite \
-      outputs/research/wang_to_beta/best.pt \
+      "$CFEG_EXPERIMENT_ROOT/research/wang_to_beta/best.pt" \
       "$EEG_DATA_ROOT/processed/beta_v1" \
-      outputs/research/wang_to_beta/eval
+      "$CFEG_EXPERIMENT_ROOT/research/wang_to_beta/eval"
     run_train_preset beta-to-wang
-    run_eval_preset beta-to-wang outputs/research/beta_to_wang/best.pt
+    run_eval_preset beta-to-wang "$CFEG_EXPERIMENT_ROOT/research/beta_to_wang/best.pt"
     run_stress_suite \
-      outputs/research/beta_to_wang/best.pt \
+      "$CFEG_EXPERIMENT_ROOT/research/beta_to_wang/best.pt" \
       "$EEG_DATA_ROOT/processed/wang_v1" \
-      outputs/research/beta_to_wang/eval
+      "$CFEG_EXPERIMENT_ROOT/research/beta_to_wang/eval"
     if [[ -f "$EEG_DATA_ROOT/processed/wearable_v1/signals.h5" ]]; then
       run_train_preset wearable-loso
       run_stress_suite \
-        outputs/research/wearable_loso/best.pt \
+        "$CFEG_EXPERIMENT_ROOT/research/wearable_loso/best.pt" \
         "$EEG_DATA_ROOT/processed/wearable_v1" \
-        outputs/research/wearable_loso/eval
+        "$CFEG_EXPERIMENT_ROOT/research/wearable_loso/eval"
       run_train_preset wearable-dry-to-wet
-      run_eval_preset wearable-dry-to-wet outputs/research/wearable_dry_to_wet/best.pt
+      run_eval_preset wearable-dry-to-wet "$CFEG_EXPERIMENT_ROOT/research/wearable_dry_to_wet/best.pt"
       run_train_preset wearable-wet-to-dry
-      run_eval_preset wearable-wet-to-dry outputs/research/wearable_wet_to_dry/best.pt
+      run_eval_preset wearable-wet-to-dry "$CFEG_EXPERIMENT_ROOT/research/wearable_wet_to_dry/best.pt"
       python scripts/evaluate.py --config configs/eval/wearable_calibration.yaml \
-        --ckpt outputs/research/wearable_dry_to_wet/best.pt
+        --ckpt "$CFEG_EXPERIMENT_ROOT/research/wearable_dry_to_wet/best.pt"
     else
       echo "Wearable data is absent; public 40-class suite completed and wearable suite was skipped."
     fi

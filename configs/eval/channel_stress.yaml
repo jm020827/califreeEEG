@@ -7,5 +7,5 @@ channel_sets:
   - occipital_8
   - occipital_4
   - occipital_2
-output_csv: outputs/debug/eval/channel_stress.csv
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/debug/eval/channel_stress.csv
 

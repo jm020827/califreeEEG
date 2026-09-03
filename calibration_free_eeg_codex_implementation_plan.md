@@ -47,9 +47,8 @@
 
 ### 실행
 
-- [x] clone 위치 독립 경로와 PVC override
-- [x] `HF_HOME/hub` 표준 cache와 interns NVMe/DDN env profile
-- [x] legacy HF root/`.local/eeg_data` 안전한 dry-run migration
+- [x] clone 위치 독립 경로와 `CFEG_SERVER_ROOT` override
+- [x] 현재 SSD3 기반 `HF_HOME/hub`, EEG, W&B, experiment env profile
 - [x] legacy Wang/BETA label을 신호 재처리 없이 canonical frequency로 migration
 - [x] optional dependency 분리
 - [x] 다운로드 없는 bootstrap과 선택형 asset download
@@ -58,7 +57,7 @@
 
 ## 서버에서 남은 일
 
-- [ ] REVE gated access와 Kubernetes secrets
+- [x] REVE cache와 W&B 저장 인증 확인
 - [ ] BETA/Wang/Wearable 전체 전처리 검증
 - [ ] 실제 REVE 1-epoch smoke
 - [ ] 네 전이 방향 각각 3개 이상 seed
@@ -74,9 +73,7 @@
 git clone https://github.com/jm020827/califreeEEG.git
 # private repository/SSH 환경이면 git@github.com:jm020827/califreeEEG.git 사용
 cd califreeEEG
-source scripts/env_k8s_interns.sh
-bash scripts/migrate_server_storage.sh
-bash scripts/migrate_server_storage.sh --apply  # legacy asset이 있을 때 한 번만
+source scripts/env_server.sh
 export HF_TOKEN=<secret>
 export WANDB_API_KEY=<secret>
 export WANDB_MODE=online
@@ -96,7 +93,7 @@ Wearable 원본 배치 후:
 ~~~bash
 bash scripts/cfeg.sh assets wearable
 CFEG_BACKBONE=reve bash scripts/cfeg.sh train wearable-dry-to-wet
-bash scripts/cfeg.sh calibration outputs/research/wearable_dry_to_wet/best.pt
+bash scripts/cfeg.sh calibration $CFEG_EXPERIMENT_ROOT/research/wearable_dry_to_wet/best.pt
 ~~~
 
 ## 판정 규칙
@@ -110,7 +107,7 @@ bash scripts/cfeg.sh calibration outputs/research/wearable_dry_to_wet/best.pt
 
 외부 자산을 실행하지 않은 상태에서는 연구 결과 완료로 표시하지 않는다.
 
-서버 표준값은 `HF_HOME=/mnt/nvme/cache/interns/hf`,
-`HF_HUB_CACHE=/mnt/nvme/cache/interns/hf/hub`,
-`EEG_DATA_ROOT=/mnt/ddn/prod-runs/interns/jm020827/califreeEEG/storage/eeg_data`다.
+서버 표준값은 `HF_HOME=/mnt/ssd3/jm020827/cache/huggingface`,
+`HF_HUB_CACHE=/mnt/ssd3/jm020827/cache/huggingface/hub`,
+`EEG_DATA_ROOT=/mnt/ssd3/jm020827/califreeEEG/eeg_data`다.
 `eeg_models/`는 더 이상 생성하거나 사용하지 않는다.
