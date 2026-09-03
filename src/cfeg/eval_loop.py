@@ -159,6 +159,8 @@ def collect_predictions(
 def _scenarios(eval_cfg: dict, context: dict, mode: str):
     manifest = context["manifest"]
     all_indices = np.arange(len(manifest))
+    if mode == "saved_split":
+        return _saved_split_scenarios(eval_cfg, context)
     if mode == "channel_stress":
         return [
             (name, all_indices, _channel_perturbation(name))
@@ -186,6 +188,49 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
             scenarios.append((name, all_indices, _robustness_perturbation(spec)))
         return scenarios
     return [("standard", all_indices, None)]
+
+
+def _saved_split_scenarios(eval_cfg: dict, context: dict):
+    split_csv = eval_cfg.get("split_csv")
+    if not split_csv:
+        raise ValueError("saved_split evaluation requires split_csv.")
+    table = pd.read_csv(split_csv)
+    required = {"sample_id", "split"}
+    missing = required - set(table.columns)
+    if missing:
+        raise ValueError(f"saved split is missing columns: {sorted(missing)}")
+    split_name = str(eval_cfg.get("split_name", "test"))
+    selected_ids = set(
+        table.loc[table["split"].astype(str).eq(split_name), "sample_id"].astype(str)
+    )
+    if not selected_ids:
+        raise ValueError(f"saved split contains no samples assigned to {split_name!r}.")
+
+    manifest = context["manifest"]
+    sample_ids = manifest["sample_id"].astype(str)
+    available = set(sample_ids)
+    unavailable = selected_ids - available
+    if unavailable:
+        examples = sorted(unavailable)[:5]
+        raise ValueError(
+            f"saved split references {len(unavailable)} samples absent from evaluation data: "
+            f"{examples}"
+        )
+    base_mask = sample_ids.isin(selected_ids).to_numpy()
+    datasets = eval_cfg.get("test_datasets")
+    if not datasets:
+        return [(f"saved_{split_name}", np.flatnonzero(base_mask), None)]
+
+    scenarios = []
+    dataset_values = manifest["dataset_id"].astype(str)
+    for dataset_id in [str(value) for value in datasets]:
+        indices = np.flatnonzero(base_mask & dataset_values.eq(dataset_id).to_numpy())
+        if not len(indices):
+            raise ValueError(
+                f"saved split contains no {split_name!r} samples for dataset {dataset_id!r}."
+            )
+        scenarios.append((f"saved_{split_name}_{dataset_id}", indices, None))
+    return scenarios
 
 
 def _loader(context: dict, indices: np.ndarray) -> DataLoader:

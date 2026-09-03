@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 import torch
 
-from cfeg.eval_loop import _relative_drop, _robustness_perturbation
+from cfeg.eval_loop import (
+    _relative_drop,
+    _robustness_perturbation,
+    _saved_split_scenarios,
+)
 
 
 def _condition(batch: int = 4, channels: int = 8):
@@ -42,3 +47,37 @@ def test_metadata_missing_masks_prompt_channels_not_backbone_channels():
 def test_generalization_drop_is_relative_to_reference():
     assert _relative_drop(0.8, 0.6) == pytest.approx(0.25)
     assert _relative_drop(0.0, 0.0) == 0.0
+
+
+def test_saved_split_scenarios_keep_only_held_out_samples_by_dataset(tmp_path):
+    manifest = pd.DataFrame(
+        [
+            {"sample_id": "w_train", "dataset_id": "wang"},
+            {"sample_id": "w_test", "dataset_id": "wang"},
+            {"sample_id": "b_train", "dataset_id": "beta"},
+            {"sample_id": "b_test", "dataset_id": "beta"},
+        ]
+    )
+    split_csv = tmp_path / "split.csv"
+    pd.DataFrame(
+        [
+            {"sample_id": "w_train", "split": "train"},
+            {"sample_id": "w_test", "split": "test"},
+            {"sample_id": "b_train", "split": "train"},
+            {"sample_id": "b_test", "split": "test"},
+        ]
+    ).to_csv(split_csv, index=False)
+
+    scenarios = _saved_split_scenarios(
+        {
+            "split_csv": str(split_csv),
+            "split_name": "test",
+            "test_datasets": ["wang", "beta"],
+        },
+        {"manifest": manifest},
+    )
+
+    assert [(name, indices.tolist()) for name, indices, _ in scenarios] == [
+        ("saved_test_wang", [1]),
+        ("saved_test_beta", [3]),
+    ]

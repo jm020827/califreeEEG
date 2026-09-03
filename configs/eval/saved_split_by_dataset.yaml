@@ -1,0 +1,13 @@
+run_name: saved_split
+mode: saved_split
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+split_csv: null
+split_name: test
+test_datasets:
+- wang
+- beta
+trial_time_sec: 2.0
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/saved_split/eval_by_dataset.csv
