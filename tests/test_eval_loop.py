@@ -7,6 +7,7 @@ import pytest
 import torch
 
 from cfeg.eval_loop import (
+    _calibration_target_mask,
     _relative_drop,
     _robustness_perturbation,
     _saved_split_scenarios,
@@ -114,6 +115,35 @@ def test_saved_split_scenarios_keep_only_held_out_samples_by_dataset(tmp_path):
         ("saved_test_wang", [1]),
         ("saved_test_beta", [3]),
     ]
+
+
+def test_calibration_target_mask_keeps_only_held_out_dataset_samples(tmp_path):
+    manifest = pd.DataFrame(
+        [
+            {"sample_id": "b_train", "dataset_id": "beta"},
+            {"sample_id": "b_test", "dataset_id": "beta"},
+            {"sample_id": "w_test", "dataset_id": "wang"},
+        ]
+    )
+    split_csv = tmp_path / "split.csv"
+    pd.DataFrame(
+        [
+            {"sample_id": "b_train", "split": "train"},
+            {"sample_id": "b_test", "split": "test"},
+            {"sample_id": "w_test", "split": "test"},
+        ]
+    ).to_csv(split_csv, index=False)
+
+    mask = _calibration_target_mask(
+        {
+            "split_csv": str(split_csv),
+            "split_name": "test",
+            "test_datasets": ["beta"],
+        },
+        manifest,
+    )
+
+    assert mask.tolist() == [False, True, False]
 
 
 def test_prediction_branch_separates_learned_and_spectral_logits():

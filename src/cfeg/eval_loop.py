@@ -236,32 +236,9 @@ def _scenarios(eval_cfg: dict, context: dict, mode: str):
 
 
 def _saved_split_scenarios(eval_cfg: dict, context: dict):
-    split_csv = eval_cfg.get("split_csv")
-    if not split_csv:
-        raise ValueError("saved_split evaluation requires split_csv.")
-    table = pd.read_csv(split_csv)
-    required = {"sample_id", "split"}
-    missing = required - set(table.columns)
-    if missing:
-        raise ValueError(f"saved split is missing columns: {sorted(missing)}")
-    split_name = str(eval_cfg.get("split_name", "test"))
-    selected_ids = set(
-        table.loc[table["split"].astype(str).eq(split_name), "sample_id"].astype(str)
-    )
-    if not selected_ids:
-        raise ValueError(f"saved split contains no samples assigned to {split_name!r}.")
-
     manifest = context["manifest"]
-    sample_ids = manifest["sample_id"].astype(str)
-    available = set(sample_ids)
-    unavailable = selected_ids - available
-    if unavailable:
-        examples = sorted(unavailable)[:5]
-        raise ValueError(
-            f"saved split references {len(unavailable)} samples absent from evaluation data: "
-            f"{examples}"
-        )
-    base_mask = sample_ids.isin(selected_ids).to_numpy()
+    base_mask = _saved_split_mask(eval_cfg, manifest)
+    split_name = str(eval_cfg.get("split_name", "test"))
     datasets = eval_cfg.get("test_datasets")
     selections = []
     if not datasets:
@@ -290,6 +267,48 @@ def _saved_split_scenarios(eval_cfg: dict, context: dict):
                 )
             )
     return scenarios
+
+
+def _saved_split_mask(eval_cfg: dict, manifest: pd.DataFrame) -> np.ndarray:
+    split_csv = eval_cfg.get("split_csv")
+    if not split_csv:
+        raise ValueError("saved_split evaluation requires split_csv.")
+    table = pd.read_csv(split_csv)
+    required = {"sample_id", "split"}
+    missing = required - set(table.columns)
+    if missing:
+        raise ValueError(f"saved split is missing columns: {sorted(missing)}")
+    split_name = str(eval_cfg.get("split_name", "test"))
+    selected_ids = set(
+        table.loc[table["split"].astype(str).eq(split_name), "sample_id"].astype(str)
+    )
+    if not selected_ids:
+        raise ValueError(f"saved split contains no samples assigned to {split_name!r}.")
+
+    sample_ids = manifest["sample_id"].astype(str)
+    unavailable = selected_ids - set(sample_ids)
+    if unavailable:
+        examples = sorted(unavailable)[:5]
+        raise ValueError(
+            f"saved split references {len(unavailable)} samples absent from evaluation data: "
+            f"{examples}"
+        )
+    return sample_ids.isin(selected_ids).to_numpy()
+
+
+def _calibration_target_mask(eval_cfg: dict, manifest: pd.DataFrame) -> np.ndarray:
+    target = eval_cfg.get("test_datasets")
+    mask = (
+        manifest["dataset_id"].astype(str).isin(target).to_numpy()
+        if target
+        else np.ones(len(manifest), dtype=bool)
+    )
+    if eval_cfg.get("test_filter"):
+        mask &= _manifest_filter(manifest, eval_cfg["test_filter"])
+    if eval_cfg.get("split_csv"):
+        mask &= _saved_split_mask(eval_cfg, manifest)
+    return mask
+
 
 def _loader(context: dict, indices: np.ndarray) -> DataLoader:
     cfg = context["train_config"]
@@ -440,14 +459,7 @@ def _mask_condition_metadata(
 
 def _run_calibration(eval_cfg: dict, context: dict) -> dict:
     manifest = context["manifest"]
-    target = eval_cfg.get("test_datasets")
-    target_mask = (
-        manifest["dataset_id"].astype(str).isin(target).to_numpy()
-        if target
-        else np.ones(len(manifest), dtype=bool)
-    )
-    if eval_cfg.get("test_filter"):
-        target_mask &= _manifest_filter(manifest, eval_cfg["test_filter"])
+    target_mask = _calibration_target_mask(eval_cfg, manifest)
     subjects = sorted(manifest.loc[target_mask, "subject_id"].astype(str).unique())
     max_subjects = eval_cfg.get("max_subjects")
     if max_subjects:

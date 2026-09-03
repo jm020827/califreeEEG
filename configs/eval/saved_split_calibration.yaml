@@ -1,0 +1,18 @@
+run_name: saved_split_calibration
+mode: calibration
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+split_csv: null
+split_name: test
+test_datasets:
+- beta
+calibration_trials_per_class:
+- 0
+- 1
+epochs: 5
+lr: 0.001
+tune_adapter: true
+trial_time_sec: 2.0
+output_csv: ${env:CFEG_EXPERIMENT_ROOT}/saved_split/calibration.csv
