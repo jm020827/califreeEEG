@@ -1,5 +1,7 @@
 # Large data and generated artifacts
 storage/
+experiments/
+logs/
 data/raw/*
 data/processed/*
 data/manifests/*
@@ -9,6 +11,12 @@ runs/*
 wandb/*
 artifacts/*
 .local/*
+**/wandb/
+**/lightning_logs/
+**/runs/
+**/outputs/
+events.out.tfevents.*
+*.log
 
 # EEG/data formats
 *.h5
@@ -21,12 +29,32 @@ artifacts/*
 *.fif
 *.csv.gz
 *.parquet
+*.set
+*.vhdr
+*.vmrk
+*.eeg
 
 # Model/checkpoint formats
 *.ckpt
 *.pt
 *.pth
 *.safetensors
+*.bin
+*.onnx
+*.pb
+*.pkl
+*.pickle
+*.joblib
+
+# Archives, dumps, and editor backups
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.orig
+core
+core.*
 
 # Secrets/local paths
 .env

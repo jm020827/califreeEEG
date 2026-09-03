@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+max_bytes="${CFEG_GIT_MAX_BYTES:-20971520}"
+failed=0
+
+while IFS= read -r -d '' path; do
+  if ! git cat-file -e ":$path" 2>/dev/null; then
+    continue
+  fi
+
+  case "$path" in
+    *.ckpt|*.pt|*.pth|*.safetensors|*.h5|*.hdf5|*.mat|*.edf|*.bdf|*.fif|*.npy|*.npz|*.parquet)
+      printf 'ERROR: generated data/model file must stay outside Git: %s\n' "$path" >&2
+      failed=1
+      ;;
+    storage/*|experiments/*|checkpoints/*|outputs/*|runs/*|wandb/*|artifacts/*)
+      printf 'ERROR: generated artifact directory must stay outside Git: %s\n' "$path" >&2
+      failed=1
+      ;;
+  esac
+
+  size="$(git cat-file -s ":$path")"
+  if (( size > max_bytes )); then
+    printf 'ERROR: staged file exceeds %s bytes: %s (%s bytes)\n' \
+      "$max_bytes" "$path" "$size" >&2
+    failed=1
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if (( failed )); then
+  printf '%s\n' \
+    'Commit blocked. Keep large datasets, model weights, checkpoints, and run outputs under:' \
+    '  /mnt/ssd3/jm020827/califreeEEG' >&2
+  exit 1
+fi
