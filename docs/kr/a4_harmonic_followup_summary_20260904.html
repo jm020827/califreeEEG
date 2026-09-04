@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>A4H 후속 실험 핵심 요약</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #66727e;
+      --paper: #f3f0e9;
+      --surface: #fffdfa;
+      --line: #d9d5cc;
+      --teal: #087f78;
+      --teal-soft: #dff3ef;
+      --blue: #335c91;
+      --blue-soft: #e8eef7;
+      --orange: #d36b32;
+      --orange-soft: #fae9df;
+      --red: #b9473f;
+      --red-soft: #f7e5e2;
+      --shadow: 0 18px 50px rgba(27, 37, 44, .08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(8, 127, 120, .10), transparent 28rem),
+        radial-gradient(circle at 96% 8%, rgba(211, 107, 50, .08), transparent 24rem),
+        var(--paper);
+      font-family: "Noto Sans KR", Pretendard, "Apple SD Gothic Neo", system-ui, sans-serif;
+      line-height: 1.62;
+      word-break: keep-all;
+    }
+
+    a { color: inherit; }
+    .page { width: min(1160px, calc(100% - 36px)); margin: 0 auto; }
+
+    .hero { padding: 72px 0 38px; }
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--teal);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(2.15rem, 5vw, 4.6rem);
+      line-height: 1.04;
+      letter-spacing: -.055em;
+    }
+    .hero-copy {
+      max-width: 770px;
+      margin: 22px 0 0;
+      color: #45515c;
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+    }
+    .verdict {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 28px;
+      padding: 10px 15px;
+      border: 1px solid #e6bba4;
+      border-radius: 999px;
+      color: #86411e;
+      background: var(--orange-soft);
+      font-weight: 800;
+      font-size: .9rem;
+    }
+    .verdict::before {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--orange);
+      content: "";
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 32px 0 0;
+    }
+    .kpi {
+      min-height: 138px;
+      padding: 22px;
+      border: 1px solid rgba(217, 213, 204, .9);
+      border-radius: 18px;
+      background: rgba(255, 253, 250, .82);
+      box-shadow: 0 8px 25px rgba(27, 37, 44, .04);
+    }
+    .kpi strong { display: block; font-size: 2rem; line-height: 1.1; letter-spacing: -.04em; }
+    .kpi span { display: block; margin-top: 9px; color: var(--muted); font-size: .84rem; line-height: 1.45; }
+    .kpi.best { border-color: #89c9c1; background: var(--teal-soft); }
+    .kpi.best strong { color: #056b65; }
+
+    main { padding-bottom: 70px; }
+    section {
+      margin-top: 24px;
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid rgba(217, 213, 204, .95);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(250px, 440px);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+    .section-no { color: var(--teal); font-size: .78rem; font-weight: 800; letter-spacing: .14em; }
+    h2 { margin: 5px 0 0; font-size: clamp(1.55rem, 3vw, 2.45rem); line-height: 1.15; letter-spacing: -.035em; }
+    .section-head p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+    .channel-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+    .channel-visual,
+    .plain-card { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: #fbfaf7; }
+    .channel-row {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid #e8e4dc;
+    }
+    .channel-row:last-child { border: 0; }
+    .channel-label { color: var(--muted); font-size: .8rem; font-weight: 750; }
+    .electrodes { display: grid; grid-template-columns: repeat(8, minmax(15px, 1fr)); gap: 8px; }
+    .electrode {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px solid #086f69;
+      background: #80c9c0;
+      box-shadow: inset 0 0 0 4px #dff3ef;
+    }
+    .electrode.off { border-color: #c9c4ba; background: #e7e3dc; box-shadow: none; opacity: .65; }
+    .plain-card h3 { margin: 0; font-size: 1.05rem; }
+    .plain-card p { margin: 10px 0 0; color: var(--muted); font-size: .92rem; }
+    .intent-result { display: grid; gap: 12px; }
+    .intent-result .plain-card:last-child { border-color: #8bcac2; background: var(--teal-soft); }
+    .intent-result strong { color: #056b65; }
+
+    .route { display: grid; grid-template-columns: 1fr 56px 1fr 56px 1fr; align-items: stretch; }
+    .route-step { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: #fbfaf7; }
+    .route-step small { color: var(--muted); font-weight: 750; }
+    .route-step strong { display: block; margin-top: 6px; font-size: 1.35rem; letter-spacing: -.025em; }
+    .route-step p { margin: 9px 0 0; color: var(--muted); font-size: .86rem; }
+    .arrow { display: grid; place-items: center; color: var(--teal); font-size: 1.45rem; }
+    .route-note { margin: 16px 0 0; padding: 14px 16px; border-radius: 12px; color: #6f3d21; background: var(--orange-soft); font-size: .88rem; font-weight: 700; }
+
+    .experiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .experiment {
+      position: relative;
+      min-height: 235px;
+      padding: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fbfaf7;
+    }
+    .experiment::after {
+      position: absolute;
+      right: -18px;
+      bottom: -28px;
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      background: rgba(51, 92, 145, .06);
+      content: "";
+    }
+    .experiment.winner { border-color: #7ec7bd; background: linear-gradient(145deg, #f7fffd, #e4f5f1); }
+    .experiment.bad { border-color: #e6bbb6; }
+    .experiment .tag { color: var(--blue); font-size: .72rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .experiment h3 { margin: 8px 0 0; font-size: 1.06rem; }
+    .experiment p { margin: 9px 0 0; color: var(--muted); font-size: .84rem; }
+    .score-row { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; }
+    .score { font-size: 1.75rem; font-weight: 850; letter-spacing: -.04em; }
+    .delta { font-size: .8rem; font-weight: 850; }
+    .delta.up { color: var(--teal); }
+    .delta.down { color: var(--red); }
+    .run-link { display: inline-block; margin-top: 12px; color: var(--blue); font-size: .78rem; font-weight: 800; text-decoration: none; }
+    .run-link:hover { text-decoration: underline; }
+
+    .branch-layout { display: grid; grid-template-columns: 1fr .84fr; gap: 28px; align-items: center; }
+    .bars { display: grid; gap: 17px; }
+    .bar-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; font-size: .86rem; font-weight: 750; }
+    .track { height: 17px; overflow: hidden; border-radius: 999px; background: #e9e5de; }
+    .fill { height: 100%; border-radius: inherit; background: var(--blue); }
+    .fill.harmonic { background: var(--teal); }
+    .fill.hybrid { background: var(--orange); }
+    .fill.learned { min-width: 7px; background: var(--red); }
+    .branch-callout { padding: 25px; border-radius: 18px; background: #192834; color: #f9fbfc; }
+    .branch-callout strong { display: block; color: #7ee2d6; font-size: 1.38rem; line-height: 1.28; }
+    .branch-callout p { margin: 13px 0 0; color: #cad4da; font-size: .9rem; }
+
+    .bold-change { border-color: #b8c8dc; background: linear-gradient(145deg, #fdfdfc, #edf2f8); }
+    .bold-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 20px; }
+    .change-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
+    .change-item { padding: 13px 15px; border-radius: 12px; background: rgba(255, 255, 255, .75); font-size: .84rem; }
+    .change-item strong { display: block; color: var(--blue); }
+    .pooled-score { display: grid; align-content: center; padding: 28px; border-radius: 18px; background: var(--blue); color: white; }
+    .pooled-score strong { font-size: 3.4rem; line-height: 1; letter-spacing: -.06em; }
+    .pooled-score span { margin-top: 9px; color: #dbe6f3; font-size: .86rem; }
+    .pooled-score p { margin: 20px 0 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.2); font-size: .84rem; }
+
+    .evidence-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .evidence { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fbfaf7; }
+    .evidence strong { display: block; font-size: 1.1rem; }
+    .evidence p { margin: 9px 0 0; color: var(--muted); font-size: .85rem; }
+    .evidence.warn { border-color: #e2bda8; background: var(--orange-soft); }
+
+    .final-line {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 24px;
+      border-radius: 18px;
+      background: #192834;
+      color: white;
+    }
+    .final-mark {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--orange);
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+    .final-line strong { display: block; font-size: 1.08rem; }
+    .final-line p { margin: 4px 0 0; color: #cad4da; font-size: .88rem; }
+
+    footer { padding: 4px 0 48px; color: var(--muted); font-size: .78rem; text-align: center; }
+    footer a { color: var(--blue); font-weight: 750; }
+
+    @media (max-width: 900px) {
+      .kpis, .experiment-grid { grid-template-columns: repeat(2, 1fr); }
+      .section-head, .channel-grid, .branch-layout, .bold-grid { grid-template-columns: 1fr; }
+      .route { grid-template-columns: 1fr; gap: 9px; }
+      .arrow { transform: rotate(90deg); }
+      .evidence-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .page { width: min(100% - 22px, 1160px); }
+      .hero { padding-top: 45px; }
+      .kpis, .experiment-grid, .change-list { grid-template-columns: 1fr; }
+      section { border-radius: 17px; }
+      .channel-row { grid-template-columns: 68px 1fr; }
+      .electrodes { gap: 5px; }
+    }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; }
+      section, .kpi { break-inside: avoid; box-shadow: none; }
+      .hero { padding-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero page">
+    <p class="eyebrow">Calibration-free EEG · 2026.09.04</p>
+    <h1>A4H 후속 실험<br>무엇을 바꿨고, 무엇이 남았나</h1>
+    <p class="hero-copy">Wang으로 학습하고 BETA를 처음 보는 조건에서 A4 harmonic hybrid를 분해했다. 결론은 간단하다. 배음 규칙은 유효했지만, Wang에 맞춘 learned 경로가 BETA에서는 도움이 되지 않았다.</p>
+    <div class="verdict">부분 개선 · calibration-free 목표 달성으로 보기는 어려움</div>
+
+    <div class="kpis" aria-label="핵심 결과">
+      <div class="kpi best"><strong>34.88%</strong><span>Hybrid 중 최고<br>채널 손상 augmentation 제거</span></div>
+      <div class="kpi"><strong>+7.60%p</strong><span>기존 A4H 27.28% 대비<br>BETA zero-shot 상승</span></div>
+      <div class="kpi"><strong>47.79%</strong><span>순수 harmonic baseline<br>여전히 가장 높음</span></div>
+      <div class="kpi"><strong>2.90–3.45%</strong><span>Learned-only BETA<br>40-class chance 2.5% 수준</span></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section>
+      <div class="section-head">
+        <div><span class="section-no">01 · 용어 정리</span><h2>채널 손상은 원본 문제가 아니라<br>의도적으로 만든 학습 변형이다</h2></div>
+        <p>전극이 빠지거나 접촉이 나쁜 상황에서도 버티게 하려는 목적이었다. A4H의 두 학습 view 중 강한 view에만 적용했다.</p>
+      </div>
+
+      <div class="channel-grid">
+        <div class="channel-visual" aria-label="채널 subset 예시">
+          <div class="channel-row">
+            <span class="channel-label">원래 후보</span>
+            <div class="electrodes"><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i><i class="electrode"></i></div>
+          </div>
+          <div class="channel-row">
+            <span class="channel-label">Subset</span>
+            <div class="electrodes"><i class="electrode"></i><i class="electrode off"></i><i class="electrode"></i><i class="electrode off"></i><i class="electrode"></i><i class="electrode off"></i><i class="electrode"></i><i class="electrode off"></i></div>
+          </div>
+          <div class="channel-row">
+            <span class="channel-label">Dropout</span>
+            <div class="electrodes"><i class="electrode off"></i><i class="electrode off"></i><i class="electrode"></i><i class="electrode off"></i><i class="electrode off"></i><i class="electrode off"></i><i class="electrode"></i><i class="electrode off"></i></div>
+          </div>
+        </div>
+
+        <div class="intent-result">
+          <div class="plain-card">
+            <h3>정확한 설정</h3>
+            <p>75% 확률로 뒤통수 채널 집합을 8개·4개·2개 중 하나로 제한한 뒤, 남은 각 채널을 20% 확률로 추가 dropout했다. Gaussian noise와 time shift도 별도로 유지했다.</p>
+          </div>
+          <div class="plain-card">
+            <h3>실제 관찰</h3>
+            <p>Subset과 dropout만 끄자 BETA가 <strong>27.28% → 34.88%</strong>로 올랐다. 의도는 합리적이었지만 이 설정에서는 중요한 SSVEP 채널 정보까지 과도하게 없앴을 가능성이 있다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><span class="section-no">02 · 공통 실험 틀</span><h2>Ablation은 같은 골격에서<br>한 요소씩 빼거나 바꾼 비교다</h2></div>
+        <p>Harmonic은 뒤통수 EEG에서 후보 주파수와 2~5배 배음의 power를 재는 비학습 규칙이다. REVE backbone은 고정했고 full fine-tuning과 LoRA는 하지 않았다.</p>
+      </div>
+
+      <div class="route" aria-label="학습 및 평가 흐름">
+        <div class="route-step"><small>TRAIN</small><strong>Wang 27명</strong><p>6,480 trial로 condition prompt, adapter, latent, head와 일부 결합 scale 학습</p></div>
+        <div class="arrow">→</div>
+        <div class="route-step"><small>SELECT</small><strong>Wang 7명</strong><p>1,680 trial validation으로 best epoch 선택</p></div>
+        <div class="arrow">→</div>
+        <div class="route-step"><small>ZERO-SHOT TEST</small><strong>BETA 70명</strong><p>11,200 trial은 학습과 모델 선택에 사용하지 않음</p></div>
+      </div>
+      <p class="route-note">아래 6개 Wang→BETA 결과끼리는 직접 비교 가능하다. 뒤의 pooled 65.46%는 평가 조건이 다르므로 같은 순위로 보면 안 된다.</p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><span class="section-no">03 · Ablation</span><h2>무엇을 바꿨고<br>결과가 어떻게 움직였나</h2></div>
+        <p>숫자는 BETA zero-shot accuracy다. 증감은 기존 A4H 27.28% 기준이며, 한 seed 결과라 효과가 확정된 것은 아니다.</p>
+      </div>
+
+      <div class="experiment-grid">
+        <article class="experiment winner">
+          <span class="tag">가장 큰 상승</span><h3>채널 손상 제거</h3>
+          <p>Subset 75%와 channel dropout 20%만 끄고 나머지 A4H는 유지했다.</p>
+          <div class="score-row"><span class="score">34.88%</span><span class="delta up">+7.60%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/yrea69m8">W&B run ↗</a>
+        </article>
+
+        <article class="experiment">
+          <span class="tag">결합 방식</span><h3>Harmonic scale 고정</h3>
+          <p>Wang 학습이 harmonic 비중을 임의로 줄이지 못하도록 scale을 1.0에 고정했다.</p>
+          <div class="score-row"><span class="score">32.04%</span><span class="delta up">+4.77%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/23d4v1bm">W&B run ↗</a>
+        </article>
+
+        <article class="experiment">
+          <span class="tag">구조 단순화</span><h3>A2H clean</h3>
+          <p>Latent module과 two-view augmentation을 함께 제거한 묶음형 ablation이다.</p>
+          <div class="score-row"><span class="score">30.96%</span><span class="delta up">+3.68%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/ojub0ytl">W&B run ↗</a>
+        </article>
+
+        <article class="experiment">
+          <span class="tag">배음 약화</span><h3>1/h² 가중치</h3>
+          <p>2차 이상 배음을 더 강하게 낮췄다. 짧은 조건부 추가 실험이다.</p>
+          <div class="score-row"><span class="score">31.16%</span><span class="delta up">+3.88%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/7ofy0z5v">W&B run ↗</a>
+        </article>
+
+        <article class="experiment bad">
+          <span class="tag">배음 약화</span><h3>1/h 가중치</h3>
+          <p>고차 배음의 영향력을 순서에 반비례해 낮췄지만 uniform보다 나빴다.</p>
+          <div class="score-row"><span class="score">24.30%</span><span class="delta down">−2.97%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/05llc62p">W&B run ↗</a>
+        </article>
+
+        <article class="experiment bad">
+          <span class="tag">배음 제거</span><h3>기본 주파수만 사용</h3>
+          <p>2차부터 5차 배음을 모두 제거했다. 배음이 실제로 중요하다는 결과다.</p>
+          <div class="score-row"><span class="score">12.36%</span><span class="delta down">−14.92%p</span></div>
+          <a class="run-link" href="https://wandb.ai/jm020827/calibration-free-eeg/runs/l5wch29k">W&B run ↗</a>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><span class="section-no">04 · 핵심 원인</span><h2>좋아진 34.88%도<br>주로 harmonic이 만든 성능이다</h2></div>
+        <p>같은 checkpoint에서 learned logits와 harmonic logits을 따로 꺼내 정확도를 재측정했다.</p>
+      </div>
+
+      <div class="branch-layout">
+        <div class="bars" role="img" aria-label="BETA branch accuracy 비교">
+          <div><div class="bar-label"><span>순수 harmonic</span><strong>47.79%</strong></div><div class="track"><div class="fill harmonic" style="width:95.58%"></div></div></div>
+          <div><div class="bar-label"><span>최고 hybrid</span><strong>34.88%</strong></div><div class="track"><div class="fill hybrid" style="width:69.76%"></div></div></div>
+          <div><div class="bar-label"><span>Learned-only</span><strong>약 3%</strong></div><div class="track"><div class="fill learned" style="width:6%"></div></div></div>
+          <div><div class="bar-label"><span>40-class chance</span><strong>2.5%</strong></div><div class="track"><div class="fill" style="width:5%; background:#a9a39a"></div></div></div>
+        </div>
+        <div class="branch-callout">
+          <strong>REVE가 아무것도 못 배웠다는 뜻은 아니다.</strong>
+          <p>정확히는 “고정 REVE 표현 위에서 Wang으로 학습한 adapter·latent·classifier 경로”가 BETA로 전이되지 않았다는 뜻이다. 지금의 단순 logit 합산은 harmonic-only 예측까지 낮췄다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bold-change">
+      <div class="section-head">
+        <div><span class="section-no">05 · 과감한 변경</span><h2>Wang과 BETA를 섞고<br>모델 용량과 잡음을 함께 키웠다</h2></div>
+        <p>Ablation이 한 변수의 영향을 묻는 실험이라면, pooled run은 성능 상한을 보기 위해 여러 조건을 동시에 바꾼 확장 실험이다.</p>
+      </div>
+
+      <div class="bold-grid">
+        <div>
+          <div class="change-list">
+            <div class="change-item"><strong>데이터</strong>Wang 20명 + BETA 42명 학습</div>
+            <div class="change-item"><strong>Prompt</strong>4 → 8 tokens</div>
+            <div class="change-item"><strong>Adapter</strong>64 → 256 bottleneck</div>
+            <div class="change-item"><strong>Latent</strong>16 → 64 dimensions</div>
+            <div class="change-item"><strong>Noise</strong>최대 0.05 → 0.12</div>
+            <div class="change-item"><strong>평가</strong>두 dataset의 별도 test 피험자</div>
+          </div>
+        </div>
+        <div class="pooled-score">
+          <strong>65.46%</strong>
+          <span>held-out subject 합산 test</span>
+          <p>Wang 75.00% · BETA 58.30%<br>BETA를 학습에서 완전히 숨긴 zero-shot이 아니므로 34.88%보다 우월하다고 직접 비교할 수 없다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div><span class="section-no">06 · Noise & Calibration</span><h2>무너지지는 않았지만<br>목표를 입증한 것도 아니다</h2></div>
+        <p>실제 현장 수집이 아니라 저장된 EEG에 합성 perturbation을 가한 평가다.</p>
+      </div>
+
+      <div class="evidence-grid">
+        <div class="evidence"><strong>Additive noise</strong><p>대표 Wang→BETA run은 clean 대비 약 −1.17~+0.96%p였다. 설정한 Gaussian·8~16 Hz 잡음에서는 큰 하락이 없었다.</p></div>
+        <div class="evidence warn"><strong>4채널 제한</strong><p>Pooled Wang은 −40.06%p, BETA는 +4.06%p였다. 채널 손실 강건성이 dataset마다 달라 일반화할 수 없다.</p></div>
+        <div class="evidence"><strong>Class당 1 trial</strong><p>Head와 adapter 적응 후 BETA 57.50%, 0-calibration은 58.30%였다. 평가 trial 구성이 달라 순수 효과로 단정할 수 없다.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="final-line">
+        <div class="final-mark">!</div>
+        <div><strong>현재 판정: 방향 후보는 좁혔지만 calibration-free 모델을 달성했다고 보기는 어렵다.</strong><p>채널 손상 augmentation은 재설계할 가치가 있다. 더 근본적으로는 harmonic을 깎아먹는 Wang 전용 learned logits을 그대로 더하지 말고, 동일 평가 subset·multi-seed·실제 수집 잡음에서 결합 구조를 다시 검증해야 한다.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page">
+    결과 기준 seed 42 · 모든 REVE backbone frozen · <a href="a4_harmonic_followup_report_20260903.md">상세 기록 보기</a>
+  </footer>
+</body>
+</html>
