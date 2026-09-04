@@ -73,7 +73,7 @@ tracking:
     project: ${env:WANDB_PROJECT}
     entity: ${env:WANDB_ENTITY}
     mode: online
-    tags: [20260905, additive-baseline, no-channel-corruption]
+    tags: ["20260905", additive-baseline, no-channel-corruption]
     log_model: false
     watch_model: false
 evaluation:
