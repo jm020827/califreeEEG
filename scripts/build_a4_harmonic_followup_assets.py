@@ -218,7 +218,7 @@ def _save_pooled(root: Path, output: Path) -> list[Path]:
             linewidth=2,
         )
         ax.set(
-            title="BETA held-out subject calibration curve",
+            title="Observed BETA calibration result (unmatched evaluation sets)",
             xlabel="Calibration trials per class",
             ylabel="Accuracy (%)",
             xticks=calibration["calibration_trials_per_class"].astype(int),
