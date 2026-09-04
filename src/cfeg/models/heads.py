@@ -26,6 +26,42 @@ class ClassificationHead(nn.Module):
         return self.net(h)
 
 
+class HarmonicResidualGate(nn.Module):
+    """Produce a bounded, standardized correction to harmonic logits."""
+
+    def __init__(
+        self,
+        h_dim: int,
+        *,
+        initial_gate: float = 0.02,
+        max_gate: float = 0.35,
+        normalize_logits: bool = True,
+    ):
+        super().__init__()
+        if max_gate <= 0:
+            raise ValueError("residual_gate.max_gate must be positive")
+        if not 0 < initial_gate < max_gate:
+            raise ValueError("residual_gate.initial_gate must be between zero and max_gate")
+        self.max_gate = float(max_gate)
+        self.normalize_logits = bool(normalize_logits)
+        self.norm = nn.LayerNorm(h_dim)
+        self.projection = nn.Linear(h_dim, 1)
+        nn.init.zeros_(self.projection.weight)
+        ratio = float(initial_gate) / self.max_gate
+        nn.init.constant_(self.projection.bias, math.log(ratio / (1.0 - ratio)))
+
+    def forward(
+        self, h: torch.Tensor, learned_logits: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        residual = learned_logits
+        if self.normalize_logits:
+            residual = (residual - residual.mean(dim=-1, keepdim=True)) / residual.std(
+                dim=-1, keepdim=True, unbiased=False
+            ).clamp_min(1e-6)
+        gate = self.max_gate * torch.sigmoid(self.projection(self.norm(h)))
+        return gate * residual, residual, gate
+
+
 class HarmonicPowerPrior(nn.Module):
     """Phase-invariant SSVEP logits from fixed sinusoidal references."""
 

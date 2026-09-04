@@ -149,14 +149,23 @@ def test_calibration_target_mask_keeps_only_held_out_dataset_samples(tmp_path):
 def test_prediction_branch_separates_learned_and_spectral_logits():
     spectral = torch.tensor([[0.5, -0.5]])
     learned = torch.tensor([[1.0, 2.0]])
+    residual = torch.tensor([[0.25, -0.25]])
+    gated = 0.1 * residual
     output = SimpleNamespace(
         logits=learned + spectral,
-        aux={"spectral_logits": spectral},
+        aux={
+            "spectral_logits": spectral,
+            "learned_logits": learned,
+            "residual_logits": residual,
+            "gated_residual_logits": gated,
+        },
     )
 
     assert torch.equal(_select_prediction_logits(output, "combined"), learned + spectral)
     assert torch.equal(_select_prediction_logits(output, "learned"), learned)
     assert torch.equal(_select_prediction_logits(output, "spectral"), spectral)
+    assert torch.equal(_select_prediction_logits(output, "residual"), residual)
+    assert torch.equal(_select_prediction_logits(output, "gated_residual"), gated)
 
 
 def test_saved_split_scenarios_add_noise_only_to_held_out_samples(tmp_path):

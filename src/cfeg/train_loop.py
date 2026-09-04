@@ -361,6 +361,27 @@ def _train_epoch(
     return total / max(count, 1), global_step
 
 
+def _branch_regularization(output, y: torch.Tensor, loss_cfg: dict) -> torch.Tensor:
+    regularization = output.logits.new_zeros(())
+    learned_weight = float(loss_cfg.get("lambda_learned_aux", 0.0))
+    learned_logits = output.aux.get("learned_logits")
+    if learned_weight and learned_logits is not None:
+        regularization = regularization + learned_weight * F.cross_entropy(learned_logits, y)
+
+    anchor_weight = float(loss_cfg.get("lambda_spectral_anchor", 0.0))
+    spectral_logits = output.aux.get("spectral_logits")
+    if anchor_weight and spectral_logits is not None:
+        temperature = float(loss_cfg.get("spectral_anchor_temperature", 1.0))
+        if temperature <= 0:
+            raise ValueError("loss.spectral_anchor_temperature must be positive")
+        target = F.softmax(spectral_logits.detach().float() / temperature, dim=-1)
+        predicted = F.log_softmax(output.logits.float() / temperature, dim=-1)
+        regularization = regularization + anchor_weight * temperature**2 * F.kl_div(
+            predicted, target, reduction="batchmean"
+        )
+    return regularization
+
+
 def _step_loss(model, batch, cfg) -> torch.Tensor:
     loss_cfg = cfg.get("loss", {})
     aug = cfg.get("augment", {})
@@ -371,6 +392,7 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
         ce_zero_weight = float(loss_cfg.get("ce_zero_weight", 0.5))
         if out.logits_zero is not None:
             loss = loss + ce_zero_weight * F.cross_entropy(out.logits_zero, y)
+        loss = loss + _branch_regularization(out, y, loss_cfg)
         if out.mu is not None:
             loss = loss + float(loss_cfg.get("beta_kl", 0.001)) * kl_normal(out.mu, out.logvar).to(
                 loss.device
@@ -401,6 +423,8 @@ def _step_loss(model, batch, cfg) -> torch.Tensor:
     loss = loss + float(loss_cfg.get("lambda_logit_cons", 0.05)) * symmetric_kl_logits(
         out1.logits, out2.logits
     )
+    loss = loss + _branch_regularization(out1, y, loss_cfg)
+    loss = loss + _branch_regularization(out2, y, loss_cfg)
     if out1.mu is not None:
         loss = loss + float(loss_cfg.get("beta_kl", 0.001)) * (
             kl_normal(out1.mu, out1.logvar).to(loss.device)

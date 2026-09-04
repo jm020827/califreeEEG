@@ -1,0 +1,88 @@
+seed: 42
+run_name: wang_to_beta_harmonic_additive
+output_dir: ${env:CFEG_EXPERIMENT_ROOT}/20260905/additive_s42
+assets_config: configs/assets.yaml
+data:
+  processed_dirs:
+  - ${env:EEG_DATA_ROOT}/processed/wang_v1
+  - ${env:EEG_DATA_ROOT}/processed/beta_v1
+  split: cross_dataset
+  batch_size: 64
+  num_workers: 4
+  val_ratio: 0.2
+  train_datasets:
+  - wang
+  test_datasets:
+  - beta
+model:
+  n_classes: 40
+  c_max: 64
+  target_sfreq: 200
+  t_len: 400
+  d_model: 256
+  patch_size: 20
+  depth: 6
+  n_heads: 8
+  backbone:
+    name: reve
+    hf_model: brain-bzh/reve-base
+    hf_positions: brain-bzh/reve-positions
+    cache_dir: ${env:HF_HUB_CACHE}
+    local_files_only: true
+    freeze: true
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 4
+    include_continuous: true
+    include_channels: true
+  adapter:
+    enabled: true
+    type: conditioned_feature_adapter
+    bottleneck_dim: 64
+  latent:
+    enabled: true
+    z_dim: 16
+  spectral_prior:
+    enabled: true
+    frequency_start_hz: 8.0
+    frequency_step_hz: 0.2
+    channel_ids: [48, 55, 57, 56, 53, 61, 62, 63]
+    logit_scale: 1.0
+    n_harmonics: 5
+    harmonic_weighting: uniform
+    trainable_scale: true
+    combination: additive
+train:
+  epochs: 60
+  lr: 0.0003
+  weight_decay: 0.01
+  amp: true
+  grad_clip_norm: 1.0
+  early_stop_patience: 12
+  log_interval: 25
+checkpoint:
+  save_trainable_only: true
+loss:
+  lambda_cons: 0.1
+  lambda_logit_cons: 0.05
+  beta_kl: 0.001
+  ce_zero_weight: 0.5
+tracking:
+  wandb:
+    enabled: true
+    project: ${env:WANDB_PROJECT}
+    entity: ${env:WANDB_ENTITY}
+    mode: online
+    tags: [20260905, additive-baseline, no-channel-corruption]
+    log_model: false
+    watch_model: false
+evaluation:
+  trial_time_sec: 2.0
+augment:
+  make_two_views: true
+  channel_dropout_prob: 0.0
+  min_channels: 2
+  channel_sets: [occipital_8, occipital_4, occipital_2]
+  channel_subset_prob: 0.0
+  noise_std_range: [0.01, 0.05]
+  time_shift_samples: 8

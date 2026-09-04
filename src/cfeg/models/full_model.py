@@ -10,7 +10,7 @@ from cfeg.models.adapters import BottleneckAdapter, ConditionedAdapter
 from cfeg.models.backbones.reve import REVEBackbone
 from cfeg.models.backbones.tiny_transformer import TinyEEGTransformerBackbone
 from cfeg.models.condition_encoder import ConditionEncoder
-from cfeg.models.heads import ClassificationHead, HarmonicPowerPrior
+from cfeg.models.heads import ClassificationHead, HarmonicPowerPrior, HarmonicResidualGate
 from cfeg.models.latent_nuisance import LatentNuisanceEncoder
 
 
@@ -101,6 +101,11 @@ class ConditionedEEGDecoder(nn.Module):
             self.latent = None
         self.head = ClassificationHead(d_model, int(model_cfg.get("n_classes", 4)), self.z_dim)
         spectral_cfg = model_cfg.get("spectral_prior", {})
+        self.spectral_combination = str(spectral_cfg.get("combination", "additive")).lower()
+        if self.spectral_combination not in {"additive", "anchored_residual"}:
+            raise ValueError(
+                "spectral_prior.combination must be additive or anchored_residual"
+            )
         if spectral_cfg.get("enabled", False):
             frequencies = spectral_cfg.get("frequencies_hz")
             if frequencies is None:
@@ -121,6 +126,17 @@ class ConditionedEEGDecoder(nn.Module):
             )
         else:
             self.spectral_prior = None
+        if self.spectral_combination == "anchored_residual" and self.spectral_prior is None:
+            raise ValueError("anchored_residual requires model.spectral_prior.enabled=true")
+        self.residual_gate = None
+        if self.spectral_combination == "anchored_residual":
+            gate_cfg = spectral_cfg.get("residual_gate", {})
+            self.residual_gate = HarmonicResidualGate(
+                d_model,
+                initial_gate=float(gate_cfg.get("initial_gate", 0.02)),
+                max_gate=float(gate_cfg.get("max_gate", 0.35)),
+                normalize_logits=bool(gate_cfg.get("normalize_logits", True)),
+            )
 
     def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
         projection_weight = state_dict.get("backbone.output_proj.weight")
@@ -170,12 +186,25 @@ class ConditionedEEGDecoder(nn.Module):
             logits_zero = self.head(h, zero_z)
         else:
             logits = self.head(h, None)
+        learned_logits = logits
+        learned_logits_zero = logits_zero
         spectral_logits = None
+        residual_logits = gated_residual_logits = residual_gate = None
         if self.spectral_prior is not None:
             spectral_logits = self.spectral_prior(x, cond["channel_mask"])
-            logits = logits + spectral_logits.to(logits.dtype)
-            if logits_zero is not None:
-                logits_zero = logits_zero + spectral_logits.to(logits_zero.dtype)
+            spectral_for_logits = spectral_logits.to(learned_logits.dtype)
+            if self.spectral_combination == "additive":
+                logits = learned_logits + spectral_for_logits
+                if learned_logits_zero is not None:
+                    logits_zero = learned_logits_zero + spectral_for_logits
+            else:
+                gated_residual_logits, residual_logits, residual_gate = self.residual_gate(
+                    h, learned_logits
+                )
+                logits = spectral_for_logits + gated_residual_logits
+                if learned_logits_zero is not None:
+                    gated_zero, _, _ = self.residual_gate(h, learned_logits_zero)
+                    logits_zero = spectral_for_logits + gated_zero
         return ModelOutput(
             logits=logits,
             logits_zero=logits_zero,
@@ -187,6 +216,14 @@ class ConditionedEEGDecoder(nn.Module):
             logvar=logvar,
             aux={
                 **backbone_out.aux,
+                "learned_logits": learned_logits,
                 **({"spectral_logits": spectral_logits} if spectral_logits is not None else {}),
+                **({"residual_logits": residual_logits} if residual_logits is not None else {}),
+                **(
+                    {"gated_residual_logits": gated_residual_logits}
+                    if gated_residual_logits is not None
+                    else {}
+                ),
+                **({"residual_gate": residual_gate} if residual_gate is not None else {}),
             },
         )

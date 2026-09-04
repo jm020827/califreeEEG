@@ -195,9 +195,21 @@ def _select_prediction_logits(output, prediction_branch: str) -> torch.Tensor:
     if branch == "spectral":
         return spectral.to(output.logits.dtype)
     if branch == "learned":
+        learned = output.aux.get("learned_logits")
+        if learned is not None:
+            return learned
         return output.logits - spectral.to(output.logits.dtype)
+    if branch == "residual":
+        residual = output.aux.get("residual_logits")
+        if residual is not None:
+            return residual
+    if branch == "gated_residual":
+        residual = output.aux.get("gated_residual_logits")
+        if residual is not None:
+            return residual
     raise ValueError(
-        f"Unknown prediction_branch={prediction_branch!r}; use combined, learned, or spectral."
+        f"Unknown or unavailable prediction_branch={prediction_branch!r}; use combined, "
+        "learned, spectral, residual, or gated_residual."
     )
 
 
