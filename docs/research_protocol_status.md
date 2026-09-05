@@ -1,10 +1,10 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
-기준일: 2026-09-05
-현재 상태: **metadata-calibration-efficiency-v1 exact source→conditional-held 실행 승인 / signed one-shot lifecycle 구현 / power receipt 재결속·전체 검사·clean tag 직전**
+기준일: 2026-09-06
+현재 상태: **metadata-calibration-efficiency-v1 source 24/24 완료 / development no-go / held 60명 미개봉 / v1 후보 종료**
 현재 기준원: `DEC-20260905-006`과 `configs/analysis/metadata_calibration_efficiency_v1.yaml`. `DEC-20260903-005`의 physical 후보 retirement와 terminal `reliability-spatial-v1` Stage-0는 그대로 유효하며, `query-reliability-spatial-v1`은 outcome 전 철회된 frozen baseline-only다.
 
-이 문서는 현재 방향의 요약본이다. 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. Owner의 최신 지시는 exact outcome bundle과 추가 데이터 결정을 agent에게 위임한다. 다만 실행권한은 canonical plan, signed phase chain, permanent attempt key, clean tag가 모두 맞을 때만 코드가 행사한다. 과거 physical, synthetic, query-only plan과 결과는 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
+이 문서는 현재 방향의 요약본이다. 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), 수치·해석·후속 결정은 [source 결과](metadata_calibration_efficiency_results.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. Exact one-shot lifecycle은 정상 종료했고 source FAIL이므로 held를 열지 않았다. 과거 physical, synthetic, query-only plan과 결과는 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
 
 ## 연구목표
 
@@ -14,7 +14,7 @@
 
 Metadata 자체가 목적이 아니다. 현재 처리 가능한 과학적 treatment는 pre-query acquisition context뿐이다. Dataset/subject ID와 query-derived QC를 metadata 이득으로 세지 않는다. 새 class discovery, open-set/OOD 탐지, 손상 EEG 복원과 LLM test-time scaling은 primary endpoint가 아니다.
 
-## 현재 활성 설계 초안
+## 완료된 v1 설계와 결과
 
 새 후보 `metadata-calibration-efficiency-v1`은 A_Q와 A_QM을 primary pair로 둔다. 먼저
 spectral backbone과 Q-only calibration estimator를 학습해 고정하고, 그 공통 경로에는 M
@@ -47,14 +47,17 @@ base-input에 결속된 실제 intervention context tensor resolver/usage hash, 
 Bubblewrap worker, producer/finalizer receipt와 full lifecycle이 구현됐다. 현재 exact contract는
 source `candidate 9 + baseline 15 = 24`, held `candidate 3 + baseline 5 = 8` jobs다. Episode cache는
 spectral embedding과 Q를 재사용하지만 raw M은 보관하지 않으며 Q-off cell에는 exact zero만
-전달한다. 남은 것은 power receipt 재결속, 전체 회귀검사와 clean annotated tag다.
+전달했다. Power receipt, 전체 536 tests와 clean annotated tag
+`metadata-calibration-efficiency-v1-freeze-20260905-r1`를 봉인한 뒤 source 24 jobs를
+실행했다. A_Q k5 `0.476282`, A_QM−A_Q eAUC `−0.004843`, correct−shuffle
+`0`으로 hard gate가 실패했다.
 
 권한은 순환시키지 않고 각 phase에서 따로 반복한다. Source seal decision/receipt 뒤 source
 outcome decision을 만들고, immutable 39명 gate가 PASS한 뒤에만 held target 60명과 held-domain
 source-refit 39명을 별도 seal한다. 그 뒤 held outcome decision을 새로 만든다. Seal 단계는
 training·score·metric·query-label 공개를 금지한다. 최신 owner directive가 두 phase의 조건부
-체인을 승인했으므로 clean-tag preflight 뒤 source를 시작한다. Source gate가 PASS일 때만 held
-phase의 별도 seal/claim을 만든다.
+체인을 승인했고 source phase를 정상 완료했다. Source gate가 FAIL이어서 held
+phase의 seal, claim, directory는 생성하지 않았다.
 
 ## Outcome 전에 철회된 query-only 후보
 
@@ -95,36 +98,37 @@ Reference/cap은 wearable에서 상수라 당시 primary 입력에서 제외했�
 | 전체 자산 감사 | 102명 | 24,480 | checksum, schema, raw↔processed, metadata 품질 감사 | 성능 기반 선택 |
 | development | S1–S3 | 720 | 역사적 prompt 6-job과 physical six-role×3-fold 18-job·3 intervention bundle 공개 완료; reveal #2 소비, valid diagnostic no-go | 모집단 효과 주장, S1–S3 재튜닝·추가 reveal |
 | synthetic engineering | 합성 8명 | 256 | terminal Stage-0 artifact의 read-only 무결성·해석 감사 | Stage-0 재실행/덮어쓰기, Stage-1, human EEG·population·architecture superiority 주장 |
-| source development | 사전 추출한 S4–S102 중 39명 | 9,360 | clean tag 뒤 signed one-shot lifecycle로 exact 24-job gate 실행 | 부분 grid, 결과 기반 재튜닝·same-cohort 자동 재시도 |
-| held-participant evaluation | 나머지 60명 | 14,400 | source PASS 뒤 같은 lifecycle에서 exact 8-job bundle 한 번 | PASS 전 접근, 부분 reveal, 결과 기반 재튜닝·재시도 |
+| source development | 사전 추출한 S4–S102 중 39명 | 9,360 | exact 24 jobs·4,680 query 완료; development no-go | 부분 grid, 결과 기반 재튜닝·same-cohort 재시도 |
+| held-participant evaluation | 나머지 60명 | 14,400 | 미개봉 보존; source FAIL로 seal/claim 0 | 현 v1으로 접근, 부분 reveal, 재시도 |
 | BETA query-only historical split | S16–S70의 35/20 | 8,800 | 기존 hash·forward 증거 보존 | 철회된 35/20 outcome plan 실행 |
 | Wang/BETA/Dong | 164명 | 29,040 | signal-only calibration baseline과 protocol audit | corpus ID 차이를 metadata factor 효과로 해석 |
 
 39/60 ID는 `DEC-20260830-002`, `allocation_seed=42`, 정렬한 S4–S102를 NumPy
 `default_rng`로 한 번 shuffle한 outcome-blind allocation이다. Canonical allocation SHA-256은
-`0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898`다. 새 후보에서 이
-분할을 쓰는 것은 researcher degree of freedom을 줄이며 최신 owner directive가 exact 실행을
-승인했다.
+`0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898`다. V1은 이
+분할을 exact하게 사용했고, source 39명의 outcome은 이제 한 번 공개됐다. Held 60명은
+계속 미개봉이다.
 k>0에서 60명의 support label은 method input이므로 strict-k0 lockbox가 아니라 sealed
 within-participant calibration partition이라고 부른다.
 
-## 39/60 allocation을 보존하는 이유
+## V1에서 39/60 allocation을 선택한 이유와 현재 한계
 
 원래 N=99 5-fold 계획에서는 같은 fold의 약 20명이 같은 모델을 공유하고, 다섯 모델의 training set도 크게 겹쳤다. 그런데 피험자 99명의 차이를 독립 표본처럼 sign-flip/bootstrap하면 이 model-shared 오차를 무시한다.
 
 Target outcome을 전혀 읽지 않은 과거 physical strict-k0용 synthetic stress simulation에서 nominal alpha 0.05의 rejection rate는 독립 조건에서는 허용 범위였지만, fold ICC 0.05와 training-overlap이 있으면 약 0.122, 결합 stress에서는 약 0.204까지 상승했다. 따라서 그 5-fold primary inference는 폐기했다. 당시 60명 독립 lockbox 설계의 10,000-replicate simulation은 네 core DGP에서 Type-I upper bound ≤0.0581, one-sided coverage lower bound ≥0.9413, SESOI+0.03 power lower bound ≥0.8769로 사전 기준을 통과했다. 그 receipt는 새 설계의 근거가 아니다. 새 plan은 별도의 200,000-draw receipt를 만들었고, H1 효과 0.030·Q-only k3−k1 0.030·AQM k1−AQ k3 0.000이라는 계획 중심값에서 H1 통과는 약 0.903이다. 두 endpoint BA floor≥0.50을 충족한다고 가정한 held-core contrast sensitivity에서 H1 뒤 H2 intersection까지는 약 0.657이며, Shared-AQ3/adverse 상관, t5와 20% harmed에서도 약 0.656–0.661이었다. 같은 가정과 계획값에서 N=83이면 약 0.805여서 H2까지 80%를 원하면 현재 held 60명보다 약 23명이 더 필요하다. H2a/H2b를 각각 경계에, 나머지를 유한한 대립값에 둔 configured partial-null full-claim은 약 0.0044/0.0137이고 local component는 약 0.0049/0.0244다. Strong control은 후자의 component test와 intersection-union 구조에서 온다. Contrast 효과 0·정상 baseline 0.55인 development metadata-null의 hard false-go는 0.00953이며, baseline도 0.48인 joint-bad null의 0.00021과 구분한다. 이는 사람 EEG 결과가 아니라 outcome-free 설계 민감도다.
 
-새 low-calibration 후보도 outcome을 보지 않고 만든 이 allocation을 바꾸지 않는 편이
-보수적이다. 새 plan은 exact 39/60 ID, 기존 allocation digest와 source/held complete-block query
+현 V1은 outcome을 보지 않고 만든 이 allocation을 바꾸지 않고 실행했다.
+사전 plan은 exact 39/60 ID, 기존 allocation digest와 source/held complete-block query
 identity digest까지 결속한다. 사전 고정한 normal global-null DGP의 full claim은
 200,000회에서 0회였고 rule-of-three 95% 상한은 약 `1.5e-5`지만, 이는 해당 simulation에만
 해당하며 보편 FWER 상한이 아니다. 계획 대립값에서 development hard gate의 false-no-go는
 normal/t5/20%-harmed에서 약 0.216/0.210/0.214다. Owner는 최신 위임 지시로 현재 N=60의
 full-H2 계획 민감도 약 0.657과 그 한계를 수용했다. 약 0.80을 원했다면 약 83명용 새
 allocation·plan·power receipt가 필요했을 것이다. 단, 이전 `physical_hybrid_v1` 실행 권한이 되살아나는 것은
-아니다. 새 방법·support/query·estimand·수치 gate와 atomic development bundle을 별도 동결한
-뒤 39명에서 먼저 mechanism을 검증하고, 그것이 통과할 때만 60명을 held-participant
-evaluation으로 사용할 수 있다.
+아니다. V1 source outcome을 본 현재, 같은 39명은 V2의 unbiased promotion
+cohort가 될 수 없다. 새 방법·support/query·estimand·수치 gate와 독립
+development cohort를 먼저 동결·검증하고, 그 gate가 통과할 때만 미개봉
+60명을 새 held-participant evaluation에 쓸지 결정한다.
 
 ## 현재 모델 방향과 근거
 
@@ -178,9 +182,9 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 - lockbox의 `60명×12 class×10 trials/condition×2 conditions×2 roles×3 seeds = 86,400` prediction-row exact grid가 하나라도 빠지면 primary는 invalid다. 부분 seed 평균·complete-case 구제는 금지한다.
 - condition별 통계 검정은 하지 않고 descriptive 결과만 보고한다.
 - target-free inference simulation receipt/hash가 깨지면 frozen plan 검증을 통과하지 못한다.
-- full asset 감사에서는 S4–S102 raw/processed 신호 byte와 metadata도 무결성 검사용으로 읽었다. 그러나 S4–S102를 모델 학습·선택·성능 계산에 쓰지 않았고 60명 lockbox prediction은 아직 없다.
+- Full asset 감사에서는 S4–S102 raw/processed 신호 byte와 metadata를 무결성 검사용으로 읽었다. 이후 사전 할당 source 39명은 v1 학습·선택·성능 계산에 한 번 사용했고, held 60명 lockbox prediction은 없다.
 
-이 봉인은 암호학적 data enclave가 아니다. 같은 OS 사용자에게 raw HDF5가 읽기 가능하므로 보호 수준은 **application/procedural gate + hash provenance + append-only decision record**다. 기계적 상태를 구분하면 `(1)` raw audit 접근 완료, `(2)` confirmatory training 접근 미실행, `(3)` lockbox prediction/reveal 미실행이다.
+이 봉인은 암호학적 data enclave가 아니다. 같은 OS 사용자에게 raw HDF5가 읽기 가능하므로 보호 수준은 **application/procedural gate + hash provenance + append-only decision record**다. 기계적 상태를 구분하면 `(1)` raw audit 접근 완료, `(2)` v1 source training·outcome claim 완료, `(3)` held seal·training·prediction·reveal 미실행이다.
 
 ## 현재 중단·승인 상태
 
@@ -204,8 +208,10 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
   source gate/H1/H2/mechanism/safety 분석과 atomic result publication
 - [완료] permanent cohort attempt key, registry lease/claim, post-claim fail-stop, signed pending
   completion의 제한적 publication-only recovery와 private-key destruction gate
-- [진행] final plan에 power receipt 재결속, full test·lint·config parse, clean commit/tag
-- [다음] source 24 jobs를 한 번 실행; PASS일 때만 같은 lifecycle에서 held 8 jobs를 한 번 실행
+- [완료] plan/power, full test·lint·config parse, commit `56bff34`, annotated freeze tag 봉인
+- [완료·no-go] source 24/24 jobs, private grid, one-shot claim·finalization·signed lifecycle
+- [미개봉] source FAIL에 따라 held 8 jobs·60명 input seal/claim/result를 생성하지 않음
+- [다음 후보] 새 A_Q common path·pairing-aware M operator와 독립 development data가 있을 때만 v2를 사전등록
 - [보존] query-only BETA 35/20 plan은 frozen baseline-only이며 실행하지 않음
 - [불변] physical_hybrid_v1, S1–S3 추가 outcome과 reliability-spatial-v1 재실행 금지
 
@@ -306,15 +312,18 @@ Assay는 유효했다. Counterfactual condition flip과 train/inference bundle c
    protocol 적합성을 감사한 결과 이 confirmatory grid에서는 `NOT_RUN`으로 사전 기록했다.
 5. [완료] eAUC H1, calibration-value H2a, k1-vs-k3 NI H2b, mechanism Holm과 outcome-free
    200,000-draw power receipt 생성 절차를 구현했다.
-6. [현재] 마지막 코드·문서 상태에 power receipt를 다시 결속하고, 전 셀 캐시 동등성 및 전체
-   테스트를 통과시킨 뒤 clean annotated execution tag를 만든다.
-7. [승인됨] 봉인된 source 24 job을 실행해 mechanism/source gate를 단 한 번 판정한다.
-8. [자동 조건부] Source gate가 통과할 때만 봉인된 60명 held bundle의 8 job을 단 한 번 실행한다.
-   Source outcome claim 후 held 단계가 고장 나면 임의 재시도하지 않고 signed failure와 영구
-   registry claim을 보존하는 fail-stop 정책을 수용한다.
-9. [완료 후 외부] Ke2025 24명은 primary metadata-effect 검정에 합치지 않고 signal/generalization
-   진단에만 사용한다. Broad device/site claim에는 randomized interface×device/reference,
-   repeated session, block impedance와 실제 calibration time을 가진 독립 자료가 추가로 필요하다.
+6. [완료] Plan/power·전 셀 캐시 동등성·536 tests·clean annotated execution tag를
+   봉인했다.
+7. [완료·no-go] Source 24/24 jobs·75/75 private artifacts·4,680 query를 실행했고
+   source gate FAIL을 한 번 공개했다.
+8. [미개봉] 조건이 충족되지 않아 60명 held bundle의 seal, directory, claim, job,
+   result는 모두 생성하지 않았다.
+9. [완료] Ke2025 24명은 impedance가 전부 `n/a`이고 interface contrast가 없어 primary
+   M 검정에 부적합하다. BETA/Wang/Dong도 paired block impedance가 없다.
+10. [다음] A_Q k1 no-harm, epoch-0 M abstention, pairing-aware M operator를 새 candidate로
+    구현하고 randomized interface×repeated-session×block-impedance 독립 development data를
+    확보한 뒤만 v2 gate를 사전등록한다.
 
-현재까지 S4–S102 성능 outcome, 60명 support-label access와 query prediction은 모두 미접근
-상태다. 새 후보의 A_QM−A_Q 결과도 존재하지 않는다.
+현 v1은 source 39명 outcome을 한 번 공개한 `development_no_go`다. Held 60명의
+support-label access, query prediction·outcome은 모두 미개봉이다. 결과를 본 뒤 threshold를
+바꾸거나 같은 cohort로 v1을 재실행하지 않는다.

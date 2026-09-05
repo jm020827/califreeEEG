@@ -2,7 +2,11 @@
 
 > **Cohort 역할:** wearable 전체 asset은 N=102·24,480행으로 감사했다. DEC-20260830-001에 따라 S1–S3는 development-only이고, DEC-20260830-002에 따라 S4–S102는 39명 training·60명 independent lockbox다.
 
-상태: 4개 P0 데이터셋 전체 raw 다운로드·각 고정 배포 API의 파일별 checksum 검증·전처리 완료. 확증 성능은 열지 않음.
+> **2026-09-06 실행 갱신:** 39명 source는 metadata-calibration v1에 한 번 사용했고
+> `development_no_go`였다. Held 60명은 seal/claim/result 없이 미개봉 보존한다.
+
+상태: 4개 P0 데이터셋 전체 raw 다운로드·checksum·전처리 완료. Wearable source
+39명 개발 성능은 v1에서 공개했고, held 60명 확증 성능은 열지 않음.
 
 ## 확보 결과
 
@@ -64,8 +68,10 @@ Wearable primary의 full deep audit도 통과했다. 102명×wet/dry×10 blocks�
 
 ## 다음 gate
 
-1. BETA/Wang/Dong subject metadata를 analysis-only covariate로 보존할지 결정
-2. [완료·no-go] S1–S3 physical falsification control을 reveal #2로 판정했다. Potency는 유효했지만 네 substantive gate가 실패했다.
-3. 현 candidate의 analysis plan을 `frozen`으로 전환하지 않는다. 같은 S1–S3 재튜닝·추가 reveal도 금지한다.
-4. 독립 wearable-like development data 또는 외부 source-only 근거로 새 candidate·gate를 사전등록할지 결정한다.
-5. 새 연구가 development gate를 통과하기 전에는 39명 training과 60명 lockbox prediction을 열지 않는다.
+1. [완료·no-go] S1–S3 physical assay와 후속 metadata-calibration v1 source 39명 gate를
+   각각 사전 규칙으로 판정했다.
+2. [완료] BETA/Wang/Dong은 paired impedance가 없고 Ke2025는 impedance `n/a`이므로
+   M 효과 자료가 아닌 signal/OOD 역할로 제한했다.
+3. [필요] Current source 39명과 독립인 randomized wet/dry×repeated-session×block-impedance
+   development cohort를 요청·수집한다.
+4. [보존] 기존 held 60명은 새 v2가 독립 gate를 통과하기 전까지 미개봉이다.

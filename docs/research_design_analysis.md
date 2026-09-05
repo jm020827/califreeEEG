@@ -1,5 +1,10 @@
 # califreeEEG 연구설계 적합성·수정안
 
+> **2026-09-06 실행 결과:** 후속 `metadata-calibration-efficiency-v1`은 source 39명·24 jobs를
+> 완료했으나 A_QM−A_Q eAUC `−0.004843`, correct−shuffle `0`, A_Q k5
+> `0.476282`로 development gate를 통과하지 못했다. Held 60명은 미개봉이다.
+> 현재 판정은 [source 결과](metadata_calibration_efficiency_results.md)를 우선한다.
+
 > **역사적 감사 문서:** DEC-20260830-001이 `N=102 primary`를, DEC-20260830-002가 아래 `N=99 5-fold primary`를 대체한다. 현재는 전체 asset N=102, S1–S3 development-only, 39명 frozen training, 60명 independent lockbox다. [프로토콜 현재 상태](research_protocol_status.md)를 우선하며 아래 지적과 당시 판단은 변경 이력 보존용이다.
 
 > **2026-09-04 superseded:** `DEC-20260904-005`가 strict-k0 A0/A2를 현재 primary에서
@@ -371,7 +376,11 @@ trial을 합쳐 하나의 accuracy와 p-value를 계산하면 표본 수를 과�
 | REVE base | Hugging Face gated access | montage-aware frozen backbone 후보; SSVEP zero-shot 성능은 별도 검증 필요 |
 | 제3 SSVEP/OpenBCI | 공개 데이터 또는 신규 수집 필요 | 모든 설계 선택 후 external lockbox |
 
-공개 원자료는 대체로 확보 가능하다. P0 mapping, 전체 wearable_v3 acceptance, physical 0.4-dev 경로와 reveal #2 실행·판정은 완료됐다. 현재 첫 병목은 **현 no-go를 재사용하지 않고 새 candidate를 시험할 독립 wearable-like development data와 사전근거를 확보하는 것**이다. 그 다음이 Nakanishi data license, protocol-matched baseline, REVE 접근·weights 조건과 새 연구계약이다. 기존 39/60 source freeze는 현재 후보에 대해 진행하지 않는다.
+공개 원자료는 대체로 확보 가능하다. P0 mapping, wearable_v3 acceptance,
+physical reveal #2와 metadata-calibration v1 source 39명 실행·no-go까지 완료했다.
+현재 첫 병목은 **약한 A_Q common path와 pairing-insensitive M operator를 새 candidate로
+고친 뒤, 기존 39명을 promotion에 재사용하지 않을 독립 wearable-like development
+data를 확보하는 것**이다. 기존 held 60명은 미개봉 보존한다.
 
 ## 11. 구현·실행 우선순위
 
@@ -387,7 +396,9 @@ trial을 합쳐 하나의 accuracy와 p-value를 계산하면 표본 수를 과�
 10. [x] 전체 `wearable_v3` acceptance와 per-channel `m_quality` physical mechanism을 구현한다.
 11. [x, diagnostic no-go] Clean tagged source에서 exact 18-job development와 **각 fold당 Full A2 intervention bundle 하나, 총 세 개**, aggregate와 10-gate 결과를 reveal #2로 공개했다. Potency는 통과했고 substantive gate 네 개가 실패했다 (`DEC-20260901-004`).
 12. [ ] Fast SSVEP, 허가/독립 port된 DG-Conformer 계열을 protocol-matched로 재현한다. Paper-faithful FBCCA는 구현 완료다.
-13. [blocked] 현 candidate의 wearable 39-train/60-lockbox primary는 실행하지 않는다. 새 독립 development evidence와 별도 사전등록 candidate가 gate를 통과할 경우에만 SESOI·alpha/alternative·operational threshold·multiplicity와 fairness/source lock을 새로 검토한다.
+13. [x, development no-go] Metadata-calibration v1 source 39명·24 jobs를 실행했고 hard gate
+    네 개가 실패했다. Held 60명은 열지 않았다. V2는 새 독립 development
+    evidence·candidate·SESOI·fairness/source lock을 새로 검토한다.
 
 ## 12. 주장 가능한 범위
 
@@ -405,4 +416,8 @@ P0–P1 수정과 E0–E7 후에는 다음 주장을 검토할 수 있다.
 
 ## 13. 검토 한계
 
-이 문서는 코드와 설계의 audit 및 protocol amendment이며 정식 모집단 결과 보고서가 아니다. 전체 wearable 원자료는 전수 무결성 감사했다. Physical 최초 시도는 공개 전 validator에서 중단·격리했지만, 정정된 exact restart는 공개됐고 N=3에서 Full A2−A0 `−0.0097`과 네 substantive gate 실패를 보였다. 이는 유효한 개발 진단 no-go이지 모집단 효과 추정이 아니다. 39명 confirmatory training과 60명 lockbox prediction은 실행하지 않았다. Strict Chen-2015 FBCCA는 구현했지만 모든 데이터셋 원 논문의 toolbox 설정까지 재현한 것은 아니다. 2026 OAST-CCA와 Cross-domain Correlation Analysis는 공식 metadata/abstract로 관련성을 확인했지만 PDF 접근 실패로 target-data timing과 세부 통계는 provisional이다. arXiv:2608.11829와 Fast SSVEP Detection은 PDF 원문을 선택 구간까지 확인했다. 따라서 검색은 최신 직접 경쟁 연구를 추가한 evidence-grounded review이지만 완전한 systematic review로 주장하지 않는다.
+이 문서는 코드와 설계의 historical audit이며 정식 모집단 결과 보고서가 아니다.
+Physical N=3 no-go 뒤 metadata-calibration v1 source 39명도 사전 gate FAIL이었다. 이는
+cross-fitted development 결과이지 held 60명 모집단 확증이 아니다. Strict Chen-2015
+FBCCA는 구현했지만 모든 원 논문 toolbox 설정까지 재현한 것은 아니다.
+Academic search는 evidence-grounded review이지 완전한 systematic review로 주장하지 않는다.

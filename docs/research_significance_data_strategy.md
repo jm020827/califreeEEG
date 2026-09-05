@@ -1,5 +1,10 @@
 # 연구 의미·데이터 확장·최신 문헌 전략
 
+> **2026-09-06 결과 갱신:** `metadata-calibration-efficiency-v1`의 source 39명·24 jobs는
+> A_QM−A_Q eAUC `−0.004843`, correct−shuffle `0`, A_Q k5 `0.476282`로
+> `development_no_go`였다. Held 60명은 미개봉이다. 현재 결론과 데이터 요청은
+> [source 결과 문서](metadata_calibration_efficiency_results.md)가 이 historical strategy를 supersede한다.
+
 > **2026-09-04 superseded / historical strategy:** 아래 strict-k0 A0/A2 문구는 당시 연구
 > 전략이다. 현재 목표는 k=0 anchor를 포함한 metadata-assisted low-calibration curve이며,
 > [현재 설계](metadata_calibration_efficiency_design.md)를 우선한다. 데이터·문헌의 한계 분석은
@@ -360,10 +365,12 @@ correct metadata > shuffled ≈ metadata-null > deliberately wrong metadata
 
 ### protocol 동결 후
 
-1. DEC-20260830-001로 S1–S3를 영구 development-only로, DEC-20260830-002로 S4–S102를 39명 training·60명 independent lockbox로 고정했다. 그러나 현 candidate는 no-go이므로 이 allocation을 학습·평가에 사용하지 않는다. 새 독립 development study와 decision contract가 통과할 때만 confirmatory 절차를 다시 검토한다.
+1. DEC-20260830-002의 39명 source는 v1에 한 번 사용했고 no-go였다. 나머지
+   60명 independent lockbox는 미개봉 보존한다. V2는 독립 development cohort와 새
+   decision contract가 있을 때만 confirmatory 절차를 검토한다.
 2. Wang/BETA/Dong exact-40 replication을 실행한다.
 3. 동결한 external dataset을 한 번만 연다.
 4. subject-level paired inference와 learned/forgotten coverage를 산출한다.
 5. 결과에 따라 narrow paper로 마감할지, prospective crossover를 수집해 causal/transportability claim으로 확장할지 결정한다.
 
-지금은 현 candidate를 39/60으로 확대하거나 수십–수백 GB를 무차별 다운로드할 단계가 아니다. **완료된 no-go 보존 → 독립 wearable-like data·권리·provenance 확보 → 새 candidate와 gate 사전등록 → 독립 development 판정 → 통과할 때만 새 confirmatory freeze**가 현재의 가장 싸고 강한 연구 경로다.
+지금은 held를 열거나 수십–수백 GB를 무차별 다운로드할 단계가 아니다. **V1 no-go 보존 → A_Q/M operator 수정 → 독립 wearable-like data·권리·provenance 확보 → 새 candidate/gate 사전등록 → 독립 development 판정 → 통과할 때만 held confirmatory freeze**가 현재의 가장 싸고 강한 경로다.

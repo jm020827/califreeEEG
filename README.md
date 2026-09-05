@@ -2,11 +2,11 @@
 
 이 저장소의 상위 목표는 **처음 보는 사용자가 쓸 만한 closed-set SSVEP 성능에 도달하는 데 필요한 labeled target calibration을 최소화하는 것**이다. `k=0`은 calibration-free anchor이고 `k=1/3/5`는 명시적인 low-calibration 자원점이다. Metadata는 연구목표가 아니라 이 부담을 줄이기 위한 수단이며, 현재 직접 시험하는 metadata도 개인정보나 dataset ID가 아니라 query 전에 관측되는 wet/dry interface와 block별 채널 impedance다.
 
-새 설계 초안 `metadata-calibration-efficiency-v1`은 같은 완전한 calibration block과 같은 고정 query에서, EEG·구조·signal-derived QC만 쓰는 `A_Q`보다 pre-query acquisition context를 추가한 `A_QM`이 `k=0/1/3` early-budget curve를 개선하는지 묻는다. Wearable에서는 `k=1`이 **deployment interface당** 12개 class를 한 번씩 포함한 한 block, 즉 12 labeled trial이다. Primary는 participant-level `eAUC(A_QM)-eAUC(A_Q)`이고, “두 block(36→12 trial) 절약”은 별도의 사전 비열등성 contrast가 통과할 때만 주장한다. 전체 설명은 [metadata-assisted low-calibration 설계](docs/metadata_calibration_efficiency_design.md), 현재 상태는 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 결정 이력은 [append-only 연구일지](docs/research_log.md)에 있다.
+완료된 `metadata-calibration-efficiency-v1`은 같은 완전한 calibration block과 같은 고정 query에서, EEG·구조·signal-derived QC만 쓰는 `A_Q`보다 pre-query acquisition context를 추가한 `A_QM`이 `k=0/1/3` early-budget curve를 개선하는지 물었다. Source 39명·24 jobs에서 eAUC 차이는 `−0.004843`, correct−shuffle은 `0`이었고 기본 A_Q k=5도 `0.476282<0.50`여서 `development_no_go`로 종료했다. 사전 규칙대로 held 60명은 열지 않았다. 전체 설계는 [metadata-assisted low-calibration 설계](docs/metadata_calibration_efficiency_design.md), 수치·해석·후속 결정은 [source 결과](docs/metadata_calibration_efficiency_results.md), 현재 상태는 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 결정 이력은 [append-only 연구일지](docs/research_log.md)에 있다.
 
 기존 `query-reliability-spatial-v1`은 사람 EEG outcome을 열지 않은 채 primary에서 내려와 frozen query-only baseline 후보로 남는다. 그 구현·hash·CUDA forward 증거는 보존하지만 기존 BETA 35/20 outcome plan은 실행하지 않는다. `physical_hybrid_v1` no-go, S1–S3 추가 outcome 금지와 `reliability-spatial-v1` Stage-0 terminal failure도 그대로 유지한다.
 
-봉인된 선행 confirmatory 설계는 **사전 할당한 39명에서 A0/A2를 학습하고 독립 60명 lockbox에서 paired balanced-accuracy 차이를 검정**하는 것이었다. 원시 신호는 전체 자산 무결성 감사에서 읽혔지만 S4–S102 성능과 60명 lockbox prediction은 계속 미접근이다. 이 역사적 계약은 [A2 physical-hybrid 설계](docs/a2_physical_hybrid_design.md)에 보존돼 있으나, 값을 채우거나 코드를 다시 고정하는 것만으로 재개할 수 없다.
+이전 physical-hybrid 계약은 역사 문서에 보존한다. 현 metadata-calibration 실험은 사전 할당 source 39명의 성능을 한 번 공개했으며, 나머지 held 60명의 support label, query prediction·outcome은 계속 미개봉이다. 현 후보의 threshold나 방법을 바꿔 같은 source/held를 재실행하지 않는다.
 
 > **P0 revision 경계:** 배포 Readme의 impedance-axis 문구는 실제 수치·원 논문 Figure 9의 조건 평균과 모순된다. 수치상 axis 0/1은 각각 dry/wet(`261.67/19.63 kΩ`)이므로 코드가 이 signature를 fail-closed로 검증한다. 반대로 결합된 기존 `wearable_v2`와 그 A2 결과는 무효이며, raw-to-processed deep audit를 통과한 `wearable_v3`만 Protocol 0.4-dev 실행에 사용한다.
 
@@ -144,7 +144,7 @@ CFEG_BACKBONE=reve WANDB_MODE=online bash scripts/cfeg.sh train wang-to-beta
 
 지원하는 mutable train preset은 `wang-to-beta`, `beta-to-wang`, `joint`, `synthetic`뿐이다. Wearable development/LOSO/dry↔wet preset과 `controls`/`research` shortcut은 폐기했으며 호출하면 fail-closed다. 첫 prompt-based grid와 두 번째 physical six-role grid는 모두 완료된 역사적 S1–S3 개발 실험이다. Physical reveal #2는 `DEC-20260901-004`와 clean annotated source tag에서 실행·소비됐으므로 다시 실행하지 않는다. Governed wearable은 전용 manifest orchestrator만 사용한다.
 
-Legacy/외부 데이터 run은 `split.csv`, source-validation checkpoint, held-out metric을 저장한다. Governed wearable run은 학습 중 test loader나 `metrics_test.json`을 만들지 않는다. 역사적 development는 S1–S3 train/val만 썼고, retired `physical_hybrid_v1`의 confirmatory outer-test prediction은 substantive no-go로 봉인돼 있다. 새 `metadata-calibration-efficiency-v1`은 아직 executable preset이나 outcome 권한이 없다.
+Legacy/외부 데이터 run은 `split.csv`, source-validation checkpoint, held-out metric을 저장한다. Governed wearable run은 학습 중 test loader나 `metrics_test.json`을 만들지 않는다. `metadata-calibration-efficiency-v1`은 전용 one-shot lifecycle로 source 24 jobs를 완료했고 development gate FAIL로 종료했다. 같은 후보를 재실행하거나 generic entrypoint로 held를 우회하는 것은 거부한다.
 
 Wang과 BETA label은 raw index가 아니라 stimulus frequency로 canonical 40-class 8.0, 8.2, ..., 15.8Hz에 정렬된다. 학습 strong view는 8/4/2채널 subset을 명시적으로 포함한다. Source validation만 checkpoint 선택에 쓰며 target은 test-only다.
 
@@ -165,9 +165,9 @@ bash scripts/cfeg.sh robustness outputs/research/wang_to_beta/best.pt \
 
 Robustness는 external metadata 결측 25/50/75/100%, acquisition-block 단위 derangement shuffle, global/channel/query-QC 분리 제거, downsample, re-reference, broadband/band-limited noise와 복합 4채널 조건을 평가한다. External missing/shuffle은 channel ID/mask, sampling/time grid, query QC를 바꾸지 않는다. Shuffle은 donor block 하나의 12개 label을 label/window 정렬로 함께 교환하고 donor mapping CSV·mapping hash·실제 metadata 변경률을 저장하므로 불가능한 row mosaic와 상수-metadata no-op을 구분한다. Signal perturbation 뒤에는 저장된 query QC를 invalid 처리한다. checkpoint 옆 `split.csv`의 held-out test ID 또는 명시적 target filter가 없으면 실행을 거부한다.
 
-기존 generic calibration 유틸리티는 피험자·class별 k=0/1/3/5와 fixed query를 지원하지만 label별 sample을 따로 고르므로 서로 다른 block을 섞을 수 있다. 새 low-calibration primary에서는 각 interface의 block 1–5를 nested support, block 6–10을 모든 역할·budget에서 동일한 query로 두고 complete block만 선택해야 한다. 이 block-coherent runner와 새 owner freeze가 없으므로 wearable_v3 support label과 query outcome 접근은 현재 거부된다. S1–S3를 다시 calibration 개발자료로 쓰지 않는다.
+기존 generic calibration 유틸리티는 피험자·class별 k=0/1/3/5와 fixed query를 지원하지만 label별 sample을 따로 고르므로 서로 다른 block을 섞을 수 있다. 현 source 실험은 전용 runner에서 각 interface의 block 1–5를 nested support, block 6–10을 모든 역할·budget에서 동일한 query로 두고 complete block만 선택해 완료했다. Held 60명은 source FAIL 뒤 계속 거부된다. S1–S3를 다시 calibration 개발자료로 쓰지 않는다.
 
-Training-free CCA/FBCCA baseline은 실제 canonical correlation과 sub-band filter bank를 계산한다. 다만 wearable S1–S3 outcome을 새로 계산하는 예시는 reveal budget 소진 뒤 제거했다. 현재 candidate에서 S1–S3 baseline을 추가 실행하지 않으며, confirmatory baseline action도 등록되지 않아 S4–S102를 열 수 없다.
+Training-free CCA/FBCCA baseline은 실제 canonical correlation과 sub-band filter bank를 계산한다. 현 source bundle에서 strict FBCCA k=0 `0.677564`, SAME3 component k=1 `0.560043`을 포함한 동결 baseline 15 jobs를 완료했다. S1–S3를 추가 실행하거나 held 60명을 여는 action은 없다.
 
 ## Historical physical ablation과 전체 suite
 

@@ -1,9 +1,13 @@
 # Metadata-assisted calibration-efficient SSVEP 연구설계
 
-기준일: 2026-09-05
+기준일: 2026-09-06
 
 후보: metadata-calibration-efficiency-v1
-상태: **방향 승인 / 수식·통계·private-staging validator·dispatch·phase별 execution contract 구현 / 실제 manifest·producer receipt·full human runner·owner freeze 전 outcome 실행 차단**
+상태: **source 24/24 완료 / development no-go / held 60명 미개봉 / v1 후보 종료**
+
+> 2026-09-06 결과: A_QM−A_Q early eAUC `−0.004843`, correct−shuffle `0`,
+> A_Q k5 `0.476282<0.50`으로 source gate가 실패했다. 수치·해석·후속 결정은
+> [source 결과](metadata_calibration_efficiency_results.md)를 따른다.
 
 ## 결론부터
 
@@ -506,7 +510,7 @@ Wearable만으로 좁은 within-device 연구는 가능하다. Broad acquisition
 신규 수집에는 IRB/윤리심의, 동의, 장비와 연구자 절차가 필요하다. Nakanishi는 signal
 replication 후보지만 paired interface/impedance 자료가 아니고 재사용 권한 확인도 필요하다.
 
-## 실행 동결 상태
+## 실행 동결·완료 상태
 
 방법, 통계, 입력 봉인, job capability, 격리 worker, producer/finalizer receipt와 lifecycle은
 구현됐다. 실행계약은 source-development `candidate 9 + baseline 15 = 24` jobs, 조건부 held
@@ -530,8 +534,10 @@ publication만 중단된 경우에는 pending 전체를 다시 검증한 뒤 ren
 phase든 outcome claim 이후 계산이 실패하면 같은 cohort 자동 재시도나 held-only 이어달리기를
 금지하는 terminal fail-stop이다. Source gate가 FAIL이면 held directory 자체를 만들지 않는다.
 
-남은 동결 작업은 current plan에 power receipt를 재결속하고 전체 회귀검사를 통과한 clean commit과
-annotated tag를 만드는 것뿐이다. 실행은 그 tag의 단일 commit clone에서만 허용한다.
+Plan·power receipt, 536 tests, commit `56bff34`와 annotated tag
+`metadata-calibration-efficiency-v1-freeze-20260905-r1`를 동결했다. 그 tag의 단일 commit
+clone에서 source 24 jobs·75 private artifacts·4,680 query를 완료했고 signed
+`development_no_go`를 공개했다. Source FAIL이므로 held directory를 만들지 않았다.
 
 Private staging에는 raw `sample_id` 대신 실행 중 secret으로 만든 opaque `q_<HMAC-SHA256>`
 token만 둔다. Token은 seal-decision, phase, checkpoint group과 query/support/source-fit purpose로
