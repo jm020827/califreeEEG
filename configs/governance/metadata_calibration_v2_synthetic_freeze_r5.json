@@ -1,0 +1,32 @@
+{
+  "schema": "cfeg.metadata-calibration-v2-synthetic-freeze-receipt.v5",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "created_at": "2026-09-06T02:36:44+09:00",
+  "status": "design_frozen_generator_implementation_pending",
+  "revision": "v5_exact_component_phase_formulas",
+  "supersedes": {
+    "receipt_path": "configs/governance/metadata_calibration_v2_synthetic_freeze_r4.json",
+    "plan_sha256": "2db5487d4a9d569168182c29e7a08d075c9f1bafd758ca7157e46ddd0f5315c1",
+    "reason": "parentheses in the harmonic component phase formulas were linguistically ambiguous; neither reserved seed had been executed"
+  },
+  "design_parent_commit": "47c4b93b6aaab8b7d3094fbfd42fa3927c39fcb3",
+  "plan_path": "configs/analysis/metadata_calibration_v2_synthetic.yaml",
+  "plan_sha256": "e7b9bf107b91a2e43d4456f11758ba5afc9ba6a0495e72ada63ac9d7858bf9ac",
+  "filterbank_path": "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml",
+  "filterbank_sha256": "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380",
+  "development_root_seed": 20260906,
+  "independent_lockbox_root_seed": 20260907,
+  "synthetic_outcomes_seen_before_freeze": false,
+  "human_eeg_v2_outcomes_seen_before_freeze": false,
+  "population_contrasts_thresholds_and_seeds_changed": false,
+  "operator_weight_vector_changed": false,
+  "generator_behavior_changed_from_v4_draft": false,
+  "lockbox_authorized": false,
+  "generator_commit": null,
+  "lockbox_execution_receipt": null,
+  "terminal_rules": {
+    "one_time_lockbox": true,
+    "failed_gate_forbids_real_independent_and_wearable_held_access": true,
+    "retuning_requires_new_schema_seeds_amendment_and_unseen_lockbox": true
+  }
+}

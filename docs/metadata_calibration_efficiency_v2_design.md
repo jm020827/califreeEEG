@@ -13,6 +13,8 @@ r6는 NumPy 1.26과 2.2가 다섯 번째 filter-bank weight를 1 ULP 다르게 �
 Synthetic generator v4는 별도로 spatial/phase/gain/context의 random-variable axis를
 명시한다. 특히 impedance는 실제 측정 방식과 같이 block 전에 얻는 channel vector이고,
 그 block의 모든 class trial에 동일하게 결합된다.
+v5는 target/cross-frequency harmonic의 phase가 각각 `h×(class phase+block drift)`와
+`h×(cross-class phase+extra phase+block drift)`임을 괄호까지 명시한다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
