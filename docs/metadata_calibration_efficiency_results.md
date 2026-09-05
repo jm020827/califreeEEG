@@ -1,5 +1,10 @@
 # Metadata-calibration-efficiency-v1 source 결과와 후속 결정
 
+> 이 문서는 V1의 완결 기록이다. 후속 V2 V11 단회 synthetic lockbox는 과학적
+> 결과를 만들기 전 인프라 오류로 소비됐으며, 별도
+> [V2 terminal 결과](metadata_calibration_efficiency_v2_results.md)에 기록한다.
+> 아래 V2 구현 순서는 실행 당시의 역사적 제안으로 읽는다.
+
 기준일: 2026-09-06
 
 상태: **source-development 24/24 jobs 완료 / development no-go / held 60명 미개봉 / 후보 종료**

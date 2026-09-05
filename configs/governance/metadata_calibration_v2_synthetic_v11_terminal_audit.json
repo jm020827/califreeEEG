@@ -1,0 +1,160 @@
+{
+  "schema": "cfeg.metadata-calibration-efficiency-v2.synthetic-v11-terminal-audit.v1",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "recorded_at_utc": "2026-09-05T21:42:23.699Z",
+  "last_amended_at_utc": "2026-09-05T22:06:21.033Z",
+  "terminal_classification": "consumed_inconclusive_infrastructure_error",
+  "scientific_result_created": false,
+  "scientific_promotion_evaluated": false,
+  "automatic_retry": "forbidden",
+  "source_freeze": {
+    "commit": "832e579c0dec8774ffe8c3ac99abf110a74aa9e3",
+    "tree": "d26656acd69c88e62cc5dd336103ddd76f33022f",
+    "annotated_tag": "metadata-calibration-efficiency-v2-synthetic-freeze-20260906-r11",
+    "source_bundle_sha256": "c9667e49d3e56af6f364fdf4301985c6a5e551e7ebfb7fe6487bedc6ce0183d9",
+    "synthetic_plan_sha256": "9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c"
+  },
+  "prelockbox_evidence": {
+    "development_status": "engineering_only",
+    "development_metric_rows": 5888,
+    "development_primary_contrasts": 19,
+    "full_repository_tests": "682 passed",
+    "authorization_scope": "synthetic lockbox only; no human-held-data authorization"
+  },
+  "execution_timeline": {
+    "future_beacon_target_utc": "2026-09-05T21:30:00.000Z",
+    "single_cli_invocation_utc": "2026-09-05T21:30:36Z",
+    "global_claim_created_at_utc": "2026-09-05T21:30:37.002Z",
+    "network_access_before_claim": false,
+    "beacon_fetched_at_utc": "2026-09-05T21:30:38.532Z",
+    "terminal_file_created_at_utc_from_filesystem": "2026-09-05T21:30:51.445816958Z"
+  },
+  "artifacts": {
+    "preparation": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/preparation.json",
+      "file_sha256": "fd565d38eee2b709439cde1d3520d5d27f00b201a43a19bd00981941c2c87a1b",
+      "receipt_sha256": "d30eb21b8a6c82cde64bebad5b011d025c4dda6a1bfa2bf122c7d3e1b9948a02"
+    },
+    "development": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/development-seed-20260906.json",
+      "file_sha256": "4bcaf57357fd4093fe41985fc71e73a70ac44d531b08ae23fc938390350c4963",
+      "receipt_sha256": "5843769380cc302735fe5ae6857476440b8e611005bb046f8ab07b9bf0361f2a"
+    },
+    "test_evidence": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/prelockbox-full-suite-tests.json",
+      "file_sha256": "16e4917a300d459d779886cb8e4c627673f68ac8f1a41f1b1f04f26eac7b0a4c",
+      "receipt_sha256": "b5e0f257c29fa852af11840172d561481cc596a69740175b86205750a5e6e9b3",
+      "stdout_sha256": "50ffc02fbf4e6c6a5d1bc8919e4d1ce27eb9151032ed057c6c073da5edc8167e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "authorization": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-authorization-nist-20260905T213000Z.json",
+      "file_sha256": "04272478fa05b28b0190aca37dde9a0d0eeb6f5d9200496cb9e2388f977d1095",
+      "receipt_sha256": "ec6809d96524e37a3e7dc10f48a319a8c5ee205de98c895dd7afb29cd4f52273"
+    },
+    "global_claim": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T213000Z-v11.json",
+      "file_sha256": "4a15828be8e6bda37e0fbb0bd03247f0a455f925a664b14f43c8e6474236032d",
+      "receipt_sha256": "e53e78f87b6a0537dcc1c6f90df5038570be6c6fd74b92ddcd6e3f30844b8876"
+    },
+    "beacon": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/nist-beacon-20260905T213000Z.json",
+      "file_sha256": "b1fa04e71058cbd236b22fb2b343324bcd3cbffc73796fc01a7682f3a8f39d81",
+      "receipt_sha256": "7b9fbf9aee6be0321cae10a70e503e3224dda6d993f85b637768bddd2e1f7ca5",
+      "derived_seed_sha256": "e3c76f3666659c3631c60482b00e97a1b9d91f724add00ee95f3a46d847407f4"
+    },
+    "scientific_result": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-nist-20260905T213000Z.json",
+      "exists": false
+    },
+    "terminal": {
+      "path": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-nist-20260905T213000Z.terminal.json",
+      "file_sha256": "6a2c2d21de7c796d5a96c4fef4a23f08ffdd81684ed12e9defce7fcffc796b14",
+      "receipt_sha256": "e2382761a3171fd08451221bdcf59a64ed977dadc5d6f987c425b22fdbd8c857",
+      "status": "consumed_inconclusive_infrastructure_error",
+      "error_type": "RecursionError",
+      "error_message": "maximum recursion depth exceeded in comparison"
+    }
+  },
+  "independent_forensic_checks": {
+    "all_present_json_artifact_self_hashes_match": true,
+    "all_artifact_files_are_owner_only_mode_0400": true,
+    "authorization_evidence_file_and_receipt_hashes_match": true,
+    "terminal_authorization_claim_and_beacon_bindings_match": true,
+    "source_plan_and_environment_bindings_match": true,
+    "claim_follows_target_and_precedes_beacon_fetch": true,
+    "exact_target_pulse_matches": true,
+    "beacon_full_response_hash_matches": true,
+    "beacon_pulse_fields_match_full_response": true,
+    "deployed_output_value_recomputes": true,
+    "derived_seed_digest_recomputes": true,
+    "canonical_scientific_result_is_absent": true
+  },
+  "post_fix_canonical_terminal_replay": {
+    "mode": "read_only_with_frozen_receipt_bound_git_identity_and_environment_injected_in_memory",
+    "status": "consumed_inconclusive_infrastructure_error",
+    "error_type": "RecursionError",
+    "automatic_retry": "forbidden",
+    "scientific_result_exists": false,
+    "rng_or_participant_generation_executed": false,
+    "external_or_human_outcome_executed": false
+  },
+  "root_cause": {
+    "summary": "Post-beacon validation re-entered full beacon validation while recomputing the sealed development result's reserved-seed summary.",
+    "cycle": [
+      "validate_beacon_evidence",
+      "derive_lockbox_seed_from_beacon_receipt",
+      "validate_pre_network_claim",
+      "validate_consumed_authorization_binding",
+      "prelockbox_authorization_evidence",
+      "development_evidence",
+      "validate_development_result",
+      "summarize_synthetic_metrics",
+      "require_seed_access",
+      "reserved_seed_values",
+      "derive_lockbox_seed_from_beacon_receipt"
+    ]
+  },
+  "remediation": {
+    "status": "implemented_after_terminal_without_reexecution",
+    "focused_synthetic_tests": "40 passed",
+    "focused_v2_terminal_analysis_request_and_synthetic_tests": "115 passed",
+    "post_remediation_full_repository_tests": "706 passed, 68 known Transformer warnings",
+    "frozen_master_plan_modified": false,
+    "changes": [
+      "short_circuit_static_and_already_derived_reserved_seed_checks",
+      "split_intrinsic_beacon_and_seed_validation_from_full_claim_authorization_validation",
+      "add_post_beacon_development_validation_regression",
+      "add_complete_post_beacon_error_terminal_validation_regression",
+      "pin_a_terminal_deny_overlay_and_guard_all_repository_governed_v2_effectful_entrypoints"
+    ],
+    "v11_lockbox_reexecuted": false
+  },
+  "execution_deny": {
+    "candidate_disposition": "retired_after_consumed_lockbox",
+    "same_candidate_override": "forbidden",
+    "overlay_path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+    "overlay_file_sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0",
+    "denied_capabilities": [
+      "beta_dong_independent_gate",
+      "beta_dong_outcome_reduction_or_selection",
+      "beta_dong_query_label_join",
+      "beta_dong_score_request_or_prediction",
+      "choi2019_v2_replication_outcome",
+      "synthetic_lockbox_reexecution",
+      "wearable_held60_v2_access_or_outcome"
+    ],
+    "scope": "all_repository_governed_v2_effectful_entrypoints; arbitrary_same_uid_ad_hoc_code_is_outside_the_guarantee"
+  },
+  "information_access": {
+    "synthetic_scientific_lockbox_outcome_accessed": false,
+    "beta_v2_outcomes_accessed": false,
+    "dong2023_v2_outcomes_accessed": false,
+    "choi2019_v2_outcomes_accessed": false,
+    "wearable_held60_outcomes_accessed": false,
+    "external_hardening_commit_merged": false,
+    "external_hardening_outcome_path_executed": false,
+    "repository_governed_v2_effectful_entrypoints_terminally_denied": true
+  },
+  "interpretation_boundary": "This is local-custody internal-consistency evidence for one consumed inconclusive attempt. It is not a scientific efficacy result, a third-party signature, or evidence about human acquisition metadata."
+}

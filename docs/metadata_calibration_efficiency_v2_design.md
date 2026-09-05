@@ -1,32 +1,40 @@
 # Metadata-assisted low-calibration SSVEP — V2 frozen design
 
-상태: **V2 방법 r6·외부 source gate 동결 / held 60명 접근 금지**
+상태: **human 방법 r6 보존 / synthetic governance V11 단회 시도 인프라 terminal·결론 불가 /
+외부·held 60명 접근 금지**
 
-r3–r6는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
-빠져 있던 `effective support mass` 항을 명시했고, r4는 P1/P2의 실행 수식과
-fail-closed gate/provenance를 완전히 적었다. r5는 최종 endpoint의 k=3/5를 계산하는
-과정에서 필요한 중간 prefix depth 2/4를 전용 prequential API로만 허용한다. 후보 수·
-participant 할당·평가 지표·threshold·held 경계는 바꾸지 않았다.
-r6는 NumPy 1.26과 2.2가 다섯 번째 filter-bank weight를 1 ULP 다르게 계산하는
-환경 의존성을 제거했다. V2 전용 config에 이미 frozen operator가 쓰던 7개 값을
-명시했으며 가설·후보·cohort·endpoint·threshold·seed·stopping rule은 그대로다.
-Synthetic generator v4는 별도로 spatial/phase/gain/context의 random-variable axis를
-명시한다. 특히 impedance는 실제 측정 방식과 같이 block 전에 얻는 channel vector이고,
-그 block의 모든 class trial에 동일하게 결합된다.
-v5는 target/cross-frequency harmonic의 phase가 각각 `h×(class phase+block drift)`와
-`h×(cross-class phase+extra phase+block drift)`임을 괄호까지 명시한다.
-v6는 synthetic shuffled/stale context가 현재 support prefix 밖의 future/evaluation/query
-packet을 쓰지 못하게 한다. 두 control은 관측된 support packet 안에서만 재배열되므로
-k=1에서는 정직한 exact no-op이다.
-v7은 public RNG/participant primitive에서 reserved seed를 직접 쓰는 경로를 막고,
-lockbox result 경로와 무관한 하나의 canonical seed-global claim을 RNG보다 먼저 만든다.
-다른 output 이름으로 같은 lockbox seed를 다시 실행할 수 없다. 독립 감사 결과, 평문으로
-공개된 고정 seed는 기술적으로 unseen일 수 없으므로 v8에서 미실행 `20260907`을 폐기했다.
-대신 source를 먼저 clean tag로 동결하고 나서 2026-09-05 19:30 UTC에 공개될 정확한
-NIST Randomness Beacon pulse를 사전 명시한 식에 넣어 256-bit lockbox seed를 만든다.
-v8은 또한 전체 Git worktree·Python/NumPy/SciPy/BLAS 환경, full-suite test receipt,
-5,888-row development artifact와 19개 contrast의 재계산, 정확한 8개 severe-harm
-estimand, claim 이후 실패도 재시도 없이 소비되는 terminal 상태임을 고정한다.
+Human 방법 revision r3–r6는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다.
+r3는 `effective support mass`, r4는 P1/P2 실행 수식과 fail-closed provenance, r5는
+k=3/5의 중간 prefix depth 2/4 전용 prequential API를 명시했다. r6는 NumPy 1.26과
+2.2 사이의 다섯 번째 filter-bank weight 1 ULP 차이를 없애기 위해 7개 weight를
+명시했다. 후보·cohort·endpoint·threshold·held 경계는 바꾸지 않았다.
+
+Synthetic DGP와 실행 governance는 별도 revision이다. v4–v6는 spatial/phase/gain/context
+축, block 단위 impedance, 정확한 harmonic phase와 support-prefix 내부에서만 가능한
+shuffled/stale control을 고정했다. v7은 public primitive의 reserved seed 접근을 막고
+결과 경로와 독립적인 canonical seed-global claim을 도입했다. 공개 평문 seed
+`20260907`은 미실행 상태로 폐기했다.
+
+V8–V10은 모두 해당 lockbox 정보 전에 폐기됐다. V8은 잘못된 test interpreter receipt,
+V9는 claim/receipt transaction 감사 문제, V10은 preparation 뒤 development replay 중
+terminal precedence 문제를 발견했다. V10에는 development receipt·authorization·beacon·
+claim·outcome이 없었다. V11은 별도 error-terminal이 scientific result보다 우선하도록
+고친 실제 freeze다. 커밋은 `832e579c0dec8774ffe8c3ac99abf110a74aa9e3`, 태그는
+`metadata-calibration-efficiency-v2-synthetic-freeze-20260906-r11`, plan SHA-256은
+`9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c`다.
+
+V11은 2026-09-05 21:30 UTC NIST pulse를 사전 고정했고 21:30:36 UTC에 정확히 한 번
+호출됐다. Global claim과 정확한 pulse receipt는 만들어졌지만, 그 뒤 authorization을
+재검증하면서 development evidence의 reserved-seed 검사가 다시 full beacon validator로
+들어가는 순환 때문에 `RecursionError`가 발생했다. Scientific metric/result는 하나도
+생성되지 않았고 terminal은 `consumed_inconclusive_infrastructure_error`다. 계약상 이
+lockbox는 소비됐으며 재시도하지 않는다. 이는 현 방법의 음성 효능 결과도, human
+metadata의 무용성 증거도 아니다. 상세 포렌식과 후속 결정은
+[V2 synthetic 결과](metadata_calibration_efficiency_v2_results.md)에 기록한다.
+
+사전 계획의 hash 의미를 보존하기 위해 frozen master YAML과 synthetic contract는 사후
+상태로 다시 쓰지 않는다. Terminal 분류·artifact digest·수정 후 검증은 별도
+`configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json`이 기록한다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
@@ -200,22 +208,29 @@ reasonable request가 필요하다. 라이선스, 동의 범위, 기존 Zhu 102�
 
 1. **형식/단위시험:** k=0 exact FBCCA, off exact fallback, all-missing exact AQ,
    no-query-label API, order/permutation invariance, probability simplex, convex bound.
-2. **합성 development와 별도 synthetic lockbox:** 도움이 되는 support, 무작위 label,
+2. **합성 development와 별도 synthetic lockbox — terminal 완료:** 도움이 되는 support, 무작위 label,
    오염 block, context-null, correct/shuffled pairing을 모두 검사한다. 생성식·독립 RNG
    key·판정 기준·개발/lockbox seed는
    `configs/analysis/metadata_calibration_v2_synthetic.yaml`에 결과 전에 별도로 동결한다.
-   이것은 구현과 메커니즘의 필요조건이지 human EEG 효능 근거가 아니다.
-3. **BETA23+Dong19 선택:** operator와 작은 grid에서 하나만 선택하고 즉시 동결한다.
-4. **BETA45+Dong39 독립 AQ gate:** pooled eAUC lower bound>0, observed gain>=.01,
+   이것은 구현과 메커니즘의 필요조건이지 human EEG 효능 근거가 아니다. V11은
+   post-claim infrastructure terminal로 끝나 scientific gate를 평가하지 못했다.
+3. **BETA23+Dong19 선택 — 미실행·금지:** operator와 작은 grid에서 하나만 선택하고 즉시 동결한다.
+4. **BETA45+Dong39 독립 AQ gate — 미실행·금지:** pooled eAUC lower bound>0, observed gain>=.01,
    dataset별 k=1 평균>=0 및 harm-tail 기준을 모두 요구한다.
-5. **Choi 외부 복제:** asset/protocol 동결 후 한 번만 실행한다. 실패하면 held로 가지 않는다.
-6. **V2 clean tag·power receipt·새 서명 승인:** permanent outcome key가 candidate 이름과
+5. **Choi 외부 복제 — 미실행·금지:** asset/protocol 동결 후 한 번만 실행한다. 실패하면 held로 가지 않는다.
+6. **V2 clean tag·power receipt·새 서명 승인 — 후속 human 실행 권한 없음:** permanent outcome key가 candidate 이름과
    무관하게 같은 물리 cohort의 중복 공개를 막는지 확인한다.
-7. **조건부 wearable held 60:** 모든 역할·budget·control을 하나의 atomic bundle로
+7. **조건부 wearable held 60 — 미개봉·금지:** 모든 역할·budget·control을 하나의 atomic bundle로
    생성하고 한 번만 공개한다. 일부 결과만 보고 계속할 수 없다.
 
 어느 hard gate든 실패하면 그 결과를 보존하고 현 candidate를 종료한다. threshold나
 lambda를 같은 lockbox에 맞춰 바꾸려면 새 candidate와 새 미관측 cohort가 필요하다.
+V11처럼 post-claim infrastructure failure가 난 경우에는 효능을 판정하지 못했더라도 같은
+lockbox를 재호출하지 않는다. 후속 연구는 순환 버그 수정만으로 자동 승인되지 않으며, 새
+schema·명시적 pre-outcome amendment·새 미관측 lockbox가 있어야 별도 후보로 시작할 수 있다.
+현재 repository의 governed V2 effectful entrypoint에는 hash-pinned terminal deny-overlay를
+적용해 synthetic 재실행과 BETA/Dong request·prediction·label join·reduction·selection·gate를
+데이터 접근 전에 기계적으로 거부한다. Read-only plan/allocation/inventory/artifact 감사만 남긴다.
 
 ## 7. 최종 통계 질문
 
@@ -232,9 +247,10 @@ bound가 0보다 크고 관측 평균이 0.02 이상일 때 실질적 metadata �
 가능하다. correct M과 pair-shuffled M 차이는 그 뒤의 mechanism family이며, primary
 효과를 대신하지 않는다.
 
-## 8. 구현·worktree 경계
+## 8. V11 실행 전 구현·worktree 경계 (historical)
 
-공유 계약은 main이 소유한다. 계약 커밋 뒤 새 worktree에서 다음을 병렬 구현한다.
+V11을 만들 때 공유 계약은 main이 소유했고, 계약 커밋 뒤 새 worktree에서 다음 lane을
+분리했다.
 
 - operator lane: score prototype, template residual, convex fusion, relative affinity,
   exact fallback과 unit tests
@@ -243,16 +259,19 @@ bound가 0보다 크고 관측 평균이 0.02 이상일 때 실질적 metadata �
 - integration lane(main): candidate registry, lifecycle/permanent-key 연결, documentation,
   최종 end-to-end 검증
 
-기존 V1 schema나 intervention 이름의 의미는 바꾸지 않는다. V2는 별도 schema/version
-dispatch를 사용한다. 기존 오래된 세 worktree도 재사용하지 않는다.
+기존 V1 schema나 intervention 이름의 의미는 바꾸지 않았다. V2는 별도 schema/version
+dispatch를 사용했다. 이 구현 경계는 V11 재실행 권한이 아니며, 조건부 external producer
+worktree도 main에 병합하지 않았다.
 
-## 9. 외부에서 필요한 것
+## 9. 후속 별도 후보에서 외부로 필요한 것
 
-코드·합성·signal-only gate는 현재 자산으로 진행할 수 있다. 직접적인 metadata 복제를
-강화하려면 다음 한 가지가 필요하다.
+현 V11 경로에서는 synthetic·signal-only·human gate를 더 진행할 수 없다. 새 candidate,
+schema, seed, amendment와 future beacon을 별도로 동결한 뒤 직접적인 metadata 복제를
+강화하려면 다음 한 가지가 추가로 필요하다.
 
 - Liu et al. raw EEG+block impedance 자료의 분석 허가와 다운로드 링크, 또는
 - 같은 정보를 수집할 새 연구의 IRB/동의/데이터 거버넌스 승인
 
-이 권한이 없더라도 V2를 synthetic/AQ source gate까지 실행할 수 있다. 다만 그것만으로
-wet/dry·impedance의 독립 human replication을 주장하지 않는다.
+이 자료 권한은 새 synthetic gate 자체의 필요조건은 아니지만, 없으면 wet/dry·impedance의
+독립 human replication을 주장할 수 없다. 어느 경우에도 현 V11의 소비된 lockbox나 미실행
+external 경로를 이어서 실행해서는 안 된다.

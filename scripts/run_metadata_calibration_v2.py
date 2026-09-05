@@ -24,6 +24,7 @@ from cfeg.analysis.metadata_calibration_v2 import (
     validate_v2_plan_and_allocation,
     write_v2_completion_receipt_exclusive,
 )
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
 
 
 def _positive_integer(value: str) -> int:
@@ -89,6 +90,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    denied_actions = {
+        "score": "beta_dong_score_request_or_prediction",
+        "select": "beta_dong_outcome_reduction_or_selection",
+        "gate": "beta_dong_independent_gate",
+    }
+    if args.phase in denied_actions:
+        deny_v2_terminal_operational_action(denied_actions[args.phase])
     # Guard every user-controlled path before reading it. The canonical V2 plan and
     # allocation paths pass; wearable/source39/held60 aliases and symlinks do not.
     plan_path = reject_forbidden_v2_data_path(args.plan)

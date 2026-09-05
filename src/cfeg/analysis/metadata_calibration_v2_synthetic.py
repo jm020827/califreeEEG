@@ -32,6 +32,7 @@ from cfeg.baselines.fbcca import (
     make_reference_signals,
     resolve_filterbank_parameters,
 )
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
 from cfeg.models import metadata_calibration_v2 as v2_operator
 
 SYNTHETIC_PLAN_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-plan.v1"
@@ -353,7 +354,7 @@ def _reserved_seed_values(contract: SyntheticContract) -> frozenset[int]:
         fingerprint = (file_stat.st_ino, file_stat.st_size, file_stat.st_mtime_ns)
         cached = _VALIDATED_BEACON_SEED_CACHE.get(str(beacon_path))
         if cached is None or cached[0] != fingerprint:
-            derived = _derive_lockbox_seed_from_beacon_receipt(contract, beacon_path)
+            _, _, derived = _validate_intrinsic_beacon_receipt(contract, beacon_path)
             _VALIDATED_BEACON_SEED_CACHE[str(beacon_path)] = (fingerprint, derived)
         else:
             derived = cached[1]
@@ -388,7 +389,22 @@ def _require_seed_access(
     reaching a reserved stream outside the named governed phase.
     """
 
-    if root_seed not in _reserved_seed_values(contract):
+    # Static and already-derived reserved seeds do not require reading the
+    # canonical beacon receipt.  This short circuit is also essential after
+    # the receipt exists: validating it revalidates the sealed development
+    # evidence, whose summary in turn checks the static development seed.
+    # Re-entering beacon validation from that check would recurse through
+    # beacon -> claim -> authorization -> development indefinitely.
+    known_reserved = {
+        int(contract.plan["rng"]["development_root_seed"]),
+        int(
+            contract.plan["rng"][
+                "superseded_unexecuted_plaintext_lockbox_root_seed"
+            ]
+        ),
+        *_DYNAMIC_RESERVED_SEEDS,
+    }
+    if root_seed not in known_reserved and root_seed not in _reserved_seed_values(contract):
         return
     if not (
         isinstance(governed_context, _GovernedSeedContext)
@@ -3815,10 +3831,18 @@ def _derive_seed_material(
     )
 
 
-def _derive_lockbox_seed_from_beacon_receipt(
+def _validate_intrinsic_beacon_receipt(
     contract: SyntheticContract,
     receipt_path: str | Path,
-) -> int:
+) -> tuple[Path, dict[str, Any], int]:
+    """Validate only the receipt's immutable NIST pulse and seed material.
+
+    This layer deliberately does not validate the claim or authorization.  It
+    is used by public seed guards, including while those deeper bindings are
+    themselves being validated, so it must remain acyclic.  The full evidence
+    validator below adds claim, authorization, and filesystem-order bindings.
+    """
+
     path = _require_canonical_path(contract, "beacon_receipt", receipt_path)
     _readonly_receipt_file(path, "canonical NIST beacon receipt")
     receipt = load_json_object(path, name="canonical NIST beacon receipt")
@@ -3826,34 +3850,6 @@ def _derive_lockbox_seed_from_beacon_receipt(
     claimed = receipt.pop("beacon_receipt_sha256")
     if not isinstance(claimed, str) or claimed != _canonical_json_sha256(receipt):
         raise ValueError("NIST beacon receipt self-hash mismatch.")
-    authorization_path = canonical_execution_path(contract, "lockbox_authorization")
-    authorization = load_json_object(
-        authorization_path, name="synthetic lockbox authorization"
-    )
-    receipt_identity = GitIdentity(
-        commit=str(receipt["generator_commit"]),
-        tree=str(receipt["generator_tree"]),
-        source_bundle_sha256=str(receipt["generator_source_bundle_sha256"]),
-        clean=receipt["git_worktree_clean"] is True,
-        commit_timestamp_utc=str(receipt["generator_commit_timestamp_utc"]),
-    )
-    receipt_environment = receipt["environment"]
-    if not isinstance(receipt_environment, Mapping):
-        raise TypeError("NIST beacon receipt environment must be a mapping.")
-    claim, claim_digest = _validate_pre_network_claim(
-        contract,
-        claim_path=canonical_execution_path(contract, "seed_global_lockbox_claim"),
-        authorization_path=authorization_path,
-        authorization=authorization,
-        identity=receipt_identity,
-        environment=receipt_environment,
-    )
-    if (
-        claim["beacon_receipt_path"] != str(path)
-        or claim["output_path"] != str(canonical_execution_path(contract, "lockbox_result"))
-        or receipt["one_time_claim_sha256"] != claim_digest
-    ):
-        raise ValueError("NIST beacon receipt is not bound to the canonical pre-network claim.")
     raw_response = receipt["full_response_utf8"]
     if (
         not isinstance(raw_response, str)
@@ -3889,19 +3885,8 @@ def _derive_lockbox_seed_from_beacon_receipt(
     beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
     fetched_at = receipt["fetched_at_utc"]
     fetched_time = _parse_exact_utc(fetched_at, "beacon fetch time")
-    claim_time = _parse_exact_utc(claim["claim_created_at_utc"], "claim creation time")
-    if fetched_time < _target_datetime(contract) or fetched_time < claim_time:
+    if fetched_time < _target_datetime(contract):
         raise ValueError("NIST beacon receipt claims retrieval before the frozen target.")
-    claim_path = _readonly_receipt_file(
-        canonical_execution_path(contract, "seed_global_lockbox_claim"),
-        "canonical pre-network lockbox claim",
-    )
-    _, claim_stat = _safe_regular_file_stat(
-        claim_path, "canonical pre-network lockbox claim"
-    )
-    _, beacon_stat = _safe_regular_file_stat(path, "canonical NIST beacon receipt")
-    if claim_stat.st_ctime_ns > beacon_stat.st_ctime_ns:
-        raise ValueError("Beacon receipt filesystem creation predates the global claim.")
     if (
         receipt["schema"] != SYNTHETIC_BEACON_RECEIPT_SCHEMA
         or receipt["candidate_id"] != "metadata-calibration-efficiency-v2"
@@ -3926,6 +3911,61 @@ def _derive_lockbox_seed_from_beacon_receipt(
         or not _SHA256_RE.fullmatch(receipt["one_time_claim_sha256"])
     ):
         raise ValueError("NIST beacon receipt is not the exact frozen derivation.")
+    receipt["beacon_receipt_sha256"] = claimed
+    return path, receipt, root_seed
+
+
+def _derive_lockbox_seed_from_beacon_receipt(
+    contract: SyntheticContract,
+    receipt_path: str | Path,
+) -> int:
+    """Validate the complete claim/auth/beacon chain and return its seed."""
+
+    path, receipt, root_seed = _validate_intrinsic_beacon_receipt(
+        contract, receipt_path
+    )
+    authorization_path = canonical_execution_path(contract, "lockbox_authorization")
+    authorization = load_json_object(
+        authorization_path, name="synthetic lockbox authorization"
+    )
+    receipt_identity = GitIdentity(
+        commit=str(receipt["generator_commit"]),
+        tree=str(receipt["generator_tree"]),
+        source_bundle_sha256=str(receipt["generator_source_bundle_sha256"]),
+        clean=receipt["git_worktree_clean"] is True,
+        commit_timestamp_utc=str(receipt["generator_commit_timestamp_utc"]),
+    )
+    receipt_environment = receipt["environment"]
+    if not isinstance(receipt_environment, Mapping):
+        raise TypeError("NIST beacon receipt environment must be a mapping.")
+    claim, claim_digest = _validate_pre_network_claim(
+        contract,
+        claim_path=canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        authorization_path=authorization_path,
+        authorization=authorization,
+        identity=receipt_identity,
+        environment=receipt_environment,
+    )
+    if (
+        claim["beacon_receipt_path"] != str(path)
+        or claim["output_path"] != str(canonical_execution_path(contract, "lockbox_result"))
+        or receipt["one_time_claim_sha256"] != claim_digest
+    ):
+        raise ValueError("NIST beacon receipt is not bound to the canonical pre-network claim.")
+    fetched_time = _parse_exact_utc(receipt["fetched_at_utc"], "beacon fetch time")
+    claim_time = _parse_exact_utc(claim["claim_created_at_utc"], "claim creation time")
+    if fetched_time < claim_time:
+        raise ValueError("NIST beacon receipt claims retrieval before the global claim.")
+    claim_path = _readonly_receipt_file(
+        canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        "canonical pre-network lockbox claim",
+    )
+    _, claim_stat = _safe_regular_file_stat(
+        claim_path, "canonical pre-network lockbox claim"
+    )
+    _, beacon_stat = _safe_regular_file_stat(path, "canonical NIST beacon receipt")
+    if claim_stat.st_ctime_ns > beacon_stat.st_ctime_ns:
+        raise ValueError("Beacon receipt filesystem creation predates the global claim.")
     return root_seed
 
 
@@ -4443,6 +4483,7 @@ def run_lockbox_to_path(
 ) -> Path:
     """Consume the global claim before network access, seed derivation, or RNG."""
 
+    deny_v2_terminal_operational_action("synthetic_lockbox_reexecution")
     target = _require_canonical_path(contract, "lockbox_result", output_path)
     auth_path = _require_canonical_path(contract, "lockbox_authorization", authorization_path)
     claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")

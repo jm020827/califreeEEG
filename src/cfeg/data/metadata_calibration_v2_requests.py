@@ -23,6 +23,7 @@ import yaml
 
 from cfeg.baselines.fbcca import apply_filterbank, predict_fbcca, resolve_filterbank_parameters
 from cfeg.data.io_hdf5 import HDF5SampleReader
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
 from cfeg.models.metadata_calibration_v2 import (
     PrequentialFoldProvenance,
     TemplateScoreProvenance,
@@ -830,6 +831,7 @@ def build_external_score_request(
 ) -> dict[str, Any]:
     """Build the runner's exact JSON adapter without any query identity/outcome."""
 
+    deny_v2_terminal_operational_action("beta_dong_score_request_or_prediction")
     resolved_budget = _budget(budget)
     score_cache = _verify_score_cache_binding(score_cache, contract=contract)
     frozen = {value.candidate_key: value for value in candidate_grid(contract)}
@@ -1031,6 +1033,7 @@ def evaluate_query_labels_after_predictions(
     be routed back to :func:`build_external_score_request`.
     """
 
+    deny_v2_terminal_operational_action("beta_dong_query_label_join")
     if not score_receipts:
         raise ValueError("Label join requires at least one completed score receipt.")
     expected_tokens = deterministic_query_tokens(token_secret, asset=asset, participant=participant)

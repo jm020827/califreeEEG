@@ -19,6 +19,8 @@ import yaml
 from scipy.stats import beta as beta_distribution
 from scipy.stats import t as student_t
 
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
+
 V2_CANDIDATE_ID = "metadata-calibration-efficiency-v2"
 V2_PLAN_SCHEMA = "cfeg.metadata-calibration-efficiency-plan.v2"
 V2_ALLOCATION_SCHEMA = "cfeg.metadata-calibration-efficiency-v2.external-allocation.v1"
@@ -699,6 +701,7 @@ def reduce_v2_participant_balanced_accuracy(
 ) -> pd.DataFrame:
     """Reduce a complete external prediction grid to participant BA cells."""
 
+    deny_v2_terminal_operational_action("beta_dong_outcome_reduction_or_selection")
     frame = _validate_prediction_grid(
         predictions,
         contract=contract,
@@ -732,6 +735,7 @@ def derive_v2_participant_eauc_deltas(
 ) -> pd.DataFrame:
     """Derive k-specific and early-curve A_Q-minus-A0 effects per participant."""
 
+    deny_v2_terminal_operational_action("beta_dong_outcome_reduction_or_selection")
     frame = _validate_participant_ba(
         participant_ba,
         contract=contract,
@@ -869,6 +873,7 @@ def select_v2_development_candidate(
 ) -> dict[str, Any]:
     """Apply the frozen six-level development selection rule to all 12 candidates."""
 
+    deny_v2_terminal_operational_action("beta_dong_outcome_reduction_or_selection")
     candidates = v2_candidate_grid(contract)
     candidate_keys = tuple(item.candidate_key for item in candidates)
     frame = validate_v2_participant_deltas(
@@ -989,6 +994,7 @@ def evaluate_v2_independent_aq_gate(
 ) -> dict[str, Any]:
     """Evaluate the independent A_Q gate while keeping held access forbidden."""
 
+    deny_v2_terminal_operational_action("beta_dong_independent_gate")
     selection = validate_v2_development_selection_receipt(
         development_selection_receipt,
         contract=contract,
@@ -1134,6 +1140,7 @@ def score_v2_external_request(
     run before the operator lane is integrated.
     """
 
+    deny_v2_terminal_operational_action("beta_dong_score_request_or_prediction")
     if set(request) != _SCORE_REQUEST_FIELDS:
         raise ValueError("V2 score request has a wrong exact schema or forbidden query fields.")
     if (

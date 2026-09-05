@@ -1,10 +1,10 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-06
-현재 상태: **metadata-calibration-efficiency-v1 source 24/24 완료 / development no-go / held 60명 미개봉 / v1 후보 종료**
-현재 기준원: `DEC-20260905-006`과 `configs/analysis/metadata_calibration_efficiency_v1.yaml`. `DEC-20260903-005`의 physical 후보 retirement와 terminal `reliability-spatial-v1` Stage-0는 그대로 유효하며, `query-reliability-spatial-v1`은 outcome 전 철회된 frozen baseline-only다.
+현재 상태: **V2 synthetic V11 단회 소비 / infrastructure inconclusive / scientific result 없음 / external·held 금지**
+현재 방법의 불변 pre-outcome 기준원은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`과 frozen V11 plan SHA-256 `9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c`이고, 실행·종료 상태 기준원은 [V2 terminal audit](../configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json)과 [V2 terminal 결과](metadata_calibration_efficiency_v2_results.md)다. V1 source no-go, held 60명 미개봉, `DEC-20260903-005`의 physical 후보 retirement와 terminal `reliability-spatial-v1` Stage-0도 그대로 유효하다.
 
-이 문서는 현재 방향의 요약본이다. 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), 수치·해석·후속 결정은 [source 결과](metadata_calibration_efficiency_results.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. Exact one-shot lifecycle은 정상 종료했고 source FAIL이므로 held를 열지 않았다. 과거 physical, synthetic, query-only plan과 결과는 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
+이 문서는 현재 방향의 요약본이다. V1의 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), V1 수치·해석은 [source 결과](metadata_calibration_efficiency_results.md), V2 방법은 [V2 설계](metadata_calibration_efficiency_v2_design.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. V2 terminal은 scientific negative result가 아니다. 과거 physical, synthetic, query-only plan과 결과도 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
 
 ## 연구목표
 
@@ -13,6 +13,29 @@
 > deployment interface당 동일한 완전 calibration block과 동일한 고정 query에서, query 전에 관측한 wet/dry interface와 block별 채널 impedance가 EEG·구조·signal-derived QC만 쓰는 강한 기준보다 `k=0/1/3` early-budget curve를 개선하는가?
 
 Metadata 자체가 목적이 아니다. 현재 처리 가능한 과학적 treatment는 pre-query acquisition context뿐이다. Dataset/subject ID와 query-derived QC를 metadata 이득으로 세지 않는다. 새 class discovery, open-set/OOD 탐지, 손상 EEG 복원과 LLM test-time scaling은 primary endpoint가 아니다.
+
+## V2 synthetic gate 현재 상태
+
+V2는 V1의 질문을 바꾸지 않고 `A_Q` common path를 strict FBCCA anchor 위의 안전한
+support update로 고쳤으며, `A_QM`에는 query-support acquisition-context pairing만 작은
+추가 보정으로 허용했다. 사람 EEG outcome을 보기 전에 7개 beneficial/null/adversarial
+family × 64 synthetic participants에서 도움, correct-vs-shuffle pairing, adversarial
+abstention, null 비열등성과 severe-harm를 동시에 검정하도록 사전 동결했다.
+
+V11은 commit `832e579c0dec8774ffe8c3ac99abf110a74aa9e3`, tree
+`d26656acd69c88e62cc5dd336103ddd76f33022f`, tag
+`metadata-calibration-efficiency-v2-synthetic-freeze-20260906-r11`에서 전체 `682 passed`와
+독립 `CODE-GO` 뒤 한 번 실행했다. Development replay 5,888 rows/19 contrasts는
+`engineering_only`였고 lockbox 판정에 합치지 않았다. Exact NIST target pulse에 대한 global
+claim과 beacon receipt까지 정상 생성했지만, post-beacon evidence validator가 authorization→
+development→reserved-seed→beacon으로 순환해 efficacy participant 생성 전에
+`RecursionError` terminal이 됐다. Scientific result 파일은 생성되지 않았다.
+
+따라서 V2 P1/P2/AQM은 통과도 실패도 입증되지 않았다. Frozen 계약상 claim 이후 인프라
+오류도 lockbox를 소비하므로 같은 V11 재시도, BETA/Dong selection·independent outcome,
+Choi replication과 wearable held 60 outcome은 금지한다. 후속 연구는 validator 수정만으로
+자동 재시도할 수 없고, 새 candidate/schema·새 seed·명시적 pre-outcome amendment·새 clean
+freeze·새 future beacon을 갖춘 별도 루프여야 한다.
 
 ## 완료된 v1 설계와 결과
 
@@ -98,6 +121,7 @@ Reference/cap은 wearable에서 상수라 당시 primary 입력에서 제외했�
 | 전체 자산 감사 | 102명 | 24,480 | checksum, schema, raw↔processed, metadata 품질 감사 | 성능 기반 선택 |
 | development | S1–S3 | 720 | 역사적 prompt 6-job과 physical six-role×3-fold 18-job·3 intervention bundle 공개 완료; reveal #2 소비, valid diagnostic no-go | 모집단 효과 주장, S1–S3 재튜닝·추가 reveal |
 | synthetic engineering | 합성 8명 | 256 | terminal Stage-0 artifact의 read-only 무결성·해석 감사 | Stage-0 재실행/덮어쓰기, Stage-1, human EEG·population·architecture superiority 주장 |
+| V2 synthetic lockbox | 7 families × 64명 | scientific rows 0 | terminal·claim·beacon 무결성 감사; development 5,888 rows는 engineering-only | V11 재실행, synthetic 효능 PASS/FAIL 주장, external·human outcome 진입 |
 | source development | 사전 추출한 S4–S102 중 39명 | 9,360 | exact 24 jobs·4,680 query 완료; development no-go | 부분 grid, 결과 기반 재튜닝·same-cohort 재시도 |
 | held-participant evaluation | 나머지 60명 | 14,400 | 미개봉 보존; source FAIL로 seal/claim 0 | 현 v1으로 접근, 부분 reveal, 재시도 |
 | BETA query-only historical split | S16–S70의 35/20 | 8,800 | 기존 hash·forward 증거 보존 | 철회된 35/20 outcome plan 실행 |
@@ -125,14 +149,15 @@ identity digest까지 결속한다. 사전 고정한 normal global-null DGP의 f
 normal/t5/20%-harmed에서 약 0.216/0.210/0.214다. Owner는 최신 위임 지시로 현재 N=60의
 full-H2 계획 민감도 약 0.657과 그 한계를 수용했다. 약 0.80을 원했다면 약 83명용 새
 allocation·plan·power receipt가 필요했을 것이다. 단, 이전 `physical_hybrid_v1` 실행 권한이 되살아나는 것은
-아니다. V1 source outcome을 본 현재, 같은 39명은 V2의 unbiased promotion
-cohort가 될 수 없다. 새 방법·support/query·estimand·수치 gate와 독립
-development cohort를 먼저 동결·검증하고, 그 gate가 통과할 때만 미개봉
-60명을 새 held-participant evaluation에 쓸지 결정한다.
+아니다. V1 source outcome을 본 현재, 같은 39명은 V2의 unbiased promotion cohort가 될 수
+없다. 이 원칙으로 별도 V2 V11을 동결했지만 그 synthetic 실행은 infrastructure
+inconclusive로 소비됐다. 앞으로도 새 방법·support/query·estimand·수치 gate와 독립
+development cohort를 다시 사전 동결·검증한 별도 후보만 미개봉 60명의 사용 여부를 논의할
+수 있으며, 현재는 그 권한이 없다.
 
 ## 현재 모델 방향과 근거
 
-- 새 active concept는 metadata를 decoder-wide prompt나 query-spatial transform이 아니라 **frozen Q-only calibration estimator 위의 nested precision/shrinkage residual**로 제한한다. Bounded diagonal-Gaussian 수식과 Q 0.25–4배, M 0.8–1.25배, absolute precision 0.05–20의 범위는 구현·계약 검증됐다.
+- 종료된 V2 V11의 방법 concept는 metadata를 decoder-wide prompt나 query-spatial transform이 아니라 **frozen Q-only calibration estimator 위의 nested precision/shrinkage residual**로 제한했다. Bounded diagonal-Gaussian 수식과 Q 0.25–4배, M 0.8–1.25배, absolute precision 0.05–20의 범위는 구현·계약 검증됐지만 efficacy는 평가되지 않았다.
 - Primary pair는 한 composite source checkpoint의 A_Q residual-off와 A_QM residual-on이다. 공통 Q path를 먼저 고정하므로 M fit이 A_Q weights에 영향을 주지 않고, metadata missing 시 그 frozen A_Q path와 exact 같아야 한다.
 - `query_reliability_spatial_v1`은 waveform 앞에서 `X'=(I+ΔQ)X`를 적용하는 outcome-free frozen baseline 후보다.
 - 종료된 `reliability_spatial_v1`과 `physical_hybrid_v1`의 model, threshold나 S1–S3 outcome을 새 후보 tuning에 쓰지 않는다.
@@ -188,11 +213,11 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 
 ## 현재 중단·승인 상태
 
-최신 owner directive가 exact source→conditional-held outcome bundle과 N=60 sensitivity 한계를
-승인했다. 권한은 canonical plan, signed phase chain, permanent attempt key와 clean tag가 모두
-일치할 때만 코드가 행사한다.
+다음 source→conditional-held 권한과 N=60 sensitivity 수용은 **완료된 V1의 historical
+directive**다. V1 source no-go로 conditional held 권한은 소멸했고, V2에는 synthetic-only
+단회 권한만 있었으며 그것도 terminal로 소비됐다. 현재 external·Choi·held 실행 권한은 없다.
 
-- [승인·동결] A_QM−A_Q complete-block eAUC, exact 39/60 allocation, SESOI·margin·N=60
+- [V1 historical 승인·동결] A_QM−A_Q complete-block eAUC, exact 39/60 allocation, SESOI·margin·N=60
   sensitivity와 source gate 뒤 조건부 held 실행
 - [완료] diagonal-Gaussian prior, staged common-path freeze, 56-d Q/18-d M, spectral composite,
   full checkpoint와 correct/missing/shuffle/stale/opposite-interface 개입
@@ -211,7 +236,10 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 - [완료] plan/power, full test·lint·config parse, commit `56bff34`, annotated freeze tag 봉인
 - [완료·no-go] source 24/24 jobs, private grid, one-shot claim·finalization·signed lifecycle
 - [미개봉] source FAIL에 따라 held 8 jobs·60명 input seal/claim/result를 생성하지 않음
-- [다음 후보] 새 A_Q common path·pairing-aware M operator와 독립 development data가 있을 때만 v2를 사전등록
+- [완료·inconclusive] V2 V11은 global claim·미래 beacon 뒤 validator 재귀로 scientific result 전 terminal; 자동 재시도 금지
+- [금지] 현 V11에 대한 BETA/Dong selection·independent outcome, Choi replication, wearable held 60 outcome
+- [기계적 차단] hash-pinned terminal deny-overlay가 repository의 synthetic 재실행 및 BETA/Dong request·prediction·label join·reduction·selection·gate를 입력 접근 전에 거부
+- [다음 후보] 새 schema·seed·amendment·clean freeze·future beacon을 갖춘 별도 candidate만 검토
 - [보존] query-only BETA 35/20 plan은 frozen baseline-only이며 실행하지 않음
 - [불변] physical_hybrid_v1, S1–S3 추가 outcome과 reliability-spatial-v1 재실행 금지
 
@@ -320,10 +348,14 @@ Assay는 유효했다. Counterfactual condition flip과 train/inference bundle c
    result는 모두 생성하지 않았다.
 9. [완료] Ke2025 24명은 impedance가 전부 `n/a`이고 interface contrast가 없어 primary
    M 검정에 부적합하다. BETA/Wang/Dong도 paired block impedance가 없다.
-10. [다음] A_Q k1 no-harm, epoch-0 M abstention, pairing-aware M operator를 새 candidate로
-    구현하고 randomized interface×repeated-session×block-impedance 독립 development data를
-    확보한 뒤만 v2 gate를 사전등록한다.
+10. [완료] A_Q k1 no-harm, epoch-0 M abstention과 pairing-aware M operator를 V2 후보로
+    구현하고, 사람 EEG 전에 synthetic V11 gate를 사전등록·동결했다.
+11. [완료·inconclusive] V11 단회 실행은 claim·beacon 뒤 validator 재귀로 efficacy 계산 전
+    terminal이 됐다. Scientific PASS/FAIL 값은 없고 같은 lockbox는 소비됐다.
+12. [차단] External·Choi·held outcome은 실행하지 않는다. 재개하려면 기술 수정 외에도 새
+    candidate/schema와 seed, 명시적 amendment, clean freeze와 새 future beacon이 필요하다.
 
-현 v1은 source 39명 outcome을 한 번 공개한 `development_no_go`다. Held 60명의
-support-label access, query prediction·outcome은 모두 미개봉이다. 결과를 본 뒤 threshold를
-바꾸거나 같은 cohort로 v1을 재실행하지 않는다.
+현 v1은 source 39명 outcome을 한 번 공개한 `development_no_go`이고, V2 V11은 과학 결과가
+없는 `infrastructure inconclusive`다. Held 60명의 support-label access, query
+prediction·outcome은 모두 미개봉이다. 어느 후보도 결과를 본 뒤 threshold를 바꾸거나 같은
+lockbox/cohort로 재실행하지 않는다.

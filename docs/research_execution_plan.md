@@ -3,6 +3,14 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
+> **2026-09-06 V2 overlay:** 현재 V2 기준원은
+> [V2 설계](metadata_calibration_efficiency_v2_design.md)와
+> `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. V11 synthetic
+> lockbox는 claim과 미래 beacon을 소비한 뒤 efficacy 계산 전 validator 재귀 오류로
+> `infrastructure inconclusive` terminal이 됐다. 같은 lockbox 재실행과 external·Choi·held
+> outcome은 금지한다. 상세 증거는 [V2 terminal 결과](metadata_calibration_efficiency_v2_results.md)를
+> 따른다. 아래 historical Phase 3의 39/60 실행 권한은 되살아나지 않는다.
+
 > **2026-09-04 superseded / historical only:** `DEC-20260904-005`가 현재 목표를
 > metadata-assisted calibration-efficient SSVEP로 복구했다. 아래 strict-k0 A0/A2 질문과
 > Phase 3은 당시 계획이며 실행하지 않는다. 현재 설계는

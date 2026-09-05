@@ -4,6 +4,8 @@
 
 완료된 `metadata-calibration-efficiency-v1`은 같은 완전한 calibration block과 같은 고정 query에서, EEG·구조·signal-derived QC만 쓰는 `A_Q`보다 pre-query acquisition context를 추가한 `A_QM`이 `k=0/1/3` early-budget curve를 개선하는지 물었다. Source 39명·24 jobs에서 eAUC 차이는 `−0.004843`, correct−shuffle은 `0`이었고 기본 A_Q k=5도 `0.476282<0.50`여서 `development_no_go`로 종료했다. 사전 규칙대로 held 60명은 열지 않았다. 전체 설계는 [metadata-assisted low-calibration 설계](docs/metadata_calibration_efficiency_design.md), 수치·해석·후속 결정은 [source 결과](docs/metadata_calibration_efficiency_results.md), 현재 상태는 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 결정 이력은 [append-only 연구일지](docs/research_log.md)에 있다.
 
+후속 V2는 stronger FBCCA anchor, 안전한 support update와 pairing-aware acquisition context를 새 synthetic lockbox에서 먼저 검증하도록 동결했다. V11 단회 실행은 claim과 미래 NIST beacon을 정상 소비했지만 efficacy participant 생성 전 evidence validator의 `RecursionError`로 끝났다. 따라서 과학적 PASS/FAIL이 아니라 `infrastructure inconclusive`이며 같은 lockbox를 재실행하지 않는다. BETA/Dong, Choi와 wearable held 60명의 V2 outcome은 전혀 실행하지 않았다. 자세한 경계는 [V2 설계](docs/metadata_calibration_efficiency_v2_design.md)와 [V2 terminal 결과](docs/metadata_calibration_efficiency_v2_results.md)에 있다.
+
 기존 `query-reliability-spatial-v1`은 사람 EEG outcome을 열지 않은 채 primary에서 내려와 frozen query-only baseline 후보로 남는다. 그 구현·hash·CUDA forward 증거는 보존하지만 기존 BETA 35/20 outcome plan은 실행하지 않는다. `physical_hybrid_v1` no-go, S1–S3 추가 outcome 금지와 `reliability-spatial-v1` Stage-0 terminal failure도 그대로 유지한다.
 
 이전 physical-hybrid 계약은 역사 문서에 보존한다. 현 metadata-calibration 실험은 사전 할당 source 39명의 성능을 한 번 공개했으며, 나머지 held 60명의 support label, query prediction·outcome은 계속 미개봉이다. 현 후보의 threshold나 방법을 바꿔 같은 source/held를 재실행하지 않는다.

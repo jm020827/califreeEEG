@@ -25,6 +25,7 @@ from cfeg.analysis.metadata_calibration_v2_synthetic import (
     validate_synthetic_contract,
     write_json_exclusive,
 )
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -63,6 +64,8 @@ def _receipt_digest(payload: dict) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.phase == "lockbox":
+        deny_v2_terminal_operational_action("synthetic_lockbox_reexecution")
     contract = validate_synthetic_contract(args.plan)
     prepare_canonical_artifact_directories(contract)
     phase_to_artifact = {

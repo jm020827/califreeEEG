@@ -24,6 +24,11 @@ from cfeg.models import metadata_calibration_v2 as v2_operator
 NON_RESERVED_SEED = 17012026
 
 
+@pytest.fixture(autouse=True)
+def _exercise_retired_v11_without_operational_authority(monkeypatch) -> None:
+    monkeypatch.setattr(synthetic, "deny_v2_terminal_operational_action", lambda _action: None)
+
+
 @pytest.fixture(scope="module")
 def contract() -> synthetic.SyntheticContract:
     return synthetic.validate_synthetic_contract()
@@ -520,6 +525,85 @@ def _passing_metric_rows() -> list[dict]:
     return rows
 
 
+def _complete_passing_metric_rows() -> list[dict]:
+    return [
+        {
+            **row,
+            "gate_reason": "unit_test_fixture",
+            "exact_fallback": row["budget"] == 0,
+            "prediction_sha256": "a" * 64,
+            "producer_sha256": "b" * 64,
+            "operator_schema": None,
+            "support_depth": row["budget"],
+            "relative_context_pairing_sha256": None,
+            "comparable_context_pair_count": 0,
+            "prequential": None,
+        }
+        for row in _passing_metric_rows()
+    ]
+
+
+def _valid_development_result(
+    contract: synthetic.SyntheticContract,
+    identity: synthetic.GitIdentity,
+    environment: dict,
+    preparation_sha256: str,
+) -> dict:
+    rows = _complete_passing_metric_rows()
+    metrics = contract.plan["metrics"]["sensitivity_only"]
+    context = synthetic._governed_seed_context(
+        contract,
+        phase="development-validation",
+        root_seed=synthetic.DEVELOPMENT_ROOT_SEED,
+    )
+    contrasts, promotion = synthetic.summarize_synthetic_metrics(
+        rows,
+        contract=contract,
+        root_seed=synthetic.DEVELOPMENT_ROOT_SEED,
+        families=synthetic.FAMILY_NAMES,
+        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
+        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
+        _governed_context=context,
+    )
+    result = {
+        "schema": synthetic.SYNTHETIC_RESULT_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "development",
+        "status": "engineering_only",
+        "human_claim_boundary": "synthetic_pass_is_necessary_but_never_sufficient",
+        "plan_sha256": contract.plan_sha256,
+        "filterbank_sha256": contract.filterbank_sha256,
+        "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
+        "root_seed": synthetic.DEVELOPMENT_ROOT_SEED,
+        "rng": {
+            "bit_generator": "numpy.random.PCG64DXSM",
+            "construction": "numpy.random.SeedSequence",
+            "complete_key_order": list(contract.plan["rng"]["key_order"]),
+        },
+        "participants_per_family": 64,
+        "families": list(synthetic.FAMILY_NAMES),
+        "support_budgets": list(synthetic.SUPPORT_BUDGETS),
+        "query_blocks": list(contract.plan["population"]["immutable_query_blocks"]),
+        "hard_assertions_completed_before_metrics": True,
+        "hard_assertions": {
+            name: True for name in contract.plan["hard_assertions_before_efficacy"]
+        },
+        "participant_metrics": rows,
+        "primary_contrasts": contrasts,
+        "promotion": promotion,
+        "development_outputs_are_engineering_only": True,
+        "lockbox_terminal": False,
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment": environment,
+        "preparation_receipt_sha256": preparation_sha256,
+    }
+    result["result_sha256"] = synthetic._canonical_json_sha256(result)
+    return result
+
+
 def test_frozen_decisions_and_exact_eight_severe_harm_estimands(contract) -> None:
     summaries, promotion = synthetic.summarize_synthetic_metrics(
         _passing_metric_rows(),
@@ -790,6 +874,43 @@ def test_future_beacon_seed_uses_full_digest_and_fresh_process_guard(
         )
     synthetic._DYNAMIC_RESERVED_SEEDS.discard(expected)
     synthetic._VALIDATED_BEACON_SEED_CACHE.clear()
+
+
+def test_static_reserved_seed_check_does_not_reenter_existing_beacon(
+    tmp_path: Path, contract, monkeypatch
+) -> None:
+    isolated = _contract_with_paths(tmp_path, contract)
+    beacon_path = synthetic.canonical_execution_path(isolated, "beacon_receipt")
+    synthetic.write_json_exclusive(beacon_path, {"post_claim": True})
+    calls = 0
+
+    def forbidden_beacon_revalidation(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        raise AssertionError("static seed check re-entered beacon validation")
+
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_intrinsic_beacon_receipt",
+        forbidden_beacon_revalidation,
+    )
+    context = synthetic._governed_seed_context(
+        isolated,
+        phase="development-validation",
+        root_seed=synthetic.DEVELOPMENT_ROOT_SEED,
+    )
+    synthetic._require_seed_access(
+        isolated,
+        synthetic.DEVELOPMENT_ROOT_SEED,
+        context,
+    )
+    with pytest.raises(ValueError, match="internal governed"):
+        synthetic._require_seed_access(
+            isolated,
+            synthetic.DEVELOPMENT_ROOT_SEED,
+            None,
+        )
+    assert calls == 0
 
 
 def test_standalone_beacon_fetch_is_always_forbidden(tmp_path: Path, contract) -> None:
@@ -1098,6 +1219,191 @@ def test_minimal_and_forged_development_results_are_rejected(contract) -> None:
     assert len(rows) == 5888
     with pytest.raises(ValueError, match="exact frozen fields"):
         synthetic._validate_complete_metric_grid(rows)
+
+
+def test_complete_development_result_validates_after_beacon_exists(
+    tmp_path: Path, contract
+) -> None:
+    isolated = _contract_with_paths(tmp_path, contract)
+    beacon_path = synthetic.canonical_execution_path(isolated, "beacon_receipt")
+    synthetic.write_json_exclusive(beacon_path, {"post_claim": True})
+    identity = _identity()
+    environment = synthetic.current_environment_receipt()
+    preparation_sha = "4" * 64
+    result = _valid_development_result(
+        isolated, identity, environment, preparation_sha
+    )
+    synthetic._DYNAMIC_RESERVED_SEEDS.clear()
+    synthetic._VALIDATED_BEACON_SEED_CACHE.clear()
+    validated = synthetic.validate_development_result(
+        result,
+        contract=isolated,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation_sha,
+    )
+    assert validated["result_sha256"] == result["result_sha256"]
+
+
+def test_complete_error_terminal_validates_after_beacon_exists(
+    tmp_path: Path, contract, monkeypatch
+) -> None:
+    target_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    isolated = _retarget_beacon(_contract_with_paths(tmp_path, contract), target_time)
+    identity = _identity()
+    environment = synthetic.current_environment_receipt()
+    monkeypatch.setattr(synthetic, "current_git_identity", lambda: identity)
+    monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+
+    _FrozenDateTime.observed_now = target_time - timedelta(minutes=30)
+    preparation_path = synthetic.canonical_execution_path(
+        isolated, "preparation_receipt"
+    )
+    preparation = synthetic.build_preparation_receipt(
+        isolated, output_path=preparation_path
+    )
+    synthetic.write_json_exclusive(preparation_path, preparation)
+    preparation_sha = preparation["completion_receipt_sha256"]
+
+    development_path = synthetic.canonical_execution_path(isolated, "development_result")
+    development = _valid_development_result(
+        isolated, identity, environment, preparation_sha
+    )
+    synthetic.write_json_exclusive(development_path, development)
+
+    tests_path = synthetic.canonical_execution_path(
+        isolated, "full_suite_test_evidence"
+    )
+    stdout_path, stderr_path = synthetic._test_transcript_paths(tests_path)
+    stdout = b"unit fixture passed\n"
+    stderr = b""
+    synthetic._write_bytes_exclusive(stdout_path, stdout)
+    synthetic._write_bytes_exclusive(stderr_path, stderr)
+    tests = {
+        "schema": synthetic.SYNTHETIC_TEST_EVIDENCE_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "test-evidence",
+        "status": "passed",
+        "plan_sha256": isolated.plan_sha256,
+        "argv": [str(environment["python_executable"]), "-m", "pytest", "-q"],
+        "working_directory": str(synthetic._REPOSITORY),
+        "scope": "complete_repository_test_suite",
+        "exit_code": 0,
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": hashlib.sha256(stdout).hexdigest(),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": hashlib.sha256(stderr).hexdigest(),
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "git_worktree_clean": True,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment": environment,
+        "preparation_receipt_sha256": preparation_sha,
+        "development_result_sha256": development["result_sha256"],
+    }
+    tests["test_evidence_sha256"] = synthetic._canonical_json_sha256(tests)
+    synthetic.write_json_exclusive(tests_path, tests)
+
+    authorization_path = synthetic.canonical_execution_path(
+        isolated, "lockbox_authorization"
+    )
+    authorization = synthetic.build_lockbox_authorization_template(
+        isolated,
+        output_path=synthetic.canonical_execution_path(isolated, "lockbox_result"),
+    )
+    authorization.update(
+        {
+            "status": "authorized_for_one_time_execution",
+            "authorized": True,
+            "authorized_by": "unit test",
+            "authorization_basis": "post-beacon terminal validation regression",
+            "one_time_nonce_sha256": "c" * 64,
+        }
+    )
+    authorization = synthetic.seal_authorization_record(authorization)
+    synthetic.write_json_exclusive(authorization_path, authorization)
+
+    _FrozenDateTime.observed_now = target_time + timedelta(seconds=1)
+    claim_path = synthetic.canonical_execution_path(
+        isolated, "seed_global_lockbox_claim"
+    )
+    claim = {
+        "schema": synthetic.SYNTHETIC_LOCKBOX_CLAIM_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "lockbox-pre-network-claim",
+        "status": "one_time_global_claimed_before_beacon_fetch_seed_or_rng",
+        "plan_sha256": isolated.plan_sha256,
+        "claim_created_at_utc": _FrozenDateTime.observed_now.isoformat(
+            timespec="milliseconds"
+        ).replace("+00:00", "Z"),
+        "future_beacon_target_utc": isolated.plan["rng"][
+            "independent_lockbox_root_seed"
+        ]["target_timestamp_utc"],
+        "future_beacon_statement_sha256": isolated.plan["rng"][
+            "independent_lockbox_root_seed"
+        ]["statement_sha256"],
+        "network_access_before_claim": False,
+        "authorization_path": str(authorization_path),
+        "authorization_file_sha256": synthetic._sha256_file(authorization_path),
+        "authorization_receipt_sha256": authorization["authorization_receipt_sha256"],
+        "authorization_created_at_utc": authorization["authorization_created_at_utc"],
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "git_worktree_clean": True,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment_sha256": environment["environment_sha256"],
+        "beacon_receipt_path": str(
+            synthetic.canonical_execution_path(isolated, "beacon_receipt")
+        ),
+        "output_path": str(
+            synthetic.canonical_execution_path(isolated, "lockbox_result")
+        ),
+        "terminal_receipt_path": str(
+            synthetic.canonical_execution_path(isolated, "lockbox_terminal_receipt")
+        ),
+    }
+    claim["claim_sha256"] = synthetic._canonical_json_sha256(claim)
+    synthetic.write_json_exclusive(claim_path, claim)
+
+    beacon, _ = _valid_beacon_receipt(
+        isolated, identity, environment, claim_sha256=claim["claim_sha256"]
+    )
+    beacon.update(
+        {
+            "preparation_receipt_sha256": preparation_sha,
+            "development_result_sha256": development["result_sha256"],
+            "test_evidence_sha256": tests["test_evidence_sha256"],
+        }
+    )
+    beacon.pop("beacon_receipt_sha256")
+    beacon["beacon_receipt_sha256"] = synthetic._canonical_json_sha256(beacon)
+    beacon_path = synthetic.canonical_execution_path(isolated, "beacon_receipt")
+    synthetic.write_json_exclusive(beacon_path, beacon)
+
+    terminal = synthetic._terminal_receipt(
+        status="consumed_inconclusive_infrastructure_error",
+        contract=isolated,
+        identity=identity,
+        environment=environment,
+        authorization_sha256=authorization["authorization_receipt_sha256"],
+        beacon_receipt_sha256=beacon["beacon_receipt_sha256"],
+        claim_sha256=claim["claim_sha256"],
+        error=RecursionError("unit-test historical regression"),
+    )
+    terminal_path = synthetic.canonical_execution_path(
+        isolated, "lockbox_terminal_receipt"
+    )
+    synthetic.write_json_exclusive(terminal_path, terminal)
+
+    synthetic._DYNAMIC_RESERVED_SEEDS.clear()
+    synthetic._VALIDATED_BEACON_SEED_CACHE.clear()
+    validated = synthetic.validate_lockbox_terminal_artifact(
+        isolated, artifact_path=terminal_path
+    )
+    assert validated["status"] == "consumed_inconclusive_infrastructure_error"
 
 
 def test_full_suite_evidence_uses_exact_current_python_and_captures_transcripts(

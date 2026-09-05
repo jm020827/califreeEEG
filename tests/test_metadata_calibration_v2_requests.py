@@ -16,6 +16,12 @@ from cfeg.analysis import metadata_calibration_v2 as analysis
 from cfeg.data import metadata_calibration_v2_requests as requests
 
 
+@pytest.fixture(autouse=True)
+def _exercise_retired_algorithms_without_operational_authority(monkeypatch) -> None:
+    monkeypatch.setattr(analysis, "deny_v2_terminal_operational_action", lambda _action: None)
+    monkeypatch.setattr(requests, "deny_v2_terminal_operational_action", lambda _action: None)
+
+
 @dataclass(frozen=True)
 class FakeBundle:
     root: Path

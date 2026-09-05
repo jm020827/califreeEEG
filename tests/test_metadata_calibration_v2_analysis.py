@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 import yaml
 
+from cfeg.analysis import metadata_calibration_v2 as analysis_module
 from cfeg.analysis.metadata_calibration_v2 import (
     DEFAULT_V2_ALLOCATION_PATH,
     DEFAULT_V2_PLAN_PATH,
@@ -37,6 +38,15 @@ from cfeg.analysis.metadata_calibration_v2 import (
 )
 
 REPO = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(autouse=True)
+def _exercise_retired_algorithms_without_operational_authority(monkeypatch) -> None:
+    monkeypatch.setattr(
+        analysis_module,
+        "deny_v2_terminal_operational_action",
+        lambda _action: None,
+    )
 
 
 @pytest.fixture(scope="module")

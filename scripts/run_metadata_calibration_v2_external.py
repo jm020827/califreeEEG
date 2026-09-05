@@ -36,6 +36,7 @@ from cfeg.data.metadata_calibration_v2_requests import (
     validate_independent_selection_receipt,
     write_json_exclusive,
 )
+from cfeg.metadata_calibration_v2_terminal import deny_v2_terminal_operational_action
 
 
 def _positive_workers(value: str) -> int:
@@ -96,6 +97,8 @@ def _read_secret(path: Path) -> bytes:
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    if args.command == "request":
+        deny_v2_terminal_operational_action("beta_dong_score_request_or_prediction")
     contract = load_v2_external_contract(args.plan, args.allocation, args.filterbank)
     selection = args.selection_receipt
     # This check occurs before opening any independent-gate asset.
