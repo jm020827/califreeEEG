@@ -76,10 +76,10 @@ def _identity() -> synthetic.GitIdentity:
     )
 
 
-def test_v8_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
+def test_v9_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
     assert contract.plan_sha256 == synthetic.EXPECTED_SYNTHETIC_PLAN_SHA256
     assert (
-        contract.plan["generator_revision"] == "v8_pre_outcome_future_beacon_and_integrity_contract"
+        contract.plan["generator_revision"] == "v9_post_development_pre_lockbox_interpreter_fix"
     )
     resolved = np.asarray(
         resolve_filterbank_parameters(contract.filterbank, sfreq=250.0)["weights"],
@@ -297,7 +297,7 @@ def test_exact_waveform_reconstruction_ar1_gain_placement_and_golden_hashes(cont
         "b7bb38da05dc991fa5d52fead2b87a62c80f0ee227feee72926057b186bf8845"
     )
     assert participant.partition_sha256s[0] == (
-        "c403e4ee47880c9f1adabf34859c9a6b38aac33de0e59964cf000a386e70d30d"
+        "5cf6af932d4e15ad01b377d3be0997439379665d7101fb5d5b1ff1fe2ab0c829"
     )
 
     n3 = synthetic.generate_synthetic_participant(
@@ -556,7 +556,7 @@ def _valid_beacon_receipt(
         "provider": beacon["provider"],
         "endpoint": beacon["exact_endpoint"],
         "target_timestamp_utc": beacon["target_timestamp_utc"],
-        "fetched_at_utc": "2026-09-05T19:30:01.000Z",
+        "fetched_at_utc": "2026-09-05T20:00:01.000Z",
         "statement_utf8": beacon["statement_utf8"],
         "statement_sha256": beacon["statement_sha256"],
         "pulse_timestamp": pulse["timeStamp"],
@@ -713,7 +713,7 @@ def test_preparation_binds_pre_target_creation_and_head_commit(tmp_path: Path, c
             output_path=synthetic.canonical_execution_path(late, "preparation_receipt"),
             identity=_identity(),
             environment=environment,
-            now=datetime(2026, 9, 5, 19, 30, tzinfo=timezone.utc),
+            now=datetime(2026, 9, 5, 20, 0, tzinfo=timezone.utc),
         )
 
 
@@ -761,7 +761,7 @@ def test_full_suite_evidence_uses_exact_current_python_and_captures_transcripts(
     output = synthetic.canonical_execution_path(isolated, "full_suite_test_evidence")
     synthetic.run_full_suite_test_evidence(isolated, output_path=output, _runner=runner)
     receipt = synthetic.load_json_object(output, name="test receipt")
-    assert observed["argv"] == [os.path.realpath(sys.executable), "-m", "pytest", "-q"]
+    assert observed["argv"] == [os.path.abspath(sys.executable), "-m", "pytest", "-q"]
     assert observed["cwd"] == synthetic._REPOSITORY
     assert receipt["scope"] == "complete_repository_test_suite"
     assert receipt["stdout_sha256"] == hashlib.sha256(b"all passed\n").hexdigest()
@@ -785,7 +785,7 @@ def test_forged_full_suite_receipt_is_rejected(tmp_path: Path, contract) -> None
         "phase": "test-evidence",
         "status": "passed",
         "plan_sha256": isolated.plan_sha256,
-        "argv": [os.path.realpath(sys.executable), "-m", "pytest", "-q"],
+        "argv": [os.path.abspath(sys.executable), "-m", "pytest", "-q"],
         "working_directory": str(synthetic._REPOSITORY),
         "scope": "complete_repository_test_suite",
         "exit_code": 0,
@@ -872,7 +872,7 @@ def test_cli_exposes_every_canonical_governance_phase() -> None:
     script = Path("scripts/run_metadata_calibration_v2_synthetic.py").resolve()
     sys.path.insert(0, str(script.parent))
     try:
-        spec = importlib.util.spec_from_file_location("synthetic_cli_v8", script)
+        spec = importlib.util.spec_from_file_location("synthetic_cli_v9", script)
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

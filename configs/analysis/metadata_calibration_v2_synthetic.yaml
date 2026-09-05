@@ -1,7 +1,7 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v8_pre_outcome_future_beacon_and_integrity_contract
-status: frozen_before_any_synthetic_outcome
+generator_revision: v9_post_development_pre_lockbox_interpreter_fix
+status: frozen_after_v8_development_before_any_lockbox_seed_or_outcome
 pre_outcome_amendments:
   - revision: v2_explicit_B3_state_mapping
     reason: >-
@@ -61,6 +61,18 @@ pre_outcome_amendments:
       The development seed, DGP behavior, populations, effect thresholds, and
       scientific stopping rules are unchanged; the lockbox seed is deliberately
       changed before it exists or can be inspected.
+  - revision: v9_test_interpreter_and_fresh_beacon_correction
+    reason: >-
+      After the V8 development-only result was recorded, the governed full-suite
+      test command failed before test collection because resolving the virtualenv
+      Python symlink selected /usr/bin/python3.10 without the project dependencies.
+      The V8 failure receipt is retained and V8 is abandoned before its beacon was
+      fetched, derived, or inspected. Invoke the exact unresolved current Python
+      executable, bind its executable path and environment prefixes, use fresh
+      canonical artifact paths, and commit to a later future NIST pulse. No DGP,
+      candidate, population, contrast, threshold, development seed, promotion rule,
+      or scientific stopping rule is changed. The observed V8 development promotion
+      failure is disclosed and remains explicitly non-gating as already frozen.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -87,12 +99,12 @@ rng:
     derivation_revision: nist_beacon_v1
     provider: NIST_Randomness_Beacon_2.0
     official_specification: https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20
-    target_timestamp_utc: '2026-09-05T19:30:00.000Z'
-    target_timestamp_unix_milliseconds: 1788636600000
-    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788636600000
-    required_exact_pulse_timestamp: '2026-09-05T19:30:00.000Z'
-    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v8|2026-09-05T19:30:00.000Z'
-    statement_sha256: 11fe3ab3db97a070bacc7b83426a53366e338457275937eef3016f42316afe0e
+    target_timestamp_utc: '2026-09-05T20:00:00.000Z'
+    target_timestamp_unix_milliseconds: 1788638400000
+    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788638400000
+    required_exact_pulse_timestamp: '2026-09-05T20:00:00.000Z'
+    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v9|2026-09-05T20:00:00.000Z'
+    statement_sha256: 4d84df32fbc8f5ee86ae076ea50c8cacfb64a7fd33200133a8a7817d6b5a5e8e
     output_value_encoding: exact_128_uppercase_hex_characters_decoded_to_64_bytes
     digest_formula: SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes
     root_seed_formula: unsigned_big_endian_integer_of_all_32_digest_bytes
@@ -377,19 +389,19 @@ hard_assertions_before_efficacy:
 freeze_and_stopping:
   canonical_execution_paths:
     preparation_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/preparation.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/preparation.json
     development_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/development-seed-20260906.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/development-seed-20260906.json
     full_suite_test_evidence: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/prelockbox-full-suite-tests.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/prelockbox-full-suite-tests.json
     beacon_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/nist-beacon-20260905T193000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/nist-beacon-20260905T200000Z.json
     lockbox_authorization: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/lockbox-authorization-nist-20260905T193000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/lockbox-authorization-nist-20260905T200000Z.json
     lockbox_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/lockbox-nist-20260905T193000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/lockbox-nist-20260905T200000Z.json
     seed_global_lockbox_claim: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T193000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T200000Z-v9.json
   canonical_paths_are_local_execution_governance_not_portable_data_locations: true
   every_seed_touching_primitive_requires_internal_governed_context_for_reserved_seeds: true
   lockbox_seed_is_reserved_immediately_after_beacon_derivation: true
@@ -404,7 +416,10 @@ freeze_and_stopping:
     required_environment_fields:
       - python_implementation
       - python_version
+      - python_executable
       - python_executable_realpath
+      - python_prefix
+      - python_base_prefix
       - platform
       - numpy_version
       - numpy_configuration_sha256
@@ -423,7 +438,7 @@ freeze_and_stopping:
     recompute_contrasts_and_promotion_from_metric_rows_and_require_canonical_equality: true
     promotion_must_be_evaluated_but_development_pass_is_not_a_lockbox_gate: true
   test_evidence:
-    exact_argv: [python_current_environment, -m, pytest, -q]
+    exact_argv: [python_current_environment_unresolved_entrypoint, -m, pytest, -q]
     working_directory: exact_repository_root
     scope: complete_repository_test_suite
     exit_code: 0

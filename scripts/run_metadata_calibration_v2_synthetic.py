@@ -29,7 +29,7 @@ from cfeg.analysis.metadata_calibration_v2_synthetic import (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the v8 synthetic governance phases at their exact canonical paths. "
+            "Run the v9 synthetic governance phases at their exact canonical paths. "
             "The beacon phase refuses network access before the frozen target time."
         )
     )

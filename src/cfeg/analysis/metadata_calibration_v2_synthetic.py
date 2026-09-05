@@ -48,7 +48,7 @@ SYNTHETIC_TEST_EVIDENCE_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-test-ev
 SYNTHETIC_BEACON_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-beacon.v1"
 SYNTHETIC_TERMINAL_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-terminal.v1"
 
-EXPECTED_SYNTHETIC_PLAN_SHA256 = "2b64dc8a1b422f52318c48f08e194eea0b727748d7cf5824d3e62b5a40021329"
+EXPECTED_SYNTHETIC_PLAN_SHA256 = "2e9f49f1d7500f7dd69d97481ea84125ef5ca16eb6941f842fbd712714324a99"
 EXPECTED_FILTERBANK_SHA256 = "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"
 DEVELOPMENT_ROOT_SEED = 20260906
 
@@ -311,13 +311,13 @@ def _require_canonical_path(contract: SyntheticContract, name: str, path: str | 
 def validate_synthetic_contract(
     plan_path: str | Path = DEFAULT_SYNTHETIC_PLAN_PATH,
 ) -> SyntheticContract:
-    """Load the byte-frozen v8 plan and its separately frozen FBCCA contract."""
+    """Load the byte-frozen v9 plan and its separately frozen FBCCA contract."""
 
     path = _regular_nonsymlink_file(plan_path, "synthetic plan")
     observed_sha = _sha256_file(path)
     if observed_sha != EXPECTED_SYNTHETIC_PLAN_SHA256:
         raise ValueError(
-            "Synthetic plan byte hash drifted from frozen v8: "
+            "Synthetic plan byte hash drifted from frozen v9: "
             f"expected {EXPECTED_SYNTHETIC_PLAN_SHA256}, observed {observed_sha}."
         )
     decoded = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -327,8 +327,9 @@ def validate_synthetic_contract(
     if (
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != "metadata-calibration-efficiency-v2"
-        or plan.get("generator_revision") != "v8_pre_outcome_future_beacon_and_integrity_contract"
-        or plan.get("status") != "frozen_before_any_synthetic_outcome"
+        or plan.get("generator_revision") != "v9_post_development_pre_lockbox_interpreter_fix"
+        or plan.get("status")
+        != "frozen_after_v8_development_before_any_lockbox_seed_or_outcome"
     ):
         raise ValueError("Synthetic plan identity or pre-outcome freeze status is invalid.")
 
@@ -424,14 +425,14 @@ def validate_synthetic_contract(
         "channel_gain_placement": "multiply_target_plus_cross_only_not_AR1_noise",
         "final": ("channel_gain_times_parenthesized_target_plus_cross_plus_stationary_AR1_noise"),
     }:
-        raise ValueError("Synthetic v8 signal-composition contract is not exact.")
+        raise ValueError("Synthetic v9 signal-composition contract is not exact.")
     if waveform.get("noise") != {
         "process": "stationary_AR1_per_channel",
         "rho": 0.55,
         "initialization": "epsilon_0_equals_sigma_times_z_0_div_sqrt_1_minus_rho_squared",
         "recurrence": "epsilon_t_equals_rho_times_epsilon_t_minus_1_plus_sigma_times_z_t",
     }:
-        raise ValueError("Synthetic v8 AR(1) contract is not exact.")
+        raise ValueError("Synthetic v9 AR(1) contract is not exact.")
     beacon = dict(rng["independent_lockbox_root_seed"])
     if beacon != {
         "derivation_revision": "nist_beacon_v1",
@@ -439,21 +440,21 @@ def validate_synthetic_contract(
         "official_specification": (
             "https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20"
         ),
-        "target_timestamp_utc": "2026-09-05T19:30:00.000Z",
-        "target_timestamp_unix_milliseconds": 1788636600000,
-        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788636600000"),
-        "required_exact_pulse_timestamp": "2026-09-05T19:30:00.000Z",
+        "target_timestamp_utc": "2026-09-05T20:00:00.000Z",
+        "target_timestamp_unix_milliseconds": 1788638400000,
+        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788638400000"),
+        "required_exact_pulse_timestamp": "2026-09-05T20:00:00.000Z",
         "statement_utf8": (
-            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v8|2026-09-05T19:30:00.000Z"
+            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v9|2026-09-05T20:00:00.000Z"
         ),
-        "statement_sha256": ("11fe3ab3db97a070bacc7b83426a53366e338457275937eef3016f42316afe0e"),
+        "statement_sha256": ("4d84df32fbc8f5ee86ae076ea50c8cacfb64a7fd33200133a8a7817d6b5a5e8e"),
         "output_value_encoding": ("exact_128_uppercase_hex_characters_decoded_to_64_bytes"),
         "digest_formula": "SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes",
         "root_seed_formula": "unsigned_big_endian_integer_of_all_32_digest_bytes",
         "retrieval_not_before_target_timestamp": True,
         "require_https_nist_host_exact_pulse_fields_and_full_response_receipt": True,
     }:
-        raise ValueError("Synthetic v8 future-beacon derivation contract is not exact.")
+        raise ValueError("Synthetic v9 future-beacon derivation contract is not exact.")
     expected_paths = {
         "preparation_receipt",
         "development_result",
@@ -467,7 +468,7 @@ def validate_synthetic_contract(
     if set(path_values) != expected_paths or any(
         not Path(str(value)).is_absolute() for value in path_values.values()
     ):
-        raise ValueError("Synthetic v8 canonical execution paths are not exact absolute paths.")
+        raise ValueError("Synthetic v9 canonical execution paths are not exact absolute paths.")
     severe = plan.get("promotion_requirements", {}).get("severe_harm", {})
     if severe.get("contrast_ids") != [
         "B1:P1_A_Q-A0:eAUC",
@@ -479,7 +480,7 @@ def validate_synthetic_contract(
         "N3:P1_A_Q-A0:eAUC",
         "N4:P1_A_QM_correct-P1_A_Q:eAUC",
     ]:
-        raise ValueError("Synthetic v8 severe-harm estimand set is not exact.")
+        raise ValueError("Synthetic v9 severe-harm estimand set is not exact.")
     if (
         waveform.get("filterbank_config")
         != "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
@@ -2455,7 +2456,10 @@ def current_environment_receipt() -> dict[str, Any]:
     fields: dict[str, Any] = {
         "python_implementation": platform_module.python_implementation(),
         "python_version": sys.version,
+        "python_executable": os.path.abspath(sys.executable),
         "python_executable_realpath": os.path.realpath(sys.executable),
+        "python_prefix": os.path.abspath(sys.prefix),
+        "python_base_prefix": os.path.abspath(sys.base_prefix),
         "platform": platform_module.platform(),
         "numpy_version": np.__version__,
         "numpy_configuration_sha256": _sha256_bytes(configuration.getvalue().encode("utf-8")),
@@ -2478,7 +2482,10 @@ def _validate_environment_receipt(environment: Mapping[str, Any]) -> dict[str, A
     expected_fields = {
         "python_implementation",
         "python_version",
+        "python_executable",
         "python_executable_realpath",
+        "python_prefix",
+        "python_base_prefix",
         "platform",
         "numpy_version",
         "numpy_configuration_sha256",
@@ -3186,7 +3193,7 @@ def run_full_suite_test_evidence(
         environment=environment,
         preparation_receipt_sha256=preparation["completion_receipt_sha256"],
     )
-    argv = [os.path.realpath(sys.executable), "-m", "pytest", "-q"]
+    argv = [str(environment["python_executable"]), "-m", "pytest", "-q"]
     completed = _runner(
         argv,
         cwd=_REPOSITORY,
@@ -3256,7 +3263,7 @@ def _validate_test_evidence(
         "phase": "test-evidence",
         "status": "passed",
         "plan_sha256": contract.plan_sha256,
-        "argv": [os.path.realpath(sys.executable), "-m", "pytest", "-q"],
+        "argv": [str(environment["python_executable"]), "-m", "pytest", "-q"],
         "working_directory": str(_REPOSITORY),
         "scope": "complete_repository_test_suite",
         "exit_code": 0,
