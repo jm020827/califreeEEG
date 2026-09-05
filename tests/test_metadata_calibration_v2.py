@@ -6,6 +6,8 @@ import numpy as np
 import pytest
 
 from cfeg.models.metadata_calibration_v2 import (
+    PrequentialFoldProvenance,
+    TemplateScoreProvenance,
     V2OperatorConfig,
     apply_v2_safe_operator,
     fuse_probabilities,
@@ -16,6 +18,42 @@ from cfeg.models.metadata_calibration_v2 import (
     score_prototype_distribution,
     template_residual_scores_from_subbands,
 )
+
+_PAIRING_SHA256 = "a" * 64
+_HASH_B = "b" * 64
+_HASH_C = "c" * 64
+_HASH_D = "d" * 64
+_HASH_E = "e" * 64
+_P2_WEIGHTS = np.asarray(
+    [
+        1.25,
+        0.6704482076268572,
+        0.5032785618838642,
+        0.42677669529663687,
+        0.38374806099528436,
+        0.35649051737437876,
+        0.33782687899303776,
+    ]
+)
+
+
+def _template_provenance() -> TemplateScoreProvenance:
+    return TemplateScoreProvenance(
+        filterbank_sha256=_HASH_B,
+        preprocessing_sha256=_HASH_C,
+        query_partition_sha256=_HASH_D,
+        support_partition_sha256=_HASH_E,
+    )
+
+
+def _fold_provenance(budget: int) -> tuple[PrequentialFoldProvenance, ...]:
+    return tuple(
+        PrequentialFoldProvenance(
+            evaluation_block=block,
+            fit_blocks=tuple(range(1, block)),
+        )
+        for block in range(2, budget + 1)
+    )
 
 
 def _scores(budget: int = 3) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -48,13 +86,15 @@ def _operator(
     **kwargs: object,
 ):
     query, support, labels = _scores(budget)
+    parameters: dict[str, object] = {"variant": "A_Q", "gate_enabled": True}
+    parameters.update(kwargs)
     return apply_v2_safe_operator(
         query,
         budget=budget,
         operator="score_prototype_shrinkage",
         support_fbcca_scores=support,
         support_labels=labels,
-        **kwargs,
+        **parameters,
     )
 
 
@@ -74,6 +114,11 @@ def test_score_normalization_preserves_argmax_and_is_query_batch_independent() -
     constant_normalized, constant_probability = normalize_fbcca_scores(constant)
     assert np.array_equal(constant_normalized, np.zeros_like(constant))
     assert np.array_equal(constant_probability, np.full((2, 3), 1.0 / 3.0))
+
+    extreme = np.asarray([[0.0, 1.0e308, -1.0e308]])
+    extreme_normalized, extreme_probability = normalize_fbcca_scores(extreme)
+    assert np.isfinite(extreme_normalized).all()
+    assert np.argmax(extreme_probability, axis=1).item() == 1
 
 
 @pytest.mark.parametrize(
@@ -96,6 +141,7 @@ def test_k0_off_and_gate_short_circuit_return_exact_input_objects(
         query,
         budget=budget,
         operator="score_prototype_shrinkage",
+        variant="A_Q",
         support_fbcca_scores=object(),  # type: ignore[arg-type]
         support_labels=object(),  # type: ignore[arg-type]
         base_probabilities=base_probability,
@@ -119,14 +165,60 @@ def test_zero_lambda_is_an_exact_null_candidate_before_support_access() -> None:
         query,
         budget=5,
         operator="score_prototype_shrinkage",
+        variant="A_Q",
         config=V2OperatorConfig(lambda_max=0.0),
         support_fbcca_scores=object(),  # type: ignore[arg-type]
         support_labels=object(),  # type: ignore[arg-type]
         base_probabilities=base_probability,
+        gate_enabled=True,
     )
     assert output.exact_fallback
     assert output.fallback_reason == "exact_null_candidate"
     assert output.fused_probabilities is base_probability
+
+
+def test_missing_gate_authorization_fails_closed_before_support_access() -> None:
+    query, _, _ = _scores()
+    output = apply_v2_safe_operator(
+        query,
+        budget=3,
+        operator="score_prototype_shrinkage",
+        variant="A_Q",
+        support_fbcca_scores=object(),  # type: ignore[arg-type]
+        support_labels=object(),  # type: ignore[arg-type]
+    )
+    assert output.exact_fallback
+    assert output.fallback_reason == "missing_gate_authorization"
+    assert output.gate_enabled is None
+
+    aqm = apply_v2_safe_operator(
+        query,
+        budget=3,
+        operator="score_prototype_shrinkage",
+        variant="A_QM",
+        support_fbcca_scores=object(),  # type: ignore[arg-type]
+        support_labels=object(),  # type: ignore[arg-type]
+        query_interfaces=object(),  # type: ignore[arg-type]
+        relative_context_pairing_sha256="not-inspected",
+    )
+    assert aqm.exact_fallback
+    assert aqm.relative_context_pairing_sha256 is None
+
+
+def test_k0_aqm_does_not_parse_context_or_pairing_capability() -> None:
+    query, _, _ = _scores()
+    output = apply_v2_safe_operator(
+        query,
+        budget=0,
+        operator="score_prototype_shrinkage",
+        variant="A_QM",
+        query_interfaces=object(),  # type: ignore[arg-type]
+        support_interfaces=object(),  # type: ignore[arg-type]
+        relative_context_pairing_sha256="not-inspected",
+    )
+    assert output.exact_fallback
+    assert output.fallback_reason == "k0_exact_strict_fbcca"
+    assert output.relative_context_pairing_sha256 is None
 
 
 def test_score_prototype_fusion_is_bounded_and_uses_uncertainty_scaling() -> None:
@@ -178,12 +270,82 @@ def test_relative_context_affinity_formula_and_all_missing_neutrality() -> None:
     assert np.array_equal(missing, np.ones((2, 3)))
 
 
+def test_variant_capabilities_are_validated_and_audited() -> None:
+    query, support, labels = _scores(1)
+    with pytest.raises(ValueError, match="A_Q forbids"):
+        apply_v2_safe_operator(
+            query,
+            budget=1,
+            operator="score_prototype_shrinkage",
+            variant="A_Q",
+            gate_enabled=True,
+            support_fbcca_scores=support,
+            support_labels=labels,
+            query_interfaces=["dry"] * len(query),
+        )
+    with pytest.raises((TypeError, ValueError), match="SHA-256"):
+        apply_v2_safe_operator(
+            query,
+            budget=1,
+            operator="score_prototype_shrinkage",
+            variant="A_QM",
+            gate_enabled=True,
+            support_fbcca_scores=support,
+            support_labels=labels,
+            relative_context_pairing_sha256="not-a-digest",
+        )
+
+    aqm = apply_v2_safe_operator(
+        query,
+        budget=1,
+        operator="score_prototype_shrinkage",
+        variant="A_QM",
+        gate_enabled=True,
+        support_fbcca_scores=support,
+        support_labels=labels,
+        query_interfaces=["dry"] * len(query),
+        support_interfaces=["wet"] * len(support),
+        relative_context_pairing_sha256=_PAIRING_SHA256,
+    )
+    assert aqm.relative_context_pairing_sha256 == _PAIRING_SHA256
+    assert aqm.comparable_context_pair_count == len(query) * len(support)
+
+
+def test_p1_context_changes_prototypes_and_aggregate_effective_mass() -> None:
+    query, support, labels = _scores(1)
+    aq = apply_v2_safe_operator(
+        query,
+        budget=1,
+        operator="score_prototype_shrinkage",
+        variant="A_Q",
+        gate_enabled=True,
+        support_fbcca_scores=support,
+        support_labels=labels,
+    )
+    aqm = apply_v2_safe_operator(
+        query,
+        budget=1,
+        operator="score_prototype_shrinkage",
+        variant="A_QM",
+        gate_enabled=True,
+        support_fbcca_scores=support,
+        support_labels=labels,
+        query_interfaces=["dry"] * len(query),
+        support_interfaces=["wet"] * len(support),
+        relative_context_pairing_sha256=_PAIRING_SHA256,
+    )
+    assert not np.array_equal(aq.support_probabilities, aqm.support_probabilities)
+    assert np.allclose(aqm.lambdas, 0.25 * aq.lambdas, rtol=0.0, atol=1.0e-15)
+
+
 def test_all_missing_aqm_is_exact_aq_and_support_order_is_exactly_invariant() -> None:
     query, support, labels = _scores(3)
     aq = apply_v2_safe_operator(
         query,
         budget=3,
         operator="score_prototype_shrinkage",
+        variant="A_Q",
+        gate_enabled=True,
         support_fbcca_scores=support,
         support_labels=labels,
     )
@@ -191,12 +353,15 @@ def test_all_missing_aqm_is_exact_aq_and_support_order_is_exactly_invariant() ->
         query,
         budget=3,
         operator="score_prototype_shrinkage",
+        variant="A_QM",
+        gate_enabled=True,
         support_fbcca_scores=support,
         support_labels=labels,
         query_interfaces=[None] * len(query),
         support_interfaces=[None] * len(support),
         query_impedance_kohm=np.full((len(query), 4), np.nan),
         support_impedance_kohm=np.full((len(support), 4), np.nan),
+        relative_context_pairing_sha256=_PAIRING_SHA256,
     )
     for field in (
         "base_probabilities",
@@ -213,6 +378,8 @@ def test_all_missing_aqm_is_exact_aq_and_support_order_is_exactly_invariant() ->
         query,
         budget=3,
         operator="score_prototype_shrinkage",
+        variant="A_Q",
+        gate_enabled=True,
         support_fbcca_scores=support[order],
         support_labels=labels[order],
     )
@@ -244,9 +411,9 @@ def _template_subbands(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     timeline = np.linspace(0.0, 1.0, 40, endpoint=False)
     labels = np.tile(np.arange(3), budget)
-    support = np.empty((2, len(labels), 2, len(timeline)), dtype=np.float64)
-    query = np.empty((2, 3, 2, len(timeline)), dtype=np.float64)
-    for band in range(2):
+    support = np.empty((7, len(labels), 2, len(timeline)), dtype=np.float64)
+    query = np.empty((7, 3, 2, len(timeline)), dtype=np.float64)
+    for band in range(7):
         for row, label in enumerate(labels):
             base = np.sin(2.0 * np.pi * (label + 2) * timeline + 0.05 * row)
             support[band, row, 0] = base
@@ -255,7 +422,7 @@ def _template_subbands(
             base = np.sin(2.0 * np.pi * (label + 2) * timeline + 0.05)
             query[band, label, 0] = base
             query[band, label, 1] = (0.5 + 0.1 * band) * base
-    return query, support, labels, np.asarray([1.0, 0.5])
+    return query, support, labels, _P2_WEIGHTS.copy()
 
 
 def test_template_residual_supports_context_weighting_and_high_level_p2() -> None:
@@ -274,6 +441,8 @@ def test_template_residual_supports_context_weighting_and_high_level_p2() -> Non
         query_scores[:3],
         budget=3,
         operator="filterbank_target_template_residual",
+        variant="A_QM",
+        gate_enabled=True,
         support_fbcca_scores=support_scores,
         support_labels=support_labels,
         template_query_subbands=query_subbands,
@@ -281,6 +450,7 @@ def test_template_residual_supports_context_weighting_and_high_level_p2() -> Non
         template_subband_weights=weights,
         query_interfaces=["dry", "dry", "dry"],
         support_interfaces=np.where(np.arange(len(support_labels)) % 2, "wet", "dry"),
+        relative_context_pairing_sha256=_PAIRING_SHA256,
     )
     assert output.support_probabilities.shape == (3, 3)
     assert np.allclose(output.fused_probabilities.sum(axis=1), 1.0)
@@ -291,11 +461,153 @@ def test_template_residual_supports_context_weighting_and_high_level_p2() -> Non
             query_scores[:3],
             budget=3,
             operator="filterbank_target_template_residual",
+            variant="A_QM",
+            gate_enabled=True,
             support_fbcca_scores=support_scores,
             support_labels=support_labels,
-            template_support_scores=neutral,
+            template_query_class_scores=neutral,
+            template_score_provenance=_template_provenance(),
             query_interfaces=["dry", "dry", "dry"],
             support_interfaces=np.where(np.arange(len(support_labels)) % 2, "wet", "dry"),
+            relative_context_pairing_sha256=_PAIRING_SHA256,
+        )
+
+
+def test_p2_k1_effective_mass_and_all_missing_exact_aq() -> None:
+    query_subbands, support_subbands, _labels, weights = _template_subbands(1)
+    query_scores, support_scores, support_labels = _scores(1)
+    common = {
+        "budget": 1,
+        "operator": "filterbank_target_template_residual",
+        "gate_enabled": True,
+        "support_fbcca_scores": support_scores,
+        "support_labels": support_labels,
+        "template_query_subbands": query_subbands,
+        "template_support_subbands": support_subbands,
+        "template_subband_weights": weights,
+    }
+    aq = apply_v2_safe_operator(query_scores[:3], variant="A_Q", **common)
+    aqm_missing = apply_v2_safe_operator(
+        query_scores[:3],
+        variant="A_QM",
+        relative_context_pairing_sha256=_PAIRING_SHA256,
+        **common,
+    )
+    for field in ("support_probabilities", "fused_probabilities", "lambdas", "predictions"):
+        assert np.array_equal(getattr(aq, field), getattr(aqm_missing, field))
+    assert aqm_missing.comparable_context_pair_count == 0
+
+    aqm_mismatch = apply_v2_safe_operator(
+        query_scores[:3],
+        variant="A_QM",
+        query_interfaces=["dry"] * 3,
+        support_interfaces=["wet"] * 3,
+        relative_context_pairing_sha256=_PAIRING_SHA256,
+        **common,
+    )
+    # At k=1 the within-class scalar cancels from each normalized template;
+    # r3 retains metadata through the aggregate effective-mass multiplier.
+    assert np.array_equal(aq.support_probabilities, aqm_mismatch.support_probabilities)
+    assert np.allclose(aqm_mismatch.lambdas, 0.25 * aq.lambdas, rtol=0.0, atol=1.0e-15)
+
+
+def test_p2_query_support_and_class_permutations_are_equivariant() -> None:
+    query_subbands, support_subbands, _labels, weights = _template_subbands(3)
+    query_scores, support_scores, support_labels = _scores(3)
+    original = apply_v2_safe_operator(
+        query_scores[:3],
+        budget=3,
+        operator="filterbank_target_template_residual",
+        variant="A_Q",
+        gate_enabled=True,
+        support_fbcca_scores=support_scores,
+        support_labels=support_labels,
+        template_query_subbands=query_subbands,
+        template_support_subbands=support_subbands,
+        template_subband_weights=weights,
+    )
+    query_order = np.asarray([2, 0, 1])
+    support_order = np.asarray([7, 1, 8, 4, 0, 6, 5, 2, 3])
+    reordered = apply_v2_safe_operator(
+        query_scores[query_order],
+        budget=3,
+        operator="filterbank_target_template_residual",
+        variant="A_Q",
+        gate_enabled=True,
+        support_fbcca_scores=support_scores[support_order],
+        support_labels=support_labels[support_order],
+        template_query_subbands=query_subbands[:, query_order],
+        template_support_subbands=support_subbands[:, support_order],
+        template_subband_weights=weights,
+    )
+    assert np.array_equal(
+        original.support_probabilities[query_order], reordered.support_probabilities
+    )
+    assert np.array_equal(original.fused_probabilities[query_order], reordered.fused_probabilities)
+
+    permutation = np.asarray([2, 0, 1])
+    inverse = np.argsort(permutation)
+    class_permuted = apply_v2_safe_operator(
+        query_scores[:3, permutation],
+        budget=3,
+        operator="filterbank_target_template_residual",
+        variant="A_Q",
+        gate_enabled=True,
+        support_fbcca_scores=support_scores[:, permutation],
+        support_labels=inverse[support_labels],
+        template_query_subbands=query_subbands,
+        template_support_subbands=support_subbands,
+        template_subband_weights=weights,
+    )
+    assert np.allclose(
+        class_permuted.support_probabilities,
+        original.support_probabilities[:, permutation],
+        rtol=0.0,
+        atol=1.0e-15,
+    )
+
+
+def test_precomputed_p2_requires_and_echoes_typed_provenance() -> None:
+    query_subbands, support_subbands, labels, weights = _template_subbands(3)
+    scores = template_residual_scores_from_subbands(
+        query_subbands, support_subbands, labels, weights
+    )
+    query_scores, support_scores, support_labels = _scores(3)
+    common = {
+        "budget": 3,
+        "operator": "filterbank_target_template_residual",
+        "variant": "A_Q",
+        "gate_enabled": True,
+        "support_fbcca_scores": support_scores,
+        "support_labels": support_labels,
+        "template_query_class_scores": scores,
+    }
+    with pytest.raises(ValueError, match="typed producer provenance"):
+        apply_v2_safe_operator(query_scores[:3], **common)
+    with pytest.raises(TypeError, match="TemplateScoreProvenance"):
+        apply_v2_safe_operator(
+            query_scores[:3],
+            template_score_provenance=object(),
+            **common,  # type: ignore[arg-type]
+        )
+    provenance = _template_provenance()
+    output = apply_v2_safe_operator(
+        query_scores[:3], template_score_provenance=provenance, **common
+    )
+    assert output.template_score_provenance is provenance
+
+    with pytest.raises(ValueError, match="exact frozen seven subband weights"):
+        apply_v2_safe_operator(
+            query_scores[:3],
+            budget=3,
+            operator="filterbank_target_template_residual",
+            variant="A_Q",
+            gate_enabled=True,
+            support_fbcca_scores=support_scores,
+            support_labels=support_labels,
+            template_query_subbands=query_subbands,
+            template_support_subbands=support_subbands,
+            template_subband_weights=np.ones(7),
         )
 
 
@@ -315,14 +627,28 @@ def _gate_rows(helpful: bool = True) -> tuple[np.ndarray, np.ndarray, np.ndarray
 
 def test_prequential_gate_uses_only_complete_later_calibration_blocks() -> None:
     base, helpful, labels, blocks = _gate_rows(helpful=True)
-    passed = prequential_gate_decision(base, helpful, labels, blocks, budget=3)
+    passed = prequential_gate_decision(
+        base,
+        helpful,
+        labels,
+        blocks,
+        budget=3,
+        fold_provenance=_fold_provenance(3),
+    )
     assert passed.enabled
     assert passed.evaluated_blocks == (2, 3)
     assert passed.mean_balanced_accuracy_delta == 1.0
     assert passed.mean_log_probability_delta > 0.0
 
     _, harmful, _, _ = _gate_rows(helpful=False)
-    failed = prequential_gate_decision(base, harmful, labels, blocks, budget=3)
+    failed = prequential_gate_decision(
+        base,
+        harmful,
+        labels,
+        blocks,
+        budget=3,
+        fold_provenance=_fold_provenance(3),
+    )
     assert not failed.enabled
     assert failed.reason == "prequential_gate_abstained"
 
@@ -338,6 +664,23 @@ def test_prequential_gate_uses_only_complete_later_calibration_blocks() -> None:
     assert k1.evaluated_blocks == ()
 
 
+def test_prequential_gate_rejects_missing_or_nonprior_fold_provenance() -> None:
+    base, candidate, labels, blocks = _gate_rows(helpful=True)
+    with pytest.raises(ValueError, match="per-fold provenance"):
+        prequential_gate_decision(base, candidate, labels, blocks, budget=3)
+    with pytest.raises(ValueError, match="exact prior fit_blocks"):
+        PrequentialFoldProvenance(evaluation_block=3, fit_blocks=(1,))
+    with pytest.raises(ValueError, match="ordered by the exact evaluation blocks"):
+        prequential_gate_decision(
+            base,
+            candidate,
+            labels,
+            blocks,
+            budget=3,
+            fold_provenance=tuple(reversed(_fold_provenance(3))),
+        )
+
+
 def test_high_level_rejects_partial_support_and_has_no_query_label_or_id_api() -> None:
     query, support, labels = _scores(3)
     with pytest.raises(ValueError, match="exactly 3 support"):
@@ -345,6 +688,8 @@ def test_high_level_rejects_partial_support_and_has_no_query_label_or_id_api() -
             query,
             budget=3,
             operator="score_prototype_shrinkage",
+            variant="A_Q",
+            gate_enabled=True,
             support_fbcca_scores=support[:-1],
             support_labels=labels[:-1],
         )

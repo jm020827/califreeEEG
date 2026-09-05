@@ -13,9 +13,23 @@ V2SupportOperator = Literal[
     "score_prototype_shrinkage",
     "filterbank_target_template_residual",
 ]
+V2Variant = Literal["A_Q", "A_QM"]
 
-_SCHEMA = "cfeg.metadata-calibration-v2-safe-operator.v1"
+_SCHEMA = "cfeg.metadata-calibration-v2-safe-operator.v2"
+_TEMPLATE_PROVENANCE_SCHEMA = "cfeg.metadata-calibration-v2-template-provenance.v1"
 _BUDGETS = (0, 1, 3, 5)
+_P2_SUBBAND_WEIGHTS = np.asarray(
+    [
+        1.25,
+        0.6704482076268572,
+        0.5032785618838642,
+        0.42677669529663687,
+        0.38374806099528436,
+        0.35649051737437876,
+        0.33782687899303776,
+    ],
+    dtype=np.float64,
+)
 
 
 @dataclass(frozen=True)
@@ -27,7 +41,6 @@ class V2OperatorConfig:
     prototype_prior_pseudocount: float = 4.0
     lambda_max: float = 0.10
     different_interface_affinity: float = 0.25
-    probability_floor: float = 1.0e-12
     entropy_scaling: bool = True
 
     def __post_init__(self) -> None:
@@ -48,11 +61,49 @@ class V2OperatorConfig:
         )
         if not 0.0 < interface <= 1.0:
             raise ValueError("different_interface_affinity must be in (0, 1].")
-        floor = _positive_finite(self.probability_floor, "probability_floor")
-        if floor >= 1.0:
-            raise ValueError("probability_floor must be below one.")
         if type(self.entropy_scaling) is not bool:
             raise TypeError("entropy_scaling must be a bool.")
+
+
+@dataclass(frozen=True)
+class TemplateScoreProvenance:
+    """Capability binding cached P2 scores to governed signal producers."""
+
+    filterbank_sha256: str
+    preprocessing_sha256: str
+    query_partition_sha256: str
+    support_partition_sha256: str
+    schema: str = _TEMPLATE_PROVENANCE_SCHEMA
+
+    def __post_init__(self) -> None:
+        if self.schema != _TEMPLATE_PROVENANCE_SCHEMA:
+            raise ValueError(f"template provenance schema must be {_TEMPLATE_PROVENANCE_SCHEMA!r}.")
+        for name in (
+            "filterbank_sha256",
+            "preprocessing_sha256",
+            "query_partition_sha256",
+            "support_partition_sha256",
+        ):
+            _sha256(getattr(self, name), name)
+
+
+@dataclass(frozen=True)
+class PrequentialFoldProvenance:
+    """Declares the exact earlier calibration blocks used for one fold."""
+
+    evaluation_block: int
+    fit_blocks: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        evaluation = _positive_integer(self.evaluation_block, "evaluation_block")
+        if not isinstance(self.fit_blocks, tuple):
+            raise TypeError("fit_blocks must be a tuple of exact integers.")
+        resolved = tuple(_positive_integer(value, "fit_blocks") for value in self.fit_blocks)
+        expected = tuple(range(1, evaluation))
+        if resolved != expected:
+            raise ValueError(
+                f"evaluation block {evaluation} requires exact prior fit_blocks {expected}."
+            )
 
 
 @dataclass(frozen=True)
@@ -73,9 +124,13 @@ class V2OperatorOutput:
     predictions: np.ndarray
     lambdas: np.ndarray
     affinities: np.ndarray
-    gate_enabled: bool
+    gate_enabled: bool | None
     exact_fallback: bool
     operator: V2SupportOperator
+    variant: V2Variant
+    relative_context_pairing_sha256: str | None
+    comparable_context_pair_count: int
+    template_score_provenance: TemplateScoreProvenance | None
     schema: str = _SCHEMA
     fallback_reason: str | None = None
 
@@ -90,6 +145,7 @@ class PrequentialGateDecision:
     mean_balanced_accuracy_delta: float
     mean_log_probability_delta: float
     reason: str
+    fold_provenance: tuple[PrequentialFoldProvenance, ...]
 
 
 def normalize_fbcca_scores(
@@ -107,9 +163,16 @@ def normalize_fbcca_scores(
     values = _finite_matrix(scores, "scores")
     eps = _positive_finite(epsilon, "epsilon")
     as_float = values.astype(np.float64, copy=False)
-    centered = as_float - as_float.mean(axis=1, keepdims=True)
+    # Scaling before centering preserves the row-center/RMS formula while
+    # avoiding overflow in the mean, subtraction, and square for any finite
+    # float64 input.  eps is rescaled to retain its original score units.
+    scale = np.max(np.abs(as_float), axis=1, keepdims=True)
+    safe_scale = np.where(scale > 0.0, scale, 1.0)
+    scaled = as_float / safe_scale
+    centered = scaled - scaled.mean(axis=1, keepdims=True)
     rms = np.sqrt(np.mean(np.square(centered), axis=1, keepdims=True))
-    normalized = centered / np.maximum(rms, eps)
+    normalized = centered / np.maximum(rms, eps / safe_scale)
+    normalized -= normalized.mean(axis=1, keepdims=True)
     probabilities = _softmax(normalized)
     return normalized, probabilities
 
@@ -147,12 +210,35 @@ def relative_context_affinity(
     support calculation numerically identical to A_Q.
     """
 
+    affinities, _ = _relative_context_affinity_and_count(
+        n_query=n_query,
+        n_support=n_support,
+        query_interfaces=query_interfaces,
+        support_interfaces=support_interfaces,
+        query_impedance_kohm=query_impedance_kohm,
+        support_impedance_kohm=support_impedance_kohm,
+        different_interface_affinity=different_interface_affinity,
+    )
+    return affinities
+
+
+def _relative_context_affinity_and_count(
+    *,
+    n_query: int,
+    n_support: int,
+    query_interfaces: Sequence[object] | np.ndarray | None = None,
+    support_interfaces: Sequence[object] | np.ndarray | None = None,
+    query_impedance_kohm: np.ndarray | None = None,
+    support_impedance_kohm: np.ndarray | None = None,
+    different_interface_affinity: float = 0.25,
+) -> tuple[np.ndarray, int]:
     q_count = _nonnegative_integer(n_query, "n_query")
     s_count = _nonnegative_integer(n_support, "n_support")
     mismatch_factor = _finite_float(different_interface_affinity, "different_interface_affinity")
     if not 0.0 < mismatch_factor <= 1.0:
         raise ValueError("different_interface_affinity must be in (0, 1].")
     affinities = np.ones((q_count, s_count), dtype=np.float64)
+    comparable_pairs = np.zeros((q_count, s_count), dtype=bool)
 
     query_interface = _optional_interfaces(query_interfaces, q_count, "query_interfaces")
     support_interface = _optional_interfaces(support_interfaces, s_count, "support_interfaces")
@@ -165,6 +251,7 @@ def relative_context_affinity(
                 normalized_support = _normalized_interface(support_value)
                 if normalized_support is None:
                     continue
+                comparable_pairs[query_index, support_index] = True
                 if normalized_query != normalized_support:
                     affinities[query_index, support_index] *= mismatch_factor
 
@@ -182,6 +269,7 @@ def relative_context_affinity(
                 comparable = np.isfinite(query_row) & np.isfinite(support_row)
                 if not comparable.any():
                     continue
+                comparable_pairs[query_index, support_index] = True
                 log_ratio = np.abs(
                     np.log2((1.0 + query_row[comparable]) / (1.0 + support_row[comparable]))
                 )
@@ -192,7 +280,7 @@ def relative_context_affinity(
         raise RuntimeError("Context affinity must stay positive and finite.")
     if np.any(affinities > 1.0):
         raise RuntimeError("Context affinity must not upweight support above one.")
-    return affinities
+    return affinities, int(comparable_pairs.sum())
 
 
 def score_prototype_distribution(
@@ -368,6 +456,7 @@ def prequential_gate_decision(
     block_numbers: np.ndarray | None,
     *,
     budget: int,
+    fold_provenance: Sequence[PrequentialFoldProvenance] | None = None,
     probability_floor: float = 1.0e-12,
 ) -> PrequentialGateDecision:
     """Decide a target-local gate from calibration blocks only.
@@ -389,6 +478,7 @@ def prequential_gate_decision(
             mean_balanced_accuracy_delta=0.0,
             mean_log_probability_delta=0.0,
             reason="no_target_local_validation_at_k0_or_k1",
+            fold_provenance=(),
         )
     if any(
         value is None
@@ -416,6 +506,15 @@ def prequential_gate_decision(
         raise ValueError(
             f"k={resolved_budget} prequential rows must contain exact blocks {expected_blocks}."
         )
+    if fold_provenance is None:
+        raise ValueError("k=3/5 prequential gating requires per-fold provenance.")
+    provenance = tuple(fold_provenance)
+    if len(provenance) != len(expected_blocks) or not all(
+        isinstance(item, PrequentialFoldProvenance) for item in provenance
+    ):
+        raise ValueError("fold_provenance must contain one typed receipt per evaluation block.")
+    if tuple(item.evaluation_block for item in provenance) != expected_blocks:
+        raise ValueError("fold_provenance must be ordered by the exact evaluation blocks.")
     floor = _positive_finite(probability_floor, "probability_floor")
     if floor >= 1.0:
         raise ValueError("probability_floor must be below one.")
@@ -449,6 +548,7 @@ def prequential_gate_decision(
         mean_balanced_accuracy_delta=mean_accuracy,
         mean_log_probability_delta=mean_log,
         reason="prequential_means_nonnegative" if enabled else "prequential_gate_abstained",
+        fold_provenance=provenance,
     )
 
 
@@ -457,14 +557,16 @@ def apply_v2_safe_operator(
     *,
     budget: int,
     operator: V2SupportOperator,
+    variant: V2Variant,
     config: V2OperatorConfig | None = None,
     support_fbcca_scores: np.ndarray | None = None,
     support_labels: np.ndarray | None = None,
     base_probabilities: np.ndarray | None = None,
     enabled: bool = True,
-    gate_enabled: bool = True,
-    template_support_scores: np.ndarray | None = None,
-    template_support_probabilities: np.ndarray | None = None,
+    gate_enabled: bool | None = None,
+    template_query_class_scores: np.ndarray | None = None,
+    template_query_class_probabilities: np.ndarray | None = None,
+    template_score_provenance: TemplateScoreProvenance | None = None,
     template_query_subbands: np.ndarray | None = None,
     template_support_subbands: np.ndarray | None = None,
     template_subband_weights: np.ndarray | None = None,
@@ -472,12 +574,15 @@ def apply_v2_safe_operator(
     support_interfaces: Sequence[object] | np.ndarray | None = None,
     query_impedance_kohm: np.ndarray | None = None,
     support_impedance_kohm: np.ndarray | None = None,
+    relative_context_pairing_sha256: str | None = None,
 ) -> V2OperatorOutput:
     """Apply a frozen V2 support residual without access to query labels.
 
     The function consumes full strict-FBCCA class-score vectors.  It never
     calls FBCCA itself, which keeps filtering/codebook provenance in the
-    governed producer.  Optional template subbands are already filtered.
+    governed producer.  Optional template subbands are already filtered; their
+    preprocessing, partition binding, and production remain the governed
+    runner's responsibility.
     """
 
     resolved_config = V2OperatorConfig() if config is None else config
@@ -489,8 +594,28 @@ def apply_v2_safe_operator(
         "filterbank_target_template_residual",
     }:
         raise ValueError(f"Unknown V2 support operator {operator!r}.")
-    if type(enabled) is not bool or type(gate_enabled) is not bool:
-        raise TypeError("enabled and gate_enabled must be bool values.")
+    if variant not in {"A_Q", "A_QM"}:
+        raise ValueError("variant must be 'A_Q' or 'A_QM'.")
+    context_values = (
+        query_interfaces,
+        support_interfaces,
+        query_impedance_kohm,
+        support_impedance_kohm,
+    )
+    if variant == "A_Q":
+        if any(value is not None for value in context_values) or (
+            relative_context_pairing_sha256 is not None
+        ):
+            raise ValueError("A_Q forbids acquisition context and a context pairing capability.")
+        pairing_sha256 = None
+    else:
+        # A_QM capabilities and context are deliberately not parsed on any
+        # exact fallback path, including k=0 and a missing gate authorization.
+        pairing_sha256 = None
+    if type(enabled) is not bool:
+        raise TypeError("enabled must be a bool value.")
+    if gate_enabled is not None and type(gate_enabled) is not bool:
+        raise TypeError("gate_enabled must be bool or None.")
 
     base_scores = _finite_matrix(query_fbcca_scores, "query_fbcca_scores")
     _, computed_base = normalize_fbcca_scores(base_scores, epsilon=resolved_config.score_epsilon)
@@ -512,6 +637,8 @@ def apply_v2_safe_operator(
             base_scores,
             base,
             operator=operator,
+            variant=variant,
+            pairing_sha256=pairing_sha256,
             gate_enabled=gate_enabled,
             reason="k0_exact_strict_fbcca",
         )
@@ -520,14 +647,28 @@ def apply_v2_safe_operator(
             base_scores,
             base,
             operator=operator,
+            variant=variant,
+            pairing_sha256=pairing_sha256,
             gate_enabled=gate_enabled,
             reason="operator_disabled",
+        )
+    if gate_enabled is None:
+        return _fallback_output(
+            base_scores,
+            base,
+            operator=operator,
+            variant=variant,
+            pairing_sha256=pairing_sha256,
+            gate_enabled=None,
+            reason="missing_gate_authorization",
         )
     if not gate_enabled:
         return _fallback_output(
             base_scores,
             base,
             operator=operator,
+            variant=variant,
+            pairing_sha256=pairing_sha256,
             gate_enabled=False,
             reason="validation_gate_abstained",
         )
@@ -536,8 +677,16 @@ def apply_v2_safe_operator(
             base_scores,
             base,
             operator=operator,
+            variant=variant,
+            pairing_sha256=pairing_sha256,
             gate_enabled=True,
             reason="exact_null_candidate",
+        )
+
+    if variant == "A_QM":
+        pairing_sha256 = _sha256(
+            relative_context_pairing_sha256,
+            "relative_context_pairing_sha256",
         )
 
     if support_fbcca_scores is None or support_labels is None:
@@ -554,17 +703,33 @@ def apply_v2_safe_operator(
     _, support_base_probabilities = normalize_fbcca_scores(
         support_scores, epsilon=resolved_config.score_epsilon
     )
-    affinities = relative_context_affinity(
-        n_query=len(base_scores),
-        n_support=len(support_scores),
-        query_interfaces=query_interfaces,
-        support_interfaces=support_interfaces,
-        query_impedance_kohm=query_impedance_kohm,
-        support_impedance_kohm=support_impedance_kohm,
-        different_interface_affinity=resolved_config.different_interface_affinity,
-    )
+    if variant == "A_Q":
+        affinities = np.ones((len(base_scores), len(support_scores)), dtype=np.float64)
+        comparable_pair_count = 0
+    else:
+        affinities, comparable_pair_count = _relative_context_affinity_and_count(
+            n_query=len(base_scores),
+            n_support=len(support_scores),
+            query_interfaces=query_interfaces,
+            support_interfaces=support_interfaces,
+            query_impedance_kohm=query_impedance_kohm,
+            support_impedance_kohm=support_impedance_kohm,
+            different_interface_affinity=resolved_config.different_interface_affinity,
+        )
 
     if operator == "score_prototype_shrinkage":
+        if any(
+            value is not None
+            for value in (
+                template_query_class_scores,
+                template_query_class_probabilities,
+                template_score_provenance,
+                template_query_subbands,
+                template_support_subbands,
+                template_subband_weights,
+            )
+        ):
+            raise ValueError("P1 forbids all P2 template inputs and provenance.")
         support_distribution = score_prototype_distribution(
             base,
             support_base_probabilities,
@@ -576,7 +741,8 @@ def apply_v2_safe_operator(
         )
     else:
         supplied = sum(
-            value is not None for value in (template_support_scores, template_support_probabilities)
+            value is not None
+            for value in (template_query_class_scores, template_query_class_probabilities)
         )
         subband_values = (
             template_query_subbands,
@@ -587,29 +753,39 @@ def apply_v2_safe_operator(
         has_all_subband = all(value is not None for value in subband_values)
         if has_any_subband and not has_all_subband:
             raise ValueError("Template subband inputs must be supplied together.")
+        if has_all_subband and not np.array_equal(
+            np.asarray(template_subband_weights), _P2_SUBBAND_WEIGHTS
+        ):
+            raise ValueError("High-level P2 requires the exact frozen seven subband weights.")
         if supplied + int(has_all_subband) != 1:
             raise ValueError(
                 "Template residual requires exactly one of precomputed scores, "
                 "precomputed probabilities, or the complete filtered-subband bundle."
             )
-        if template_support_scores is not None:
+        if supplied and template_score_provenance is None:
+            raise ValueError("Precomputed template scores require typed producer provenance.")
+        if supplied and not isinstance(template_score_provenance, TemplateScoreProvenance):
+            raise TypeError("template_score_provenance must be TemplateScoreProvenance.")
+        if not supplied and template_score_provenance is not None:
+            raise ValueError("Filtered-subband P2 must not claim precomputed-score provenance.")
+        if template_query_class_scores is not None:
             if not np.array_equal(affinities, np.ones_like(affinities)):
                 raise ValueError(
                     "Unweighted precomputed template scores cannot be used with non-neutral context."
                 )
             support_distribution = template_residual_distribution(
-                template_support_scores,
+                template_query_class_scores,
                 epsilon=resolved_config.score_epsilon,
             )
-        elif template_support_probabilities is not None:
+        elif template_query_class_probabilities is not None:
             if not np.array_equal(affinities, np.ones_like(affinities)):
                 raise ValueError(
                     "Unweighted precomputed template probabilities cannot be used with "
                     "non-neutral context."
                 )
             support_distribution = _probability_matrix(
-                template_support_probabilities,
-                "template_support_probabilities",
+                template_query_class_probabilities,
+                "template_query_class_probabilities",
                 expected_shape=base.shape,
             )
         else:
@@ -656,6 +832,10 @@ def apply_v2_safe_operator(
         gate_enabled=True,
         exact_fallback=False,
         operator=operator,
+        variant=variant,
+        relative_context_pairing_sha256=pairing_sha256,
+        comparable_context_pair_count=comparable_pair_count,
+        template_score_provenance=template_score_provenance,
     )
 
 
@@ -664,7 +844,9 @@ def _fallback_output(
     base_probabilities: np.ndarray,
     *,
     operator: V2SupportOperator,
-    gate_enabled: bool,
+    variant: V2Variant,
+    pairing_sha256: str | None,
+    gate_enabled: bool | None,
     reason: str,
 ) -> V2OperatorOutput:
     return V2OperatorOutput(
@@ -678,6 +860,10 @@ def _fallback_output(
         gate_enabled=gate_enabled,
         exact_fallback=True,
         operator=operator,
+        variant=variant,
+        relative_context_pairing_sha256=pairing_sha256,
+        comparable_context_pair_count=0,
+        template_score_provenance=None,
         fallback_reason=reason,
     )
 
@@ -898,3 +1084,20 @@ def _positive_finite(value: float, name: str) -> float:
     if result <= 0.0:
         raise ValueError(f"{name} must be positive.")
     return result
+
+
+def _positive_integer(value: int, name: str) -> int:
+    if not isinstance(value, Integral) or isinstance(value, bool):
+        raise TypeError(f"{name} must be an exact integer.")
+    resolved = int(value)
+    if resolved <= 0:
+        raise ValueError(f"{name} must be positive.")
+    return resolved
+
+
+def _sha256(value: str | None, name: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{name} must be a lowercase 64-character SHA-256 hex digest.")
+    if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+        raise ValueError(f"{name} must be a lowercase 64-character SHA-256 hex digest.")
+    return value
