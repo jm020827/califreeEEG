@@ -9,6 +9,7 @@ from cfeg.models.metadata_calibration_v2 import (
     PrequentialFoldProvenance,
     TemplateScoreProvenance,
     V2OperatorConfig,
+    apply_v2_prequential_operator,
     apply_v2_safe_operator,
     fuse_probabilities,
     normalize_fbcca_scores,
@@ -47,10 +48,15 @@ def _template_provenance() -> TemplateScoreProvenance:
 
 
 def _fold_provenance(budget: int) -> tuple[PrequentialFoldProvenance, ...]:
+    block_hashes = {block: f"{block:x}" * 64 for block in range(1, budget + 1)}
     return tuple(
         PrequentialFoldProvenance(
             evaluation_block=block,
             fit_blocks=tuple(range(1, block)),
+            fit_block_partition_sha256s=tuple(
+                block_hashes[fit_block] for fit_block in range(1, block)
+            ),
+            evaluation_partition_sha256=block_hashes[block],
         )
         for block in range(2, budget + 1)
     )
@@ -669,7 +675,12 @@ def test_prequential_gate_rejects_missing_or_nonprior_fold_provenance() -> None:
     with pytest.raises(ValueError, match="per-fold provenance"):
         prequential_gate_decision(base, candidate, labels, blocks, budget=3)
     with pytest.raises(ValueError, match="exact prior fit_blocks"):
-        PrequentialFoldProvenance(evaluation_block=3, fit_blocks=(1,))
+        PrequentialFoldProvenance(
+            evaluation_block=3,
+            fit_blocks=(1,),
+            fit_block_partition_sha256s=(_HASH_B,),
+            evaluation_partition_sha256=_HASH_C,
+        )
     with pytest.raises(ValueError, match="ordered by the exact evaluation blocks"):
         prequential_gate_decision(
             base,
@@ -678,6 +689,140 @@ def test_prequential_gate_rejects_missing_or_nonprior_fold_provenance() -> None:
             blocks,
             budget=3,
             fold_provenance=tuple(reversed(_fold_provenance(3))),
+        )
+
+    first, second = _fold_provenance(3)
+    broken_chain = PrequentialFoldProvenance(
+        evaluation_block=3,
+        fit_blocks=(1, 2),
+        fit_block_partition_sha256s=(first.fit_block_partition_sha256s[0], _HASH_E),
+        evaluation_partition_sha256=second.evaluation_partition_sha256,
+    )
+    with pytest.raises(ValueError, match="chronological prefix chain"):
+        prequential_gate_decision(
+            base,
+            candidate,
+            labels,
+            blocks,
+            budget=3,
+            fold_provenance=(first, broken_chain),
+        )
+
+
+def test_dedicated_prequential_operator_supports_intermediate_depth_two() -> None:
+    query, support, labels = _scores(2)
+    provenance = _fold_provenance(3)[1]
+    output = apply_v2_prequential_operator(
+        query[:3],
+        final_budget=3,
+        fold_provenance=provenance,
+        operator="score_prototype_shrinkage",
+        variant="A_Q",
+        support_fbcca_scores=support,
+        support_labels=labels,
+    )
+    assert output.final_budget == 3
+    assert output.support_depth == 2
+    assert output.prequential_fold_provenance is provenance
+    assert output.gate_enabled is True
+    assert not output.exact_fallback
+    expected = 0.10 * (2.0 / 3.0) * normalized_entropy(output.base_probabilities)
+    assert np.allclose(output.lambdas, expected, rtol=0.0, atol=1.0e-15)
+
+
+def test_final_query_rejects_intermediate_budget_and_prequential_is_receipt_gated() -> None:
+    query, support, labels = _scores(2)
+    with pytest.raises(ValueError, match="one of"):
+        apply_v2_safe_operator(
+            query,
+            budget=2,
+            operator="score_prototype_shrinkage",
+            variant="A_Q",
+            gate_enabled=True,
+            support_fbcca_scores=support,
+            support_labels=labels,
+        )
+    with pytest.raises(TypeError, match="PrequentialFoldProvenance"):
+        apply_v2_prequential_operator(
+            query,
+            final_budget=3,
+            fold_provenance=object(),  # type: ignore[arg-type]
+            operator="score_prototype_shrinkage",
+            variant="A_Q",
+            support_fbcca_scores=support,
+            support_labels=labels,
+        )
+    with pytest.raises(ValueError, match="must not exceed"):
+        apply_v2_prequential_operator(
+            query,
+            final_budget=3,
+            fold_provenance=_fold_provenance(5)[2],
+            operator="score_prototype_shrinkage",
+            variant="A_Q",
+            support_fbcca_scores=support,
+            support_labels=labels,
+        )
+    evaluation_one = PrequentialFoldProvenance(
+        evaluation_block=1,
+        fit_blocks=(),
+        fit_block_partition_sha256s=(),
+        evaluation_partition_sha256=_HASH_B,
+    )
+    with pytest.raises(ValueError, match="at least two"):
+        apply_v2_prequential_operator(
+            query,
+            final_budget=3,
+            fold_provenance=evaluation_one,
+            operator="score_prototype_shrinkage",
+            variant="A_Q",
+            support_fbcca_scores=support,
+            support_labels=labels,
+        )
+
+
+def test_prequential_p2_provenance_binds_evaluation_and_fit_partitions() -> None:
+    query, support, labels = _scores(2)
+    provenance = _fold_provenance(3)[1]
+    scores = np.asarray(
+        [[0.9, 0.2, 0.1], [0.1, 0.8, 0.2], [0.2, 0.1, 0.7]],
+        dtype=np.float64,
+    )
+    matching = TemplateScoreProvenance(
+        filterbank_sha256=_HASH_B,
+        preprocessing_sha256=_HASH_C,
+        query_partition_sha256=provenance.evaluation_partition_sha256,
+        support_partition_sha256=provenance.fit_partition_sha256,
+    )
+    output = apply_v2_prequential_operator(
+        query[:3],
+        final_budget=3,
+        fold_provenance=provenance,
+        operator="filterbank_target_template_residual",
+        variant="A_Q",
+        support_fbcca_scores=support,
+        support_labels=labels,
+        template_query_class_scores=scores,
+        template_score_provenance=matching,
+    )
+    assert output.template_score_provenance is matching
+
+    mismatched = TemplateScoreProvenance(
+        filterbank_sha256=_HASH_B,
+        preprocessing_sha256=_HASH_C,
+        query_partition_sha256=_HASH_E,
+        support_partition_sha256=provenance.fit_partition_sha256,
+    )
+    with pytest.raises(ValueError, match="must match the prequential"):
+        apply_v2_prequential_operator(
+            query[:3],
+            final_budget=3,
+            fold_provenance=provenance,
+            operator="filterbank_target_template_residual",
+            variant="A_Q",
+            support_fbcca_scores=support,
+            support_labels=labels,
+            template_query_class_scores=scores,
+            template_score_provenance=mismatched,
         )
 
 
@@ -693,14 +838,14 @@ def test_high_level_rejects_partial_support_and_has_no_query_label_or_id_api() -
             support_fbcca_scores=support[:-1],
             support_labels=labels[:-1],
         )
-    parameters = set(inspect.signature(apply_v2_safe_operator).parameters)
-    assert not parameters.intersection(
-        {
-            "query_labels",
-            "query_y",
-            "subject_id",
-            "sample_id",
-            "file_name",
-            "row_id",
-        }
-    )
+    forbidden = {
+        "query_labels",
+        "query_y",
+        "subject_id",
+        "sample_id",
+        "file_name",
+        "row_id",
+    }
+    for function in (apply_v2_safe_operator, apply_v2_prequential_operator):
+        parameters = set(inspect.signature(function).parameters)
+        assert not parameters.intersection(forbidden)

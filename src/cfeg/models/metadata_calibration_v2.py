@@ -4,6 +4,7 @@ import hashlib
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from numbers import Integral, Real
 from typing import Literal
 
@@ -17,7 +18,9 @@ V2Variant = Literal["A_Q", "A_QM"]
 
 _SCHEMA = "cfeg.metadata-calibration-v2-safe-operator.v2"
 _TEMPLATE_PROVENANCE_SCHEMA = "cfeg.metadata-calibration-v2-template-provenance.v1"
-_BUDGETS = (0, 1, 3, 5)
+_FINAL_BUDGETS = (0, 1, 3, 5)
+_PREQUENTIAL_FINAL_BUDGETS = (3, 5)
+_PREQUENTIAL_PROVENANCE_SCHEMA = "cfeg.metadata-calibration-v2-prequential-fold.v1"
 _P2_SUBBAND_WEIGHTS = np.asarray(
     [
         1.25,
@@ -93,8 +96,15 @@ class PrequentialFoldProvenance:
 
     evaluation_block: int
     fit_blocks: tuple[int, ...]
+    fit_block_partition_sha256s: tuple[str, ...]
+    evaluation_partition_sha256: str
+    schema: str = _PREQUENTIAL_PROVENANCE_SCHEMA
 
     def __post_init__(self) -> None:
+        if self.schema != _PREQUENTIAL_PROVENANCE_SCHEMA:
+            raise ValueError(
+                f"prequential provenance schema must be {_PREQUENTIAL_PROVENANCE_SCHEMA!r}."
+            )
         evaluation = _positive_integer(self.evaluation_block, "evaluation_block")
         if not isinstance(self.fit_blocks, tuple):
             raise TypeError("fit_blocks must be a tuple of exact integers.")
@@ -104,6 +114,22 @@ class PrequentialFoldProvenance:
             raise ValueError(
                 f"evaluation block {evaluation} requires exact prior fit_blocks {expected}."
             )
+        if not isinstance(self.fit_block_partition_sha256s, tuple) or len(
+            self.fit_block_partition_sha256s
+        ) != len(resolved):
+            raise ValueError(
+                "fit_block_partition_sha256s must contain one digest per declared fit block."
+            )
+        for index, digest in enumerate(self.fit_block_partition_sha256s):
+            _sha256(digest, f"fit_block_partition_sha256s[{index}]")
+        _sha256(self.evaluation_partition_sha256, "evaluation_partition_sha256")
+
+    @property
+    def fit_partition_sha256(self) -> str:
+        """Canonical aggregate binding for the ordered fit-block prefix."""
+
+        payload = ("\n".join(self.fit_block_partition_sha256s) + "\n").encode("ascii")
+        return hashlib.sha256(payload).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -131,6 +157,9 @@ class V2OperatorOutput:
     relative_context_pairing_sha256: str | None
     comparable_context_pair_count: int
     template_score_provenance: TemplateScoreProvenance | None
+    final_budget: int
+    support_depth: int
+    prequential_fold_provenance: PrequentialFoldProvenance | None
     schema: str = _SCHEMA
     fallback_reason: str | None = None
 
@@ -467,7 +496,7 @@ def prequential_gate_decision(
     validation and short-circuit without inspecting the optional arrays.
     """
 
-    resolved_budget = _budget(budget)
+    resolved_budget = _final_budget(budget)
     if resolved_budget in {0, 1}:
         return PrequentialGateDecision(
             enabled=False,
@@ -515,6 +544,15 @@ def prequential_gate_decision(
         raise ValueError("fold_provenance must contain one typed receipt per evaluation block.")
     if tuple(item.evaluation_block for item in provenance) != expected_blocks:
         raise ValueError("fold_provenance must be ordered by the exact evaluation blocks.")
+    for previous, current in pairwise(provenance):
+        expected_prefix = (
+            *previous.fit_block_partition_sha256s,
+            previous.evaluation_partition_sha256,
+        )
+        if current.fit_block_partition_sha256s != expected_prefix:
+            raise ValueError(
+                "fold_provenance partition digests must form an exact chronological prefix chain."
+            )
     floor = _positive_finite(probability_floor, "probability_floor")
     if floor >= 1.0:
         raise ValueError("probability_floor must be below one.")
@@ -576,19 +614,156 @@ def apply_v2_safe_operator(
     support_impedance_kohm: np.ndarray | None = None,
     relative_context_pairing_sha256: str | None = None,
 ) -> V2OperatorOutput:
-    """Apply a frozen V2 support residual without access to query labels.
+    """Apply a frozen V2 support residual to a final-query endpoint.
 
-    The function consumes full strict-FBCCA class-score vectors.  It never
-    calls FBCCA itself, which keeps filtering/codebook provenance in the
-    governed producer.  Optional template subbands are already filtered; their
-    preprocessing, partition binding, and production remain the governed
-    runner's responsibility.
+    Only the declared final budgets 0/1/3/5 are accepted.  Intermediate
+    chronological prefixes used to estimate a k=3/5 gate must instead use
+    :func:`apply_v2_prequential_operator`.
     """
+
+    resolved_budget = _final_budget(budget)
+    return _apply_v2_operator(
+        query_fbcca_scores,
+        final_budget=resolved_budget,
+        support_depth=resolved_budget,
+        prequential_fold_provenance=None,
+        operator=operator,
+        variant=variant,
+        config=config,
+        support_fbcca_scores=support_fbcca_scores,
+        support_labels=support_labels,
+        base_probabilities=base_probabilities,
+        enabled=enabled,
+        gate_enabled=gate_enabled,
+        template_query_class_scores=template_query_class_scores,
+        template_query_class_probabilities=template_query_class_probabilities,
+        template_score_provenance=template_score_provenance,
+        template_query_subbands=template_query_subbands,
+        template_support_subbands=template_support_subbands,
+        template_subband_weights=template_subband_weights,
+        query_interfaces=query_interfaces,
+        support_interfaces=support_interfaces,
+        query_impedance_kohm=query_impedance_kohm,
+        support_impedance_kohm=support_impedance_kohm,
+        relative_context_pairing_sha256=relative_context_pairing_sha256,
+    )
+
+
+def apply_v2_prequential_operator(
+    evaluation_fbcca_scores: np.ndarray,
+    *,
+    final_budget: int,
+    fold_provenance: PrequentialFoldProvenance,
+    operator: V2SupportOperator,
+    variant: V2Variant,
+    config: V2OperatorConfig | None = None,
+    support_fbcca_scores: np.ndarray | None = None,
+    support_labels: np.ndarray | None = None,
+    base_probabilities: np.ndarray | None = None,
+    template_query_class_scores: np.ndarray | None = None,
+    template_query_class_probabilities: np.ndarray | None = None,
+    template_score_provenance: TemplateScoreProvenance | None = None,
+    template_query_subbands: np.ndarray | None = None,
+    template_support_subbands: np.ndarray | None = None,
+    template_subband_weights: np.ndarray | None = None,
+    query_interfaces: Sequence[object] | np.ndarray | None = None,
+    support_interfaces: Sequence[object] | np.ndarray | None = None,
+    query_impedance_kohm: np.ndarray | None = None,
+    support_impedance_kohm: np.ndarray | None = None,
+    relative_context_pairing_sha256: str | None = None,
+) -> V2OperatorOutput:
+    """Score one calibration block from its exact chronological fit prefix.
+
+    This capability is deliberately separate from final-query application.
+    It unconditionally applies the candidate only to estimate the later final
+    gate and echoes the typed partition receipt in its output.
+    """
+
+    resolved_final_budget = _prequential_final_budget(final_budget)
+    if not isinstance(fold_provenance, PrequentialFoldProvenance):
+        raise TypeError("fold_provenance must be PrequentialFoldProvenance.")
+    if fold_provenance.evaluation_block < 2:
+        raise ValueError("prequential evaluation_block must be at least two.")
+    if fold_provenance.evaluation_block > resolved_final_budget:
+        raise ValueError("evaluation_block must not exceed the declared final budget.")
+    support_depth = fold_provenance.evaluation_block - 1
+    if template_score_provenance is not None and (
+        template_score_provenance.query_partition_sha256
+        != fold_provenance.evaluation_partition_sha256
+        or template_score_provenance.support_partition_sha256
+        != fold_provenance.fit_partition_sha256
+    ):
+        raise ValueError(
+            "P2 template provenance must match the prequential evaluation and fit prefix."
+        )
+    return _apply_v2_operator(
+        evaluation_fbcca_scores,
+        final_budget=resolved_final_budget,
+        support_depth=support_depth,
+        prequential_fold_provenance=fold_provenance,
+        operator=operator,
+        variant=variant,
+        config=config,
+        support_fbcca_scores=support_fbcca_scores,
+        support_labels=support_labels,
+        base_probabilities=base_probabilities,
+        enabled=True,
+        gate_enabled=True,
+        template_query_class_scores=template_query_class_scores,
+        template_query_class_probabilities=template_query_class_probabilities,
+        template_score_provenance=template_score_provenance,
+        template_query_subbands=template_query_subbands,
+        template_support_subbands=template_support_subbands,
+        template_subband_weights=template_subband_weights,
+        query_interfaces=query_interfaces,
+        support_interfaces=support_interfaces,
+        query_impedance_kohm=query_impedance_kohm,
+        support_impedance_kohm=support_impedance_kohm,
+        relative_context_pairing_sha256=relative_context_pairing_sha256,
+    )
+
+
+def _apply_v2_operator(
+    query_fbcca_scores: np.ndarray,
+    *,
+    final_budget: int,
+    support_depth: int,
+    prequential_fold_provenance: PrequentialFoldProvenance | None,
+    operator: V2SupportOperator,
+    variant: V2Variant,
+    config: V2OperatorConfig | None,
+    support_fbcca_scores: np.ndarray | None,
+    support_labels: np.ndarray | None,
+    base_probabilities: np.ndarray | None,
+    enabled: bool,
+    gate_enabled: bool | None,
+    template_query_class_scores: np.ndarray | None,
+    template_query_class_probabilities: np.ndarray | None,
+    template_score_provenance: TemplateScoreProvenance | None,
+    template_query_subbands: np.ndarray | None,
+    template_support_subbands: np.ndarray | None,
+    template_subband_weights: np.ndarray | None,
+    query_interfaces: Sequence[object] | np.ndarray | None,
+    support_interfaces: Sequence[object] | np.ndarray | None,
+    query_impedance_kohm: np.ndarray | None,
+    support_impedance_kohm: np.ndarray | None,
+    relative_context_pairing_sha256: str | None,
+) -> V2OperatorOutput:
+    """Shared implementation for governed final-query and prequential paths."""
 
     resolved_config = V2OperatorConfig() if config is None else config
     if not isinstance(resolved_config, V2OperatorConfig):
         raise TypeError("config must be a V2OperatorConfig.")
-    resolved_budget = _budget(budget)
+    resolved_final_budget = _final_budget(final_budget)
+    resolved_support_depth = _support_depth(support_depth)
+    if prequential_fold_provenance is None:
+        if resolved_support_depth != resolved_final_budget:
+            raise ValueError("Final-query support depth must equal its declared budget.")
+    else:
+        if resolved_final_budget not in _PREQUENTIAL_FINAL_BUDGETS:
+            raise ValueError("Prequential application requires final budget 3 or 5.")
+        if resolved_support_depth != prequential_fold_provenance.evaluation_block - 1:
+            raise ValueError("Prequential support depth must equal evaluation_block minus one.")
     if operator not in {
         "score_prototype_shrinkage",
         "filterbank_target_template_residual",
@@ -632,7 +807,7 @@ def apply_v2_safe_operator(
                 "base_probabilities must exactly match the frozen normalized FBCCA formula."
             )
 
-    if resolved_budget == 0:
+    if resolved_support_depth == 0:
         return _fallback_output(
             base_scores,
             base,
@@ -640,6 +815,9 @@ def apply_v2_safe_operator(
             variant=variant,
             pairing_sha256=pairing_sha256,
             gate_enabled=gate_enabled,
+            final_budget=resolved_final_budget,
+            support_depth=resolved_support_depth,
+            prequential_fold_provenance=prequential_fold_provenance,
             reason="k0_exact_strict_fbcca",
         )
     if not enabled:
@@ -650,6 +828,9 @@ def apply_v2_safe_operator(
             variant=variant,
             pairing_sha256=pairing_sha256,
             gate_enabled=gate_enabled,
+            final_budget=resolved_final_budget,
+            support_depth=resolved_support_depth,
+            prequential_fold_provenance=prequential_fold_provenance,
             reason="operator_disabled",
         )
     if gate_enabled is None:
@@ -660,6 +841,9 @@ def apply_v2_safe_operator(
             variant=variant,
             pairing_sha256=pairing_sha256,
             gate_enabled=None,
+            final_budget=resolved_final_budget,
+            support_depth=resolved_support_depth,
+            prequential_fold_provenance=prequential_fold_provenance,
             reason="missing_gate_authorization",
         )
     if not gate_enabled:
@@ -670,6 +854,9 @@ def apply_v2_safe_operator(
             variant=variant,
             pairing_sha256=pairing_sha256,
             gate_enabled=False,
+            final_budget=resolved_final_budget,
+            support_depth=resolved_support_depth,
+            prequential_fold_provenance=prequential_fold_provenance,
             reason="validation_gate_abstained",
         )
     if resolved_config.lambda_max == 0.0:
@@ -680,6 +867,9 @@ def apply_v2_safe_operator(
             variant=variant,
             pairing_sha256=pairing_sha256,
             gate_enabled=True,
+            final_budget=resolved_final_budget,
+            support_depth=resolved_support_depth,
+            prequential_fold_provenance=prequential_fold_provenance,
             reason="exact_null_candidate",
         )
 
@@ -699,7 +889,11 @@ def apply_v2_safe_operator(
         len(support_scores),
         n_classes=base_scores.shape[1],
     )
-    _require_exact_budget(labels, n_classes=base_scores.shape[1], budget=resolved_budget)
+    _require_exact_budget(
+        labels,
+        n_classes=base_scores.shape[1],
+        budget=resolved_support_depth,
+    )
     _, support_base_probabilities = normalize_fbcca_scores(
         support_scores, epsilon=resolved_config.score_epsilon
     )
@@ -803,7 +997,7 @@ def apply_v2_safe_operator(
         if support_distribution.shape != base.shape:
             raise ValueError("Template support distribution must align with query FBCCA scores.")
 
-    budget_factor = resolved_budget / (resolved_budget + 1.0)
+    budget_factor = resolved_support_depth / (resolved_support_depth + 1.0)
     lambdas = np.full(len(base), resolved_config.lambda_max * budget_factor, dtype=np.float64)
     if resolved_config.entropy_scaling:
         # High-entropy (uncertain) FBCCA rows receive more of the bounded
@@ -836,6 +1030,9 @@ def apply_v2_safe_operator(
         relative_context_pairing_sha256=pairing_sha256,
         comparable_context_pair_count=comparable_pair_count,
         template_score_provenance=template_score_provenance,
+        final_budget=resolved_final_budget,
+        support_depth=resolved_support_depth,
+        prequential_fold_provenance=prequential_fold_provenance,
     )
 
 
@@ -847,6 +1044,9 @@ def _fallback_output(
     variant: V2Variant,
     pairing_sha256: str | None,
     gate_enabled: bool | None,
+    final_budget: int,
+    support_depth: int,
+    prequential_fold_provenance: PrequentialFoldProvenance | None,
     reason: str,
 ) -> V2OperatorOutput:
     return V2OperatorOutput(
@@ -864,6 +1064,9 @@ def _fallback_output(
         relative_context_pairing_sha256=pairing_sha256,
         comparable_context_pair_count=0,
         template_score_provenance=None,
+        final_budget=final_budget,
+        support_depth=support_depth,
+        prequential_fold_provenance=prequential_fold_provenance,
         fallback_reason=reason,
     )
 
@@ -1055,12 +1258,28 @@ def _optional_impedance(
     return array
 
 
-def _budget(value: int) -> int:
+def _final_budget(value: int) -> int:
     if not isinstance(value, Integral) or isinstance(value, bool):
         raise TypeError("budget must be an exact integer.")
     resolved = int(value)
-    if resolved not in _BUDGETS:
-        raise ValueError(f"budget must be one of {_BUDGETS}.")
+    if resolved not in _FINAL_BUDGETS:
+        raise ValueError(f"budget must be one of {_FINAL_BUDGETS}.")
+    return resolved
+
+
+def _prequential_final_budget(value: int) -> int:
+    resolved = _final_budget(value)
+    if resolved not in _PREQUENTIAL_FINAL_BUDGETS:
+        raise ValueError(f"prequential final_budget must be one of {_PREQUENTIAL_FINAL_BUDGETS}.")
+    return resolved
+
+
+def _support_depth(value: int) -> int:
+    if not isinstance(value, Integral) or isinstance(value, bool):
+        raise TypeError("support_depth must be an exact integer.")
+    resolved = int(value)
+    if resolved < 0 or resolved > 5:
+        raise ValueError("support_depth must be in [0, 5].")
     return resolved
 
 
