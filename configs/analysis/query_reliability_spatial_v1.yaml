@@ -1,0 +1,507 @@
+schema: cfeg.query-reliability-candidate-plan.v1
+decision_id: DEC-20260904-001
+status: implementation_draft_outcome_blocked
+candidate_id: query-reliability-spatial-v1
+owner_direction_approved: true
+exact_outcome_bundle_approved: false
+approval_scope: architecture_contract_tests_and_outcome_free_dry_runs_only
+approved_by: active_workspace_owner
+approval_message: "응 그렇게 해보자. 시작."
+recorded_date: "2026-09-04"
+
+research_goal: strict_inductive_k0_ssvep_for_unseen_participants
+research_question: >-
+  With no external metadata, target history, target calibration, class-frequency
+  template, phase template, or target-batch statistic, does a source-trained
+  bounded spatial operator conditioned only on the current EEG query at inference
+  improve unseen-participant SSVEP decoding in BETA's three-second-stimulation-
+  eligible S16-to-S70 population over the exact identity arm under the same
+  corruption-training condition?
+hypothesis_scope:
+  primary: current_query_Q_bundle_conditioned_system_utility_under_seen_synthetic_stress
+  conditional_secondary: query_derived_reliability_mechanism_only_if_all_mechanism_audits_pass
+  not_claimed:
+    - calibrated_physical_signal_quality
+    - causal_effect_of_contact_or_impedance
+    - discovery_of_new_stimulus_classes
+    - general_domain_generalization_beyond_the_observed_corpora
+    - first_query_local_or_quality_aware_ssvep_method
+
+information_rights:
+  setting: strict_inductive_single_query_k0
+  allowed_at_prediction:
+    - current_preprocessed_eeg_window
+    - current_window_channel_mask
+    - fixed_canonical_channel_identity
+    - current_window_pre_zscore_channel_scale_qc
+  forbidden_at_prediction:
+    - external_acquisition_metadata
+    - subject_or_dataset_identity
+    - target_participant_history
+    - target_calibration_trials
+    - pseudo_labels
+    - target_batch_or_population_statistics
+    - ground_truth_label
+    - stimulus_frequency_or_phase_template
+  supervised_source_training_note: >-
+    Source labels train the closed-set classifier and the network may learn
+    frequency structure from source waveforms. "Label/frequency-template-free"
+    refers only to the absence of an explicit target label or stimulus template
+    at prediction time.
+  metadata_contract_0_4_dev_role: query_qc_tensor_transport_only
+
+predecessor_tombstone:
+  candidate_id: reliability-spatial-v1
+  disposition: terminal_failed_do_not_reopen
+  receipt: outputs/engineering/reliability-spatial-v1/stage0/receipt.json
+  receipt_sha256: e8f3f87bbe47a8c8d5825f7d0525c318e87d42c6ecdd2840de21b1c657eefc35
+  required_receipt_status: failed
+  historical_source_snapshot: >-
+    /home/whwovy/research-spaces/califree-eeg-experiment-design/provenance/
+    stage0_execution_source_f3a6a21264d86c09.tar.gz
+  historical_source_snapshot_sha256: 136b1a5fdb96f2bd66c6302d6562409eb3f08918f4739d6d7d81f2321f86c3c0
+  grants_execution_authority: false
+
+prior_art_boundary:
+  novelty_clearance_complete: false
+  first_claim_allowed: false
+  closest_methods:
+    - name: MAPS-CS
+      year: 2026
+      doi: 10.1016/j.jneumeth.2026.110757
+      relevance: training_free_dynamic_ssvep_channel_quality_selection
+      evidence_status: abstract_only_full_text_required
+    - name: Dynamic Spatial Filtering
+      year: 2022
+      doi: 10.1016/j.neuroimage.2022.118994
+      relevance: current_window_covariance_conditioned_spatial_operator
+      evidence_status: full_text_reviewed
+    - name: Fast SSVEP
+      year: 2025
+      url: https://arxiv.org/abs/2506.01284
+      relevance: query_local_alignment_and_spectral_denoising
+      evidence_status: preprint_reviewed
+    - name: SSVEPPoolformer
+      year: 2025
+      doi: 10.1109/TCE.2025.3535157
+      relevance: adaptive_denoising_and_cross_channel_pooling_for_ssvep
+      evidence_status: official_abstract_only_full_text_required
+    - name: TMW-CCA
+      year: 2022
+      doi: 10.1109/JIOT.2021.3113910
+      relevance: time_domain_quality_aware_dynamic_ssvep_sensing
+      evidence_status: full_text_required
+    - name: EMD-QC
+      year: 2025
+      doi: 10.2139/ssrn.5622956
+      relevance: signal_quality_weighted_cca_and_channel_selection
+      evidence_status: full_text_blocked
+  candidate_contribution_if_all_gates_and_replication_complete: >-
+    A source-trained, bounded diagonal-plus-low-rank SSVEP operator conditioned
+    only on the current query, with no explicit target label or frequency/phase
+    template at inference, evaluated with exact graph
+    parity, participant-disjoint data, clean mean noninferiority at a prespecified
+    minus-one-percentage-point margin, injected-corruption
+    localization, shortcut audits, temporal-frequency-support audits, and
+    prospective within-Dong participant-disjoint retraining replication, provided
+    its exact recipe is frozen before any BETA reveal.
+  conceptual_lens:
+    source: https://arxiv.org/abs/2608.11829
+    transfer: >-
+      Mean improvement alone may reflect efficiency or redistribution rather than
+      expansion of the OOD capability boundary; therefore participant-by-corruption
+      win/loss transitions and lower-tail performance are reported separately.
+
+data_contract:
+  wearable_v3_allowed: false
+  synthetic_quality_v1_allowed: false
+  manifest_stimulus_phase_template_or_claim_allowed: false
+  empirical_phase_in_current_waveform_allowed: true
+  reason_phase_blocked: >-
+    The local BETA phase table predates its 2022 corrigendum and the local Wang
+    mirror lacks the cited Freq_Phase.mat provenance source. Frequency labels are
+    usable, but phase-aware and exact frequency-phase transport stay blocked.
+  primary_dataset:
+    dataset_id: beta
+    processed_root: ${env:EEG_DATA_ROOT}/processed/beta_v1
+    n_subjects: 70
+    n_samples: 11200
+    n_classes: 40
+    n_channels: 64
+    trials_per_participant_class: 4
+    audit_receipt: configs/governance/query_reliability_beta_asset_receipt.json
+    audit_receipt_sha256: b09a0db3f43b21a966af1b5578dfe67c9b29903cc4944127b83540c54cf6f333
+    eligibility: subjects_with_three_second_stimulation_S16_to_S70
+    excluded_subject_ids: [sub001, sub002, sub003, sub004, sub005, sub006, sub007, sub008, sub009, sub010, sub011, sub012, sub013, sub014, sub015]
+    exclusion_reason: >-
+      S1-S15 have a two-second stimulation, while the current 0.63-to-2.63-s
+      crop extends about 0.13 s past stimulus offset; they are excluded before
+      outcomes rather than mixed into the target population.
+    previously_outcome_exposed_subjects: [sub016]
+    exposed_subject_role: training_only
+    split_algorithm: sha256_eligible_three_second_forced_exposed_train_v3
+    split_salt: query-reliability-spatial-v1|beta-long-window|subject
+    split_rank_serialization: sha256_utf8_of_split_salt_pipe_subject_id
+    split_rank_order: ascending_digest_then_subject_id
+    lockbox_rank_selection: last_20_largest_digest_after_removing_forced_training_subjects
+    exposed_subject_constraint: sub016_must_remain_training_or_split_is_invalid
+    split_assignment_sha256: 2837ff182e9fafa373c5577fcc6e00d8fb9cb9f45aa9b4621f2ec866b077443e
+    training_subject_ids: [sub016, sub017, sub018, sub019, sub020, sub022, sub023, sub024, sub028, sub029, sub030, sub031, sub033, sub035, sub036, sub037, sub038, sub041, sub042, sub044, sub045, sub046, sub047, sub051, sub052, sub053, sub055, sub056, sub059, sub060, sub063, sub065, sub066, sub067, sub068]
+    validation_subject_ids: []
+    lockbox_subject_ids: [sub021, sub025, sub026, sub027, sub032, sub034, sub039, sub040, sub043, sub048, sub049, sub050, sub054, sub057, sub058, sub061, sub062, sub064, sub069, sub070]
+    lockbox_n_samples: 3200
+    lockbox_n_subjects: 20
+    lockbox_sample_identity_sha256: 06304b78dc19829e857865fe6e3f168abafdaf0c3d371763ee645ecdca617532
+    wrong_query_donor_mapping_schema: cfeg.query-reliability-wrong-query-donor-map.v2
+    wrong_query_donor_mapping_salt: query-reliability-spatial-v1|wrong-query-within-participant-class|v2
+    wrong_query_donor_mapping_rule: sha256_within_participant_class_nonself_sample_ring
+    wrong_query_donor_mapping_sha256: e1d7be88b55a1ad35d975787b95183ff65909507eace648109e069164344027f
+    eligible_role_counts: {training: 35, validation: 0, lockbox: 20, excluded: 15}
+    asset_fingerprints:
+      asset_info.json: 7ee276231ab384c014a85f69e2fc162dfca5328354faa0aa7728a7763028075f
+      class_map.json: f7249cfee319537f1ed277bc5120cb93275ef863f6739c990b79ef8cb52d46df
+      manifest.jsonl: 25db951b1da898298068bb8b04c8911083f697774fc17e6e87591fc2b37aa05a
+      manifest.parquet: ec4792cbaa418297f9ca883a4b17c60ea33ebae6af89caadf8f8662f57582b19
+      preprocess_config.yaml: 5c26a96c9dc5cc7b7197f8a02c2e2d7891c7cb486c4a8b2527c9852e0038cc43
+      signals.h5: ee6f3b324eb7cf5c8349ac7ae09d51def13b6d12c4968472b4bb70ed43cb4818
+  independent_replication:
+    dataset_id: dong2023
+    status: planned_not_authorized
+    replication_mode: within_corpus_retraining_with_an_independent_preregistered_partition
+    beta_to_dong_zero_shot_transfer_claimed: false
+    n_subjects: 59
+    n_samples: 9440
+    n_classes: 40
+    trigger: only_after_beta_passes_every_joint_gate_and_separate_owner_authorization
+    protocol_freeze_deadline: before_any_beta_outcome_reveal
+    exact_recipe_frozen: false
+    independent_preregistered_replication_claim_allowed: false
+    previously_outcome_exposed_subjects: [sub001]
+    exposed_subject_role: training_only
+    split_algorithm: sha256_forced_exposed_train_v1
+    split_salt: query-reliability-spatial-v1|dong2023|subject
+    split_assignment_sha256: fed8c7afde740bc5b14287a2c871be181195432a9a9fd87220a919c571000649
+    training_subject_ids: [sub001, sub002, sub003, sub004, sub005, sub006, sub007, sub009, sub010, sub011, sub014, sub015, sub016, sub019, sub020, sub021, sub022, sub026, sub027, sub029, sub030, sub031, sub032, sub034, sub036, sub038, sub040, sub041, sub043, sub044, sub046, sub047, sub049, sub052, sub053, sub054, sub055, sub056, sub058]
+    validation_subject_ids: []
+    lockbox_subject_ids: [sub008, sub012, sub013, sub017, sub018, sub023, sub024, sub025, sub028, sub033, sub035, sub037, sub039, sub042, sub045, sub048, sub050, sub051, sub057, sub059]
+    asset_fingerprints:
+      asset_info.json: 5481971e06e5ec1134542015347f23b0bc1807821b46a188a56da15b242ece76
+      class_map.json: f7249cfee319537f1ed277bc5120cb93275ef863f6739c990b79ef8cb52d46df
+      manifest.jsonl: d8ac6c92ba4b27e229a01693c97eff9669347a36947c300f3667846f5d7d5d51
+      manifest.parquet: 618e1b16cd8e32c69fe725af43f347b4754981369c1885f6f9a587526b1d26d7
+      preprocess_config.yaml: d8802ed0c5cc35e39085e597e346c3108294b7dfa2db6959b810adfdcf1f211c
+      signals.h5: c5893ba3ac2fe6a0af4a6ebf6b17a3604db40707aafa786605589b89040cec6e
+
+model_contract:
+  architecture: query_reliability_spatial_v1
+  backbone: spectral_transformer
+  query_feature_schema: query_window_reliability_features_v3_waveform_6_60_qc_scale_6_90
+  query_features:
+    - pre_zscore_channel_std
+    - pre_zscore_qc_available
+    - post_zscore_log_variance
+    - log_first_difference_energy
+    - mean_absolute_interchannel_correlation
+    - max_absolute_interchannel_correlation
+    - bandmatched_max_bin_spectral_concentration_6_60hz
+  placement: pre_backbone_waveform
+  operator_family_identifier: diagonal_low_rank
+  operator_structure: symmetric_diagonal_plus_low_rank
+  factor_width: 4
+  symmetric_low_rank_component_rank_upper_bound: 8
+  note_on_rank: >-
+    Symmetrizing L R^T as (L R^T + R L^T) gives an off-diagonal
+    low-rank component with rank at most twice the factor width. The separate
+    diagonal term is not rank constrained.
+  maximum_frobenius_norm: 0.20
+  identity_initialized: true
+  external_metadata_parameters_allowed: false
+  treatment_information_difference: >-
+    Q1 intentionally receives the seven-feature Q bundle, including stored
+    pre-zscore channel scale from the 6-90-Hz preprocessing pass, while Q0 does
+    not. All waveform-derived Q features are recomputed over the same 6-60-Hz
+    band used by the backbone. This estimates the bundle's incremental value,
+    not a same-information architecture effect.
+
+experiment:
+  design: query_access_by_corruption_training_2x2
+  roles: [Q0_CLEAN, Q1_CLEAN, Q0_AUG, Q1_AUG]
+  treatment_axes: [query_qc_access, preregistered_corruption_training]
+  seeds: [11, 29, 47]
+  epochs: 10
+  checkpoint_selection: fixed_epoch_blind
+  validation_set_exists: false
+  checkpoint_or_hyperparameter_selection_data: wang_development_evidence_only
+  partial_role_execution_allowed: false
+  all_four_roles_per_seed_required: true
+  primary_pair: Q1_AUG_minus_Q0_AUG
+  required_descriptive_contrasts:
+    clean_query_effect_without_augmentation: Q1_CLEAN_minus_Q0_CLEAN
+    corrupted_query_effect_without_augmentation: Q1_CLEAN_minus_Q0_CLEAN
+    clean_query_by_augmentation_interaction: >-
+      (Q1_AUG_minus_Q0_AUG)_clean_minus_(Q1_CLEAN_minus_Q0_CLEAN)_clean
+    corrupted_query_by_augmentation_interaction: >-
+      (Q1_AUG_minus_Q0_AUG)_corrupted_minus_(Q1_CLEAN_minus_Q0_CLEAN)_corrupted
+    corrupted_deployment_comparison: Q1_AUG_minus_Q0_CLEAN
+  descriptive_contrasts_are_promotion_tests: false
+  corrupted_deployment_comparison_gate_status: utility_threshold_not_yet_frozen
+  claim_if_deployment_gate_remains_absent: >-
+    Improvement over the identity system under the same augmentation condition
+    on the prespecified equal-weight six-cell synthetic-stress composite only.
+  forbidden_claim_if_deployment_gate_remains_absent: >-
+    Superiority of the proposed deployment system over the standard clean-trained
+    identity baseline.
+  corruption_cells_equal_weight:
+    - zero_0125
+    - zero_0250
+    - white_snr_0
+    - white_snr_m5
+    - line50_snr_0
+    - line50_snr_m5
+  augmented_training_clean_probability: 0.25
+  augmented_training_draw_key: fixed_corruption_seed_plus_epoch_plus_sample_id
+  corruption_randomization_pairing: >-
+    Severity pairs share the same family-keyed channel permutation, white-noise
+    realization, or line phase. The 12.5-percent zero set is nested inside the
+    25-percent zero set for the same query and draw.
+  noise_snr_band_hz: [6.0, 60.0]
+  corruption_restandardization_band_hz: [6.0, 90.0]
+  corruption_qc_transport: >-
+    White noise is limited and scaled in the 6-60-Hz analysis band. It is added
+    to the already 6-90-Hz-filtered waveform, then the affected channel is
+    restandardized using its full stored 6-90-Hz waveform standard deviation;
+    the same relative standard-deviation change transports the pre-z scale QC.
+  evaluation_corruption_seed: 20260904
+  evaluation_draw_indices: [0, 1, 2]
+  corruption_interpretation: injected_flatline_or_noise_only_not_real_contact_or_motion
+  same_checkpoint_wrong_query_audit:
+    checkpoint_role: Q1_AUG
+    information_rights_status: analysis_only_counterfactual_non_deployable
+    target_scenarios: clean_plus_all_six_corruption_cells_and_three_draws
+    donor_scenario: same_eval_cell_and_draw_as_target
+    pairing: deterministic_bijective_within_participant_and_class_nonself_trial
+    label_use_boundary: offline_pair_construction_only_never_model_input_or_deployment
+    uses_other_trial_from_same_target_participant: true
+    strict_k0_deployment_rights_satisfied: false
+    target_waveform_route: target_waveform_enters_backbone
+    donor_query_route: donor_waveform_and_donor_channel_qc_construct_spatial_operator_only
+    channel_layout_mask_and_sampling_rate_must_match: true
+    training_use_allowed: false
+    excluded_from_primary_clean_and_deployment_estimands: true
+    generated_only_inside_same_hidden_atomic_transaction_after_standard_predictions: true
+    presentation_as_deployment_comparator_allowed: false
+
+estimands:
+  statistical_unit: participant
+  seed_reduction: average_three_seed_probabilities_before_participant_metric
+  exact_reduction_order:
+    - softmax_logits_within_checkpoint
+    - arithmetic_mean_probabilities_across_seeds_per_sample
+    - argmax_with_lowest_class_index_tie_break
+    - balanced_accuracy_per_participant_cell_and_corruption_draw
+    - arithmetic_mean_over_three_draws_within_cell
+    - equal_weight_arithmetic_mean_over_six_cells_within_participant
+    - paired_participant_contrast
+  primary: >-
+    Mean paired participant balanced-accuracy difference Q1_AUG minus Q0_AUG,
+    after equal-weight averaging within participant over the six fixed corrupted
+    evaluation cells.
+  clean_safety: paired_participant_clean_balanced_accuracy_Q1_AUG_minus_Q0_AUG
+  deployment_clean_safety: paired_participant_clean_balanced_accuracy_Q1_AUG_minus_Q0_CLEAN
+  provisional_gates_not_yet_frozen:
+    primary_mean_delta_min: 0.02
+    primary_one_sided_alpha: 0.05
+    primary_positive_participant_fraction_min: 0.60
+    clean_noninferiority_margin: -0.01
+    clean_one_sided_alpha: 0.05
+    deployment_clean_noninferiority_margin: -0.01
+    deployment_clean_one_sided_alpha: 0.05
+    joint_rule: >-
+      Intersection-union: corrupted superiority LCB above zero and observed mean
+      at least 0.02, Q1_AUG-vs-Q0_AUG clean LCB above -0.01, and
+      Q1_AUG-vs-Q0_CLEAN clean LCB above -0.01.
+    positive_fraction_role: >-
+      A non-inferential consistency promotion gate requiring at least 12 of 20
+      participant contrasts above zero; no sign-test p-value is claimed. Under
+      independent 0.5 signs, 12-or-more occurs with probability about 0.252.
+    statistical_procedure: >-
+      For each paired participant contrast, use a one-sample mean t lower
+      confidence bound with ddof=1 and one-sided alpha 0.05. There is no
+      normality pretest or outcome-dependent method switch. If variance is
+      exactly zero, the LCB equals the mean and p is 0 only when the mean is
+      strictly above the null margin, otherwise 1. Exact sign-flip and bootstrap
+      results may be reported only as prespecified sensitivities.
+  why_provisional: >-
+    The +0.02 practical threshold is below the 3.5-to-6.5 percentage-point
+    gains over channel ensemble reported in the MAPS-CS PubMed-indexed author
+    abstract, but that cross-study result does not by itself justify our
+    threshold. It is an observed-effect promotion threshold rather than the inferential null. The
+    -0.01 clean margins still need utility justification. The completed
+    outcome-free sensitivity audit shows that at N=20, true clean delta zero,
+    and paired SD 0.04, one clean noninferiority test has only about 0.286 power;
+    80-percent power requires paired SD about 0.0173 or smaller (or roughly 101
+    participants at SD 0.04). The +0.02 value is an observed promotion screen,
+    not a tested population lower bound. Numeric utility choices and the final
+    simulation grid remain unfrozen and cannot authorize an outcome reveal.
+  noninferiority_failure_interpretation: >-
+    Failure means clean safety was not established for promotion; it is not by
+    itself evidence that the method causes harm.
+  outcome_free_sensitivity_audit:
+    document: docs/query_reliability_power_sensitivity.md
+    n_participants: 20
+    one_sided_alpha: 0.05
+    clean_power_at_true_zero_and_sd_0_04: 0.2855
+    clean_sd_for_80_percent_power_at_true_zero: 0.0173
+    approximate_n_for_80_percent_power_at_true_zero_and_sd_0_04: 101
+    final_monte_carlo_contract_frozen: false
+  within_beta_held_participant_reports_under_seen_synthetic_corruption:
+    - participant_by_corruption_cell_paired_deltas
+    - worst_corruption_cell_per_participant_and_role_with_lexical_tie_break
+    - participant_composite_quantiles_0_10_0_25_0_50_per_role
+    - gained_and_lost_cells_at_the_plan_bound_practical_margin
+    - corrupted_Q1_AUG_minus_Q0_CLEAN_deployment_comparison
+    - clean_and_corrupted_query_by_augmentation_interactions
+  corruption_generalization_claim_allowed: false
+  corruption_scope_note: >-
+    Training and evaluation use the same six corruption families and severities.
+    Train and held participants also come from the same BETA corpus, hardware,
+    and site. The study therefore tests participant-disjoint robustness under
+    prespecified, seen synthetic stresses; it does not estimate device/site/domain
+    OOD or generalization to a novel corruption family.
+  primary_claim_boundary: >-
+    Even if every promotion gate passes, the primary claim is limited to the
+    BETA three-second-stimulation-eligible S16-to-S70 population and the
+    prespecified equal-weight six-cell synthetic-stress composite relative to the
+    identity arm under the same augmentation condition. It does not generalize
+    to excluded S1-to-S15. Without a separately frozen corrupted
+    Q1_AUG-minus-Q0_CLEAN utility gate, it is not a claim of superiority over the
+    standard clean-trained identity baseline, benefit in every corruption cell,
+    or broad real-world robustness.
+
+required_mechanism_and_shortcut_audits:
+  - exact_Q0_identity_at_every_training_step
+  - identical_parameter_schema_and_initial_trainable_state_within_seed
+  - metadata_mutation_bitwise_no_effect
+  - symmetric_operator_and_norm_bound
+  - padded_channel_safety
+  - channel_permutation_equivariance
+  - batch_partner_independence
+  - no_new_temporal_frequency_support
+  - injected_channel_localization
+  - query_feature_label_probe
+  - leave_one_query_feature_family_out_ablation
+  - query_feature_dataset_probe_before_cross_corpus_claim
+  - no_new_temporal_frequency_or_harmonic_support_and_empirical_phase_shift_report
+  - exact_complete_prediction_grid_and_role_seed_input_hash_equality
+  - class_by_corruption_cell_report_with_50hz_harmonic_overlap_flag
+  - same_checkpoint_Q1_identity_intervention
+  - same_checkpoint_Q1_wrong_query_intervention
+
+mechanism_attribution_boundary:
+  primary_claim_if_gates_pass: >-
+    incremental_utility_of_the_exact_Q_bundle_conditioned_system_over_the_frozen_identity_baseline
+  primary_contrast_does_not_isolate: >-
+    reliability_information_from_query_dependent_operator_function_and_effective_function_capacity
+  reliability_mechanism_claim_requires:
+    - injected_channel_localization_pass
+    - source_and_sealed_bundle_query_feature_label_probe
+    - leave_one_feature_family_out_ablation
+    - no_single_class_or_50hz_harmonic_cell_dominates_the_effect
+    - same_checkpoint_Q1_identity_intervention_pass
+    - same_checkpoint_Q1_wrong_query_intervention_pass
+  provisional_same_checkpoint_estimands:
+    identity: >-
+      participant corrupted composite Q1_AUG active minus the same checkpoint
+      with the spatial operator forced to exact identity
+    wrong_query: >-
+      participant corrupted composite Q1_AUG active minus the same checkpoint
+      using the fixed within-participant/class nonself donor-Q operator
+    inferential_null_margin: 0.0
+    one_sided_alpha: 0.05
+    practical_effect_threshold: null
+    failure_scope: blocks_reliability_mechanism_claim_only_not_primary_utility_result
+    status: thresholds_and_artifact_reducer_not_frozen
+  caveat: >-
+    First-difference energy and spectral concentration can contain task-frequency
+    information even though neither receives a class-frequency template. They
+    are lawful single-query inputs, but benefit without the listed audits is a
+    Q-bundle-conditioned system effect, not evidence of bad-channel recovery.
+
+baseline_plan:
+  required_before_publication:
+    - paper_constrained_CCA
+    - paper_constrained_FBCCA
+    - covariance_DSF_Q
+    - MAPS_CS_or_documented_nonimplementability
+    - SSVEPPoolformer_or_documented_protocol_incompatibility
+    - Fast_SSVEP_or_documented_nonimplementability
+  strict_information_rights_reported_per_method: true
+  current_status: blocked_on_full_text_and_common_protocol_ports
+
+execution_authority:
+  model_and_contract_implementation_allowed: true
+  unit_tests_allowed: true
+  random_tensor_cuda_probe_allowed: true
+  human_eeg_forward_only_dry_run_allowed: true
+  human_training_allowed: false
+  validation_outcomes_allowed: false
+  lockbox_outcomes_allowed: false
+  dong_replication_allowed: false
+  wearable_reuse_allowed: false
+  source_freeze_tag: null
+
+outcome_bundle_contract:
+  status: draft_not_execution_authority
+  canonical_lockbox_n_subjects: 20
+  canonical_lockbox_n_samples: 3200
+  canonical_lockbox_sample_identity_sha256: 06304b78dc19829e857865fe6e3f168abafdaf0c3d371763ee645ecdca617532
+  canonical_asset_fingerprint_bundle_sha256: 43ecb4936ec3abaf2f92e602142a94e93a7c3e8cb459cf3d11ad6358d379cb5c
+  canonical_runtime_split_sha256: d0afab8d17be77f80b3666722dc71036569b93b9370af6bbfeab9e0e7f14570c
+  plan_family_source_asset_and_sample_bindings_must_be_internal: true
+  private_staging_and_atomic_publication_required: true
+  source_freeze_tag_must_be_annotated: true
+  same_checkpoint_Q1_identity_intervention_artifact_required: true
+  same_checkpoint_Q1_wrong_query_intervention_artifact_required: true
+  feature_probe_and_ablation_artifacts_required_for_reliability_mechanism_claim: true
+  evaluation_input_hash_schema: cfeg.query-reliability-evaluation-input-sha256.v1
+  evaluation_input_hash_domain:
+    - sample_id_utf8
+    - canonical_float32_corrupted_waveform_with_dtype_and_shape
+    - canonical_bool_channel_mask_with_dtype_and_shape
+    - canonical_int64_channel_ids_with_dtype_and_shape
+    - canonical_float32_channel_query_qc_with_dtype_and_shape
+    - canonical_bool_channel_query_qc_missing_with_dtype_and_shape
+    - canonical_float64_sampling_rate_with_dtype_and_shape
+  affected_mask_hash_schema: cfeg.query-reliability-affected-mask-sha256.v1
+  affected_mask_hash_domain: canonical_bool_channel_vector_with_dtype_and_shape
+  clean_affected_mask_must_be_all_false: true
+  verified_jobs_hash_schema: cfeg.query-reliability-verified-jobs.v1
+  verified_predictions_hash_schema: cfeg.query-reliability-verified-predictions.v1
+  verified_table_hash_serialization: schema_and_sorted_columns_then_length_prefixed_canonical_scalar_records_v1
+  future_runner_must_bind_staged_file_hashes_in_receipt: true
+  grants_human_outcome_execution_authority: false
+
+freeze_blockers:
+  - exact_numeric_margins_need_external_or_simulation_justification
+  - owner_must_choose_whether_corrupted_Q1_AUG_minus_Q0_CLEAN_is_gated_or_report_only
+  - query_feature_probe_thresholds_and_ablation_decision_rules_not_frozen
+  - MAPS_CS_TMW_CCA_EMD_QC_full_text_or_explicit_access_failure_record
+  - SSVEPPoolformer_full_text_code_and_information_rights_screening
+  - exact_baseline_implementation_set_not_complete
+  - phase_provenance_repair_needed_for_manifest_phase_template_or_cross_corpus_claims
+  - outcome_runner_atomicity_and_receipt_contract_not_implemented
+  - dedicated_runner_must_rehash_staged_inputs_and_masks_and_prove_clean_masks_are_all_false
+  - outcome_bundle_analyzer_is_implemented_but_not_execution_authority
+  - canonical_bundle_loader_must_reject_until_plan_and_clean_source_tag_are_frozen
+  - external_owner_decision_receipt_and_immutable_tag_target_contract_not_implemented
+  - same_checkpoint_intervention_artifact_collection_and_decision_thresholds_not_implemented
+  - exact_Dong_recipe_estimands_thresholds_stopping_and_atomic_contract_must_be_frozen_before_BETA_reveal_for_independent_preregistered_replication_claim
+  - explicit_owner_approval_of_the_rendered_exact_bundle_required
+
+stopping_rules:
+  integrity_failure: invalidate_without_substantive_interpretation
+  primary_failure: stop_candidate_without_post_outcome_margin_or_corruption_changes
+  clean_noninferiority_failure: clean_safety_not_established_no_promotion_even_if_corrupted_mean_improves
+  localization_failure: Q_bundle_conditioned_system_effect_only_no_quality_mechanism_claim
+  beta_pass: dong_still_requires_separate_pre_frozen_execution_authority
+  retry_after_any_outcome_attempt: new_owner_decision_and_new_candidate_version_required

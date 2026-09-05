@@ -1,0 +1,1970 @@
+{
+  "analysis_module_sha256": "cadad2706e5870ce3fcd09f17fc9706c425aed3ee4cb21b8d58643a0c4b2f990",
+  "analytic_noninferiority": [
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 2.9043911414146383e-10,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.03,
+      "true_mean": -0.03333333333333333
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 1.4007472721306018e-07,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.04,
+      "true_mean": -0.03333333333333333
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 2.2777025345997737e-05,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.06,
+      "true_mean": -0.03333333333333333
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.0001941443100321461,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.08,
+      "true_mean": -0.03333333333333333
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.025000000000000022,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.03,
+      "true_mean": -0.016666666666666666
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.025000000000000022,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.04,
+      "true_mean": -0.016666666666666666
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.025000000000000022,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.06,
+      "true_mean": -0.016666666666666666
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.025000000000000022,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.08,
+      "true_mean": -0.016666666666666666
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.3948673524254767,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.03,
+      "true_mean": -0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.24511813790727038,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.04,
+      "true_mean": -0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.1328018547310945,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.06,
+      "true_mean": -0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.0926002408201517,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.08,
+      "true_mean": -0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.9884665090278388,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.03,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.8877328644205584,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.04,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.5622159995286813,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.06,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.35477090018046453,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.08,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.999999245816749,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.03,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.9990907824562486,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.04,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.9230843593551237,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.06,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.025,
+      "inferential_rejection_power": 0.7189760135926406,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "sd": 0.08,
+      "true_mean": 0.01
+    }
+  ],
+  "analytic_primary": [
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.8178872281334584,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.03,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.6061736120321379,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.04,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.3561879014944435,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.06,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.24582172246243567,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.08,
+      "true_mean": 0.01
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.9997287404789991,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.03,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.9854885922518455,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.04,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.8178872281334584,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.06,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.6061736120321379,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.08,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.9999999990702192,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.03,
+      "true_mean": 0.03
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.9999790365975927,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.04,
+      "true_mean": 0.03
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.9854885922518455,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.06,
+      "true_mean": 0.03
+    },
+    {
+      "alpha": 0.05,
+      "inferential_rejection_power": 0.8899604380689771,
+      "n": 60,
+      "null_margin": 0.0,
+      "sd": 0.08,
+      "true_mean": 0.03
+    }
+  ],
+  "candidate_id": "metadata-calibration-efficiency-v1",
+  "cell_seed_rule": "first_64_bits_sha256_of_master_seed_colon_canonical_cell_json",
+  "chunk_size": 10000,
+  "data_dependencies": [],
+  "decision_rules": {
+    "all_missing": "deterministic_unit_invariant_not_a_random_power_endpoint",
+    "calibration_value": "one_sided_t_alpha_0p05_lower_gt_0_and_observed_mean_ge_0p020",
+    "confirmatory_hierarchy": "H1_then_H2_intersection_of_calibration_value_and_k1_vs_k3_noninferiority",
+    "confirmatory_savings": "A_QM_k1_noninferior_to_A_Q_k3_only",
+    "mechanism_multiplicity": "Holm_alpha_0p05_after_confirmatory_core",
+    "mechanisms": "one_sided_t_alpha_0p05_lower_gt_0_and_observed_mean_ge_0p010",
+    "metadata_only": "deterministic_block_constant_M_plus_one_per_class_block_implies_chance",
+    "noninferiority": "one_sided_t_alpha_0p025_lower_gt_minus_1_over_60",
+    "primary": "one_sided_t_alpha_0p05_lower_gt_0_and_observed_mean_ge_0p020",
+    "wrong_context_tail": "required_descriptive_safety_report_not_sequence_gate"
+  },
+  "development_gate_monte_carlo": [
+    {
+      "all_checks_pass_probability": 0.564815,
+      "all_missing_gate_role": "deterministic_unit_invariant_assumed_true",
+      "balanced_accuracy_generation": "normal_scale_draw_then_clip_to_unit_interval",
+      "baseline_mean": 0.55,
+      "baseline_sd": 0.04,
+      "cell_seed": 3534427288494279654,
+      "contrast_means": [
+        0.02,
+        0.02,
+        0.02,
+        0.0
+      ],
+      "contrast_sds": [
+        0.04,
+        0.04,
+        0.04,
+        0.03
+      ],
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "family": "normal",
+      "hard_first_failure_probability": {
+        "all_pass": 0.784285,
+        "baseline_viability": 0.0,
+        "correct_minus_shuffle_mean": 0.037075,
+        "correct_minus_shuffle_no_negative_fold": 0.05091,
+        "early_budget_every_fold_positive": 0.06871,
+        "early_budget_mean": 0.05902,
+        "metadata_only_shortcut": 0.0,
+        "missing_exact_fallback": 0.0
+      },
+      "hard_gate_promotion_probability": 0.784285,
+      "hard_promotion_gates": [
+        "baseline_viability",
+        "early_budget_mean",
+        "early_budget_every_fold_positive",
+        "correct_minus_shuffle_mean",
+        "correct_minus_shuffle_no_negative_fold",
+        "missing_exact_fallback",
+        "metadata_only_shortcut"
+      ],
+      "individual_gate_pass_probability": {
+        "baseline_viability": 1.0,
+        "correct_context_no_catastrophic_harm": 0.948345,
+        "correct_context_severe_harm_count": 0.98118,
+        "correct_minus_shuffle_mean": 0.940925,
+        "correct_minus_shuffle_no_negative_fold": 0.89533,
+        "correct_minus_shuffle_positive_participants": 0.88447,
+        "correct_minus_stale_mean": 0.940655,
+        "correct_minus_stale_no_negative_fold": 0.897095,
+        "correct_minus_stale_positive_participants": 0.88423,
+        "early_budget_every_fold_positive": 0.896,
+        "early_budget_mean": 0.94098,
+        "early_budget_median": 0.99387,
+        "early_budget_positive_participants": 0.88374,
+        "metadata_only_shortcut": 1.0,
+        "missing_exact_fallback": 1.0,
+        "wrong_context_mean_safety": 0.999795,
+        "wrong_context_no_catastrophic_harm": 0.98316,
+        "wrong_context_severe_harm_count": 0.962705
+      },
+      "kind": "development_gate",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "metadata_only_gate_role": "deterministic_block_constant_M_and_complete_class_balance_assumed_true",
+      "n": 39,
+      "realized_harmed_fraction": null,
+      "required_diagnostic_or_deployment_reports": [
+        "early_budget_median",
+        "early_budget_positive_participants",
+        "correct_minus_shuffle_positive_participants",
+        "correct_minus_stale_mean",
+        "correct_minus_stale_positive_participants",
+        "correct_minus_stale_no_negative_fold",
+        "wrong_context_mean_safety",
+        "wrong_context_severe_harm_count",
+        "wrong_context_no_catastrophic_harm",
+        "correct_context_severe_harm_count",
+        "correct_context_no_catastrophic_harm"
+      ],
+      "scenario": "planning"
+    },
+    {
+      "all_checks_pass_probability": 0.534605,
+      "all_missing_gate_role": "deterministic_unit_invariant_assumed_true",
+      "balanced_accuracy_generation": "normal_scale_draw_then_clip_to_unit_interval",
+      "baseline_mean": 0.55,
+      "baseline_sd": 0.04,
+      "cell_seed": 9575912033379009414,
+      "contrast_means": [
+        0.02,
+        0.02,
+        0.02,
+        0.0
+      ],
+      "contrast_sds": [
+        0.04,
+        0.04,
+        0.04,
+        0.03
+      ],
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "family": "standardized_t5",
+      "hard_first_failure_probability": {
+        "all_pass": 0.790335,
+        "baseline_viability": 0.0,
+        "correct_minus_shuffle_mean": 0.035985,
+        "correct_minus_shuffle_no_negative_fold": 0.04862,
+        "early_budget_every_fold_positive": 0.06613,
+        "early_budget_mean": 0.05893,
+        "metadata_only_shortcut": 0.0,
+        "missing_exact_fallback": 0.0
+      },
+      "hard_gate_promotion_probability": 0.790335,
+      "hard_promotion_gates": [
+        "baseline_viability",
+        "early_budget_mean",
+        "early_budget_every_fold_positive",
+        "correct_minus_shuffle_mean",
+        "correct_minus_shuffle_no_negative_fold",
+        "missing_exact_fallback",
+        "metadata_only_shortcut"
+      ],
+      "individual_gate_pass_probability": {
+        "baseline_viability": 1.0,
+        "correct_context_no_catastrophic_harm": 0.795855,
+        "correct_context_severe_harm_count": 0.98599,
+        "correct_minus_shuffle_mean": 0.94124,
+        "correct_minus_shuffle_no_negative_fold": 0.896695,
+        "correct_minus_shuffle_positive_participants": 0.954355,
+        "correct_minus_stale_mean": 0.94058,
+        "correct_minus_stale_no_negative_fold": 0.897,
+        "correct_minus_stale_positive_participants": 0.955015,
+        "early_budget_every_fold_positive": 0.897505,
+        "early_budget_mean": 0.94107,
+        "early_budget_median": 0.99873,
+        "early_budget_positive_participants": 0.955595,
+        "metadata_only_shortcut": 1.0,
+        "missing_exact_fallback": 1.0,
+        "wrong_context_mean_safety": 0.999565,
+        "wrong_context_no_catastrophic_harm": 0.861205,
+        "wrong_context_severe_harm_count": 0.977095
+      },
+      "kind": "development_gate",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "metadata_only_gate_role": "deterministic_block_constant_M_and_complete_class_balance_assumed_true",
+      "n": 39,
+      "realized_harmed_fraction": null,
+      "required_diagnostic_or_deployment_reports": [
+        "early_budget_median",
+        "early_budget_positive_participants",
+        "correct_minus_shuffle_positive_participants",
+        "correct_minus_stale_mean",
+        "correct_minus_stale_positive_participants",
+        "correct_minus_stale_no_negative_fold",
+        "wrong_context_mean_safety",
+        "wrong_context_severe_harm_count",
+        "wrong_context_no_catastrophic_harm",
+        "correct_context_severe_harm_count",
+        "correct_context_no_catastrophic_harm"
+      ],
+      "scenario": "planning"
+    },
+    {
+      "all_checks_pass_probability": 0.567185,
+      "all_missing_gate_role": "deterministic_unit_invariant_assumed_true",
+      "balanced_accuracy_generation": "normal_scale_draw_then_clip_to_unit_interval",
+      "baseline_mean": 0.55,
+      "baseline_sd": 0.04,
+      "cell_seed": 392823671421641190,
+      "contrast_means": [
+        0.02,
+        0.02,
+        0.02,
+        0.0
+      ],
+      "contrast_sds": [
+        0.04,
+        0.04,
+        0.04,
+        0.03
+      ],
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "family": "twenty_percent_harmed_mixture",
+      "hard_first_failure_probability": {
+        "all_pass": 0.786315,
+        "baseline_viability": 0.0,
+        "correct_minus_shuffle_mean": 0.037195,
+        "correct_minus_shuffle_no_negative_fold": 0.049655,
+        "early_budget_every_fold_positive": 0.06741,
+        "early_budget_mean": 0.059425,
+        "metadata_only_shortcut": 0.0,
+        "missing_exact_fallback": 0.0
+      },
+      "hard_gate_promotion_probability": 0.786315,
+      "hard_promotion_gates": [
+        "baseline_viability",
+        "early_budget_mean",
+        "early_budget_every_fold_positive",
+        "correct_minus_shuffle_mean",
+        "correct_minus_shuffle_no_negative_fold",
+        "missing_exact_fallback",
+        "metadata_only_shortcut"
+      ],
+      "individual_gate_pass_probability": {
+        "baseline_viability": 1.0,
+        "correct_context_no_catastrophic_harm": 0.944105,
+        "correct_context_severe_harm_count": 0.979525,
+        "correct_minus_shuffle_mean": 0.94065,
+        "correct_minus_shuffle_no_negative_fold": 0.897035,
+        "correct_minus_shuffle_positive_participants": 0.886855,
+        "correct_minus_stale_mean": 0.9403,
+        "correct_minus_stale_no_negative_fold": 0.896335,
+        "correct_minus_stale_positive_participants": 0.887145,
+        "early_budget_every_fold_positive": 0.89703,
+        "early_budget_mean": 0.940575,
+        "early_budget_median": 0.994165,
+        "early_budget_positive_participants": 0.88696,
+        "metadata_only_shortcut": 1.0,
+        "missing_exact_fallback": 1.0,
+        "wrong_context_mean_safety": 0.99979,
+        "wrong_context_no_catastrophic_harm": 0.98188,
+        "wrong_context_severe_harm_count": 0.961325
+      },
+      "kind": "development_gate",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "metadata_only_gate_role": "deterministic_block_constant_M_and_complete_class_balance_assumed_true",
+      "n": 39,
+      "realized_harmed_fraction": 0.1999448717948718,
+      "required_diagnostic_or_deployment_reports": [
+        "early_budget_median",
+        "early_budget_positive_participants",
+        "correct_minus_shuffle_positive_participants",
+        "correct_minus_stale_mean",
+        "correct_minus_stale_positive_participants",
+        "correct_minus_stale_no_negative_fold",
+        "wrong_context_mean_safety",
+        "wrong_context_severe_harm_count",
+        "wrong_context_no_catastrophic_harm",
+        "correct_context_severe_harm_count",
+        "correct_context_no_catastrophic_harm"
+      ],
+      "scenario": "planning"
+    },
+    {
+      "all_checks_pass_probability": 0.001435,
+      "all_missing_gate_role": "deterministic_unit_invariant_assumed_true",
+      "balanced_accuracy_generation": "normal_scale_draw_then_clip_to_unit_interval",
+      "baseline_mean": 0.55,
+      "baseline_sd": 0.04,
+      "cell_seed": 8365930236280957561,
+      "contrast_means": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "contrast_sds": [
+        0.04,
+        0.04,
+        0.04,
+        0.03
+      ],
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "family": "normal",
+      "hard_first_failure_probability": {
+        "all_pass": 0.00953,
+        "baseline_viability": 0.0,
+        "correct_minus_shuffle_mean": 0.03166,
+        "correct_minus_shuffle_no_negative_fold": 0.00233,
+        "early_budget_every_fold_positive": 0.015145,
+        "early_budget_mean": 0.941335,
+        "metadata_only_shortcut": 0.0,
+        "missing_exact_fallback": 0.0
+      },
+      "hard_gate_promotion_probability": 0.00953,
+      "hard_promotion_gates": [
+        "baseline_viability",
+        "early_budget_mean",
+        "early_budget_every_fold_positive",
+        "correct_minus_shuffle_mean",
+        "correct_minus_shuffle_no_negative_fold",
+        "missing_exact_fallback",
+        "metadata_only_shortcut"
+      ],
+      "individual_gate_pass_probability": {
+        "baseline_viability": 1.0,
+        "correct_context_no_catastrophic_harm": 0.783695,
+        "correct_context_severe_harm_count": 0.602255,
+        "correct_minus_shuffle_mean": 0.0599,
+        "correct_minus_shuffle_no_negative_fold": 0.12578,
+        "correct_minus_shuffle_positive_participants": 0.100685,
+        "correct_minus_stale_mean": 0.059195,
+        "correct_minus_stale_no_negative_fold": 0.12517,
+        "correct_minus_stale_positive_participants": 0.09857,
+        "early_budget_every_fold_positive": 0.124945,
+        "early_budget_mean": 0.058665,
+        "early_budget_median": 0.49902,
+        "early_budget_positive_participants": 0.098815,
+        "metadata_only_shortcut": 1.0,
+        "missing_exact_fallback": 1.0,
+        "wrong_context_mean_safety": 0.99977,
+        "wrong_context_no_catastrophic_harm": 0.98389,
+        "wrong_context_severe_harm_count": 0.96304
+      },
+      "kind": "development_gate",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "metadata_only_gate_role": "deterministic_block_constant_M_and_complete_class_balance_assumed_true",
+      "n": 39,
+      "realized_harmed_fraction": null,
+      "required_diagnostic_or_deployment_reports": [
+        "early_budget_median",
+        "early_budget_positive_participants",
+        "correct_minus_shuffle_positive_participants",
+        "correct_minus_stale_mean",
+        "correct_minus_stale_positive_participants",
+        "correct_minus_stale_no_negative_fold",
+        "wrong_context_mean_safety",
+        "wrong_context_severe_harm_count",
+        "wrong_context_no_catastrophic_harm",
+        "correct_context_severe_harm_count",
+        "correct_context_no_catastrophic_harm"
+      ],
+      "scenario": "metadata_null_viable_baseline"
+    },
+    {
+      "all_checks_pass_probability": 7e-05,
+      "all_missing_gate_role": "deterministic_unit_invariant_assumed_true",
+      "balanced_accuracy_generation": "normal_scale_draw_then_clip_to_unit_interval",
+      "baseline_mean": 0.48,
+      "baseline_sd": 0.04,
+      "cell_seed": 1550096461799377810,
+      "contrast_means": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "contrast_sds": [
+        0.04,
+        0.04,
+        0.04,
+        0.03
+      ],
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "family": "normal",
+      "hard_first_failure_probability": {
+        "all_pass": 0.00021,
+        "baseline_viability": 0.999115,
+        "correct_minus_shuffle_mean": 0.000135,
+        "correct_minus_shuffle_no_negative_fold": 3e-05,
+        "early_budget_every_fold_positive": 9.5e-05,
+        "early_budget_mean": 0.000415,
+        "metadata_only_shortcut": 0.0,
+        "missing_exact_fallback": 0.0
+      },
+      "hard_gate_promotion_probability": 0.00021,
+      "hard_promotion_gates": [
+        "baseline_viability",
+        "early_budget_mean",
+        "early_budget_every_fold_positive",
+        "correct_minus_shuffle_mean",
+        "correct_minus_shuffle_no_negative_fold",
+        "missing_exact_fallback",
+        "metadata_only_shortcut"
+      ],
+      "individual_gate_pass_probability": {
+        "baseline_viability": 0.000885,
+        "correct_context_no_catastrophic_harm": 0.78583,
+        "correct_context_severe_harm_count": 0.60466,
+        "correct_minus_shuffle_mean": 0.059315,
+        "correct_minus_shuffle_no_negative_fold": 0.124115,
+        "correct_minus_shuffle_positive_participants": 0.099665,
+        "correct_minus_stale_mean": 0.059865,
+        "correct_minus_stale_no_negative_fold": 0.126095,
+        "correct_minus_stale_positive_participants": 0.100685,
+        "early_budget_every_fold_positive": 0.124175,
+        "early_budget_mean": 0.05957,
+        "early_budget_median": 0.500925,
+        "early_budget_positive_participants": 0.100525,
+        "metadata_only_shortcut": 1.0,
+        "missing_exact_fallback": 1.0,
+        "wrong_context_mean_safety": 0.999785,
+        "wrong_context_no_catastrophic_harm": 0.98315,
+        "wrong_context_severe_harm_count": 0.962625
+      },
+      "kind": "development_gate",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "metadata_only_gate_role": "deterministic_block_constant_M_and_complete_class_balance_assumed_true",
+      "n": 39,
+      "realized_harmed_fraction": null,
+      "required_diagnostic_or_deployment_reports": [
+        "early_budget_median",
+        "early_budget_positive_participants",
+        "correct_minus_shuffle_positive_participants",
+        "correct_minus_stale_mean",
+        "correct_minus_stale_positive_participants",
+        "correct_minus_stale_no_negative_fold",
+        "wrong_context_mean_safety",
+        "wrong_context_severe_harm_count",
+        "wrong_context_no_catastrophic_harm",
+        "correct_context_severe_harm_count",
+        "correct_context_no_catastrophic_harm"
+      ],
+      "scenario": "joint_bad_null"
+    }
+  ],
+  "distribution_definitions": {
+    "normal": "correlated_centered_gaussian",
+    "standardized_t5": "correlated_gaussian_times_sqrt_3_over_chi_square_5",
+    "twenty_percent_harmed_mixture": "harmed_probability_0p2_shift_minus_0p5sd_unharmed_shift_plus_0p125sd_with_residual_covariance_adjusted_to_preserve_target_moments"
+  },
+  "environment": {
+    "numpy": "1.26.4",
+    "python": "3.10.12",
+    "scipy": "1.15.3"
+  },
+  "held_core_hierarchy_monte_carlo": [
+    {
+      "H1_claim_probability": 0.90091,
+      "H2_reach_probability": 0.90091,
+      "calibration_saving_full_claim_probability": 0.65456,
+      "cell_seed": 15592908600858124013,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.80613,
+        "calibration_value_A_Q_k3_over_k1": 0.90137,
+        "primary_eAUC_superiority": 0.90091
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_independent",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.903335,
+      "H2_reach_probability": 0.903335,
+      "calibration_saving_full_claim_probability": 0.656915,
+      "cell_seed": 1670114481888427246,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.80665,
+        "calibration_value_A_Q_k3_over_k1": 0.90061,
+        "primary_eAUC_superiority": 0.903335
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.90207,
+      "H2_reach_probability": 0.90207,
+      "calibration_saving_full_claim_probability": 0.65726,
+      "cell_seed": 4902585029471160376,
+      "correlation_matrix": [
+        [
+          1.0,
+          -0.2,
+          0.4
+        ],
+        [
+          -0.2,
+          1.0,
+          -0.7
+        ],
+        [
+          0.4,
+          -0.7,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.807335,
+        "calibration_value_A_Q_k3_over_k1": 0.900705,
+        "primary_eAUC_superiority": 0.90207
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_adverse_shared_A_Q_k3",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.902905,
+      "H2_reach_probability": 0.902905,
+      "calibration_saving_full_claim_probability": 0.660955,
+      "cell_seed": 12988809158749146728,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "standardized_t5",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.8089,
+        "calibration_value_A_Q_k3_over_k1": 0.9018,
+        "primary_eAUC_superiority": 0.902905
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_standardized_t5",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.90203,
+      "H2_reach_probability": 0.90203,
+      "calibration_saving_full_claim_probability": 0.65599,
+      "cell_seed": 15483415321835858558,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "twenty_percent_harmed_mixture",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.805535,
+        "calibration_value_A_Q_k3_over_k1": 0.901485,
+        "primary_eAUC_superiority": 0.90203
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": 0.19991866666666666,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_twenty_percent_harmed_mixture",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.004885,
+      "H2_reach_probability": 0.004885,
+      "calibration_saving_full_claim_probability": 0.0,
+      "cell_seed": 7002825615219293829,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.02533,
+        "calibration_value_A_Q_k3_over_k1": 0.00499,
+        "primary_eAUC_superiority": 0.004885
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": null,
+      "scenario": "global_null",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.0,
+        0.0,
+        -0.016666666666666666
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.901875,
+      "H2_reach_probability": 0.901875,
+      "calibration_saving_full_claim_probability": 0.00122,
+      "cell_seed": 2414206704529514351,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.80586,
+        "calibration_value_A_Q_k3_over_k1": 0.005125,
+        "primary_eAUC_superiority": 0.901875
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "calibration_plateau",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.0,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.90247,
+      "H2_reach_probability": 0.90247,
+      "calibration_saving_full_claim_probability": 5e-06,
+      "cell_seed": 7100248214183742127,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 1e-05,
+        "calibration_value_A_Q_k3_over_k1": 0.900785,
+        "primary_eAUC_superiority": 0.90247
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "harmful_low_budget",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        -0.03
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.49907,
+      "H2_reach_probability": 0.49907,
+      "calibration_saving_full_claim_probability": 0.196815,
+      "cell_seed": 10460843751827195302,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.80607,
+        "calibration_value_A_Q_k3_over_k1": 0.50178,
+        "primary_eAUC_superiority": 0.49907
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "sesoi_boundary",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.02,
+        0.02,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.901795,
+      "H2_reach_probability": 0.901795,
+      "calibration_saving_full_claim_probability": 0.00435,
+      "cell_seed": 9999609797650604615,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 1.0,
+        "calibration_value_A_Q_k3_over_k1": 0.004855,
+        "primary_eAUC_superiority": 0.901795
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "H2a_boundary_other_components_alternative",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.0,
+        0.03
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.901715,
+      "H2_reach_probability": 0.901715,
+      "calibration_saving_full_claim_probability": 0.013715,
+      "cell_seed": 10134175453049215945,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.0244,
+        "calibration_value_A_Q_k3_over_k1": 0.90225,
+        "primary_eAUC_superiority": 0.901715
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "H2b_boundary_other_components_alternative",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        -0.016666666666666666
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    }
+  ],
+  "held_core_sample_size_sensitivity": [
+    {
+      "H1_claim_probability": 0.903335,
+      "H2_reach_probability": 0.903335,
+      "calibration_saving_full_claim_probability": 0.656915,
+      "cell_seed": 1670114481888427246,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.80665,
+        "calibration_value_A_Q_k3_over_k1": 0.90061,
+        "primary_eAUC_superiority": 0.903335
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_n60",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.925615,
+      "H2_reach_probability": 0.925615,
+      "calibration_saving_full_claim_probability": 0.761365,
+      "cell_seed": 14233306219699284184,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.886005,
+        "calibration_value_A_Q_k3_over_k1": 0.925215,
+        "primary_eAUC_superiority": 0.925615
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 75,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_n75",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.93173,
+      "H2_reach_probability": 0.93173,
+      "calibration_saving_full_claim_probability": 0.78887,
+      "cell_seed": 5405326885630675365,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.904475,
+        "calibration_value_A_Q_k3_over_k1": 0.932375,
+        "primary_eAUC_superiority": 0.93173
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 80,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_n80",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.935865,
+      "H2_reach_probability": 0.935865,
+      "calibration_saving_full_claim_probability": 0.805065,
+      "cell_seed": 4906614264058806285,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.915485,
+        "calibration_value_A_Q_k3_over_k1": 0.936125,
+        "primary_eAUC_superiority": 0.935865
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 83,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_n83",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    },
+    {
+      "H1_claim_probability": 0.942965,
+      "H2_reach_probability": 0.942965,
+      "calibration_saving_full_claim_probability": 0.833565,
+      "cell_seed": 18200963084311021454,
+      "correlation_matrix": [
+        [
+          1.0,
+          0.0,
+          0.3
+        ],
+        [
+          0.0,
+          1.0,
+          -0.5
+        ],
+        [
+          0.3,
+          -0.5,
+          1.0
+        ]
+      ],
+      "draws": 200000,
+      "endpoint_order": [
+        "primary_eAUC_superiority",
+        "calibration_value_A_Q_k3_over_k1",
+        "A_QM_k1_noninferior_to_A_Q_k3"
+      ],
+      "family": "normal",
+      "hierarchy": {
+        "H1": "primary_eAUC_superiority",
+        "H2_intersection": [
+          "calibration_value_A_Q_k3_over_k1",
+          "A_QM_k1_noninferior_to_A_Q_k3"
+        ]
+      },
+      "kind": "held_core_hierarchy",
+      "local_claim_probability": {
+        "A_QM_k1_noninferior_to_A_Q_k3": 0.93518,
+        "calibration_value_A_Q_k3_over_k1": 0.94259,
+        "primary_eAUC_superiority": 0.942965
+      },
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 90,
+      "realized_harmed_fraction": null,
+      "same_budget_positive_identity_probability_among_H2": 1.0,
+      "scenario": "planning_shared_A_Q_k3_n90",
+      "sds": [
+        0.06,
+        0.06,
+        0.045
+      ],
+      "true_means": [
+        0.03,
+        0.03,
+        0.0
+      ],
+      "utility_floor_assumed": true,
+      "utility_floor_role": "assumption_not_identified_by_contrast_only_simulation"
+    }
+  ],
+  "held_mechanism_holm_monte_carlo": [
+    {
+      "any_mechanism_claim_probability": 0.99893,
+      "both_mechanism_claim_probability": 0.947405,
+      "cell_seed": 1750107149168864249,
+      "conditional_on_confirmatory_core_open": true,
+      "draws": 200000,
+      "endpoint_correlation": 0.0,
+      "endpoint_order": [
+        "correct_context_over_block_shuffle",
+        "correct_context_over_stale"
+      ],
+      "family": "normal",
+      "holm_family_alpha": 0.05,
+      "individual_holm_claim_probability": {
+        "correct_context_over_block_shuffle": 0.973055,
+        "correct_context_over_stale": 0.97328
+      },
+      "kind": "held_mechanism_holm",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "not_a_joint_pipeline_probability": true,
+      "practical_threshold": 0.01,
+      "realized_harmed_fraction": null,
+      "scenario": "planning_correlation_0",
+      "sds": [
+        0.04,
+        0.04
+      ],
+      "true_means": [
+        0.02,
+        0.02
+      ]
+    },
+    {
+      "any_mechanism_claim_probability": 0.99268,
+      "both_mechanism_claim_probability": 0.95072,
+      "cell_seed": 18047394655865445289,
+      "conditional_on_confirmatory_core_open": true,
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "endpoint_order": [
+        "correct_context_over_block_shuffle",
+        "correct_context_over_stale"
+      ],
+      "family": "normal",
+      "holm_family_alpha": 0.05,
+      "individual_holm_claim_probability": {
+        "correct_context_over_block_shuffle": 0.971435,
+        "correct_context_over_stale": 0.971965
+      },
+      "kind": "held_mechanism_holm",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "not_a_joint_pipeline_probability": true,
+      "practical_threshold": 0.01,
+      "realized_harmed_fraction": null,
+      "scenario": "planning_correlation_0.5",
+      "sds": [
+        0.04,
+        0.04
+      ],
+      "true_means": [
+        0.02,
+        0.02
+      ]
+    },
+    {
+      "any_mechanism_claim_probability": 0.98415,
+      "both_mechanism_claim_probability": 0.957415,
+      "cell_seed": 5059409446144744269,
+      "conditional_on_confirmatory_core_open": true,
+      "draws": 200000,
+      "endpoint_correlation": 0.8,
+      "endpoint_order": [
+        "correct_context_over_block_shuffle",
+        "correct_context_over_stale"
+      ],
+      "family": "normal",
+      "holm_family_alpha": 0.05,
+      "individual_holm_claim_probability": {
+        "correct_context_over_block_shuffle": 0.97075,
+        "correct_context_over_stale": 0.970815
+      },
+      "kind": "held_mechanism_holm",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "not_a_joint_pipeline_probability": true,
+      "practical_threshold": 0.01,
+      "realized_harmed_fraction": null,
+      "scenario": "planning_correlation_0.8",
+      "sds": [
+        0.04,
+        0.04
+      ],
+      "true_means": [
+        0.02,
+        0.02
+      ]
+    },
+    {
+      "any_mechanism_claim_probability": 0.989945,
+      "both_mechanism_claim_probability": 0.945855,
+      "cell_seed": 14410741695443689349,
+      "conditional_on_confirmatory_core_open": true,
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "endpoint_order": [
+        "correct_context_over_block_shuffle",
+        "correct_context_over_stale"
+      ],
+      "family": "standardized_t5",
+      "holm_family_alpha": 0.05,
+      "individual_holm_claim_probability": {
+        "correct_context_over_block_shuffle": 0.96786,
+        "correct_context_over_stale": 0.96794
+      },
+      "kind": "held_mechanism_holm",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "not_a_joint_pipeline_probability": true,
+      "practical_threshold": 0.01,
+      "realized_harmed_fraction": null,
+      "scenario": "planning_correlation_0.5_standardized_t5",
+      "sds": [
+        0.04,
+        0.04
+      ],
+      "true_means": [
+        0.02,
+        0.02
+      ]
+    },
+    {
+      "any_mechanism_claim_probability": 0.99263,
+      "both_mechanism_claim_probability": 0.95184,
+      "cell_seed": 15757370324104706935,
+      "conditional_on_confirmatory_core_open": true,
+      "draws": 200000,
+      "endpoint_correlation": 0.5,
+      "endpoint_order": [
+        "correct_context_over_block_shuffle",
+        "correct_context_over_stale"
+      ],
+      "family": "twenty_percent_harmed_mixture",
+      "holm_family_alpha": 0.05,
+      "individual_holm_claim_probability": {
+        "correct_context_over_block_shuffle": 0.97237,
+        "correct_context_over_stale": 0.9721
+      },
+      "kind": "held_mechanism_holm",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "not_a_joint_pipeline_probability": true,
+      "practical_threshold": 0.01,
+      "realized_harmed_fraction": 0.20019241666666668,
+      "scenario": "planning_correlation_0.5_twenty_percent_harmed_mixture",
+      "sds": [
+        0.04,
+        0.04
+      ],
+      "true_means": [
+        0.02,
+        0.02
+      ]
+    }
+  ],
+  "interpretation": {
+    "execution_authority": "none",
+    "shared_endpoint_dependence": "Calibration value C=A_Q(k3)-A_Q(k1) and savings S=A_QM(k1)-A_Q(k3) share A_Q(k3) with opposite signs; negative C-S correlations are included.",
+    "test_power_vs_full_claim": "Inferential rejection and practical mean-screen probabilities are separate.",
+    "utility_floor": "Held core simulations are conditional on both endpoint BA means meeting 0.50 because contrast distributions do not identify absolute endpoint BA."
+  },
+  "margin_semantic_unit": "one_mean_additional_error_per_interface_sixty_queries_equivalently_two_total_errors_across_equal_dry_wet_participant_outcome",
+  "marginal_monte_carlo": [
+    {
+      "alpha": 0.05,
+      "cell_seed": 6676012331707495931,
+      "draws": 200000,
+      "family": "normal",
+      "full_claim_probability": 0.499125,
+      "inferential_rejection_power": 0.817155,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": 0.0,
+      "practical_threshold": 0.02,
+      "realized_mean": 0.019978922980147036,
+      "realized_sd": 0.06000809708169908,
+      "sd": 0.06,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.025,
+      "cell_seed": 17964509994746175149,
+      "draws": 200000,
+      "family": "normal",
+      "full_claim_probability": 0.80485,
+      "inferential_rejection_power": 0.80485,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "practical_threshold": null,
+      "realized_mean": -1.287906302701642e-05,
+      "realized_sd": 0.04499646669227053,
+      "sd": 0.045,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.05,
+      "cell_seed": 17590985595509720881,
+      "draws": 200000,
+      "family": "standardized_t5",
+      "full_claim_probability": 0.5018,
+      "inferential_rejection_power": 0.821745,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": 0.0,
+      "practical_threshold": 0.02,
+      "realized_mean": 0.02001958249442066,
+      "realized_sd": 0.059996417487590256,
+      "sd": 0.06,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.025,
+      "cell_seed": 8678695543943458041,
+      "draws": 200000,
+      "family": "standardized_t5",
+      "full_claim_probability": 0.81007,
+      "inferential_rejection_power": 0.81007,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "practical_threshold": null,
+      "realized_mean": 8.754544648380578e-06,
+      "realized_sd": 0.04499435819839173,
+      "sd": 0.045,
+      "true_mean": 0.0
+    },
+    {
+      "alpha": 0.05,
+      "cell_seed": 15577734759878811141,
+      "draws": 200000,
+      "family": "twenty_percent_harmed_mixture",
+      "full_claim_probability": 0.4987,
+      "inferential_rejection_power": 0.81461,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": 0.0,
+      "practical_threshold": 0.02,
+      "realized_mean": 0.019965364710436088,
+      "realized_sd": 0.06000264855797192,
+      "sd": 0.06,
+      "true_mean": 0.02
+    },
+    {
+      "alpha": 0.025,
+      "cell_seed": 15133119623993538207,
+      "draws": 200000,
+      "family": "twenty_percent_harmed_mixture",
+      "full_claim_probability": 0.80579,
+      "inferential_rejection_power": 0.80579,
+      "kind": "marginal",
+      "maximum_nominal_mc_standard_error": 0.001118033988749895,
+      "n": 60,
+      "null_margin": -0.016666666666666666,
+      "practical_threshold": null,
+      "realized_mean": 8.60167656203802e-06,
+      "realized_sd": 0.04500640843123277,
+      "sd": 0.045,
+      "true_mean": 0.0
+    }
+  ],
+  "master_seed": 20260904,
+  "maximum_nominal_mc_standard_error": 0.001118033988749895,
+  "monte_carlo_draws_per_cell": 200000,
+  "n_development": 39,
+  "n_held": 60,
+  "outcome_data_used": false,
+  "plan_sha256": "04d77058dbec3d82d11ac15c8ad25f32fb3a3c102644e8a92a76cf759e22515a",
+  "power_config_sha256": "9120c72c225e15b2122607e0da02bf3d91a45f12a8ef1b9018a1ec6f39dd6c69",
+  "power_module_sha256": "522a24af95195506d0bdbb0ffe28667de353274413339f96ad0944f0e199b98b",
+  "power_script_sha256": "957b38cafd7f819304dc5ddb43be64618e3af9694110f749eef098d26127c801",
+  "receipt_payload_sha256": "5d8313b95d46f9859c36ddbb71a86cc20fec2e452516a53814581e1d5c8d9f53",
+  "schema": "cfeg.metadata-calibration-power-receipt.v1",
+  "sd_semantics": {
+    "core_planning_sds_by_endpoint": {
+      "A_QM_k1_noninferior_to_A_Q_k3": "participant_level_balanced_accuracy_difference_sd",
+      "calibration_value_A_Q_k3_over_k1": "participant_level_balanced_accuracy_difference_sd",
+      "primary_eAUC_superiority": "participant_level_eAUC_difference_sd"
+    },
+    "noninferiority_participant_difference_sd_grid": "participant_level_A_QM_k1_minus_A_Q_k3_balanced_accuracy_difference_sd",
+    "participant_difference_sd_grid": "participant_level_primary_eAUC_difference_sd"
+  },
+  "source": {
+    "git_commit": "244407cfffcaac606b825cbd2d87532e58781474",
+    "git_status_sha256": "6b88ef249a219435b0bca3c83a673127d5374624f88c39d187bda8c887842daa",
+    "git_worktree_clean": false
+  },
+  "status": "outcome_free_design_sensitivity_not_execution_authority"
+}

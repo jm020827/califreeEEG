@@ -1,6 +1,10 @@
 # 연구설계 재정독 감사: 무엇을 고치고 나서 실험할 것인가
 
-> **역사적 감사 문서:** 이 문서의 당시 `N=102 primary + N=99 sensitivity`와 후속 N=99 5-fold 결정은 DEC-20260830-001·002로 superseded됐다. 현재는 S1–S3 development-only, S4–S102 중 39명 training·60명 independent lockbox이며 full asset acceptance도 완료됐다. [프로토콜 현재 상태](research_protocol_status.md)와 [연구일지](research_log.md)를 우선한다.
+> **2026-09-04 superseded / 역사적 감사 문서:** 이 문서는 strict-k0 physical
+> metadata 후보를 재감사한 당시 기록이며 현재 연구목표나 primary가 아니다. 현재는
+> labeled target calibration 부담을 줄이는 `A_QM−A_Q`, k=0/1/3/5 설계를 따른다.
+> [새 설계](metadata_calibration_efficiency_design.md),
+> [프로토콜 현재 상태](research_protocol_status.md), [연구일지](research_log.md)를 우선한다.
 
 기준일: 2026-08-29
 상태: 설계·원자료·직접 경쟁법·foundation 선행연구 재감사 완료, confirmatory run 차단
@@ -198,7 +202,7 @@ REVE는 secondary backbone으로 가치가 있지만 깨끗한 primary anchor는
 
 ## 8. 데이터는 더 필요하지만, 역할이 먼저다
 
-### 현재 primary
+### 당시 제안 primary
 
 - **Wearable/Zhu2021:** 102명의 unseen-participant mechanism test. 두 이미 관찰된 wet/dry regime에 대한 좁은 claim.
 

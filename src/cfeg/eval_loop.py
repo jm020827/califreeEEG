@@ -40,8 +40,15 @@ from cfeg.governance import (
     current_source_revision_contract,
     validate_checkpoint_evaluation_access,
 )
+from cfeg.metadata_calibration_contract import (
+    reject_metadata_calibration_generic_target_access,
+)
 from cfeg.metrics import classification_metrics, confusion_matrix, itr_bits_per_min
 from cfeg.models.full_model import ConditionedEEGDecoder
+from cfeg.query_reliability_contract import (
+    query_reliability_contract_marker_present,
+    reject_query_reliability_beta_lockbox_access,
+)
 from cfeg.runtime import resolve_device
 from cfeg.seed import seed_everything
 from cfeg.train_loop import _processed_asset_provenance, _sha256_json, _to_device
@@ -192,16 +199,35 @@ def load_evaluation_context(
     checkpoint_path = Path(ckpt_path).expanduser().resolve()
     ckpt = load_checkpoint(checkpoint_path, map_location="cpu")
     cfg = ckpt["config"]
+    if query_reliability_contract_marker_present(cfg):
+        raise GovernanceError(
+            "Query-reliability checkpoint outcomes are blocked from generic evaluation "
+            "and prediction routes until a dedicated atomic bundle is frozen and approved."
+        )
     research_access = validate_checkpoint_evaluation_access(
         cfg,
         eval_cfg,
         checkpoint_path=checkpoint_path,
         access_route=access_route,
     )
-    device = resolve_device(cfg)
     data_dirs = eval_cfg.get("data", {}).get("processed_dirs") or cfg["data"]["processed_dirs"]
+    target_data_config = copy.deepcopy(cfg.get("data") or {})
+    target_data_config.update(eval_cfg.get("data") or {})
+    target_data_config["processed_dirs"] = data_dirs
+    reject_metadata_calibration_generic_target_access(
+        target_data_config,
+        action=f"{access_route}_checkpoint_evaluation",
+    )
+    device = resolve_device(cfg)
     asset_manifest = pd.concat([load_manifest(root) for root in data_dirs], ignore_index=True)
     cohort = bind_cohort(asset_manifest, research_access)
+    cohort_manifest = asset_manifest.loc[
+        asset_manifest["subject_id"].astype(str).isin(cohort.selected_subject_ids)
+    ]
+    reject_query_reliability_beta_lockbox_access(
+        cohort_manifest,
+        action=f"{access_route}_checkpoint_evaluation",
+    )
     expected_revisions = eval_cfg.get("data", {}).get("expected_revisions") or cfg.get(
         "data", {}
     ).get("expected_revisions")

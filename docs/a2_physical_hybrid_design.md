@@ -3,9 +3,13 @@
 기준일: 2026-09-01
 상태: **S1–S3 reveal #2 완료 — valid physical assay / diagnostic no-go / confirmatory 차단**
 
-이 문서는 primary A0/A2의 현재 모델 계약을 설명한다. 연구 질문과 39명
-training·60명 lockbox 배정은 바꾸지 않는다. 바뀐 것은 metadata를 모델에 넣는
-방법이다. 첫 S1–S3 grid의 `prompt_adapter_v1` 결과는 역사적 개발 증거로 그대로
+> **2026-09-04 superseded / historical only:** `physical_hybrid_v1`은 retired no-go이며
+> 이 문서는 새 metadata-assisted calibration-efficient 후보의 계약이 아니다. 현재 질문과
+> 실행 경계는 [새 설계](metadata_calibration_efficiency_design.md)와
+> [프로토콜 상태](research_protocol_status.md)를 따른다.
+
+이 문서는 당시 primary A0/A2의 모델 계약을 설명한다. 첫 S1–S3 grid의
+`prompt_adapter_v1` 결과는 역사적 개발 증거로 그대로
 남기며, 새 `physical_hybrid_v1`의 성능 근거로 재해석하지 않는다.
 
 ## 한 문장 설명

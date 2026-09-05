@@ -154,13 +154,21 @@ def test_wearable_channel_set_contains_all_official_electrodes() -> None:
     assert len(ids) == 8
 
 
+@pytest.mark.parametrize("asset_receipt", ["valid", "missing", "malformed"])
 def test_wearable_v3_baseline_gate_runs_before_dataset_construction(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, asset_receipt
 ) -> None:
-    (tmp_path / "asset_info.json").write_text(
-        json.dumps({"dataset_id": "wearable", "dataset_revision": "wearable_v3"}),
+    (tmp_path / "manifest.jsonl").write_text(
+        json.dumps({"dataset_id": "wearable", "sample_id": "sealed"}) + "\n",
         encoding="utf-8",
     )
+    if asset_receipt == "valid":
+        (tmp_path / "asset_info.json").write_text(
+            json.dumps({"dataset_id": "wearable", "dataset_revision": "wearable_v3"}),
+            encoding="utf-8",
+        )
+    elif asset_receipt == "malformed":
+        (tmp_path / "asset_info.json").write_text("{broken", encoding="utf-8")
     constructed = False
 
     def forbidden_dataset(*args, **kwargs):
@@ -172,6 +180,51 @@ def test_wearable_v3_baseline_gate_runs_before_dataset_construction(
     with pytest.raises(GovernanceError, match="requires --research-config"):
         evaluate_frequency_baseline(tmp_path, method="cca", channel_set="all")
     assert constructed is False
+    with pytest.raises(GovernanceError, match="further S1-S3 outcome actions are retired"):
+        evaluate_frequency_baseline(
+            tmp_path,
+            method="cca",
+            channel_set="all",
+            research_config={},
+        )
+    assert constructed is False
+
+
+def test_beta_lockbox_baseline_gate_runs_before_sample_read(monkeypatch) -> None:
+    sample_read = False
+
+    class ManifestOnlyDataset:
+        def __init__(self) -> None:
+            self.class_map = {"0": {"stimulus_frequency_hz": 10.0}}
+            self.asset_infos = []
+            self.entries = [
+                (
+                    None,
+                    0,
+                    {
+                        "sample_id": "locked",
+                        "dataset_id": "beta",
+                        "subject_id": "sub021",
+                    },
+                )
+            ]
+
+        def __getitem__(self, index):
+            nonlocal sample_read
+            sample_read = True
+            raise AssertionError("baseline signal sample must remain unread")
+
+    monkeypatch.setattr(
+        "cfeg.baselines.evaluate.EEGProcessedDataset",
+        lambda *args, **kwargs: ManifestOnlyDataset(),
+    )
+    with pytest.raises(GovernanceError, match="generic_cca_baseline"):
+        evaluate_frequency_baseline(
+            "/unused/beta_v1",
+            method="cca",
+            channel_set="all",
+        )
+    assert sample_read is False
 
 
 def _expected_sample_hash(sample_ids: list[str]) -> str:

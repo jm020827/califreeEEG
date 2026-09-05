@@ -1,0 +1,14 @@
+bands:
+- [6.0, 90.0]
+- [14.0, 90.0]
+- [22.0, 90.0]
+- [30.0, 90.0]
+- [38.0, 90.0]
+order: 4
+n_harmonics: 1
+regularization: 1.0e-8
+weight_exponent: 1.25
+weight_offset: 0.25
+filter_family: chebyshev1
+passband_ripple_db: 0.5
+reproduction_contract: chiang2021_five_subbands_alpha_weights_common_protocol_unspecified_filter_order_ripple_declared

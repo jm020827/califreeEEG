@@ -31,6 +31,17 @@ from cfeg.models.physical_conditioning import (
     PhysicalConditionState,
     ZeroInitResidualFiLM,
 )
+from cfeg.models.query_reliability_conditioning import (
+    QUERY_RELIABILITY_FEATURE_SCHEMA_V3,
+    QUERY_RELIABILITY_SPATIAL_V1,
+    QueryReliabilityOperator,
+    QueryReliabilityState,
+)
+from cfeg.models.reliability_conditioning import (
+    RELIABILITY_SPATIAL_V1,
+    ReliabilityConditionState,
+    ResidualizedReliabilityOperator,
+)
 
 
 @dataclass
@@ -111,14 +122,31 @@ class ConditionedEEGDecoder(nn.Module):
         self.conditioning_architecture = str(
             conditioning_cfg.get("architecture", PROMPT_ADAPTER_V1)
         )
-        if self.conditioning_architecture not in {PROMPT_ADAPTER_V1, PHYSICAL_HYBRID_V1}:
+        if self.conditioning_architecture not in {
+            PROMPT_ADAPTER_V1,
+            PHYSICAL_HYBRID_V1,
+            RELIABILITY_SPATIAL_V1,
+            QUERY_RELIABILITY_SPATIAL_V1,
+        }:
             raise ValueError(
                 f"Unknown model.conditioning.architecture={self.conditioning_architecture!r}."
             )
-        if self.conditioning_architecture == PHYSICAL_HYBRID_V1 and not self.condition_enabled:
-            raise ValueError("physical_hybrid_v1 requires condition_encoder.enabled=true.")
+        if (
+            self.conditioning_architecture
+            in {
+                PHYSICAL_HYBRID_V1,
+                RELIABILITY_SPATIAL_V1,
+                QUERY_RELIABILITY_SPATIAL_V1,
+            }
+            and not self.condition_enabled
+        ):
+            raise ValueError(
+                f"{self.conditioning_architecture} requires condition_encoder.enabled=true."
+            )
         vocab_sizes = vocab_sizes or {name: len(vals) for name, vals in CATEGORICAL_VOCABS.items()}
         self.physical_conditioner: FactorizedPhysicalConditioner | None = None
+        self.reliability_conditioner: ResidualizedReliabilityOperator | None = None
+        self.query_reliability_conditioner: QueryReliabilityOperator | None = None
         self.query_film: ZeroInitResidualFiLM | None = None
         self.external_film: ZeroInitResidualFiLM | None = None
         if self.condition_enabled and self.conditioning_architecture == PHYSICAL_HYBRID_V1:
@@ -163,6 +191,157 @@ class ConditionedEEGDecoder(nn.Module):
                 max_shift=float(external_cfg.get("max_shift", 0.25)),
             )
             self.condition_encoder = None
+        elif (
+            self.condition_enabled
+            and self.conditioning_architecture == QUERY_RELIABILITY_SPATIAL_V1
+        ):
+            if self.metadata_contract_version != METADATA_CONTRACT_V04_DEV:
+                raise ValueError(
+                    "query_reliability_spatial_v1 requires metadata_contract_version="
+                    "'0.4-dev' for query-QC transport."
+                )
+            if protocol_cfg.get("reliability_query_feature_schema") != (
+                QUERY_RELIABILITY_FEATURE_SCHEMA_V3
+            ):
+                raise ValueError(
+                    "query_reliability_spatial_v1 requires its exact band-matched "
+                    "Q feature schema."
+                )
+            if self.external_metadata_mode != "null":
+                raise ValueError(
+                    "query_reliability_spatial_v1 forbids external metadata; "
+                    "set condition_encoder.external_metadata_mode='null'."
+                )
+            if int(ce_cfg.get("n_prompt_tokens", 0)) != 0:
+                raise ValueError(
+                    "query_reliability_spatial_v1 requires condition_encoder.n_prompt_tokens=0."
+                )
+            if list(ce_cfg.get("fields") or []):
+                raise ValueError(
+                    "query_reliability_spatial_v1 requires condition_encoder.fields=[]."
+                )
+            if bool(ce_cfg.get("include_continuous", False)):
+                raise ValueError(
+                    "query_reliability_spatial_v1 forbids continuous metadata features."
+                )
+            if bool(ce_cfg.get("include_channels", False)):
+                raise ValueError(
+                    "query_reliability_spatial_v1 keeps channel identity in the backbone only."
+                )
+            if bool(ce_cfg.get("force_missing", False)):
+                raise ValueError(
+                    "query_reliability_spatial_v1 uses an explicit Q access axis; "
+                    "condition_encoder.force_missing is forbidden."
+                )
+            if name != "spectral_transformer":
+                raise ValueError(
+                    "query_reliability_spatial_v1 is frozen to the spectral_transformer "
+                    "backbone."
+                )
+            reliability_cfg = conditioning_cfg.get("spatial_reliability", {})
+            if set(reliability_cfg).intersection(
+                {
+                    "metadata_operator_norm",
+                    "metadata_alpha_limit",
+                    "metadata_residual_enabled",
+                }
+            ):
+                raise ValueError(
+                    "query_reliability_spatial_v1 must not declare a metadata residual branch."
+                )
+            if (
+                reliability_cfg.get("placement", "pre_backbone_waveform")
+                != "pre_backbone_waveform"
+            ):
+                raise ValueError(
+                    "query_reliability_spatial_v1 spatial_reliability.placement must be "
+                    "pre_backbone_waveform."
+                )
+            if reliability_cfg.get("operator_family", "diagonal_low_rank") != (
+                "diagonal_low_rank"
+            ):
+                raise ValueError(
+                    "query_reliability_spatial_v1 supports only "
+                    "operator_family=diagonal_low_rank."
+                )
+            self.query_reliability_conditioner = QueryReliabilityOperator(
+                hidden_dim=int(conditioning_cfg.get("hidden_dim", 64)),
+                operator_rank=int(reliability_cfg.get("operator_rank", 4)),
+                max_operator_norm=float(
+                    reliability_cfg.get("max_operator_norm", 0.20)
+                ),
+                query_qc_mode=str(reliability_cfg.get("query_qc_mode", "observed")),
+                target_sfreq=float(model_cfg.get("target_sfreq", 200.0)),
+                min_frequency_hz=float(backbone_cfg.get("min_frequency_hz", 6.0)),
+                max_frequency_hz=float(backbone_cfg.get("max_frequency_hz", 60.0)),
+            )
+            self.condition_encoder = None
+        elif self.condition_enabled and self.conditioning_architecture == RELIABILITY_SPATIAL_V1:
+            if self.metadata_contract_version != METADATA_CONTRACT_V04_DEV:
+                raise ValueError(
+                    "reliability_spatial_v1 requires metadata_contract_version='0.4-dev'."
+                )
+            if int(ce_cfg.get("n_prompt_tokens", 0)) != 0:
+                raise ValueError(
+                    "reliability_spatial_v1 requires condition_encoder.n_prompt_tokens=0."
+                )
+            if bool(ce_cfg.get("include_channels", False)):
+                raise ValueError(
+                    "reliability_spatial_v1 keeps channel structure in the backbone only."
+                )
+            if bool(ce_cfg.get("force_missing", False)):
+                raise ValueError(
+                    "reliability_spatial_v1 does not permit condition_encoder.force_missing=true; "
+                    "use the declared Q/M access axes instead."
+                )
+            if not bool(ce_cfg.get("include_continuous", True)):
+                raise ValueError(
+                    "reliability_spatial_v1 requires condition_encoder.include_continuous=true."
+                )
+            if name != "spectral_transformer":
+                raise ValueError(
+                    "reliability_spatial_v1 is currently frozen to the spectral_transformer "
+                    "backbone."
+                )
+            reliability_cfg = conditioning_cfg.get("spatial_reliability", {})
+            if (
+                reliability_cfg.get("placement", "pre_backbone_waveform")
+                != "pre_backbone_waveform"
+            ):
+                raise ValueError(
+                    "reliability_spatial_v1 spatial_reliability.placement must be "
+                    "pre_backbone_waveform."
+                )
+            if reliability_cfg.get("operator_family", "diagonal_low_rank") != (
+                "diagonal_low_rank"
+            ):
+                raise ValueError(
+                    "reliability_spatial_v1 currently supports only "
+                    "operator_family=diagonal_low_rank."
+                )
+            self.reliability_conditioner = ResidualizedReliabilityOperator(
+                d_model=d_model,
+                vocab_sizes=vocab_sizes,
+                fields=list(ce_cfg.get("fields") or ["electrode_type"]),
+                external_metadata_mode=self.external_metadata_mode,
+                hidden_dim=int(conditioning_cfg.get("hidden_dim", 64)),
+                operator_rank=int(reliability_cfg.get("operator_rank", 4)),
+                max_operator_norm=float(reliability_cfg.get("max_operator_norm", 0.25)),
+                query_operator_norm=float(
+                    reliability_cfg.get("query_operator_norm", 0.20)
+                ),
+                metadata_operator_norm=float(
+                    reliability_cfg.get("metadata_operator_norm", 0.05)
+                ),
+                metadata_alpha_limit=float(
+                    reliability_cfg.get("metadata_alpha_limit", 1.0)
+                ),
+                query_qc_mode=str(reliability_cfg.get("query_qc_mode", "observed")),
+                metadata_residual_enabled=bool(
+                    reliability_cfg.get("metadata_residual_enabled", True)
+                ),
+            )
+            self.condition_encoder = None
         elif self.condition_enabled:
             self.condition_encoder = ConditionEncoder(
                 d_model=d_model,
@@ -181,10 +360,15 @@ class ConditionedEEGDecoder(nn.Module):
             self.condition_encoder = None
 
         adapter_cfg = model_cfg.get("adapter", {})
-        if self.conditioning_architecture == PHYSICAL_HYBRID_V1 and adapter_cfg.get(
-            "enabled", True
-        ):
-            raise ValueError("physical_hybrid_v1 replaces the legacy adapter; set adapter.enabled=false.")
+        if self.conditioning_architecture in {
+            PHYSICAL_HYBRID_V1,
+            RELIABILITY_SPATIAL_V1,
+            QUERY_RELIABILITY_SPATIAL_V1,
+        } and adapter_cfg.get("enabled", True):
+            raise ValueError(
+                f"{self.conditioning_architecture} replaces the legacy adapter; "
+                "set adapter.enabled=false."
+            )
         if adapter_cfg.get("enabled", True):
             if adapter_cfg.get("type") == "conditioned_feature_adapter":
                 self.adapter = ConditionedAdapter(
@@ -201,6 +385,14 @@ class ConditionedEEGDecoder(nn.Module):
 
         latent_cfg = model_cfg.get("latent", {})
         self.latent_enabled = bool(latent_cfg.get("enabled", True))
+        if self.conditioning_architecture in {
+            RELIABILITY_SPATIAL_V1,
+            QUERY_RELIABILITY_SPATIAL_V1,
+        } and self.latent_enabled:
+            raise ValueError(
+                f"{self.conditioning_architecture} is a spatial-operator-only treatment; "
+                "set latent.enabled=false."
+            )
         self.z_dim = int(latent_cfg.get("z_dim", 16)) if self.latent_enabled else 0
         self.z_dropout = float(latent_cfg.get("z_dropout", 0.0))
         if self.latent_enabled:
@@ -228,6 +420,9 @@ class ConditionedEEGDecoder(nn.Module):
         cond: dict[str, torch.Tensor],
         use_latent: bool | None = None,
         return_repr: bool = True,
+        query_reliability_identity_intervention: bool = False,
+        query_reliability_wrong_query_x: torch.Tensor | None = None,
+        query_reliability_wrong_query_cond: dict[str, torch.Tensor] | None = None,
     ) -> ModelOutput:
         observed_contract = str(cond.get("metadata_contract_version", METADATA_CONTRACT_LEGACY))
         if observed_contract != self.metadata_contract_version:
@@ -262,10 +457,51 @@ class ConditionedEEGDecoder(nn.Module):
                     )
         prompt, cond_vec = (None, None)
         physical_state: PhysicalConditionState | None = None
+        reliability_state: ReliabilityConditionState | None = None
+        query_reliability_state: QueryReliabilityState | None = None
+        wrong_query_intervention = (
+            query_reliability_wrong_query_x is not None
+            or query_reliability_wrong_query_cond is not None
+        )
+        if (query_reliability_wrong_query_x is None) != (
+            query_reliability_wrong_query_cond is None
+        ):
+            raise ValueError("The wrong-query intervention requires both donor x and cond.")
+        if query_reliability_identity_intervention and wrong_query_intervention:
+            raise ValueError("Identity and wrong-query interventions are mutually exclusive.")
+        if query_reliability_identity_intervention or wrong_query_intervention:
+            if (
+                self.query_reliability_conditioner is None
+                or self.query_reliability_conditioner.query_qc_mode != "observed"
+            ):
+                raise ValueError(
+                    "Query interventions are defined only for observed-Q1 checkpoints."
+                )
+            if self.training:
+                raise ValueError(
+                    "Q1 query interventions are evaluation-only and cannot affect training."
+                )
         condition_view = _development_control_condition_view(cond, self.development_control)
         if self.physical_conditioner is not None:
             physical_state = self.physical_conditioner(condition_view)
             cond_vec = physical_state.external_vec
+        elif self.reliability_conditioner is not None:
+            reliability_state = self.reliability_conditioner(x, condition_view)
+        elif self.query_reliability_conditioner is not None:
+            query_x = x
+            query_condition_view = condition_view
+            if wrong_query_intervention:
+                assert query_reliability_wrong_query_x is not None
+                assert query_reliability_wrong_query_cond is not None
+                query_x, query_condition_view = _validate_wrong_query_intervention(
+                    target_x=x,
+                    target_cond=condition_view,
+                    donor_x=query_reliability_wrong_query_x,
+                    donor_cond=query_reliability_wrong_query_cond,
+                )
+            query_reliability_state = self.query_reliability_conditioner(
+                query_x, query_condition_view
+            )
         elif self.condition_encoder is not None:
             prompt, cond_vec = self.condition_encoder(
                 condition_view
@@ -273,6 +509,15 @@ class ConditionedEEGDecoder(nn.Module):
         condition_only = self.development_control in {"metadata_only", "missingness_only"}
         if condition_only and physical_state is not None:
             cond_vec = physical_state.metadata_only_vec
+        if condition_only and reliability_state is not None:
+            raise RuntimeError(
+                "reliability_spatial_v1 has no neural metadata-only decoder route; "
+                "use its frozen deterministic Stage-1 leakage probe."
+            )
+        if condition_only and query_reliability_state is not None:
+            raise RuntimeError(
+                "query_reliability_spatial_v1 does not permit metadata-only controls."
+            )
         if condition_only and cond_vec is None:
             raise RuntimeError(f"{self.development_control} requires an enabled condition encoder.")
         if prompt is not None and not self.backbone.supports_prompt_tokens and not condition_only:
@@ -289,10 +534,22 @@ class ConditionedEEGDecoder(nn.Module):
             # ModelOutput exposes the pooled representation, not backbone tokens.
             # Avoid allocating variable-length padded token tensors that are discarded.
             backbone_kwargs = {}
+            backbone_x = x
             if physical_state is not None:
                 backbone_kwargs["channel_gain"] = physical_state.channel_gain
+            if reliability_state is not None:
+                backbone_x = reliability_state.apply(x)
+            if query_reliability_state is not None:
+                if query_reliability_identity_intervention:
+                    backbone_x = torch.where(
+                        query_reliability_state.channel_mask.unsqueeze(-1),
+                        x,
+                        torch.zeros((), dtype=x.dtype, device=x.device),
+                    )
+                else:
+                    backbone_x = query_reliability_state.apply(x)
             backbone_out = self.backbone(
-                x,
+                backbone_x,
                 cond=cond,
                 prompt_tokens=prompt,
                 return_tokens=False,
@@ -318,6 +575,105 @@ class ConditionedEEGDecoder(nn.Module):
                     ),
                     "channel_gain_min": physical_state.channel_gain.min(dim=-1).values,
                     "channel_gain_max": physical_state.channel_gain.max(dim=-1).values,
+                }
+            if reliability_state is not None:
+                backbone_aux = {
+                    **backbone_aux,
+                    "channel_spatial_self_gain": reliability_state.diagonal_gain,
+                    "spatial_offdiagonal_row_l1": reliability_state.offdiagonal_row_l1,
+                    "channel_query_noise_logit": reliability_state.query_noise_logit,
+                    "channel_metadata_noise_logit": reliability_state.metadata_noise_logit,
+                    "channel_combined_noise_logit": reliability_state.combined_noise_logit,
+                    "channel_query_available_count": (
+                        reliability_state.query_available.sum(dim=-1)
+                    ),
+                    "channel_metadata_available_count": (
+                        reliability_state.metadata_available.sum(dim=-1)
+                    ),
+                    "metadata_residual_alpha": reliability_state.metadata_alpha.expand(
+                        x.shape[0]
+                    ),
+                    "spatial_operator_frobenius_norm": torch.linalg.vector_norm(
+                        reliability_state.operator_delta.float().flatten(start_dim=1),
+                        dim=-1,
+                    ),
+                    "query_spatial_operator_frobenius_norm": torch.linalg.vector_norm(
+                        reliability_state.query_operator_delta.float().flatten(start_dim=1),
+                        dim=-1,
+                    ),
+                    "metadata_spatial_residual_frobenius_norm": torch.linalg.vector_norm(
+                        reliability_state.metadata_operator_delta.float().flatten(start_dim=1),
+                        dim=-1,
+                    ),
+                    "spatial_self_gain_min": reliability_state.diagonal_gain.min(
+                        dim=-1
+                    ).values,
+                    "spatial_self_gain_max": reliability_state.diagonal_gain.max(
+                        dim=-1
+                    ).values,
+                    "spatial_offdiagonal_row_l1_max": (
+                        reliability_state.offdiagonal_row_l1.max(dim=-1).values
+                    ),
+                }
+            if query_reliability_state is not None:
+                active_channels = query_reliability_state.channel_mask
+                backbone_aux = {
+                    **backbone_aux,
+                    "channel_spatial_self_gain": query_reliability_state.diagonal_gain,
+                    "spatial_offdiagonal_row_l1": (
+                        query_reliability_state.offdiagonal_row_l1
+                    ),
+                    "channel_query_noise_logit": (
+                        query_reliability_state.query_noise_logit
+                    ),
+                    "channel_query_available_count": (
+                        query_reliability_state.query_available.sum(dim=-1)
+                    ),
+                    "spatial_operator_frobenius_norm": torch.linalg.vector_norm(
+                        query_reliability_state.operator_delta.float().flatten(
+                            start_dim=1
+                        ),
+                        dim=-1,
+                    ),
+                    "query_spatial_operator_frobenius_norm": torch.linalg.vector_norm(
+                        query_reliability_state.operator_delta.float().flatten(
+                            start_dim=1
+                        ),
+                        dim=-1,
+                    ),
+                    "spatial_self_gain_min": (
+                        _masked_channel_extreme(
+                            query_reliability_state.diagonal_gain,
+                            active_channels,
+                            reduction="min",
+                        )
+                    ),
+                    "spatial_self_gain_max": (
+                        _masked_channel_extreme(
+                            query_reliability_state.diagonal_gain,
+                            active_channels,
+                            reduction="max",
+                        )
+                    ),
+                    "spatial_offdiagonal_row_l1_max": (
+                        _masked_channel_extreme(
+                            query_reliability_state.offdiagonal_row_l1,
+                            active_channels,
+                            reduction="max",
+                        )
+                    ),
+                    "query_reliability_identity_intervention": torch.full(
+                        (x.shape[0],),
+                        bool(query_reliability_identity_intervention),
+                        dtype=torch.bool,
+                        device=x.device,
+                    ),
+                    "query_reliability_wrong_query_intervention": torch.full(
+                        (x.shape[0],),
+                        bool(wrong_query_intervention),
+                        dtype=torch.bool,
+                        device=x.device,
+                    ),
                 }
         if self.adapter is not None:
             if isinstance(self.adapter, ConditionedAdapter):
@@ -354,6 +710,61 @@ class ConditionedEEGDecoder(nn.Module):
         )
 
 
+def _masked_channel_extreme(
+    values: torch.Tensor,
+    channel_mask: torch.Tensor,
+    *,
+    reduction: str,
+) -> torch.Tensor:
+    if values.shape != channel_mask.shape or values.ndim != 2:
+        raise ValueError("Masked channel summary requires matching [batch,channel] tensors.")
+    if not channel_mask.any(dim=-1).all():
+        raise ValueError("Masked channel summary requires at least one active channel.")
+    if reduction == "min":
+        fill = torch.inf
+        return values.masked_fill(~channel_mask, fill).min(dim=-1).values
+    if reduction == "max":
+        fill = -torch.inf
+        return values.masked_fill(~channel_mask, fill).max(dim=-1).values
+    raise ValueError(f"Unknown masked channel reduction: {reduction!r}.")
+
+
+def _validate_wrong_query_intervention(
+    *,
+    target_x: torch.Tensor,
+    target_cond: dict[str, torch.Tensor],
+    donor_x: torch.Tensor,
+    donor_cond: dict[str, torch.Tensor],
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    """Validate an explicit same-checkpoint donor-Q mechanism intervention."""
+
+    if donor_x.shape != target_x.shape:
+        raise ValueError("Wrong-query donor x must exactly match the target batch shape.")
+    if donor_x.device != target_x.device or donor_x.dtype != target_x.dtype:
+        raise ValueError("Wrong-query donor x must share target device and dtype.")
+    required = (
+        "channel_ids",
+        "channel_mask",
+        "channel_query_qc",
+        "channel_query_qc_missing",
+        "sfreq_processed_float",
+    )
+    for field in required:
+        target = target_cond.get(field)
+        donor = donor_cond.get(field)
+        if not torch.is_tensor(target) or not torch.is_tensor(donor):
+            raise ValueError(f"Wrong-query intervention requires tensor field {field}.")
+        if target.shape != donor.shape or target.device != donor.device:
+            raise ValueError(f"Wrong-query donor field {field} differs in shape or device.")
+    for field in ("channel_ids", "channel_mask", "sfreq_processed_float"):
+        if not torch.equal(target_cond[field], donor_cond[field]):
+            raise ValueError(
+                "Wrong-query donors must retain the target channel layout, mask, and "
+                f"sample rate; field {field} differs."
+            )
+    return donor_x, donor_cond
+
+
 def _development_control_condition_view(
     cond: dict[str, torch.Tensor], development_control: str
 ) -> dict[str, torch.Tensor]:
@@ -362,6 +773,8 @@ def _development_control_condition_view(
     out = {key: value.clone() if torch.is_tensor(value) else value for key, value in cond.items()}
     out["query_qc"].zero_()
     out["query_qc_missing"].fill_(True)
+    out["channel_query_qc"].zero_()
+    out["channel_query_qc_missing"].fill_(True)
     if development_control == "missingness_only":
         out["external_continuous"].zero_()
         out["channel_impedance"].zero_()

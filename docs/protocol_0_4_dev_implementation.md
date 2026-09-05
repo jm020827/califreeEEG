@@ -3,13 +3,17 @@
 기준일: 2026-08-30
 상태: physical A2 reveal #2 완료, valid diagnostic assay에서 substantive no-go, confirmatory 차단
 
+> **2026-09-04 superseded / historical only:** 이 문서는 retired `physical_hybrid_v1`의 구현
+> 기록이다. `DEC-20260904-005` 이후 현재 질문과 실행 gate는
+> [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md)를 따른다.
+
 > **2026-08-30 update / DEC-20260830-001·002:** 이 문서의 과거 `N=102 primary + N=99 sensitivity`와 `N=99 5-fold primary` 결정은 superseded됐다. S1–S3는 영구 development-only이고 S4–S102는 39명 training·60명 independent lockbox다. 현재 권한·실행 상태는 [연구 프로토콜 현재 상태](research_protocol_status.md)와 [연구일지](research_log.md)를 우선한다.
 
 ## 1. 연구목표 결정
 
-연구목표는 바꾸지 않는다. 다만 한 데이터셋으로 입증할 수 있는 주장과 장기 목표를 분리한다.
+당시에는 연구목표를 strict-k0로 유지하고 한 데이터셋으로 입증할 수 있는 주장과 장기 목표를 분리했다.
 
-> **현재 primary 질문:** source participant에서 wet/dry 조건을 학습한 뒤, target participant의 다른 trial이나 label을 전혀 사용하지 않는 strict k=0에서, query 전에 외부에서 관측한 물리 metadata가 waveform·공통 구조·query-local QC만 사용하는 parameter-matched control보다 순증분을 주는가?
+> **당시 primary 질문:** source participant에서 wet/dry 조건을 학습한 뒤, target participant의 다른 trial이나 label을 전혀 사용하지 않는 strict k=0에서, query 전에 외부에서 관측한 물리 metadata가 waveform·공통 구조·query-local QC만 사용하는 parameter-matched control보다 순증분을 주는가?
 
 현재 wearable 실험으로 바로 주장하지 않는 것은 다음이다.
 

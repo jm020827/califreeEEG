@@ -1,0 +1,144 @@
+schema: cfeg.metadata-calibration-source-recipe.v1
+candidate_id: metadata-calibration-efficiency-v1
+status: exact_recipe_frozen_signed_phase_authority_required
+human_execution_authorized: true
+plan: configs/analysis/metadata_calibration_efficiency_v1.yaml
+
+runtime:
+  device: cuda
+  hardware: single_rtx_4090
+  stage1_amp: true
+  stage2_amp: false
+  eval_amp: false
+  deterministic_algorithms: true
+  source_training_seeds: [42, 43, 44]
+
+data:
+  dataset_revision: wearable_v3
+  metadata_contract_version: 0.4-dev
+  expected_subjects: 102
+  expected_rows: 24480
+  permanently_retired_subjects: [sub001, sub002, sub003]
+  source_development_subjects: [sub004, sub006, sub008, sub011, sub014, sub021, sub022, sub025, sub028, sub029, sub030, sub031, sub032, sub033, sub037, sub041, sub042, sub043, sub044, sub046, sub054, sub055, sub056, sub061, sub063, sub065, sub067, sub073, sub074, sub077, sub080, sub082, sub083, sub084, sub089, sub092, sub097, sub100, sub102]
+  outer_fold_seed: 20260904
+  inner_split_seed_rule: outer_fold_seed_plus_100_plus_outer_fold
+  folds:
+    0:
+      outer_evaluation: [sub006, sub011, sub014, sub021, sub025, sub033, sub042, sub054, sub055, sub074, sub080, sub084, sub102]
+      inner_validation: [sub004, sub028, sub032, sub063, sub065, sub100]
+      inner_fit: [sub008, sub022, sub029, sub030, sub031, sub037, sub041, sub043, sub044, sub046, sub056, sub061, sub067, sub073, sub077, sub082, sub083, sub089, sub092, sub097]
+    1:
+      outer_evaluation: [sub022, sub028, sub031, sub032, sub037, sub061, sub067, sub073, sub077, sub082, sub083, sub089, sub092]
+      inner_validation: [sub004, sub033, sub043, sub046, sub056, sub084]
+      inner_fit: [sub006, sub008, sub011, sub014, sub021, sub025, sub029, sub030, sub041, sub042, sub044, sub054, sub055, sub063, sub065, sub074, sub080, sub097, sub100, sub102]
+    2:
+      outer_evaluation: [sub004, sub008, sub029, sub030, sub041, sub043, sub044, sub046, sub056, sub063, sub065, sub097, sub100]
+      inner_validation: [sub011, sub042, sub073, sub084, sub092, sub102]
+      inner_fit: [sub006, sub014, sub021, sub022, sub025, sub028, sub031, sub032, sub033, sub037, sub054, sub055, sub061, sub067, sub074, sub077, sub080, sub082, sub083, sub089]
+  outer_refit_subjects: union_inner_fit_and_inner_validation_exact_26
+  final_held_refit_subjects: all_39_source_development_subjects
+
+episode:
+  unit: participant_by_electrode_interface
+  conditions: [dry, wet]
+  budgets: [0, 1, 3, 5]
+  support_blocks:
+    0: []
+    1: [block01]
+    3: [block01, block02, block03]
+    5: [block01, block02, block03, block04, block05]
+  query_blocks: [block06, block07, block08, block09, block10]
+  query_trials_per_episode: 60
+  all_four_budgets_per_participant_condition_per_epoch: true
+  participant_condition_episode_batch_size: 4
+  epoch_shuffle_seed_rule: >-
+    first_8_bytes_big_endian_sha256_of_utf8_colon_joined_candidate_id_stage_seed_foldN_or_held_epoch
+  support_query_overlap: forbidden
+  target_participant_gradient_update: forbidden
+
+model:
+  n_classes: 12
+  c_max: 64
+  t_len: 400
+  target_sfreq: 200.0
+  embedding_dim: 256
+  backbone:
+    name: spectral_transformer
+    depth: 3
+    n_heads: 8
+    min_frequency_hz: 6.0
+    max_frequency_hz: 60.0
+    dropout: 0.1
+  prior:
+    class: BoundedMetadataCalibrationPrior
+    q_feature_dim: 56
+    metadata_feature_dim: 18
+    hidden_dim: 32
+    q_precision_ratio: [0.25, 4.0]
+    metadata_precision_ratio: [0.8, 1.25]
+    absolute_precision: [0.05, 20.0]
+    source_prior_strength: 1.0
+
+stage_1_common_Q:
+  metadata_mode: exact_off
+  trainable: [backbone, source_anchor, class_bias, base_precision, q_precision_encoder]
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+  maximum_epochs: 40
+  minimum_epochs: 10
+  checkpoint_eligibility: epochs_10_through_40_only
+  early_stop_patience: 6
+  objective: mean_query_cross_entropy_over_all_episode_queries
+  inner_selection:
+    primary: highest_participant_equal_dry_wet_A_Q_eAUC
+    tie_1: lowest_query_negative_log_likelihood
+    tie_2: earliest_epoch
+
+stage_2_bounded_M:
+  initialization: selected_stage1_full_state_with_exact_zero_M_last_layer
+  common_path_mode: frozen_and_eval
+  trainable_prefixes: [prior.metadata_precision_encoder]
+  forbidden_trainable_prefixes: [backbone, prior.source_anchor, prior.class_bias, prior.base_log_precision, prior.q_precision_encoder]
+  optimizer: AdamW
+  learning_rate: 0.001
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  maximum_epochs: 25
+  minimum_epochs: 5
+  checkpoint_eligibility: epochs_5_through_25_only
+  early_stop_patience: 5
+  objective: mean_correct_context_query_cross_entropy_plus_0p01_mean_squared_M_log_residual
+  whole_metadata_all_missing_dropout_probability: 0.20
+  wrong_or_shuffled_context_used_as_training_target: false
+  inner_selection:
+    primary: highest_participant_equal_dry_wet_eAUC_increment_A_QM_minus_A_Q
+    tie_1: highest_correct_minus_block_shuffle_eAUC
+    tie_2: earliest_epoch
+
+nested_refit:
+  outer_checkpoint: >-
+    For each seed and outer fold, select stage-1 and stage-2 epoch counts using
+    only the six inner-validation participants, then reinitialize and refit on
+    the exact 26 non-outer participants for those fixed epoch counts.
+  outer_outcomes_used_for_tuning: false
+  final_held_checkpoint: >-
+    After the one-shot 39-participant gate passes, use the per-seed median of
+    the three inner-selected epoch counts, reinitialize, and refit on all 39
+    source-development participants. Do not use outer-effect values to choose
+    epochs or hyperparameters.
+  hyperparameter_grid: none_fixed_single_candidate
+  failed_outer_gate_retry: forbidden_new_candidate_and_new_data_required
+
+target_calibration:
+  backbone_gradient_update: forbidden
+  prior_parameter_gradient_update: forbidden
+  update: exact_closed_form_diagonal_gaussian_sufficient_statistics
+  independent_reset_for_every_role_budget_condition: true
+
+checkpoint:
+  full_composite_state_required: true
+  save_trainable_only: false
+  writer: src/cfeg/metadata_calibration_checkpoint.py::write_full_composite_checkpoint
+  verifier: src/cfeg/metadata_calibration_checkpoint.py::verify_full_composite_checkpoint

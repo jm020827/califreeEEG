@@ -1,0 +1,207 @@
+schema: cfeg.metadata-calibration-input-artifacts.v1
+candidate_id: metadata-calibration-efficiency-v1
+status: frozen_schema_implemented_signed_runtime_authority_required
+
+phase_contract:
+  source_development:
+    participant_count: 39
+    target_subject_scope: exact_source_development_39_cross_fitted_outer_evaluation
+    checkpoint_groups: [fold0, fold1, fold2]
+    held_subject_access: forbidden
+    source_fit_groups:
+      per_fold_inner_fit_participants: 20
+      per_fold_inner_validation_participants: 6
+      per_fold_outer_evaluation_participants: 13
+    final_refit_source_participants: forbidden_in_source_development_phase
+    source_fit_artifact_policy: phase_scoped_seal_exact_fold_specific_26
+    held_gate_receipts: null
+  held_participant_evaluation:
+    participant_count: 60
+    target_subject_scope: exact_held_60
+    checkpoint_groups: [held]
+    final_refit_source_participants: 39
+    source_fit_artifact_policy: phase_scoped_reseal_exact_source_39_under_held_domain
+    held_gate_receipts:
+      - source_development_gate_receipt_sha256
+      - source_development_private_seal_sha256
+
+token_contract:
+  builder: src/cfeg/data/unlabeled_query.py::opaque_metadata_row_token
+  secret_commitment: src/cfeg/data/unlabeled_query.py::token_secret_commitment_sha256
+  master_secret_minimum_bytes: 32
+  domain_schema: cfeg.metadata-calibration-token-domain.v1
+  domain_fields:
+    - candidate_id
+    - dataset_revision
+    - raw_asset_fingerprint_sha256
+    - seal_decision_sha256
+    - phase
+    - checkpoint_group
+    - purpose
+  purpose_prefixes:
+    evaluation_query: q_
+    evaluation_support: s_
+    source_fit: f_
+  raw_sample_id_or_token_key_persisted: false
+
+signal_artifact_contract:
+  publication_order: ascending_domain_separated_opaque_token
+  local_signal_index: contiguous_zero_based_and_equal_to_hdf5_row
+  exact_hdf5_datasets: [channel_mask, x]
+  x: {dtype: float32, rank: 3, channels: 64, samples: 400}
+  channel_mask: {dtype: bool, rank: 2, channels: 64}
+  forbidden_datasets: [y]
+  base_input_hash: src/cfeg/data/metadata_calibration_interventions.py::metadata_calibration_base_input_sha256
+  required_for: [evaluation_query, evaluation_support, source_fit]
+
+artifact_sets:
+  target_query:
+    runner:
+      - model_view.jsonl
+      - baseline_view.jsonl
+      - expected_unlabeled.jsonl
+      - signals.h5
+    finalizer_only:
+      - query_labels.jsonl.enc
+      - query_analysis_covariates.jsonl.enc
+  target_support:
+    runner:
+      - model_view.jsonl
+      - baseline_view.jsonl
+      - support_labels.jsonl
+      - signals.h5
+  source_fit:
+    runner:
+      - labeled_view.jsonl
+      - baseline_view.jsonl
+      - signals.h5
+  block_context:
+    runner:
+      - block_context.jsonl
+
+block_context_contract:
+  exact_columns:
+    - dataset_id
+    - subject_id
+    - electrode_type
+    - run_id
+    - impedance_channel_ids
+    - impedance_kohm_by_channel
+  rows_per_participant_interface: 10
+  channel_names: [POz, PO3, PO4, PO5, PO6, Oz, O1, O2]
+  canonical_channel_ids: [56, 55, 57, 54, 58, 62, 61, 63]
+  order: subject_then_dry_before_wet_then_numeric_block
+
+forbidden_downstream_fields:
+  - raw_sample_id
+  - raw_h5_index
+  - source_row_position
+  - raw_trial_id
+  - target_frequency_or_phase
+  - source_file
+  - token_secret
+
+publication_contract:
+  canonical_root_must_be_new: true
+  staging_directory_mode: "0700"
+  artifact_file_mode: "0400"
+  reject_symlink_fifo_device_or_external_hdf5_link: true
+  reject_hardlink_count_above_one: true
+  fsync_files_and_directories_bottom_up: true
+  publish_operation: single_directory_renameat2_RENAME_NOREPLACE_then_parent_fsync
+  partial_or_drifted_resume: forbidden
+  query_label_capability_boundary: finalizer_public_key_encryption_plus_bubblewrap_worker_namespace
+
+label_capability_contract:
+  selection_required_before_any_raw_open: true
+  allowed_modes: [separate_os_principals, finalizer_public_key_encryption]
+  same_unix_principal_with_posix_mode_only_allowed: false
+  separate_os_principals_required_fields: [runner_os_principal, finalizer_os_principal]
+  public_key_encryption_required_fields: [algorithm, finalizer_public_key_fingerprint_sha256]
+  encryption_algorithm: RSA-OAEP-SHA256+AES-256-GCM
+  encrypted_sidecar_plaintext_hash_exposed: false
+  selected_mode: finalizer_public_key_encryption_plus_bubblewrap_worker_namespace
+  private_key_files_password_encrypted: true
+  private_key_passwords_parent_memory_only: true
+  label_capable_parent_dumpable: false
+  label_capable_parent_core_dump_limit_bytes: 0
+  worker_namespace: bubblewrap_unshare_all_cap_drop_all_no_new_privileges
+  worker_authority_projection: exact_current_signed_job_capability_only
+  worker_input_projection: per_job_runner_allowlist_files_only
+  worker_finalizer_only_ciphertexts_mounted: false
+  per_job_projection_profiles:
+    candidate: source_model_plus_target_query_support_plus_block_context
+    strict_FBCCA: target_query_only_no_support_labels
+    target_support_baselines: target_query_plus_target_support
+    chiang2021_LST: target_query_plus_target_support_plus_source_baseline
+  worker_processed_asset_root_mounted: false
+  worker_private_key_root_mounted: false
+  worker_output_mount: fresh_per_job_spool_at_signed_execution_path
+  worker_prior_job_outputs_visible: false
+  python_secret_memory_zeroization_guaranteed: false
+  authority_model: chat_recorded_owner_delegation_plus_ephemeral_run_integrity_key
+  external_owner_signature_present: false
+
+trusted_input_sealer_boundary:
+  raw_manifest_and_hdf5_labels_read_before_outcome_claim: true
+  process_role: deterministic_nonreporting_privileged_sealer_outside_inferential_access
+  source_preclaim_retry_semantics: sealing_or_training_failure_may_start_one_new_exact_full_run
+  held_preclaim_after_source_claim_semantics: terminal_fail_stop_no_automatic_continuation
+  irreversible_claim_semantics: first_investigator_analysis_query_outcome_decryption_and_reduction
+
+outcome_access_registry_contract:
+  permanent_namespace: cfeg.metadata-calibration-outcome-access-attempt-key.permanent-v1
+  candidate_id_in_permanent_key: false
+  stable_scope_lease: flock_held_from_pre_data_precheck_through_phase_finalization
+  claim_publication: sibling_staging_then_renameat2_RENAME_NOREPLACE_immediately_before_query_outcome_decryption
+  same_unix_owner_can_unlink_claim: true
+  irreversibility_strength: governance_and_audit_not_separate_principal_enforcement
+  post_claim_same_phase_retry: forbidden
+  signed_completion_pending_recovery: validate_full_artifact_chain_require_private_keys_absent_then_renameat2_RENAME_NOREPLACE
+  post_source_claim_preheld_claim_crash_policy: terminal_fail_stop_no_automatic_resume
+  post_phase_claim_precompletion_pending_crash_policy: terminal_fail_stop_no_automatic_resume
+
+analysis_covariate_contract:
+  encrypted_finalizer_only_fields: [query_token, headband_order, condition_period, block_number]
+  use: descriptive_balance_and_design_invariant_audit_only
+  decoder_input: forbidden
+  confirmatory_claim_adjustment: none_prespecified
+  block_number_query_scope: [6, 7, 8, 9, 10]
+
+source_development_outcome_privacy:
+  scope: checkpoint_group
+  worker_may_read:
+    - exact_nonouter_26_source_fit
+    - exact_outer_13_unlabeled_query
+    - exact_outer_support_labels
+  worker_must_not_read:
+    - current_checkpoint_group_query_labels
+    - another_checkpoint_group_artifacts
+  claim: scientific_job_isolation_not_phase_wide_cryptographic_blinding
+
+held_participant_outcome_privacy:
+  scope: whole_phase
+  held_60_labels_appear_in_any_training_artifact: false
+  query_labels_encrypted_until_complete_private_grid_is_sealed: true
+
+receipt_contract:
+  schema: cfeg.metadata-calibration-input-seal-receipt.v1
+  self_hash_field: receipt_payload_sha256
+  bind:
+    - input_seal_decision_signed_record_sha256
+    - plan_sha256
+    - source_recipe_sha256
+    - baseline_ledger_sha256
+    - input_artifact_contract_sha256
+    - token_domain_contract_sha256
+    - token_secret_domain_separated_commitment_sha256
+    - raw_asset_receipt_sha256
+    - raw_asset_fingerprint_bundle_sha256
+    - class_map_sha256
+    - input_sealer_implementation_bundle_sha256
+    - phase
+    - exact_target_subject_ids_sha256
+    - artifact_records_with_every_file_and_semantic_sha256
+    - artifact_tree_sha256
+  runner_visible_per_query_label_hash_forbidden: true
+  grants_training_scoring_or_outcome_authority: false

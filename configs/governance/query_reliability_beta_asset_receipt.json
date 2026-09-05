@@ -1,0 +1,47 @@
+{
+  "schema": "cfeg.query-reliability-asset-audit.v1",
+  "candidate_id": "query-reliability-spatial-v1",
+  "dataset_id": "beta",
+  "status": "verified_frequency_only_phase_blocked",
+  "recorded_date": "2026-09-04",
+  "processed_root_basename": "beta_v1",
+  "source_release": {
+    "figshare_article_id": 12264401,
+    "figshare_article_version": 3,
+    "figshare_article_json_sha256": "8d9c948366512183556cd4082f871b72c80e9d2972fa8596795fde56dd5eadc1",
+    "description_pdf_sha256": "d46394b2be853b6631071826dee90c35eb07368c5cc3dfd3598bc640f2be6bb4"
+  },
+  "observed_contract": {
+    "n_rows": 11200,
+    "n_subjects": 70,
+    "n_classes": 40,
+    "rows_per_subject": 160,
+    "signals_shape": [11200, 64, 400],
+    "signals_dtype": "float32",
+    "channel_mask_shape": [11200, 64],
+    "label_shape": [11200]
+  },
+  "files": {
+    "asset_info.json": "7ee276231ab384c014a85f69e2fc162dfca5328354faa0aa7728a7763028075f",
+    "class_map.json": "f7249cfee319537f1ed277bc5120cb93275ef863f6739c990b79ef8cb52d46df",
+    "manifest.jsonl": "25db951b1da898298068bb8b04c8911083f697774fc17e6e87591fc2b37aa05a",
+    "manifest.parquet": "ec4792cbaa418297f9ca883a4b17c60ea33ebae6af89caadf8f8662f57582b19",
+    "preprocess_config.yaml": "5c26a96c9dc5cc7b7197f8a02c2e2d7891c7cb486c4a8b2527c9852e0038cc43",
+    "signals.h5": "ee6f3b324eb7cf5c8349ac7ae09d51def13b6d12c4968472b4bb70ed43cb4818"
+  },
+  "eligibility": {
+    "included_subjects": "sub016-sub070",
+    "included_n_subjects": 55,
+    "excluded_subjects": "sub001-sub015",
+    "excluded_n_subjects": 15,
+    "reason": "The stored 0.63-to-2.63-s crop extends beyond the 2-s stimulation used for S1-S15; S16-S70 used 3-s stimulation."
+  },
+  "phase_provenance": {
+    "status": "blocked",
+    "reason": "The local class phase table predates the June 15 2022 BETA corrigendum.",
+    "frequency_only_labels_allowed": true,
+    "manifest_stimulus_phase_template_or_claim_allowed": false
+  },
+  "outcome_values_inspected_by_this_audit": false,
+  "grants_human_outcome_execution_authority": false
+}

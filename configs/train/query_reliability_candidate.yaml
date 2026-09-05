@@ -1,0 +1,121 @@
+seed: 11
+run_name: query_reliability_candidate_draft
+output_dir: outputs/debug/query-reliability-spatial-v1/dry-run
+assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  external_continuous_schema: impedance_mean_max_v1
+  execution_phase: query_reliability_implementation_draft
+  candidate_id: query-reliability-spatial-v1
+  candidate_plan: configs/analysis/query_reliability_spatial_v1.yaml
+  asset_audit_receipt: configs/governance/query_reliability_beta_asset_receipt.json
+  asset_audit_receipt_sha256: b09a0db3f43b21a966af1b5578dfe67c9b29903cc4944127b83540c54cf6f333
+  reliability_query_feature_schema: query_window_reliability_features_v3_waveform_6_60_qc_scale_6_90
+  phase_features_allowed: false
+  development_control: none
+data:
+  cohort_role: public_beta_preregistered_partition
+  split_seed: 20260904
+  processed_dirs:
+    - ${env:EEG_DATA_ROOT}/processed/beta_v1
+  expected_dataset_counts:
+    beta:
+      n_samples: 11200
+      n_subjects: 70
+      n_targets: 40
+  require_audit_receipt: false
+  split: fixed_subject_partition
+  allow_empty_validation: true
+  excluded_subject_ids: [sub001, sub002, sub003, sub004, sub005, sub006, sub007, sub008, sub009, sub010, sub011, sub012, sub013, sub014, sub015]
+  training_subject_ids: [sub016, sub017, sub018, sub019, sub020, sub022, sub023, sub024, sub028, sub029, sub030, sub031, sub033, sub035, sub036, sub037, sub038, sub041, sub042, sub044, sub045, sub046, sub047, sub051, sub052, sub053, sub055, sub056, sub059, sub060, sub063, sub065, sub066, sub067, sub068]
+  validation_subject_ids: []
+  test_subject_ids: [sub021, sub025, sub026, sub027, sub032, sub034, sub039, sub040, sub043, sub048, sub049, sub050, sub054, sub057, sub058, sub061, sub062, sub064, sub069, sub070]
+  batch_size: 256
+  eval_batch_size: 256
+  num_workers: 4
+  persistent_workers: false
+  pin_memory: true
+  persistent_hdf5_handles: true
+  preload_hdf5_to_memory: false
+model:
+  n_classes: 40
+  c_max: 64
+  target_sfreq: 200
+  t_len: 400
+  d_model: 256
+  patch_size: 20
+  depth: 3
+  n_heads: 8
+  backbone:
+    name: spectral_transformer
+    min_frequency_hz: 6.0
+    max_frequency_hz: 60.0
+    dropout: 0.1
+  conditioning:
+    architecture: query_reliability_spatial_v1
+    hidden_dim: 64
+    spatial_reliability:
+      placement: pre_backbone_waveform
+      operator_family: diagonal_low_rank
+      operator_rank: 4
+      max_operator_norm: 0.20
+      query_qc_mode: "null"
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 0
+    fields: []
+    include_continuous: false
+    include_channels: false
+    force_missing: false
+    external_metadata_mode: "null"
+  adapter:
+    enabled: false
+  latent:
+    enabled: false
+train:
+  epochs: 10
+  checkpoint_selection: fixed_epoch_blind
+  lr: 0.0003
+  weight_decay: 0.01
+  amp: true
+  eval_amp: false
+  grad_clip_norm: 1.0
+  early_stop_patience: 100
+  log_interval: 10
+checkpoint:
+  save_trainable_only: true
+loss:
+  lambda_cons: 0.0
+  lambda_logit_cons: 0.0
+  beta_kl: 0.0
+  ce_zero_weight: 0.0
+tracking:
+  wandb:
+    enabled: false
+    project: calibration-free-eeg
+    entity: null
+    mode: disabled
+    tags: [query-reliability-spatial-v1, draft, outcome-blocked]
+    log_model: false
+    watch_model: false
+evaluation:
+  trial_time_sec: 2.0
+  open_test: false
+runtime:
+  device: cuda
+  probe_cuda: true
+augment:
+  categorical_metadata_dropout_prob: 0.0
+  make_two_views: false
+  channel_dropout_prob: 0.0
+  min_channels: 2
+  channel_sets: []
+  channel_subset_prob: 0.0
+  noise_std_range: [0.0, 0.0]
+  time_shift_samples: 0
+  query_reliability_corruption:
+    enabled: false
+    seed: 20260904
+    clean_probability: 0.25
+    cell_ids: [zero_0125, zero_0250, white_snr_0, white_snr_m5, line50_snr_0, line50_snr_m5]

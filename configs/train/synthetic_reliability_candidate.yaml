@@ -1,0 +1,116 @@
+seed: 42
+run_name: synthetic_reliability_candidate
+output_dir: outputs/engineering/reliability-spatial-v1/unresolved
+assets_config: configs/assets.yaml
+protocol:
+  metadata_contract_version: 0.4-dev
+  execution_phase: synthetic_engineering
+  candidate_id: reliability-spatial-v1
+  candidate_plan: configs/analysis/reliability_spatial_v1.yaml
+  candidate_plan_sha256: 6227f2e06db09dec0c18768454f18c8e4866f7ef0b6d29e18aef71c00ad63b39
+  predecessor_retirement_receipt: configs/governance/wearable_s1_s3_retirement.json
+  predecessor_retirement_receipt_sha256: a2fcfb53e4ed1edeb21eca13d0f8851fdd6478834106a966ef83bae903f32710
+  stage0_receipt: outputs/engineering/reliability-spatial-v1/stage0/receipt.json
+  query_qc_extractor_version: filtered_cropped_pre_zscore_channel_std_median_v1
+  reliability_query_feature_schema: query_window_reliability_features_v1
+  external_continuous_schema: impedance_mean_max_v1
+data:
+  cohort_role: simulation_only
+  split_seed: 42
+  processed_dirs: [data/processed/synthetic_quality_v1]
+  expected_revisions:
+    synthetic_quality: synthetic_quality_v1
+  expected_dataset_counts:
+    synthetic_quality:
+      n_samples: 256
+      n_subjects: 8
+      n_targets: 4
+  split: cross_subject_train_val
+  val_ratio: 0.25
+  batch_size: 64
+  eval_batch_size: 64
+  num_workers: 0
+  persistent_workers: false
+  pin_memory: true
+  persistent_hdf5_handles: false
+  preload_hdf5_to_memory: true
+model:
+  n_classes: 4
+  c_max: 64
+  target_sfreq: 200
+  t_len: 400
+  d_model: 128
+  patch_size: 20
+  depth: 2
+  n_heads: 4
+  backbone:
+    name: spectral_transformer
+    min_frequency_hz: 6.0
+    max_frequency_hz: 60.0
+    dropout: 0.1
+  conditioning:
+    architecture: reliability_spatial_v1
+    hidden_dim: 32
+    spatial_reliability:
+      placement: pre_backbone_waveform
+      operator_family: diagonal_low_rank
+      operator_rank: 4
+      max_operator_norm: 0.25
+      query_operator_norm: 0.20
+      metadata_operator_norm: 0.05
+      metadata_alpha_limit: 1.0
+      query_qc_mode: observed
+      metadata_residual_enabled: true
+  condition_encoder:
+    enabled: true
+    n_prompt_tokens: 0
+    fields: [electrode_type]
+    include_continuous: true
+    include_channels: false
+    force_missing: false
+    external_metadata_mode: observed
+  adapter:
+    enabled: false
+  latent:
+    enabled: false
+train:
+  epochs: 8
+  checkpoint_selection: validation_best
+  lr: 0.0003
+  weight_decay: 0.01
+  amp: true
+  eval_amp: false
+  grad_clip_norm: 1.0
+  early_stop_patience: 12
+  log_interval: 10
+checkpoint:
+  save_trainable_only: true
+loss:
+  lambda_cons: 0.0
+  lambda_logit_cons: 0.0
+  beta_kl: 0.0
+  ce_zero_weight: 0.0
+tracking:
+  wandb:
+    enabled: false
+    project: calibration-free-eeg
+    entity: null
+    mode: disabled
+    tags: [synthetic, engineering-only, reliability-spatial-v1]
+    log_model: false
+    watch_model: false
+evaluation:
+  trial_time_sec: 2.0
+  open_test: false
+runtime:
+  device: cuda
+  probe_cuda: true
+augment:
+  categorical_metadata_dropout_prob: 0.0
+  make_two_views: false
+  channel_dropout_prob: 0.0
+  min_channels: 2
+  channel_sets: [occipital_8]
+  channel_subset_prob: 0.0
+  noise_std_range: [0.0, 0.0]
+  time_shift_samples: 0

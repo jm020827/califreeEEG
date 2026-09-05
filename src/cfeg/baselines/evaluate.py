@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -18,8 +17,17 @@ from cfeg.baselines.fbcca import (
 from cfeg.data.datasets import EEGProcessedDataset
 from cfeg.data.preprocess import CanonicalChannelMap
 from cfeg.data.schema import load_manifest
-from cfeg.governance import GovernanceError, bind_cohort, resolve_research_access
+from cfeg.governance import (
+    GovernanceError,
+    bind_cohort,
+    reject_retired_physical_candidate_action,
+    resolve_research_access,
+)
+from cfeg.metadata_calibration_contract import data_config_targets_wearable_v3
 from cfeg.metrics import accuracy, balanced_accuracy, itr_bits_per_min, macro_f1
+from cfeg.query_reliability_contract import (
+    reject_query_reliability_beta_lockbox_access,
+)
 
 
 def evaluate_frequency_baseline(
@@ -48,12 +56,13 @@ def evaluate_frequency_baseline(
         resolved_filterbank.setdefault("regularization", regularization)
     governed_access = None
     governed_cohort = None
-    if _processed_dir_is_wearable_v3(processed_dir):
+    if data_config_targets_wearable_v3({"processed_dirs": [processed_dir]}):
         if research_config is None:
             raise GovernanceError(
                 "wearable_v3 baseline access requires --research-config and a governed "
                 "development cohort."
             )
+        reject_retired_physical_candidate_action()
         governed_access = resolve_research_access(research_config)
         if governed_access.execution_phase != "development":
             raise GovernanceError(
@@ -126,6 +135,13 @@ def evaluate_frequency_baseline(
     ]
     if not selected:
         raise ValueError("Baseline evaluation selection contains no samples.")
+    selected_manifest = pd.DataFrame(
+        [dataset.entries[index][2] for index in selected]
+    )
+    reject_query_reliability_beta_lockbox_access(
+        selected_manifest,
+        action=f"generic_{method}_baseline",
+    )
 
     rows: list[dict[str, object]] = []
     effective_filterbanks: list[dict[str, object]] = []
@@ -278,19 +294,6 @@ def _is_wearable_v3(dataset: EEGProcessedDataset) -> bool:
         and info.get("dataset_revision") == "wearable_v3"
         for info in dataset.asset_infos
     )
-
-
-def _processed_dir_is_wearable_v3(processed_dir: str | Path) -> bool:
-    path = Path(processed_dir).expanduser()
-    info_path = path / "asset_info.json"
-    if info_path.is_file():
-        try:
-            info = json.loads(info_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            info = {}
-        if info.get("dataset_id") == "wearable" and info.get("dataset_revision") == "wearable_v3":
-            return True
-    return path.name == "wearable_v3"
 
 
 def _load_selection_ids(path: str | Path, *, split: str = "test") -> set[str]:

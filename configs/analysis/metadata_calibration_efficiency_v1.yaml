@@ -1,0 +1,629 @@
+schema: cfeg.metadata-calibration-efficiency-plan.v1
+decision_id: DEC-20260905-006
+candidate_id: metadata-calibration-efficiency-v1
+status: frozen_execution_ready_signed_phase_authority_required
+recorded_date: "2026-09-05"
+
+authority:
+  direction_approved: true
+  exact_outcome_bundle_approved: true
+  current_authorized_stage: source_then_conditional_held
+  authorization_stages:
+    input_seal: delegated_signed_phase_decision_required_before_raw_manifest_signal_or_label_read
+    outcome_execution: delegated_signed_phase_decision_required_after_and_bound_to_input_seal_receipt
+  approval_message: "응 그렇게 해보자. 추가데이터 및 필요시 결정까지 다 너가 알아서 해서 실험 종료까지 시작 계속."
+  delegation_evidence: chat_recorded_manual_owner_directive
+  cryptographic_root_of_trust: ephemeral_run_integrity_key_not_an_external_owner_signature
+  allowed_now:
+    - literature_public_docs_and_existing_artifact_receipt_audit_no_human_raw_path
+    - outcome_free_design_and_contract_implementation
+    - synthetic_and_unit_invariants
+    - cuda_forward_only_contract_probe
+    - statistical_bundle_and_power_simulation
+    - source_development_human_eeg_under_exact_signed_phase_chain
+    - held_participant_human_eeg_only_after_signed_passing_source_gate
+    - aggregate_only_finalization_and_required_research_record
+  forbidden_now:
+    - execution_without_exact_signed_phase_chain
+    - held_access_before_passing_source_gate
+    - worker_access_to_raw_processed_labels_or_private_keys
+    - partial_grid_or_partial_reveal
+    - same_cohort_retry_or_post_outcome_retuning
+
+research_goal: >-
+  Minimize the labeled target-user calibration burden required for useful
+  closed-set SSVEP decoding on unseen participants. Treat k=0 as the
+  calibration-free anchor and k>0 as explicitly supervised low-calibration
+  operation.
+research_question: >-
+  At the same target-participant calibration budget, does pre-query acquisition
+  context improve the early calibration curve beyond EEG, structural inputs and
+  query-derived quality information alone?
+claim_name: pre_query_acquisition_context_assisted_low_calibration_ssvep
+generic_metadata_claim_allowed: false
+
+problem_signature:
+  representation: >-
+    Two-second, 200-Hz, 12-class wearable SSVEP queries with a source-trained
+    spectral decoder and a small target-support calibration estimator.
+  bottleneck: >-
+    Labeled target calibration is costly; the prior direct physical-hybrid
+    conditioner failed its development mechanism gate, while the only local
+    human asset with within-corpus acquisition-context variation is wearable_v3.
+  allowed_operation: >-
+    Learn from source participants and from an explicitly labeled, nested target
+    support set; use only metadata observed before the corresponding block.
+  objective: >-
+    Increase participant-level normalized early-budget AUC over k=0,1,3 and,
+    conditionally, establish prespecified complete calibration-block savings.
+  resource_constraint: >-
+    One RTX 4090, a permanently retired S1-S3 development cohort, and one
+    still-unrevealed S4-S102 allocation that must not become an iterative target.
+  feedback_signal: >-
+    Outcome-free invariants first, source-only nested development second, and one
+    atomic held-participant query reveal only after the frozen source gate passes.
+  failure_mode: >-
+    Reusing the retired physical_hybrid_v1 under a new name, counting
+    query-derived QC as external metadata, mixing calibration blocks, tuning on
+    held query outcomes, or interpreting dataset identity as a physical factor.
+
+predecessor_boundaries:
+  physical_hybrid_v1:
+    disposition: retired_no_go_do_not_reopen
+    retirement_receipt: configs/governance/wearable_s1_s3_retirement.json
+  reliability_spatial_v1:
+    disposition: terminal_synthetic_stage0_failure_do_not_rerun
+    receipt: outputs/engineering/reliability-spatial-v1/stage0/receipt.json
+  query_reliability_spatial_v1:
+    disposition: withdrawn_before_human_outcome_frozen_baseline_only
+    prior_direction_decision: DEC-20260904-001
+    prior_outcome_plan_execution_allowed: false
+    reusable_scope:
+      - outcome_free_operator_recipe
+      - parameter_matched_query_only_baseline
+      - corruption_engineering_checks
+
+data_contract:
+  primary_dataset: wearable_v3
+  narrow_identifiable_population: >-
+    Unseen participants using the same NeuSen W system, fixed posterior
+    eight-channel montage and the already observed wet or dry interface.
+  broad_device_site_reference_generalization_claim_allowed: false
+  expected_subjects: 102
+  expected_rows: 24480
+  permanently_excluded_development_subjects: [sub001, sub002, sub003]
+  proposed_unopened_allocation:
+    allocation_decision_id: DEC-20260830-002
+    allocation_seed: 42
+    allocation_algorithm: numpy_default_rng_shuffle_sorted_subject_ids_train_first_v1
+    allocation_sha256: 0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898
+    source_development_subjects: 39
+    held_participant_evaluation_subjects: 60
+    source_development_subject_ids: [sub004, sub006, sub008, sub011, sub014, sub021, sub022, sub025, sub028, sub029, sub030, sub031, sub032, sub033, sub037, sub041, sub042, sub043, sub044, sub046, sub054, sub055, sub056, sub061, sub063, sub065, sub067, sub073, sub074, sub077, sub080, sub082, sub083, sub084, sub089, sub092, sub097, sub100, sub102]
+    held_participant_evaluation_subject_ids: [sub005, sub007, sub009, sub010, sub012, sub013, sub015, sub016, sub017, sub018, sub019, sub020, sub023, sub024, sub026, sub027, sub034, sub035, sub036, sub038, sub039, sub040, sub045, sub047, sub048, sub049, sub050, sub051, sub052, sub053, sub057, sub058, sub059, sub060, sub062, sub064, sub066, sub068, sub069, sub070, sub071, sub072, sub075, sub076, sub078, sub079, sub081, sub085, sub086, sub087, sub088, sub090, sub091, sub093, sub094, sub095, sub096, sub098, sub099, sub101]
+    source_query_identity_bundle_sha256: 224d8239aef5d0f9dd04c388f8ed8d2f961fc150c1cf72741f5ab22b756f80de
+    held_query_identity_bundle_sha256: feffdcc005f2f4818bb496c61b683dc7afd735166c2f50cf7892262ef55d2a16
+    reuse_existing_outcome_blind_allocation: true
+    status: frozen_authorized_source_then_conditional_held
+  identifiable_external_context:
+    - electrode_interface_wet_or_dry
+    - pre_block_per_channel_impedance_kohm
+    - impedance_availability
+  analysis_only_confounders:
+    - headband_order
+    - condition_period
+    - block_number
+  common_structure_not_treatment:
+    - canonical_channel_identity
+    - channel_mask
+    - processed_sampling_rate
+    - time_grid
+  signal_derived_not_external_metadata:
+    - current_query_pre_zscore_channel_scale
+    - current_query_waveform_quality_features
+    - support_eeg_statistics
+  forbidden_predictors:
+    - dataset_id
+    - subject_id
+    - session_id
+    - trial_id
+    - source_file
+    - target_query_label
+    - target_query_outcome
+    - post_hoc_rejection_or_accuracy
+  common_task_information:
+    - frozen_twelve_class_vocabulary
+    - stimulus_frequency_and_phase_codebook_if_used_by_every_arm_and_baseline
+  external_assets:
+    wang_beta_dong_role: signal_only_calibration_baselines_and_transport_sensitivity
+    metadata_increment_identification_allowed: false
+    reason: >-
+      Their physical descriptors are constant within each corpus and actual
+      participant or block impedance is absent, so cross-corpus differences are
+      inseparable site-device-task bundles.
+
+method_contract:
+  method_family: nested_metadata_residual_target_calibration_prior
+  implementation_status: frozen_implemented_signed_phase_execution_required
+  design_intent: >-
+    Freeze one source-trained spectral backbone and Q-only target-calibration
+    estimator first. Then fit only a bounded acquisition-context residual that
+    changes the positive-definite precision or shrinkage prior used by the small
+    target-support estimator. Do not transform the query waveform, mix channels,
+    or inject metadata as an unrestricted decoder-wide prompt.
+  staged_source_fit:
+    stage_1: fit_and_freeze_common_backbone_and_Q_only_calibration_estimator
+    stage_2: fit_only_bounded_M_residual_with_common_path_frozen
+    target_support_update: closed_form_or_small_estimator_only_backbone_frozen
+    common_path_metadata_influence: forbidden
+  source_recipe: configs/train/metadata_calibration_efficiency_v1.yaml
+  exact_formula:
+    representation: z_equals_l2_normalized_frozen_spectral_embedding
+    source_anchor: one_stage1_learned_anchor_per_class
+    base_precision: exp_clipped_base_log_precision
+    q_precision: lambda_Q_equals_clip_exp_base_plus_log4_tanh_gQ
+    metadata_residual: delta_M_equals_availability_times_log1p25_tanh_gM
+    effective_precision: lambda_QM_equals_clip_lambda_Q_times_exp_delta_M
+    source_prior: P0_equals_source_prior_strength_times_diag_base_precision
+    posterior_precision: Pc_equals_P0_plus_sum_support_diag_effective_precision
+    posterior_mean: muc_equals_Pc_inverse_times_P0_mu_source_plus_sum_support_diag_precision_z
+    predictive_variance: vcq_equals_inverse_query_precision_plus_inverse_posterior_precision
+    score: minus_half_sum_squared_distance_over_v_plus_log_v
+    probability: softmax_over_twelve_class_scores
+    k0_behavior: empty_support_keeps_source_anchor_but_M_may_change_query_predictive_precision
+  parameter_bounds:
+    q_precision_ratio: [0.25, 4.0]
+    metadata_precision_ratio: [0.8, 1.25]
+    absolute_precision: [0.05, 20.0]
+    source_prior_strength: 1.0
+    metadata_last_layer_initialization: exact_zero
+    metadata_hidden_width: 32
+  runtime_modes:
+    A_0: {q_mode: exact_off, metadata_mode: exact_off}
+    A_M: {q_mode: exact_off, metadata_mode: observed}
+    A_Q: {q_mode: observed, metadata_mode: exact_off}
+    A_QM: {q_mode: observed, metadata_mode: observed}
+  implementation:
+    module: src/cfeg/models/metadata_calibration_prior.py
+    class: BoundedMetadataCalibrationPrior
+    q_builder: src/cfeg/data/metadata_calibration_features.py::build_wearable_q_features
+    metadata_builder: src/cfeg/data/metadata_calibration_features.py::build_wearable_metadata_features
+    composite_module: src/cfeg/models/metadata_calibration_composite.py
+    composite_class: MetadataCalibrationComposite
+    q_feature_schema: wearable_q_8_channels_x_7_v1
+    q_feature_width: 56
+    metadata_feature_schema: wearable_interface2_impedance8_availability8_v1
+    metadata_feature_width: 18
+    official_channel_order: [POz, PO3, PO4, PO5, PO6, Oz, O1, O2]
+    official_canonical_id_order: [56, 55, 57, 54, 58, 62, 61, 63]
+    impedance_input_scale: already_log1p_kohm_over_log101_clipped_0_2
+    q_builder_reads_external_metadata: false
+    metadata_builder_reads_waveform_or_Q: false
+    generic_categorical_id_input: forbidden
+    backbone_condition_keys: [channel_ids, channel_mask]
+    stage2_trainable_prefix: prior.metadata_precision_encoder
+    checkpoint_writer: src/cfeg/metadata_calibration_checkpoint.py::write_full_composite_checkpoint
+    checkpoint_verifier: src/cfeg/metadata_calibration_checkpoint.py::verify_full_composite_checkpoint
+    checkpoint_schema: cfeg.metadata-calibration-composite-checkpoint.v1
+    checkpoint_receipt_schema: cfeg.metadata-calibration-composite-receipt.v1
+    query_waveform_transformation: forbidden
+    channel_mixing_by_metadata: forbidden
+    metadata_class_or_label_input: forbidden
+  primary_roles:
+    A_Q:
+      inputs: [eeg, common_structure, query_and_support_signal_quality]
+      external_context_mode: residual_exact_off
+    A_QM:
+      inputs: [eeg, common_structure, query_and_support_signal_quality, pre_query_acquisition_context]
+      external_context_mode: observed_bounded_residual
+  attribution_roles:
+    A_0:
+      inputs: [eeg, common_structure]
+      external_context_mode: exact_null
+    A_M:
+      inputs: [eeg, common_structure, pre_query_acquisition_context]
+      external_context_mode: observed_bounded_residual
+  fairness:
+    same_parameter_graph: required
+    same_composite_source_checkpoint: required
+    common_backbone_and_Q_estimator_frozen_before_M_fit: required
+    same_source_data_and_support: required
+    same_task_codebook_and_adaptation_rule: required
+    primary_treatment_difference: A_QM_has_external_context_while_A_Q_has_exact_null
+    missing_metadata_fallback: same_frozen_A_Q_path_exact_behavior
+    separately_trained_A_Q_checkpoint_claim: forbidden
+  implementation_gate_before_human_outcome:
+    - positive_definite_or_bounded_reliability_operator
+    - no_label_or_id_path_from_metadata
+    - exact_null_and_all_missing_fallback
+    - frozen_common_path_has_no_M_gradient_or_statistics
+    - correct_metadata_changes_only_the_declared_prior
+    - support_and_query_are_disjoint
+    - every_role_resets_from_the_same_source_checkpoint_at_every_budget
+
+calibration_contract:
+  k_definition: complete_labeled_blocks_per_participant_per_electrode_condition
+  classes_per_block: 12
+  budgets: [0, 1, 3, 5]
+  labeled_trials_per_condition: {0: 0, 1: 12, 3: 36, 5: 60}
+  support_pool_blocks: [block01, block02, block03, block04, block05]
+  immutable_query_blocks: [block06, block07, block08, block09, block10]
+  nested_support:
+    0: []
+    1: [block01]
+    3: [block01, block02, block03]
+    5: [block01, block02, block03, block04, block05]
+  partition_mode: prospective_chronological_primary
+  random_block_partition: prespecified_sensitivity_only
+  classwise_mixed_block_sampling_allowed: false
+  condition_handling: calibrate_and_score_wet_and_dry_separately_then_equal_average_within_participant
+  reset_rule: independent_reset_from_frozen_source_checkpoint_for_each_role_budget_condition
+  current_generic_calibration_utility_compatible: false
+  current_gap: resolved_by_dedicated_atomic_metadata_calibration_lifecycle
+
+source_development_gate:
+  cohort: exact_39_subject_source_development_allocation
+  held_60_access_before_pass: forbidden
+  required_components:
+    - nested_source_held_participant_eAUC_A_QM_minus_A_Q
+    - correct_context_minus_within_interface_block_shuffle
+    - all_missing_exact_fallback
+    - metadata_only_shortcut_screen
+  hard_promotion_gates:
+    - baseline_viability
+    - early_budget_mean
+    - early_budget_every_fold_positive
+    - correct_minus_shuffle_mean
+    - correct_minus_shuffle_no_negative_fold
+    - missing_exact_fallback
+    - metadata_only_shortcut
+  required_diagnostic_or_deployment_reports:
+    - early_budget_median
+    - early_budget_positive_participants
+    - correct_minus_shuffle_positive_participants
+    - correct_minus_stale_mean
+    - correct_minus_stale_positive_participants
+    - correct_minus_stale_no_negative_fold
+    - wrong_context_mean_safety
+    - wrong_context_severe_harm_count
+    - wrong_context_no_catastrophic_harm
+    - correct_context_severe_harm_count
+    - correct_context_no_catastrophic_harm
+  numeric_thresholds:
+    baseline_A_Q_k5_mean_min: 0.50
+    eAUC_increment_mean_min: 0.010
+    eAUC_increment_median_strictly_positive: true
+    eAUC_positive_participants_min: 24
+    eAUC_every_outer_fold_strictly_positive: true
+    correct_minus_shuffle_mean_min: 0.010
+    correct_minus_stale_mean_min: 0.010
+    mechanism_positive_participants_min: 24
+    mechanism_outer_fold_mean_min: 0.0
+    all_missing_probability_max_abs_difference: 0.0
+    wrong_context_mean_harm_floor: -0.016666666666666666
+    severe_harm_cutoff: -0.05
+    severe_harm_participants_max: 4
+    catastrophic_harm_floor: -0.10
+    metadata_only_balanced_accuracy_exact: 0.08333333333333333
+    metadata_block_constant_within_complete_class_balanced_block: true
+  outer_gate_folds: {count: 3, participants_per_fold: 13}
+  metadata_only_screen:
+    method: deterministic_information_structure_proof
+    requirements:
+      - M_exactly_constant_within_each_block
+      - each_block_contains_exactly_one_trial_per_each_of_twelve_classes
+      - metadata_only_API_has_no_row_order_or_identity
+    implied_balanced_accuracy: 0.08333333333333333
+  status: minimal_nonredundant_promotion_gate_implemented_reports_preserved_atomic_runner_frozen
+
+estimands:
+  participant_unit: true
+  seed_class_block_or_support_draw_as_independent_n: false
+  primary:
+    name: normalized_early_budget_auc_increment
+    budgets: [0, 1, 3]
+    formula: eAUC_equals_Y0_over_6_plus_Y1_over_2_plus_Y3_over_3
+    contrast: eAUC_A_QM_minus_eAUC_A_Q
+    alternative: greater_than_zero
+    alpha: 0.05
+    inference: one_sided_participant_paired_t_with_sign_flip_and_bootstrap_sensitivity
+    source_training_seeds: [42, 43, 44]
+    seed_reduction: average_class_probabilities_per_query_before_argmax
+    tie_break: lowest_canonical_class_id
+    any_missing_role_budget_condition_or_seed: invalidate_primary
+  key_secondary:
+    - A_QM_minus_A_Q_at_k0
+    - A_QM_minus_A_Q_at_k1
+    - A_QM_minus_A_Q_at_k3
+    - A_QM_minus_A_Q_at_k5_saturation
+    - wet_and_dry_condition_specific_effects
+    - participant_lower_tail_and_model_by_budget_interaction
+  equivalent_calibration_savings:
+    confirmatory_only_after_primary_pass: true
+    confirmatory_contrast: A_QM_k1_noninferior_to_A_Q_k3
+    calibration_value_subgate:
+      contrast: A_Q_k3_superior_to_A_Q_k1
+      alternative: greater_than_zero
+      alpha: 0.05
+      observed_mean_min: 0.020
+      role: inferential_claim_admissibility
+    descriptive_contrasts:
+      - A_QM_k0_noninferior_to_A_Q_k1
+      - A_QM_k3_noninferior_to_A_Q_k5
+    alpha: 0.025
+    noninferiority_margin: 0.016666666666666666
+    margin_semantic_unit: >-
+      one_mean_additional_error_per_interface_sixty_queries_equivalently_two_total_errors_across_equal_dry_wet_participant_outcome
+    margin_sign_convention: pass_when_lower_CI_of_lower_budget_A_QM_minus_higher_budget_A_Q_exceeds_negative_margin
+    operational_balanced_accuracy_floor: 0.50
+    margin_status: owner_delegated_agent_freeze_one_additional_error_per_sixty_queries
+    inverse_curve_or_interpolated_savings: descriptive_only
+  confirmatory_core:
+    stage_H1: primary_eAUC_superiority
+    stage_H2_intersection:
+      - calibration_value_A_Q_k3_over_k1
+      - A_QM_k1_noninferior_to_A_Q_k3
+    multiplicity: serial_gatekeeping_then_intersection_union_no_alpha_split
+  key_mechanism_family:
+    endpoints:
+      - correct_context_over_block_shuffle
+      - correct_context_over_stale
+    inference: one_sided_participant_paired_t
+    multiplicity: holm_alpha_0p05_after_confirmatory_core
+    stale_role: supportive_sensitivity
+  deployment_safety:
+    wrong_context_mean: one_sided_noninferiority_alpha_0p025
+    wrong_context_tail: required_participant_tail_report
+    failure_effect: forbid_robust_or_safe_deployment_claim_without_reversing_correct_context_efficacy
+  promotion_sesoi: 0.020
+  calibration_value_sesoi: 0.020
+  mechanism_sesoi: 0.010
+  sesoi_status: owner_delegated_agent_freeze_two_point_eAUC_increment
+  held_wrong_context_tail_safety:
+    severe_harm_cutoff: -0.05
+    severe_harm_participants_max: 6
+    catastrophic_harm_floor: -0.10
+    role: required_safety_report_not_fixed_sequence_gate
+
+mechanism_and_safety_controls:
+  intervention_builder: src/cfeg/data/metadata_calibration_interventions.py::build_metadata_intervention_mapping
+  intervention_batch_resolver: src/cfeg/data/metadata_calibration_interventions.py::resolve_metadata_intervention_batch
+  intervention_condition_applier: src/cfeg/data/metadata_calibration_interventions.py::apply_resolved_metadata_to_condition
+  intervention_usage_hasher: src/cfeg/data/metadata_calibration_interventions.py::resolved_context_usage_sha256
+  resolver_row_binding: purpose_matched_opaque_token_plus_actual_EEG_base_input_sha256
+  resolver_exact_token_coverage_required: true
+  resolver_phase_and_canonical_cell_bound: true
+  block_context_impedance_channel_ids: [56, 55, 57, 54, 58, 62, 61, 63]
+  block_shuffle_seed: 20260904
+  block_shuffle_seed_bound_in_mapping_sha256: true
+  block_shuffle_scope: within_participant_interface_and_within_support_or_query_pool
+  stale_definition: true_previous_block_with_block01_all_missing
+  opposite_interface_definition: same_participant_same_block_other_interface
+  opposite_interface_replaces_interface_and_impedance: true
+  per_row_all_missing_masks_all_18_metadata_features: true
+  same_checkpoint_interventions:
+    - correct_context
+    - all_missing_context
+    - within_interface_block_shuffled_impedance
+    - stale_block_impedance
+    - opposite_interface_context
+    - support_metadata_only
+    - query_metadata_only
+  ablations:
+    - interface_only
+    - impedance_only
+  required_interpretation:
+    correct_not_better_than_shuffled: metadata_specific_mechanism_not_established
+    missing_or_wrong_harms_A_Q: unsafe_negative_transfer
+    metadata_only_above_ceiling: shortcut_or_confound
+  synthetic_corruption_role: engineering_robustness_secondary_not_primary
+
+atomic_bundle_contract:
+  held_cells:
+    - {role: A_0, context: exact_off}
+    - {role: A_M, context: correct}
+    - {role: A_Q, context: exact_off}
+    - {role: A_QM, context: correct}
+    - {role: A_QM, context: all_missing}
+    - {role: A_QM, context: block_shuffle}
+    - {role: A_QM, context: stale}
+    - {role: A_QM, context: opposite_interface}
+  development_additional_diagnostics:
+    - {role: A_QM, context: support_metadata_only, intervention: correct, query_metadata_mode: all_missing, support_metadata_mode: observed, feature_ablation: full}
+    - {role: A_QM, context: query_metadata_only, intervention: correct, query_metadata_mode: observed, support_metadata_mode: all_missing, feature_ablation: full}
+    - {role: A_QM, context: interface_only, intervention: correct, query_metadata_mode: observed, support_metadata_mode: observed, feature_ablation: interface_only}
+    - {role: A_QM, context: impedance_only, intervention: correct, query_metadata_mode: observed, support_metadata_mode: observed, feature_ablation: impedance_only}
+  development_structural_checks:
+    metadata_only_shortcut: exact_chance_from_block_constant_M_and_one_trial_per_class_per_block
+  probability_staging_contains_query_outcomes: false
+  staging_query_identifier: opaque_q_HMAC_SHA256_token
+  raw_sample_id_in_staging_allowed: false
+  raw_h5_index_downstream_allowed: false
+  sealed_query_signal_artifact: token_order_permuted_query_signals_h5_with_x_and_channel_mask_only
+  sealed_signal_index_semantics: local_index_into_sealed_query_signals_not_source_h5_index
+  sealed_query_row_order: ascending_opaque_query_token_never_source_order
+  query_token_secret_persisted_in_execution_manifest: false
+  query_token_secret_hash_bound: true
+  opaque_row_token_builder: src/cfeg/data/unlabeled_query.py::opaque_metadata_row_token
+  token_secret_commitment_builder: src/cfeg/data/unlabeled_query.py::token_secret_commitment_sha256
+  unlabeled_query_reader: src/cfeg/data/unlabeled_query.py::UnlabeledQueryReader
+  unlabeled_query_collator: src/cfeg/data/unlabeled_query.py::collate_metadata_calibration_queries
+  unlabeled_query_base_input_bytes_rehashed_on_read: true
+  label_free_partition_builder: src/cfeg/metadata_calibration_contract.py::build_complete_block_calibration_partition
+  privileged_raw_manifest_auditor: src/cfeg/metadata_calibration_contract.py::audit_complete_block_cohort_partition
+  input_seal_decision_template: configs/governance/metadata_calibration_input_seal_decision.template.json
+  input_artifact_contract: configs/analysis/metadata_calibration_input_artifacts_v1.yaml
+  input_seal_execution_status: authorized_pending_atomic_lifecycle
+  input_seal_phase_scope: separate_source_development_then_held_after_passing_gate_receipts
+  sealed_source_fit_and_support_signals: token_order_no_y_HDF5_required
+  token_domain_separation: phase_checkpoint_group_and_purpose_bound_to_seal_decision
+  finalizer_only_query_label_capability: selected_public_key_encryption_plus_bubblewrap_worker_namespace
+  production_calls_privileged_raw_manifest_auditor: true
+  block_intervention_mapping_unit: one_row_per_participant_interface_block_no_sample_id
+  cell_execution_dispatch: src/cfeg/metadata_calibration_execution.py::resolve_cell_execution_spec
+  execution_contract_builder: src/cfeg/metadata_calibration_manifest.py::build_metadata_calibration_execution_contract
+  execution_contract_validator: src/cfeg/metadata_calibration_manifest.py::validate_metadata_calibration_execution_contract
+  execution_contract_grants_authority: false
+  candidate_job_unit: one_seed_checkpoint_group_covers_all_declared_cells_and_budgets
+  baseline_job_unit: one_adapter_checkpoint_group_covers_all_declared_budgets_with_seed_null
+  source_development_expected_jobs: {candidate: 9, baseline: 15, total: 24}
+  held_expected_jobs: {candidate: 3, baseline: 5, total: 8}
+  governed_candidate_model_entrypoint: src/cfeg/models/metadata_calibration_composite.py::MetadataCalibrationComposite.forward_cell_from_precomputed
+  governed_candidate_cache_builder: src/cfeg/models/metadata_calibration_composite.py::MetadataCalibrationComposite.prepare_evaluation_features
+  cache_scope: episode_query_once_and_support_once_per_exact_budget
+  cached_paths: [spectral_embedding, observed_Q]
+  cached_condition_keys: [channel_ids, channel_mask, channel_query_qc, channel_query_qc_missing, sfreq_processed_float, metadata_contract_version]
+  raw_external_context_M_in_cache: forbidden
+  base_input_hash_cuda_transfer: one_batched_copy_per_prepared_query_or_support_batch
+  noncached_paths: [resolved_M, metadata_ablation, posterior_update]
+  probability_cpu_materialization: one_order_preserving_copy_per_role_context_budget_grid
+  production_direct_low_level_composite_forward: forbidden
+  producer_receipt_binds_cell_execution_contract_sha256: true
+  producer_receipt_binds_intervention_mapping_sha256: true
+  producer_receipt_binds_resolved_context_values_sha256: true
+  producer_receipt_binds_resolved_context_usage_sha256: true
+  private_candidate_staging_binds_cell_dispatch_and_resolved_context_usage: true
+  staging_column_policy: exact_allowlist_reject_extras
+  all_missing_equality_validation: before_label_join
+  expected_support_artifact: sample_level_rows_rehashed_by_finalizer
+  producer_job_receipts_required: true
+  production_finalizer_api: execution_manifest_path_and_sealed_staging_path_only
+  label_join: only_after_complete_private_grid_validation
+  held_checkpoint_key: [seed]
+  development_checkpoint_key: [seed, outer_fold]
+  full_composite_checkpoint_required: true
+  trainable_only_checkpoint_allowed: false
+
+power_sensitivity:
+  held_participant_n: 60
+  development_participant_n: 39
+  master_seed: 20260904
+  monte_carlo_draws_per_cell: 200000
+  chunk_size: 10000
+  maximum_nominal_mc_standard_error: 0.00112
+  sd_semantics:
+    participant_difference_sd_grid: participant_level_primary_eAUC_difference_sd
+    noninferiority_participant_difference_sd_grid: participant_level_A_QM_k1_minus_A_Q_k3_balanced_accuracy_difference_sd
+    core_planning_sds_by_endpoint:
+      primary_eAUC_superiority: participant_level_eAUC_difference_sd
+      calibration_value_A_Q_k3_over_k1: participant_level_balanced_accuracy_difference_sd
+      A_QM_k1_noninferior_to_A_Q_k3: participant_level_balanced_accuracy_difference_sd
+  participant_difference_sd_grid: [0.03, 0.04, 0.06, 0.08]
+  noninferiority_participant_difference_sd_grid: [0.03, 0.04, 0.06, 0.08]
+  effect_grid: [0.01, 0.02, 0.03]
+  known_example: >-
+    At N=60 and one-sided alpha 0.05, a 0.02 effect has about 0.818 power
+    when the participant-level paired SD is 0.06; noninferiority savings may
+    still be the limiting test.
+  freeze_simulation_required: true
+  distribution_families:
+    - normal
+    - standardized_t5
+    - twenty_percent_harmed_mixture
+  budget_order: [0, 1, 3, 5]
+  normalized_eAUC_weights: [0.16666666666666666, 0.5, 0.3333333333333333, 0.0]
+  distribution_definitions:
+    normal: correlated_centered_gaussian
+    standardized_t5: correlated_gaussian_times_sqrt_3_over_chi_square_5
+    twenty_percent_harmed_mixture: >-
+      harmed_probability_0p2_shift_minus_0p5sd_unharmed_shift_plus_0p125sd_with_residual_covariance_adjusted_to_preserve_target_moments
+  held_endpoint_order:
+    - primary_eAUC_superiority
+    - calibration_value_A_Q_k3_over_k1
+    - A_QM_k1_noninferior_to_A_Q_k3
+  core_contrast_correlation_scenarios:
+    independent:
+      - [1.0, 0.0, 0.0]
+      - [0.0, 1.0, 0.0]
+      - [0.0, 0.0, 1.0]
+    shared_A_Q_k3:
+      - [1.0, 0.0, 0.3]
+      - [0.0, 1.0, -0.5]
+      - [0.3, -0.5, 1.0]
+    adverse_shared_A_Q_k3:
+      - [1.0, -0.2, 0.4]
+      - [-0.2, 1.0, -0.7]
+      - [0.4, -0.7, 1.0]
+  core_planning_means: [0.030, 0.030, 0.000]
+  core_planning_sds: [0.060, 0.060, 0.045]
+  core_partial_null_means:
+    H2a_boundary_other_components_alternative: [0.030, 0.000, 0.030]
+    H2b_boundary_other_components_alternative: [0.030, 0.030, -0.016666666666666666]
+  core_planning_sample_size_sensitivity: [60, 75, 80, 83, 90]
+  core_endpoint_semantics:
+    - eAUC_A_QM_minus_A_Q
+    - A_Q_k3_minus_A_Q_k1
+    - A_QM_k1_minus_A_Q_k3
+  core_power_is_conditional_on_absolute_endpoint_BA_floor: true
+  held_mechanism_power:
+    endpoint_order:
+      - correct_context_over_block_shuffle
+      - correct_context_over_stale
+    planning_means: [0.020, 0.020]
+    planning_sds: [0.040, 0.040]
+    endpoint_correlations: [0.0, 0.5, 0.8]
+    practical_mean_min: 0.010
+    holm_family_alpha: 0.05
+    conditional_on_confirmatory_core_open: true
+    not_a_joint_pipeline_probability: true
+  development_gate_scenarios:
+    planning:
+      contrast_means: [0.020, 0.020, 0.020, 0.000]
+      contrast_sds: [0.040, 0.040, 0.040, 0.030]
+      baseline_mean: 0.55
+      baseline_sd: 0.040
+      endpoint_correlation: 0.5
+      families: [normal, standardized_t5, twenty_percent_harmed_mixture]
+    metadata_null_viable_baseline:
+      contrast_means: [0.000, 0.000, 0.000, 0.000]
+      contrast_sds: [0.040, 0.040, 0.040, 0.030]
+      baseline_mean: 0.55
+      baseline_sd: 0.040
+      endpoint_correlation: 0.5
+      families: [normal]
+    joint_bad_null:
+      contrast_means: [0.000, 0.000, 0.000, 0.000]
+      contrast_sds: [0.040, 0.040, 0.040, 0.030]
+      baseline_mean: 0.48
+      baseline_sd: 0.040
+      endpoint_correlation: 0.5
+      families: [normal]
+  distinguish_inferential_power_from_full_claim_probability: true
+  receipt_status: final_receipt_required_and_bound
+  receipt_path: configs/governance/metadata_calibration_power_receipt.json
+
+baseline_contract:
+  information_rights_ledger: configs/analysis/metadata_calibration_baseline_ledger_v1.yaml
+  required_resource_matched:
+    - strict_FBCCA_at_k0
+    - target_template_at_k1_k3_k5
+    - target_filterbank_eTRCA_at_k3_k5
+    - SAME3_filterbank_eTRCA_one_shot_component_at_k1
+    - source_transfer_without_metadata
+    - same_checkpoint_A_Q_at_k0_k1_k3_k5
+  selected_direct_comparator: chiang2021_LST_filterbank_eTRCA_common_protocol_port
+  selected_one_shot_component_comparator: SAME3_filterbank_eTRCA_common_protocol_port
+  high_value_direct_comparators:
+    - SSVEP_DAN
+    - CSDuDoFN_OS_SSVEP_one_shot_lineage
+    - TDCA_or_SAME_TDCA
+  target_information_rights_must_be_reported: true
+  protocol_matched_reimplementation_required_for_numeric_ranking: true
+
+execution_freeze_blockers: []
+resolved_execution_freeze_controls:
+  - privileged_input_sealer_and_receipt
+  - model_and_mandatory_baseline_producer_receipts_and_execution_manifest_binding
+  - high_value_direct_comparator_feasibility_and_information_rights_resolution
+  - production_finalizer_and_atomic_all_role_all_budget_runner
+  - clean_source_tag_and_hashes
+  - new_exact_owner_decision_receipt_and_authorization_envelope
+
+stopping_rules:
+  source_development_mechanism_failure: do_not_open_held_query_outcomes
+  any_partial_role_or_budget: primary_invalid
+  source_or_plan_drift_after_freeze: stop_and_require_new_decision
+  held_query_reveal: exactly_one_atomic_complete_bundle
+  post_source_claim_preheld_failure: terminal_fail_stop_no_automatic_retry
+  signed_completion_pending_after_key_destruction: publication_only_recovery_allowed
+  negative_or_null_result: preserve_and_report_without_retuning_the_held_cohort

@@ -320,6 +320,60 @@ def _bandpass(
     return signal.sosfiltfilt(sos, x, axis=-1, padlen=padlen)
 
 
+def apply_filterbank(
+    x: np.ndarray,
+    *,
+    sfreq: float,
+    filterbank: Any,
+) -> tuple[np.ndarray, dict[str, object]]:
+    """Apply the exact configured filter bank to one or more EEG trials.
+
+    The returned array prepends a subband dimension and otherwise preserves the
+    input shape. This public helper lets FBCCA and calibration baselines share
+    one frozen DSP implementation.
+    """
+
+    values = np.asarray(x, dtype=np.float64)
+    if values.ndim < 2 or values.shape[-1] < 2 or not np.isfinite(values).all():
+        raise ValueError("Filter-bank EEG must be finite with [...,channel,time] shape.")
+    sampling_frequency = _positive_float(sfreq, "sfreq")
+    (
+        bands,
+        weights,
+        order,
+        harmonics,
+        regularization,
+        family,
+        ripple,
+        contract,
+    ) = _validated_filterbank(filterbank, sampling_frequency)
+    filtered = np.stack(
+        [
+            _bandpass(
+                values,
+                sampling_frequency,
+                band,
+                order,
+                family=family,
+                ripple_db=ripple,
+            )
+            for band in bands
+        ],
+        axis=0,
+    )
+    parameters = {
+        "bands": [list(band) for band in bands],
+        "weights": weights.tolist(),
+        "order": order,
+        "n_harmonics": harmonics,
+        "regularization": regularization,
+        "filter_family": family,
+        "passband_ripple_db": ripple,
+        "reproduction_contract": contract,
+    }
+    return filtered, parameters
+
+
 def resolve_filterbank_parameters(filterbank: Any, sfreq: float) -> dict[str, object]:
     """Return the exact effective FBCCA parameters for provenance artifacts."""
     sampling_frequency = _positive_float(sfreq, "sfreq")

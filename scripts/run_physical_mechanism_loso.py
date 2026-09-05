@@ -40,6 +40,8 @@ from cfeg.execution_manifest import (
 from cfeg.governance import (
     WEARABLE_V3_PHYSICAL_FREEZE_TAG,
     current_source_revision_contract,
+    reject_retired_physical_candidate_action,
+    validate_physical_candidate_retirement,
 )
 from cfeg.prediction import load_verified_prediction_bundle, run_prediction
 from cfeg.train_loop import _resolve_augmentation_channel_sets, run_training
@@ -81,9 +83,15 @@ def main() -> None:
     parser.add_argument("--root", default="outputs/development-loso/physical-mechanism-v2")
     args = parser.parse_args()
 
+    retirement = validate_physical_candidate_retirement()
+    if args.command != "status":
+        reject_retired_physical_candidate_action()
     _reject_symlink_components(CANONICAL_OUTPUT_ROOT)
     root = _repository_path(args.root)
     manifest_path = root / "grid_manifest.json"
+    if args.command == "status":
+        _print_retired_archival_status(retirement, root=root, manifest_path=manifest_path)
+        return
     if args.command == "prepare":
         manifest = build_grid_manifest(args.config, args.mechanism_config, root)
         if root.exists() and any(path.name != "grid_manifest.json" for path in root.iterdir()):
@@ -96,9 +104,6 @@ def main() -> None:
     validate_grid_manifest(manifest, manifest_path=manifest_path)
     if current_source_revision_contract() != manifest["source_contract"]:
         raise ValueError("Current source differs from the prepared physical grid manifest.")
-    if args.command == "status":
-        print_status(manifest, root)
-        return
     if manifest["design_status"] != "frozen":
         raise ValueError(
             "Physical mechanism design is not frozen. Owner approval, margins, and the "
@@ -125,6 +130,70 @@ def main() -> None:
             _stage_aggregate_and_publish(manifest, manifest_path=manifest_path, root=root)
         print_status(manifest, root)
         return
+
+
+def _print_retired_archival_status(
+    retirement: dict,
+    *,
+    root: Path,
+    manifest_path: Path,
+) -> None:
+    """Inspect immutable retirement evidence without rebuilding the old model graph."""
+
+    if root.resolve() != CANONICAL_OUTPUT_ROOT.resolve():
+        raise ValueError("Retired physical status requires the canonical historical root.")
+    if (
+        not manifest_path.is_file()
+        or manifest_path.is_symlink()
+        or root.is_symlink()
+    ):
+        raise ValueError("Retired physical historical manifest/root is missing or unsafe.")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    recorded = manifest.get("grid_content_sha256")
+    payload = {key: value for key, value in manifest.items() if key != "grid_content_sha256"}
+    roles = {
+        (int(job.get("fold_index", -1)), str(job.get("role")))
+        for job in manifest.get("jobs") or []
+    }
+    expected_roles = {
+        (fold, role) for fold in range(3) for role in PHYSICAL_MECHANISM_ROLES
+    }
+    final_path = REPO / str(
+        retirement["bound_artifacts"]["final_publication_receipt"]["path"]
+    )
+    final = json.loads(final_path.read_text(encoding="utf-8"))
+    if (
+        manifest.get("schema") != "cfeg.physical-mechanism-grid.v1"
+        or recorded != sha256_json(payload)
+        or manifest.get("grid_id") != "wearable-v3-s1-s3-physical-mechanism-v2"
+        or manifest.get("outcome_reveal_index") != 2
+        or len(manifest.get("jobs") or []) != 18
+        or roles != expected_roles
+        or manifest.get("source_freeze_tag") != PHYSICAL_FREEZE_TAG
+        or (manifest.get("source_contract") or {}).get("source_commit_sha")
+        != retirement["source_freeze"]["commit"]
+        or final.get("grid_content_sha256") != recorded
+        or final.get("reveal_event_sha256")
+        != retirement["bound_artifacts"]["reveal_event_sha256"]
+        or final.get("bundle_content_sha256")
+        != retirement["bound_artifacts"]["bundle_content_sha256"]
+    ):
+        raise ValueError("Retired physical historical manifest evidence is inconsistent.")
+    status = {
+        "candidate_id": retirement["retired_candidate"]["candidate_id"],
+        "status": retirement["status"],
+        "decision_id": retirement["decision_id"],
+        "historical_grid_jobs": 18,
+        "reveal_indices_consumed": retirement["outcome_reveal_budget"][
+            "consumed_indices"
+        ],
+        "public_bundle_published": True,
+        "diagnostic_status": retirement["decision_evidence"]["diagnostic_status"],
+        "confirmatory_execution_authorized": False,
+        "further_s1_s3_outcome_actions_allowed": False,
+        "integrity": "retirement_evidence_chain_verified",
+    }
+    print(json.dumps(status, indent=2, sort_keys=True))
 
 
 def _stage_aggregate_and_publish(

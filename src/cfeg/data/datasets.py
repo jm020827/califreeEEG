@@ -19,7 +19,16 @@ REVISION_REQUIRED_COLUMNS = {
         "impedance_kohm_by_channel",
         "headband_order",
         "condition_period",
-    ]
+    ],
+    "synthetic_quality_v1": [
+        *PROTOCOL_V04_REQUIRED_COLUMNS,
+        "impedance_kohm_by_channel",
+        "acquisition_block_id",
+        "metadata_measurement_id",
+        "metadata_measurement_time_sec",
+        "query_time_sec",
+        "impedance_unit",
+    ],
 }
 WEARABLE_V3_CANONICAL_IDS = [54, 55, 56, 57, 58, 61, 62, 63]
 
@@ -310,12 +319,13 @@ def _validate_aligned_protocol_vectors(root: Path, manifest, *, revision: str) -
                 f"wearable_v3 under {root} must use exactly the official eight canonical "
                 f"channels {WEARABLE_V3_CANONICAL_IDS}."
             )
+    if revision in {"wearable_v3", "synthetic_quality_v1"}:
         impedance = _stack_manifest_vectors(
             manifest["impedance_kohm_by_channel"], c_max, dtype=np.float32
         )
         if not np.array_equal(np.isfinite(impedance), masks):
             raise ValueError(
-                f"wearable_v3 impedance vector positions do not match channel masks under {root}."
+                f"{revision} impedance vector positions do not match channel masks under {root}."
             )
         finite_values = np.where(masks, impedance, np.nan)
         means = np.nanmean(finite_values, axis=1)
@@ -329,8 +339,22 @@ def _validate_aligned_protocol_vectors(root: Path, manifest, *, revision: str) -
             or not np.allclose(maxima, scalar_maxima, rtol=1e-6, atol=1e-5)
         ):
             raise ValueError(
-                f"wearable_v3 impedance vectors/scalars are inconsistent under {root}."
+                f"{revision} impedance vectors/scalars are inconsistent under {root}."
             )
+        if revision == "synthetic_quality_v1":
+            units = set(manifest["impedance_unit"].astype(str))
+            if units != {"kOhm"}:
+                raise ValueError(
+                    "synthetic_quality_v1 impedance_unit must be exactly 'kOhm'."
+                )
+            measurement_time = manifest["metadata_measurement_time_sec"].astype(float)
+            query_time = manifest["query_time_sec"].astype(float)
+            if not np.isfinite(measurement_time).all() or not np.all(
+                query_time > measurement_time
+            ):
+                raise ValueError(
+                    "synthetic_quality_v1 metadata measurements must be finite and pre-query."
+                )
 
 
 def _stack_manifest_vectors(series, length: int, *, dtype) -> np.ndarray:

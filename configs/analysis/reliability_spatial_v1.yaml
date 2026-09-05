@@ -1,0 +1,134 @@
+schema: cfeg.reliability-candidate-plan.v1
+decision_id: DEC-20260903-006
+status: frozen_for_synthetic_engineering
+approved_by: active_workspace_owner
+approval_recorded_at_utc: "2026-09-03T05:32:05Z"
+authority_basis: explicit_user_approval_in_active_codex_session
+approval_message: 응 그렇게 하자.
+candidate_id: reliability-spatial-v1
+research_goal: calibration_free_eeg_decoding_under_acquisition_and_contact_shift
+research_question: >-
+  Can external acquisition metadata add useful query-local channel-quality information
+  beyond quality evidence computed from the current EEG window, without becoming a
+  label, subject, or acquisition shortcut?
+predecessor:
+  candidate_id: physical-hybrid-v1
+  disposition: retired_no_go
+  retirement_receipt: configs/governance/wearable_s1_s3_retirement.json
+  retirement_receipt_sha256: a2fcfb53e4ed1edeb21eca13d0f8851fdd6478834106a966ef83bae903f32710
+  historical_a0_a2_contract_mutation_allowed: false
+data_access:
+  allowed_dataset_revisions:
+    synthetic_quality: synthetic_quality_v1
+  wearable_v3_allowed: false
+  s1_s3_allowed: false
+  s4_s102_allowed: false
+stage0:
+  purpose: participant_disjoint_quality_identifiability_before_decoder_outcomes
+  plan: configs/analysis/synthetic_reliability_stage0.yaml
+  plan_sha256: 985b4f84ec8110d8e7a711b1d1bc0a873d81eb8a0bc5c5cf49febca79b945e91
+  required_status_before_stage1: passed
+  simulation_truth_model_input: false
+  outcome_publication: one_shot_fresh_atomic_no_overwrite_or_supersede
+stage1:
+  design: exact_2x2_query_qc_by_external_metadata_access
+  base_config: configs/train/synthetic_reliability_candidate.yaml
+  base_config_contract_normalization: candidate_plan_sha256_sentinel_v1
+  base_config_contract_sha256: 723277da27e46ea1a7406283eee369c1b699d900ae8491e379b2c54eb856d3f2
+  roles: [A0, A_M, A_Q, A_QM]
+  treatment_axes: [query_qc_access, external_metadata_access]
+  primary_contrast: A_QM_minus_A_Q
+  secondary_contrast: A_M_minus_A0
+  interaction: (A_QM_minus_A_Q)_minus_(A_M_minus_A0)
+  suite: configs/train/synthetic_reliability_2x2.yaml
+  suite_file_sha256: 4656941a49120003a60f01df38c9c9fdbf53ff6569c0286281bcb3bc6786558e
+  output_root: outputs/engineering/reliability-spatial-v1/stage1
+  seed: 42
+  split_seed: 42
+  split: cross_subject_train_val
+  validation_subject_fraction: 0.25
+  epochs: 8
+  checkpoint_selection: validation_best
+  checkpoint_selection_metric: accuracy
+  all_roles_run_together: true
+  cli_recipe_overrides_allowed: false
+  partial_role_execution_allowed: false
+  execution_transaction:
+    orchestrator_authorization: in_process_private_token_not_config_or_cli
+    concurrency_reservation: fixed_name_atomic_mkdir_before_any_outcome_execution
+    publication: hidden_staging_fsync_then_atomic_suite_root_rename
+    final_input_revalidation: stage0_assets_checkpoints_splits_metrics_runtime_and_attempts_rehashed_before_publish
+    failed_attempt: retained_mode_0700_noncanonical_with_attempt_receipt
+    unreceipted_io_crash: fixed_reservation_retained_for_owner_review
+    retry: new_owner_decision_required_after_attempt_review
+    reservation_release: only_after_complete_atomic_publication
+    dry_run: fresh_dedicated_noncanonical_prefix_only
+  analysis:
+    schema: cfeg.synthetic-reliability-stage1-analysis.v1
+    score_scope: checkpoint_selection_validation_set
+    statistical_unit: participant
+    primary_metric: subject_macro_balanced_accuracy
+    substantive_effect_gate: none_descriptive_only
+    interventions: [missing, stale_block, wrong_interface]
+    external_metadata_bundle_fields:
+      - reference
+      - electrode_type
+      - cap_type
+      - impedance_mean_kohm
+      - impedance_max_kohm
+      - impedance_kohm_by_channel
+    missing_intervention: full_external_bundle_null
+    stale_block_donor_scope: same_subject_same_interface_other_run
+    wrong_interface_donor_scope: same_subject_same_run_opposite_interface
+    donor_pairing_uses_label: false
+    same_aqm_checkpoint_for_interventions: true
+    missing_fallback_interpretation: >-
+      same_aqm_checkpoint_with_metadata_operator_zero_not_separately_trained_a_q
+    a_q_comparator: descriptive_subject_level
+    integrity_tolerance: 0.000001
+    metadata_only_probe:
+      method: participant_disjoint_multiclass_ridge
+      ridge_alphas: [0.000001, 0.0001, 0.01, 1.0, 10.0, 100.0]
+      active_canonical_channel_ids: [48, 55, 57, 56, 53, 61, 62, 63]
+      block_logit_invariance_tolerance: 0.000000000001
+      balanced_accuracy_chance_tolerance: 0.000000000001
+    output_files:
+      - validation_predictions.csv
+      - validation_subject_metrics.csv
+      - validation_group_metrics.csv
+      - stage1_subject_contrasts.csv
+      - metadata_intervention_predictions.csv
+      - metadata_intervention_mapping.csv
+      - metadata_intervention_subject_metrics.csv
+      - stage1_metadata_safety.csv
+      - metadata_only_probe_predictions.csv
+      - metadata_only_probe_subject_metrics.csv
+      - metadata_only_probe_model.json
+      - stage1_receipt.json
+model_contract:
+  architecture: reliability_spatial_v1
+  backbone: spectral_transformer
+  placement: pre_backbone_waveform
+  operator_family: diagonal_low_rank
+  query_feature_schema: query_window_reliability_features_v1
+  max_operator_frobenius_norm: 0.25
+  query_operator_frobenius_norm: 0.20
+  metadata_operator_frobenius_norm: 0.05
+  metadata_alpha_limit: 1.0
+  metadata_role: bounded_additive_residual
+  normal_decoder_metadata_vector_route_allowed: false
+stage2:
+  independent_human_development_data_required: true
+  owner_decision_required: true
+  currently_authorized: false
+claims:
+  synthetic_integration_claim_allowed: true
+  human_eeg_claim_allowed: false
+  population_inference_allowed: false
+  confirmatory_execution_authorized: false
+  architecture_superiority_claim_allowed: false
+stopping_rules:
+  stage0_failure: do_not_run_or_interpret_stage1_decoder_outcomes
+  stage1_integrity_failure: fail_closed_without_substantive_interpretation
+  stage1_negative_result: do_not_tune_on_wearable_s1_s3
+  human_promotion: require_independent_data_and_new_owner_decision

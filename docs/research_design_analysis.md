@@ -2,12 +2,17 @@
 
 > **역사적 감사 문서:** DEC-20260830-001이 `N=102 primary`를, DEC-20260830-002가 아래 `N=99 5-fold primary`를 대체한다. 현재는 전체 asset N=102, S1–S3 development-only, 39명 frozen training, 60명 independent lockbox다. [프로토콜 현재 상태](research_protocol_status.md)를 우선하며 아래 지적과 당시 판단은 변경 이력 보존용이다.
 
+> **2026-09-04 superseded:** `DEC-20260904-005`가 strict-k0 A0/A2를 현재 primary에서
+> 내리고 k=0/1/3 complete-block calibration curve의 A_QM−A_Q로 바꿨다. 아래 “현재” 표현은
+> 해당 감사 시점의 현재를 뜻하며, 새 실행 기준은
+> [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md)다.
+
 최초 검토 기준일: 2026-08-28  
 구현·프로토콜 갱신일: 2026-08-29 (protocol 0.3 + metadata protocol 0.4-dev, confirmatory freeze 전)
 
 대상: 저장소의 연구 질문, split/evaluation 구현, 실험 체크리스트, 공개 데이터 계획, 2025–2026 관련 연구
 
-> **현재 상태 요약:** 연구 질문과 A0/A2 treatment 정의는 유지한다. Query-local complex spectral backbone, physical-hybrid routing, exact resume, confirmatory manifest와 target-free inference simulation을 구현했다. `DEC-20260901-004`의 reveal #2는 clean tag에서 18/18 training·3/3 intervention·atomic publication까지 완료됐다. Assay는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 clean direction·counterfactual reliance·inference pairing·training pairing gate가 실패했다. 따라서 현 candidate는 diagnostic no-go이며 39/60 confirmatory는 차단한다. S4–S102 성능은 계속 미접근이다.
+> **당시 상태 요약:** 연구 질문과 A0/A2 treatment 정의를 유지했다. Query-local complex spectral backbone, physical-hybrid routing, exact resume, confirmatory manifest와 target-free inference simulation을 구현했다. `DEC-20260901-004`의 reveal #2는 clean tag에서 18/18 training·3/3 intervention·atomic publication까지 완료됐다. Assay는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 clean direction·counterfactual reliance·inference pairing·training pairing gate가 실패했다. 따라서 이 candidate는 diagnostic no-go이며 당시 39/60 confirmatory는 차단했다. S4–S102 성능은 계속 미접근이다.
 
 > **Metadata 동결 상태:** 최소 정보권한과 채널별 impedance 경로는 구현됐고 development 계약대로 시험했다. Six-role/18-job 결과는 potency-valid였지만 correct metadata 이득·의존성을 보이지 못했다. 이 실패 뒤 같은 S1–S3에서 표현이나 threshold를 다시 고르지 않으며, 새 독립 factor 반복과 사전근거 없이는 confirmatory treatment로 동결하지 않는다. 현재 경계는 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)에 정리했다.
 

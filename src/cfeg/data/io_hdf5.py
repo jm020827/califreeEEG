@@ -32,6 +32,17 @@ def read_sample(h5_path: str | Path, index: int) -> tuple[np.ndarray, np.ndarray
     return x, mask, y
 
 
+def read_unlabeled_signal(
+    h5_path: str | Path, index: int
+) -> tuple[np.ndarray, np.ndarray]:
+    """Read only signal and channel mask; never open the label dataset."""
+
+    with h5py.File(h5_path, "r") as h5:
+        x = h5["x"][index].astype("float32")
+        mask = h5["channel_mask"][index].astype("bool")
+    return x, mask
+
+
 class HDF5SampleReader:
     """Lazily reuse read-only HDF5 handles within one process or DataLoader worker."""
 
@@ -56,6 +67,25 @@ class HDF5SampleReader:
         mask = handle["channel_mask"][index].astype("bool")
         y = int(handle["y"][index])
         return x, mask, y
+
+    def read_unlabeled(
+        self, h5_path: str | Path, index: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Read query signal without evaluating or indexing the HDF5 `y` object."""
+
+        if not self.persistent:
+            return read_unlabeled_signal(h5_path, index)
+        if self._pid != os.getpid():
+            self.close()
+            self._pid = os.getpid()
+        path = Path(h5_path).resolve()
+        handle = self._handles.get(path)
+        if handle is None or not handle.id.valid:
+            handle = h5py.File(path, "r")
+            self._handles[path] = handle
+        x = handle["x"][index].astype("float32")
+        mask = handle["channel_mask"][index].astype("bool")
+        return x, mask
 
     def close(self) -> None:
         for handle in self._handles.values():

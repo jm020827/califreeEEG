@@ -1,0 +1,29 @@
+base_config: configs/train/query_reliability_candidate.yaml
+query_reliability_family:
+  schema: cfeg.query-reliability-family.v1
+  candidate_id: query-reliability-spatial-v1
+  status: implementation_draft_outcome_blocked
+  roles: [Q0_CLEAN, Q1_CLEAN, Q0_AUG, Q1_AUG]
+  treatment_axes: [query_qc_access, preregistered_corruption_training]
+  primary_contrast: Q1_AUG_minus_Q0_AUG
+  clean_safety_contrast: Q1_AUG_minus_Q0_AUG_on_clean_queries
+  deployment_clean_safety_contrast: Q1_AUG_minus_Q0_CLEAN_on_clean_queries
+  seeds: [11, 29, 47]
+  all_roles_run_together: true
+  partial_role_execution_allowed: false
+  population_inference_allowed: false
+  outcome_execution_authorized: false
+  wearable_reuse_allowed: false
+variants:
+  Q0_CLEAN:
+    model.conditioning.spatial_reliability.query_qc_mode: "null"
+    augment.query_reliability_corruption.enabled: false
+  Q1_CLEAN:
+    model.conditioning.spatial_reliability.query_qc_mode: observed
+    augment.query_reliability_corruption.enabled: false
+  Q0_AUG:
+    model.conditioning.spatial_reliability.query_qc_mode: "null"
+    augment.query_reliability_corruption.enabled: true
+  Q1_AUG:
+    model.conditioning.spatial_reliability.query_qc_mode: observed
+    augment.query_reliability_corruption.enabled: true

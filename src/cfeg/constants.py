@@ -11,6 +11,8 @@ CATEGORICAL_VOCABS = {
         "dong2023",
         "wearable",
         "openbci",
+        # New fallback categories are append-only so legacy checkpoint IDs stay stable.
+        "synthetic_quality",
     ],
     "reference": [
         UNKNOWN_CATEGORY,

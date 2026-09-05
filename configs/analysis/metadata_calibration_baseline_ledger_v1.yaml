@@ -1,0 +1,172 @@
+schema: cfeg.metadata-calibration-baseline-ledger.v1
+candidate_id: metadata-calibration-efficiency-v1
+status: mandatory_methods_and_label_free_query_adapters_frozen_signed_phase_authority_required
+human_execution_authorized: true
+
+common_protocol:
+  dataset_revision: wearable_v3
+  waveform: two_seconds_200_hz_official_posterior_eight_channels
+  class_vocabulary: frozen_twelve_frequency_phase_targets
+  support: exact_same_complete_nested_blocks_per_participant_interface
+  query: exact_blocks06_through10
+  wet_dry: fit_and_score_separately_then_equal_participant_average
+  neural_source_training_seeds: [42, 43, 44]
+  deterministic_baseline_execution: once_with_seed_none
+  prediction_artifact: full_twelve_class_raw_score_vector_for_baselines
+  score_interpretation: uncalibrated_argmax_only_no_cross_method_confidence_comparison
+  query_identity: identical_to_primary_atomic_bundle
+  external_context_access: forbidden_for_every_baseline
+  participant_or_query_batch_transductive_statistics: forbidden
+
+mandatory_before_held_reveal:
+  - id: FBCCA_k0
+    adapter_id: strict_FBCCA
+    producer_kind: baseline
+    budgets: [0]
+    source_labeled_eeg: false
+    target_labeled_support: 0
+    query_waveform: true
+    signal_derived_Q: false
+    task_frequency_phase_codebook: true
+    external_context_M: false
+    implementation: src/cfeg/baselines/metadata_calibration_adapter.py::GovernedCalibrationBaselineAdapter
+    core_implementation: src/cfeg/baselines/fbcca.py::predict_fbcca
+    filterbank_config: configs/baselines/fbcca_chen2015_m3.yaml
+    filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
+    status: frozen_implemented_signed_job_projection_bound
+  - id: supervised_template_correlation
+    adapter_id: target_template_correlation
+    producer_kind: baseline
+    budgets: [1, 3, 5]
+    source_labeled_eeg: false
+    target_labeled_support: exact_k_complete_blocks
+    query_waveform: true
+    signal_derived_Q: false
+    task_frequency_phase_codebook: false
+    external_context_M: false
+    implementation: src/cfeg/baselines/metadata_calibration_adapter.py::GovernedCalibrationBaselineAdapter
+    core_implementation: src/cfeg/baselines/calibration.py::predict_supervised_template_correlation
+    status: frozen_implemented_signed_job_projection_bound
+  - id: target_filterbank_eTRCA
+    adapter_id: target_filterbank_eTRCA
+    producer_kind: baseline
+    budgets: [3, 5]
+    source_labeled_eeg: false
+    target_labeled_support: exact_k_complete_blocks
+    query_waveform: true
+    signal_derived_Q: false
+    task_frequency_phase_codebook: false
+    external_context_M: false
+    implementation: src/cfeg/baselines/metadata_calibration_adapter.py::GovernedCalibrationBaselineAdapter
+    core_implementation: src/cfeg/baselines/calibration.py::predict_filterbank_ensemble_trca
+    filterbank_config: configs/baselines/fb_etrac_chiang2021_common_protocol.yaml
+    filterbank_config_sha256: 8b236584a9c7308e83bfcb99122ed56be3e7ed7edd884879aaf3322eb3973639
+    status: frozen_implemented_k1_forbidden_signed_job_projection_bound
+  - id: SAME3_filterbank_eTRCA_one_shot_component
+    adapter_id: same3_filterbank_eTRCA
+    producer_kind: baseline
+    budgets: [1]
+    source_labeled_eeg: false
+    target_labeled_support: exact_one_complete_block
+    query_waveform: true
+    signal_derived_Q: false
+    task_frequency_phase_codebook: frozen_full_candidate_codebook
+    external_context_M: false
+    implementation: src/cfeg/baselines/metadata_calibration_adapter.py::GovernedCalibrationBaselineAdapter
+    core_implementation: src/cfeg/baselines/calibration.py::predict_same_filterbank_ensemble_trca
+    filterbank_config: configs/baselines/fb_etrac_chiang2021_common_protocol.yaml
+    filterbank_config_sha256: 8b236584a9c7308e83bfcb99122ed56be3e7ed7edd884879aaf3322eb3973639
+    evidence: doi:10.1109/TBME.2022.3227036
+    interpretation: cleanroom_one_shot_augmentation_component_not_full_OS_SSVEP_reproduction
+    status: frozen_component_implemented_signed_job_projection_bound
+  - id: proposed_common_A_Q
+    adapter_id: null
+    producer_kind: candidate
+    budgets: [0, 1, 3, 5]
+    source_labeled_eeg: exact_nonouter_26_in_development_or_exact_39_in_held
+    target_labeled_support: exact_k_complete_blocks
+    query_waveform: true
+    signal_derived_Q: true
+    task_frequency_phase_codebook: common_only_if_used_by_every_neural_arm
+    external_context_M: false
+    implementation: src/cfeg/models/metadata_calibration_composite.py
+    status: frozen_candidate_same_checkpoint_execution_ready
+  - id: chiang2021_LST_filterbank_eTRCA
+    adapter_id: chiang2021_LST_filterbank_eTRCA
+    producer_kind: baseline
+    budgets: [1, 3, 5]
+    source_labeled_eeg: exact_nonouter_26_in_development_or_exact_39_in_held
+    source_interface_scope: exact_matching_interface_only_dry_to_dry_wet_to_wet
+    source_pool_identity: exact_source_sample_tokens_per_checkpoint_group_and_interface
+    target_labeled_support: exact_k_complete_blocks
+    query_waveform: true
+    signal_derived_Q: false
+    task_frequency_phase_codebook: false
+    external_context_M: false
+    implementation: src/cfeg/baselines/metadata_calibration_adapter.py::GovernedCalibrationBaselineAdapter
+    core_implementation: src/cfeg/baselines/calibration.py::predict_lst_filterbank_ensemble_trca
+    filterbank_config: configs/baselines/fb_etrac_chiang2021_common_protocol.yaml
+    filterbank_config_sha256: 8b236584a9c7308e83bfcb99122ed56be3e7ed7edd884879aaf3322eb3973639
+    evidence: doi:10.1088/1741-2552/abcb6e
+    k1_interpretation: protocol_adapted_not_paper_reproduced
+    k3_k5_interpretation: publication_budget_range_common_protocol_port
+    status: frozen_cleanroom_common_protocol_port_signed_job_projection_bound
+
+direct_prior_art_comparators:
+  - id: chiang2021_LST_filterbank_eTRCA
+    priority: selected_mandatory
+    budgets: [1, 3, 5]
+    status: frozen_cleanroom_common_protocol_port_mandatory
+  - id: TDCA
+    priority: optional
+    budgets: [3, 5]
+    status: target_only_optional_plain_k1_forbidden
+  - id: SAME3_filterbank_eTRCA_one_shot_component
+    priority: selected_mandatory_component_comparator
+    budgets: [1]
+    status: frozen_cleanroom_common_protocol_component_mandatory
+  - id: CSDuDoFN_OS_SSVEP
+    priority: audited_not_run
+    budgets: [1]
+    aliases: [CSDuDoFN_arXiv_v1, OS_SSVEP_peer_reviewed_successor]
+    original_target_access: exactly_one_labeled_trial_per_class
+    evidence: [arxiv:2311.07932, doi:10.1016/j.neunet.2024.106734]
+    official_repository_revision: 8b37f900c4218e7de98c8ee0049cf76544174927
+    official_repository_license: absent
+    resolution: NOT_RUN
+    not_run_reason: >-
+      unlicensed_author_code_and_no_unambiguous_common_protocol_port: the paper and
+      repository disagree on fusion and default network behavior, and the published
+      TDCA path requires T+5 samples unavailable in the sealed 400-sample window.
+      A partial SAME-eTRCA component would not be the full OS-SSVEP method.
+    status: audited_not_run_before_outcome_freeze
+  - id: SSVEP_DAN
+    priority: audited_not_run
+    budgets: [3, 5]
+    original_minimum_labeled_trials_per_class: 2
+    k1_status: incompatible_with_original_method_do_not_claim_or_run_as_paper_reproduction
+    official_repository_revision: 521cd7a46f69da1ea8c29e476fa74661cc1607ea
+    official_repository_license: absent
+    resolution: NOT_RUN
+    not_run_reason: >-
+      unlicensed_author_code_and_no_frozen_common_protocol_adapter; the published
+      wearable evaluation starts at two target trials per class and its target-wise
+      retraining/query split differs materially from the frozen protocol.
+    status: audited_not_run_before_outcome_freeze
+  - id: LST_or_stCCA
+    priority: medium
+    budgets: [1, 3, 5]
+    status: satisfied_by_selected_chiang2021_LST_common_protocol_port
+
+ranking_rules:
+  protocol_matched_reimplementation_required: true
+  paper_reported_number_may_enter_numeric_table: false
+  unavailable_direct_comparator: report_as_not_run_with_reason_never_silently_omit
+  different_target_label_budget: separate_stratum_never_rank_as_equal_budget
+  target_only_filterbank_eTRCA_k1: forbidden
+  LST_filterbank_eTRCA_k1: protocol_adapted_not_paper_reproduced
+  deterministic_method_seed_replication: forbidden
+  metadata_method_claim_requires_beating_every_baseline: false
+  metadata_increment_primary_comparator: proposed_common_A_Q_same_checkpoint_exact_M_off
+
+remaining_implementation: []

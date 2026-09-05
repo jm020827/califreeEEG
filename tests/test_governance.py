@@ -17,16 +17,26 @@ from cfeg.governance import (
     _validate_confirmatory_training_config,
     _validate_target_free_simulation,
     bind_cohort,
+    reject_retired_physical_candidate_action,
     resolve_research_access,
     validate_analysis_plan_contract,
     validate_checkpoint_evaluation_access,
     validate_cohort_roles_contract,
     validate_frozen_analysis_plan,
+    validate_physical_candidate_retirement,
     validate_physical_development_training_authorization,
 )
 from cfeg.utils.config import load_config
 
 REPO = Path(__file__).resolve().parents[1]
+
+
+def test_physical_candidate_retirement_is_machine_bound_and_fail_closed() -> None:
+    receipt = validate_physical_candidate_retirement()
+    assert receipt["status"] == "retired_no_go"
+    assert receipt["outcome_reveal_budget"]["consumed_indices"] == [1, 2]
+    with pytest.raises(GovernanceError, match="retired by DEC-20260903-005"):
+        reject_retired_physical_candidate_action()
 
 
 def test_frozen_plan_rejects_unimplemented_confirmatory_controls() -> None:

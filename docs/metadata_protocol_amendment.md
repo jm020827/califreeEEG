@@ -2,13 +2,21 @@
 
 기준일: 2026-08-29
 
+> **2026-09-04 superseded / historical:** 아래 문서는 retired `physical_hybrid_v1`의
+> strict-k0 `A2−A0` 설계와 그 no-go를 기록한다. 현재 primary는 같은 participant의
+> k=0/1/3 calibration curve에서 pre-query interface/impedance의 순증분을 묻는
+> `A_QM−A_Q`다. 현재 권한과 계약은 [새 설계](metadata_calibration_efficiency_design.md),
+> [machine-readable plan](../configs/analysis/metadata_calibration_efficiency_v1.yaml),
+> [프로토콜 상태](research_protocol_status.md)를 우선한다. 아래의 “현재” 표현은 당시
+> 시점의 표현으로만 읽는다.
+
 상태: **Protocol 0.4-dev reveal #2 완료 — valid assay / diagnostic no-go / confirmatory 차단**
 
 연구주제: 변경하지 않음
 
 > **구현·결과 갱신:** 배포 문구와 모순되는 Figshare v4 impedance numeric order를 `[dry, wet]`으로 교정하고, signature·per-channel 보존·headband parsing·`wearable_v3` deep receipt/revision guard를 구현했다. 전체 102명·24,480행 acceptance audit도 통과했다. `physical_hybrid_v1`은 공통 query-QC FiLM, external global FiLM, 채널별 impedance gain, exact-null routing으로 구현됐다. `DEC-20260901-004`의 exact restart는 완료됐지만 valid N=3 assay에서 A0 `0.1292`, Full A2 `0.1194`, Δ `−0.0097`이고 네 substantive gate가 실패했다. 현 candidate의 confirmatory는 차단한다. 상세 상태는 [Protocol 0.4-dev 구현 기록](protocol_0_4_dev_implementation.md)을 따른다.
 
-> **후속 DEC-20260830-002:** 아래의 N=99 5-fold primary는 target-free simulation에서 model-shared dependence와 Type-I inflation이 드러나 폐기됐다. 현재 primary는 39명 fixed training·60명 independent lockbox이며 [연구 프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
+> **당시 후속 DEC-20260830-002:** 아래의 N=99 5-fold primary는 target-free simulation에서 model-shared dependence와 Type-I inflation이 드러나 폐기됐다. 당시 physical 계획은 39명 fixed training·60명 independent lockbox였으며, 그 candidate는 이후 retired no-go가 됐다.
 
 > 구조화된 획득조건 metadata가 target 사용자 데이터로 적응하지 않는 strict inductive `k=0`에서 처음 보는 사용자·획득조건의 closed-set SSVEP 분류를 개선하는가?
 
@@ -191,7 +199,7 @@ manufacturer/model은 관측 가능해도 dataset token이 되기 쉬우므로 p
 4. 보정 후 남는 global acquisition descriptor만 작은 residual FiLM/conditional LayerNorm에 넣는다.
 5. residual branch는 zero/identity initialization해 metadata가 없으면 A0로 자연스럽게 돌아가게 한다.
 
-현재 primary 후보 `physical_hybrid_v1`은 이 원칙대로 구현됐다. A0/A2는 동일 module graph·parameter schema·초기 state를 쓰고 `external_metadata_mode=null|observed`만 다르다. Global 경로는 electrode type과 block impedance mean/max를 residual FiLM으로, channel 경로는 채널별 impedance/availability를 bounded gain으로 주입한다. A0 또는 all-missing 입력은 exact identity/null로 돌아간다. 기존 prompt+Transformer condition encoder는 legacy secondary architecture ablation으로만 유지한다.
+당시 primary 후보 `physical_hybrid_v1`은 이 원칙대로 구현됐다. A0/A2는 동일 module graph·parameter schema·초기 state를 쓰고 `external_metadata_mode=null|observed`만 다르게 했다. Global 경로는 electrode type과 block impedance mean/max를 residual FiLM으로, channel 경로는 채널별 impedance/availability를 bounded gain으로 주입했다. A0 또는 all-missing 입력은 exact identity/null로 돌아갔다. 이 후보는 이후 retired no-go가 됐으며 새 calibration-efficient 후보의 구현이 아니다.
 
 ### preprocessing × fusion 2×2 development 실험
 

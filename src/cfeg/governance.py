@@ -4,7 +4,6 @@ import copy
 import datetime as dt
 import hashlib
 import json
-import os
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -15,6 +14,7 @@ import torch
 import yaml
 
 from cfeg.data.splits import SplitIndices
+from cfeg.metadata_calibration_contract import data_config_targets_wearable_v3
 
 
 class GovernanceError(RuntimeError):
@@ -43,7 +43,15 @@ WEARABLE_V3_PHYSICAL_DECISION_RECEIPT = (
 )
 WEARABLE_V3_PHYSICAL_FREEZE_TAG = "physical-reveal2-freeze-20260901-r1"
 WEARABLE_V3_DEVELOPMENT_REVEAL_LEDGER = "outputs/development-loso/reveal_ledger.json"
+WEARABLE_V3_PHYSICAL_REVEALED_SUMMARY = (
+    "outputs/development-loso/physical-mechanism-v2/reveal-bundle/analysis/"
+    "revealed_summary.json"
+)
+WEARABLE_V3_PHYSICAL_FINAL_RECEIPT = (
+    "outputs/development-loso/physical-mechanism-v2/reveal_receipt.json"
+)
 WEARABLE_V3_FIRST_REVEAL_LEDGER = "configs/governance/wearable_s1_s3_reveal_ledger.json"
+WEARABLE_V3_PHYSICAL_RETIREMENT = "configs/governance/wearable_s1_s3_retirement.json"
 PHYSICAL_MECHANISM_ROLES = (
     "A0_eeg_only",
     "A2_structured_condition_prompt",
@@ -96,7 +104,7 @@ class CohortBinding:
 def resolve_research_access(cfg: dict) -> ResearchAccess:
     protocol = cfg.get("protocol", {})
     evaluation = cfg.get("evaluation", {})
-    requires_governance = _config_targets_wearable_v3(cfg)
+    requires_governance = data_config_targets_wearable_v3(cfg.get("data", {}))
     governance_flag = protocol.get("governance_required")
     if requires_governance and governance_flag is not True:
         raise GovernanceError(
@@ -392,6 +400,7 @@ def _validate_development_grid_authorization(
         raise GovernanceError(
             "Physical development evaluation source differs from the grid source."
         )
+    reject_retired_physical_candidate_action()
 
 
 def validate_physical_development_training_authorization(cfg: dict) -> None:
@@ -419,6 +428,7 @@ def validate_physical_development_training_authorization(cfg: dict) -> None:
         raise GovernanceError("Physical development manifest binding is noncanonical.")
     if manifest.get("source_contract") != current_source_revision_contract():
         raise GovernanceError("Physical development training source differs from the grid source.")
+    reject_retired_physical_candidate_action()
 
 
 def _load_physical_freeze_decision(path: Path) -> dict:
@@ -1089,6 +1099,157 @@ def validate_frozen_analysis_plan(plan: dict) -> None:
         )
     _validate_source_lock(plan["source_lock"])
     _validate_target_free_simulation(plan)
+    reject_retired_physical_candidate_action()
+
+
+def validate_physical_candidate_retirement() -> dict:
+    """Validate the superseding deny overlay without rewriting historical receipts."""
+
+    repository = Path(__file__).resolve().parents[2]
+    path = repository / WEARABLE_V3_PHYSICAL_RETIREMENT
+    if not path.is_file() or path.is_symlink():
+        raise GovernanceError("Physical candidate-retirement receipt is missing or unsafe.")
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise GovernanceError("Physical candidate-retirement receipt is invalid JSON.") from exc
+    retired = receipt.get("retired_candidate") or {}
+    budget = receipt.get("outcome_reveal_budget") or {}
+    evidence = receipt.get("decision_evidence") or {}
+    bound = receipt.get("bound_artifacts") or {}
+    expected_failed_gates = [
+        "clean_a2_directional_mean",
+        "counterfactual_reliance",
+        "inference_pairing_shuffle",
+        "training_pairing_shuffle",
+    ]
+    expected_paths = {
+        "decision_receipt": WEARABLE_V3_PHYSICAL_DECISION_RECEIPT,
+        "global_reveal_ledger": WEARABLE_V3_DEVELOPMENT_REVEAL_LEDGER,
+        "revealed_summary": WEARABLE_V3_PHYSICAL_REVEALED_SUMMARY,
+        "final_publication_receipt": WEARABLE_V3_PHYSICAL_FINAL_RECEIPT,
+    }
+    artifact_mismatch = False
+    for name, relative in expected_paths.items():
+        contract = bound.get(name) or {}
+        artifact = repository / relative
+        if (
+            contract.get("path") != relative
+            or not artifact.is_file()
+            or artifact.is_symlink()
+            or contract.get("sha256") != _sha256_file(artifact)
+        ):
+            artifact_mismatch = True
+    if (
+        receipt.get("schema") != "cfeg.candidate-retirement.v1"
+        or receipt.get("decision_id") != "DEC-20260903-005"
+        or receipt.get("status") != "retired_no_go"
+        or receipt.get("approved_by") != "active_workspace_owner"
+        or receipt.get("authority_basis")
+        != "explicit_user_approval_in_active_codex_session"
+        or retired.get("candidate_id") != "physical-hybrid-v1"
+        or retired.get("conditioning_architecture") != "physical_hybrid_v1"
+        or retired.get("development_cohort") != list(WEARABLE_V3_DEVELOPMENT_SUBJECTS)
+        or retired.get("historical_roles_preserved")
+        != ["A0_eeg_only", "A2_structured_condition_prompt"]
+        or retired.get("confirmatory_training_blocked") is not True
+        or retired.get("lockbox_prediction_blocked") is not True
+        or budget.get("consumed_indices") != [1, 2]
+        or budget.get("further_s1_s3_outcome_reveals_allowed") is not False
+        or budget.get("post_outcome_s1_s3_tuning_allowed") is not False
+        or evidence.get("assay_valid") is not True
+        or evidence.get("diagnostic_status")
+        != "diagnostic_no_go_one_or_more_substantive_gates_failed"
+        or evidence.get("failed_substantive_gates") != expected_failed_gates
+        or evidence.get("confirmatory_execution_authorized") is not False
+        or evidence.get("population_inference_allowed") is not False
+        or receipt.get("forbidden_actions")
+        != [
+            "s1_s3_training",
+            "s1_s3_prediction",
+            "s1_s3_new_metric_computation",
+            "s1_s3_model_selection",
+            "physical_hybrid_v1_confirmatory_training",
+            "physical_hybrid_v1_lockbox_prediction",
+        ]
+        or receipt.get("allowed_actions")
+        != [
+            "read_only_historical_status",
+            "artifact_integrity_audit",
+            "outcome_free_contract_regression",
+        ]
+        or receipt.get("source_freeze")
+        != {
+            "commit": "7bb8afc64c02e45beda7e245370563eac0e021e2",
+            "annotated_tag": WEARABLE_V3_PHYSICAL_FREEZE_TAG,
+        }
+        or set(bound)
+        != {
+            *expected_paths,
+            "reveal_event_sha256",
+            "bundle_content_sha256",
+        }
+        or artifact_mismatch
+    ):
+        raise GovernanceError("Physical candidate-retirement receipt is incomplete or stale.")
+
+    ledger = json.loads(
+        (repository / WEARABLE_V3_DEVELOPMENT_REVEAL_LEDGER).read_text(encoding="utf-8")
+    )
+    entries = ledger.get("entries") or []
+    matching_entries = [entry for entry in entries if entry.get("reveal_index") == 2]
+    summary = json.loads(
+        (repository / WEARABLE_V3_PHYSICAL_REVEALED_SUMMARY).read_text(encoding="utf-8")
+    )
+    final = json.loads(
+        (repository / WEARABLE_V3_PHYSICAL_FINAL_RECEIPT).read_text(encoding="utf-8")
+    )
+    gate = summary.get("predeclared_gate_evaluation") or {}
+    reveal_event = bound.get("reveal_event_sha256")
+    bundle_content = bound.get("bundle_content_sha256")
+    if (
+        ledger.get("schema") != "cfeg.development-reveal-ledger.v1"
+        or len(matching_entries) != 1
+        or matching_entries[0].get("reveal_event_sha256") != reveal_event
+        or matching_entries[0].get("bundle_content_sha256") != bundle_content
+        or matching_entries[0].get("decision_receipt_sha256")
+        != bound["decision_receipt"]["sha256"]
+        or final.get("schema") != "cfeg.physical-mechanism-reveal-receipt.v4"
+        or final.get("reveal_index") != 2
+        or final.get("reveal_event_sha256") != reveal_event
+        or final.get("bundle_content_sha256") != bundle_content
+        or final.get("final_publication_state") != "public_bundle_published"
+        or final.get("confirmatory_claim_allowed") is not False
+        or final.get("population_inference_allowed") is not False
+        or gate.get("assay_valid") is not True
+        or gate.get("status") != evidence["diagnostic_status"]
+        or gate.get("failed_substantive_gates") != expected_failed_gates
+        or gate.get("confirmatory_execution_authorized") is not False
+        or gate.get("population_inference_allowed") is not False
+    ):
+        raise GovernanceError("Physical retirement evidence chain is inconsistent or stale.")
+    try:
+        tag_commit = subprocess.run(
+            ["git", "rev-list", "-n", "1", WEARABLE_V3_PHYSICAL_FREEZE_TAG],
+            cwd=repository,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise GovernanceError("Physical retirement source-freeze tag is unavailable.") from exc
+    if tag_commit != receipt["source_freeze"]["commit"]:
+        raise GovernanceError("Physical retirement source-freeze tag moved.")
+    return receipt
+
+
+def reject_retired_physical_candidate_action() -> None:
+    receipt = validate_physical_candidate_retirement()
+    raise GovernanceError(
+        "physical_hybrid_v1 and further S1-S3 outcome actions are retired by "
+        f"{receipt['decision_id']}; historical read-only status remains allowed."
+    )
 
 
 def current_source_revision_contract() -> dict[str, object]:
@@ -1529,28 +1690,6 @@ def _validate_source_lock(source_lock: dict) -> None:
         raise GovernanceError(f"Frozen source tag does not resolve: {freeze_tag!r}.") from exc
     if tagged_commit != current.get("source_commit_sha"):
         raise GovernanceError("Confirmatory execution must run at the frozen source tag commit.")
-
-
-def _config_targets_wearable_v3(cfg: dict) -> bool:
-    data = cfg.get("data", {})
-    if str((data.get("expected_revisions") or {}).get("wearable", "")) == "wearable_v3":
-        return True
-    for raw_path in data.get("processed_dirs") or []:
-        expanded = Path(os.path.expandvars(str(raw_path))).expanduser()
-        if expanded.name == "wearable_v3":
-            return True
-        info_path = expanded / "asset_info.json"
-        if info_path.is_file():
-            try:
-                info = json.loads(info_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if (
-                info.get("dataset_id") == "wearable"
-                and info.get("dataset_revision") == "wearable_v3"
-            ):
-                return True
-    return False
 
 
 def _project_path(value, *, field: str) -> Path:

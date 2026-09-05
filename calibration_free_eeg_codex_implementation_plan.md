@@ -1,10 +1,17 @@
-# Calibration-Free EEG 구현·실험 체크리스트 v5
+# Calibration-Free EEG 구현·실험 체크리스트 v5 (historical)
 
 업데이트: 2026-09-01
 
+> **2026-09-04 superseded:** 이 문서는 retired `physical_hybrid_v1`과 당시 strict-k0
+> `A2−A0` 설계의 구현·실행 기록이다. 현재 체크리스트나 실행 권한이 아니다. 현재 연구는
+> labeled target calibration 부담을 줄이는 `A_QM−A_Q`, k=0/1/3/5 설계이며
+> [새 설계](docs/metadata_calibration_efficiency_design.md),
+> [machine-readable plan](configs/analysis/metadata_calibration_efficiency_v1.yaml),
+> [프로토콜 상태](docs/research_protocol_status.md)를 우선한다.
+
 > DEC-20260830-001에 따라 S1–S3는 영구 development-only다. DEC-20260830-002에 따라 S4–S102 N=99는 39명 confirmatory training과 60명 independent lockbox로 고정됐고, 이전 N=99 5-fold primary는 superseded됐다. DEC-20260901-004의 physical reveal #2 exact restart는 18/18 training·3/3 intervention·atomic publication까지 완료됐으며, 유효 assay에서 substantive gate 네 개가 실패해 diagnostic no-go다. 현 `physical_hybrid_v1`의 39/60 confirmatory는 차단한다. 전체 N=102·24,480행은 자산 계약이다. 현재 권한·gate는 [프로토콜 상태](docs/research_protocol_status.md)와 [append-only 연구일지](docs/research_log.md)를 우선한다.
 
-예전 구현 지시서 v2를 현재 상태에 맞춘 체크리스트로 대체한다. 체크 완료는 코드·설정·테스트 경로가 repository에 있다는 뜻이다. 외부 데이터/REVE 항목은 서버 실험을 끝내야 연구 결과까지 완료된다.
+이 문서는 예전 구현 지시서 v2를 2026-09-01 당시 상태에 맞춰 대체했던 체크리스트다. 체크 완료는 당시 코드·설정·테스트 경로가 repository에 있었다는 뜻이며 현재 후보의 완료 또는 실행 승인을 뜻하지 않는다.
 
 ## 연구 질문
 
@@ -50,7 +57,7 @@ Protocol 0.3에서 primary를 Wang→BETA에서 wearable participant DG로 옮�
 - [x] cross-subject와 학습 중 8/4/2채널 strong views
 - [x] Wang→BETA / BETA→Wang source-validation + target-test
 - [x] wearable participant-fold DG와 participant-disjoint dry→wet / wet→dry source-validation + target-test
-- [x] wearable 5-fold outer participant CV 구현(현재 primary에서는 superseded; post-primary exploratory 전용)
+- [x] wearable 5-fold outer participant CV 구현(당시 39/60 physical primary에서 이미 superseded됐던 경로)
 - [x] exact 39명 train/60명 independent lockbox allocation과 single-fold no-validation execution
 - [x] optimization seed와 split seed 분리
 - [x] accuracy, balanced accuracy, macro-F1, NLL, ECE, confusion matrix
@@ -90,7 +97,7 @@ Protocol 0.3에서 primary를 Wang→BETA에서 wearable participant DG로 옮�
 - [x] 실제 device·동기화 elapsed·peak allocated/reserved·OOM 상태 runtime sidecar
 - [x] 대용량/secret Git 제외
 
-## 서버에서 남은 일
+## 당시 서버에서 남았던 일 (historical)
 
 - [ ] REVE gated access와 Kubernetes secrets
 - [x] BETA S1/S16과 wearable S1–S3 공개 pilot 전처리·baseline 검증
@@ -147,9 +154,9 @@ bash scripts/cfeg.sh assets wearable
 # 새 독립 development study와 별도 decision contract 전에는 실행하지 않는다.
 ~~~
 
-## 판정 규칙
+## 당시 판정 규칙 (superseded)
 
-- 핵심 결과는 모델 학습·선택에서 제외된 wearable 60명 lockbox의 k=0 A2−A0 subject-level paired difference다. 세 seed BA를 participant 안에서 먼저 평균한다.
+- 당시 계획의 핵심 결과는 모델 학습·선택에서 제외된 wearable 60명 lockbox의 k=0 A2−A0 subject-level paired difference였다. 이 contrast는 실행되지 않았고 현재 primary가 아니다.
 - Wang↔BETA와 dry↔wet 방향은 별도 boundary/stress 결과로 보고한다.
 - Wearable은 독립 12-class head다.
 - Governed wearable training은 target test loader를 만들지 않는다. 동결 뒤 별도 prediction action에서만 outer test를 연다.

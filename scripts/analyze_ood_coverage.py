@@ -13,7 +13,12 @@ add_src_to_path()
 
 from cfeg.analysis.ood_coverage import compare_ood_coverage
 from cfeg.data.schema import load_manifest
-from cfeg.governance import current_source_revision_contract, validate_frozen_analysis_plan
+from cfeg.governance import (
+    current_source_revision_contract,
+    reject_retired_physical_candidate_action,
+    validate_frozen_analysis_plan,
+)
+from cfeg.metadata_calibration_contract import data_config_targets_wearable_v3
 from cfeg.prediction import load_verified_prediction_bundle
 
 
@@ -52,6 +57,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    _reject_retired_wearable_analysis(args.processed_dir)
     tags = _parse_tags(args.tag)
     if args.allow_uncontracted:
         import pandas as pd
@@ -94,6 +100,11 @@ def _parse_tags(values: list[str]) -> dict[str, str]:
             raise ValueError(f"Duplicate tag key: {key}")
         tags[key] = item
     return tags
+
+
+def _reject_retired_wearable_analysis(processed_dir: str) -> None:
+    if data_config_targets_wearable_v3({"processed_dirs": [processed_dir]}):
+        reject_retired_physical_candidate_action()
 
 
 def _validate_current_contract(contract: dict, plan_value: str) -> None:

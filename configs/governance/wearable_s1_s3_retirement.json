@@ -1,0 +1,75 @@
+{
+  "schema": "cfeg.candidate-retirement.v1",
+  "decision_id": "DEC-20260903-005",
+  "status": "retired_no_go",
+  "approved_by": "active_workspace_owner",
+  "approval_recorded_at_utc": "2026-09-03T05:32:05Z",
+  "authority_basis": "explicit_user_approval_in_active_codex_session",
+  "approval_message": "응 그렇게 하자.",
+  "retired_candidate": {
+    "candidate_id": "physical-hybrid-v1",
+    "conditioning_architecture": "physical_hybrid_v1",
+    "development_cohort": ["sub001", "sub002", "sub003"],
+    "historical_roles_preserved": [
+      "A0_eeg_only",
+      "A2_structured_condition_prompt"
+    ],
+    "confirmatory_training_blocked": true,
+    "lockbox_prediction_blocked": true
+  },
+  "outcome_reveal_budget": {
+    "consumed_indices": [1, 2],
+    "further_s1_s3_outcome_reveals_allowed": false,
+    "post_outcome_s1_s3_tuning_allowed": false
+  },
+  "forbidden_actions": [
+    "s1_s3_training",
+    "s1_s3_prediction",
+    "s1_s3_new_metric_computation",
+    "s1_s3_model_selection",
+    "physical_hybrid_v1_confirmatory_training",
+    "physical_hybrid_v1_lockbox_prediction"
+  ],
+  "allowed_actions": [
+    "read_only_historical_status",
+    "artifact_integrity_audit",
+    "outcome_free_contract_regression"
+  ],
+  "decision_evidence": {
+    "assay_valid": true,
+    "diagnostic_status": "diagnostic_no_go_one_or_more_substantive_gates_failed",
+    "failed_substantive_gates": [
+      "clean_a2_directional_mean",
+      "counterfactual_reliance",
+      "inference_pairing_shuffle",
+      "training_pairing_shuffle"
+    ],
+    "population_inference_allowed": false,
+    "confirmatory_execution_authorized": false
+  },
+  "source_freeze": {
+    "commit": "7bb8afc64c02e45beda7e245370563eac0e021e2",
+    "annotated_tag": "physical-reveal2-freeze-20260901-r1"
+  },
+  "bound_artifacts": {
+    "decision_receipt": {
+      "path": "configs/governance/wearable_physical_reveal2_decision.json",
+      "sha256": "ae7a6cdc49009462f0da836dafb81c1b4ffd3434c4db6a2f62f793d5dc4b1b59"
+    },
+    "global_reveal_ledger": {
+      "path": "outputs/development-loso/reveal_ledger.json",
+      "sha256": "6093c85635cead106643664823c8c6f5285bfb949d28f2b0bb1b91cb636ee82d"
+    },
+    "revealed_summary": {
+      "path": "outputs/development-loso/physical-mechanism-v2/reveal-bundle/analysis/revealed_summary.json",
+      "sha256": "fa6d1b1aede623e3cfa29120122508c5df798b18e204be431e8c00a6b0bf54f2"
+    },
+    "final_publication_receipt": {
+      "path": "outputs/development-loso/physical-mechanism-v2/reveal_receipt.json",
+      "sha256": "4aef2b7a82302651fdf45d1de05b97a049f676ae1d4e8020b41bba191b51bad9"
+    },
+    "reveal_event_sha256": "0857c1d4f5ef4f2198224495fa03a4d1be7b754e349ae91901ba4f87a622a3f2",
+    "bundle_content_sha256": "7761c8181e5bc4326dd5b4bf31999df04a536dd65d46bb8ea7befed07ef1cd7f"
+  },
+  "superseding_rule": "This deny overlay does not mutate historical plans or ledgers."
+}

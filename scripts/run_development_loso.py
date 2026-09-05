@@ -21,7 +21,11 @@ from cfeg.execution_manifest import (
     sha256_json,
     validate_primary_pair_and_hash,
 )
-from cfeg.governance import current_source_revision_contract
+from cfeg.governance import (
+    current_source_revision_contract,
+    reject_retired_physical_candidate_action,
+    validate_physical_candidate_retirement,
+)
 from cfeg.prediction import run_prediction
 from cfeg.train_loop import _resolve_augmentation_channel_sets, run_training
 from cfeg.utils.checkpoint import save_json
@@ -39,6 +43,9 @@ def main() -> None:
     parser.add_argument("--ablation-config", default="configs/train/ablation.yaml")
     parser.add_argument("--root", default="outputs/development-loso/fixed-epoch-v1")
     args = parser.parse_args()
+    validate_physical_candidate_retirement()
+    if args.command != "status":
+        reject_retired_physical_candidate_action()
     root = Path(args.root)
     manifest_path = root / "grid_manifest.json"
 

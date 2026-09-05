@@ -3,7 +3,12 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
-> Protocol 0.3의 **연구 질문**은 유지한다. 당시 5-fold split·평가·iid 추론 계약은 `DEC-20260830-002`와 `0.4-lockbox`가 대체했다. `0.4-dev`에서 structure/query-QC/external 권한 분리와 P0 wearable 복구를 구현했지만 metadata treatment는 아직 확증용으로 동결되지 않았다. 현재 구현 범위와 남은 gate는 [프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
+> **2026-09-04 superseded / historical only:** `DEC-20260904-005`가 현재 목표를
+> metadata-assisted calibration-efficient SSVEP로 복구했다. 아래 strict-k0 A0/A2 질문과
+> Phase 3은 당시 계획이며 실행하지 않는다. 현재 설계는
+> [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md)를 우선한다.
+
+> 아래 본문은 Protocol 0.3의 **당시 연구 질문**을 유지했던 실행안이다. 당시 5-fold split·평가·iid 추론 계약은 `DEC-20260830-002`와 `0.4-lockbox`가 대체했고, 그 후 physical 후보도 no-go로 종료됐다. 현재 구현 범위와 남은 gate는 [프로토콜 현재 상태](research_protocol_status.md)를 우선한다.
 
 > **2026-09-01 실행 결과:** `DEC-20260901-004`의 physical reveal #2는 18/18 training·3/3 intervention·atomic publication까지 완료됐다. Assay potency는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 네 substantive gate가 실패했다. 사전 중단 규칙에 따라 현 `physical_hybrid_v1`의 Phase 3은 no-go이며 39/60 confirmatory는 봉인한다. 같은 S1–S3를 재튜닝·재공개하지 않는다.
 
@@ -17,7 +22,7 @@
 
 ## 범위 고정
 
-연구 질문은 바꾸지 않는다.
+당시 연구 질문은 다음과 같았다.
 
 > 구조화된 획득조건 metadata가 target 사용자 데이터로 적응하지 않는 k=0 조건에서 처음 보는 사용자·데이터셋·전극 조건의 closed-set SSVEP 분류 성능과 강건성을 개선하는가?
 
@@ -30,7 +35,7 @@
 
 ## 사전지정 가설
 
-- Primary H1: frozen 39명 source-only training에서 만든 fixed 3-seed A2 ensemble이 완전히 독립된 60명 lockbox의 k=0 balanced accuracy에서 구조와 parameter shape를 맞춘 A0 ensemble보다 사전지정 SESOI를 초과해 높다. Wet/dry별 결과는 descriptive다.
+- 당시 Primary H1: frozen 39명 source-only training에서 만든 fixed 3-seed A2 ensemble이 완전히 독립된 60명 lockbox의 k=0 balanced accuracy에서 구조와 parameter shape를 맞춘 A0 ensemble보다 사전지정 SESOI를 초과해 높다. Wet/dry별 결과는 descriptive다.
 - H2: A3 adapter/consistency가 A0보다 held-out query의 clean→perturbed 하락을 줄인다.
 - H3 acquisition replication: Wang/BETA/Dong2023의 exact 40-class semantics에서 source-only validation 후 held-out acquisition의 A2−A0를 평가한다. Wang과 BETA만의 전이는 metadata 이득 식별이 아니라 boundary test다.
 - H4: 사전지정 성공 threshold에서 A2/A3의 `learned − forgotten` OOD cell 수가 양수이고 worst-group 성능이 개선된다.

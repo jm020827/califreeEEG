@@ -1,5 +1,10 @@
 # 연구 의미·데이터 확장·최신 문헌 전략
 
+> **2026-09-04 superseded / historical strategy:** 아래 strict-k0 A0/A2 문구는 당시 연구
+> 전략이다. 현재 목표는 k=0 anchor를 포함한 metadata-assisted low-calibration curve이며,
+> [현재 설계](metadata_calibration_efficiency_design.md)를 우선한다. 데이터·문헌의 한계 분석은
+> 역사적 근거로 유지한다.
+
 > **2026-09-01 상태 갱신:** impedance mapping, 전체 wearable_v3 acceptance와 physical-hybrid six-role/18-job 경로를 구현했고 `DEC-20260901-004`의 reveal #2도 완료했다. Assay potency는 유효했지만 A0 BA `0.1292`, Full A2 BA `0.1194`, Δ `−0.0097`이고 substantive gate 네 개가 실패해 diagnostic no-go다. S1–S3 재튜닝·추가 reveal과 현 candidate의 39/60 confirmatory는 차단한다. 이 문서의 문헌·데이터 확장 논리는 유지하되 실행 권한은 [프로토콜 현재 상태](research_protocol_status.md)를 따른다.
 
 기준일: 2026-08-29
@@ -21,7 +26,7 @@
 | 가장 먼저 추가할 데이터는? | **Nakanishi 권리·s1–s10 확인** | Nakanishi는 exact-12 replication이다. Kim은 frequency 10개만 겹치고 phase가 모두 π만큼 달라 exact lockbox가 아니다. |
 | 가장 강한 후속 자료는? | **동일 참가자 randomized crossover 신규 수집** | wet/dry 또는 device를 교차하고, block 전 per-channel impedance와 전체 acquisition provenance를 기록한다. |
 
-## 2. 이 연구가 실제로 묻는 질문
+## 2. 당시 연구가 실제로 묻던 질문
 
 쉽게 말하면 다음 비교이다.
 
@@ -30,7 +35,7 @@
 3. 현재 query EEG와 공통 구조/QC만 보는 A0와, 여기에 query 전에 이미 알 수 있는 electrode type·block impedance·채널별 impedance를 더한 A2를 비교한다. Wearable에서 상수인 reference/cap은 primary treatment에서 제외한다.
 4. 같은 backbone·parameter 수·학습 예산에서 A2가 더 잘하면 metadata의 **증분 가치**가 있다.
 
-주가설은 다음처럼 고정하는 것이 가장 안전하다.
+당시 주가설은 다음처럼 고정했다.
 
 > **H1:** target participant의 labeled/unlabeled EEG나 target-set 통계를 adaptation에 사용하지 않는 inductive strict k=0 조건에서, factorized transferable acquisition metadata를 사용하는 A2가 동일 구조의 metadata-null A0보다 held-out participant balanced accuracy를 높인다.
 

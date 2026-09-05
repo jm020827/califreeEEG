@@ -1,0 +1,73 @@
+schema: cfeg.synthetic-reliability-stage0-plan.v1
+candidate_id: reliability-spatial-v1
+dataset_revision: synthetic_quality_v1
+generator_schema: cfeg.synthetic-quality-generator.v2
+scope: synthetic_engineering_only
+row_unit: sample_x_active_canonical_channel
+asset_publication:
+  freshness: output_must_not_exist
+  concurrency_reservation: fixed_name_atomic_mkdir
+  transaction: hidden_staging_fsync_then_atomic_root_rename
+  reservation_release: after_success_or_handled_prepublication_failure
+outcome_publication:
+  output_root: outputs/engineering/reliability-spatial-v1/stage0
+  freshness: output_must_not_exist
+  concurrency_reservation: fixed_name_atomic_mkdir_before_assay
+  transaction: hidden_staging_fsync_then_atomic_root_rename
+  failed_gate_is_terminal: true
+  overwrite_or_supersede_allowed: false
+  reservation_release: only_after_terminal_outcome_publication
+generator:
+  seed: 42
+  rng_schema: numpy_seedsequence_hierarchical_v1
+  n_subjects: 8
+  n_blocks_per_interface: 2
+  n_repetitions_per_class_per_block: 2
+  n_classes: 4
+  target_sfreq: 200.0
+  duration_sec: 2.0
+  c_max: 64
+  active_channel_names: [Pz, PO3, PO4, POz, PO7, O1, Oz, O2]
+  active_canonical_channel_ids: [48, 55, 57, 56, 53, 61, 62, 63]
+  expected_n_samples: 256
+  expected_n_quality_rows: 2048
+  required_asset_files:
+    - asset_info.json
+    - class_map.json
+    - manifest.jsonl
+    - manifest.parquet
+    - preprocess_config.yaml
+    - quality_target_spec.json
+    - quality_truth.jsonl
+    - signals.h5
+primary_target: realized_signal_fraction
+secondary_targets:
+  - latent_badness
+  - oracle_signal_fraction
+  - realized_clean_signal_mse
+feature_schema: query_window_reliability_features_v1
+evaluation:
+  outer_split: leave_one_subject_out
+  inner_selection: leave_one_training_subject_out
+  ridge_alphas: [0.000001, 0.0001, 0.01, 1.0, 10.0, 100.0]
+  subject_macro_aggregation: true
+controls:
+  block_bundle_shuffle: within_subject_and_electrode_type
+  channel_impedance_permutation: within_sample_active_channel_rotation
+leakage_audit:
+  label_only_subject_macro_r2_max: 0.01
+  class_target_mean_range_max: 0.02
+gate:
+  q_mean_r2_strict_min: 0.0
+  metadata_partial_r2_mean_min: 0.02
+  metadata_partial_r2_positive_subjects_min: 6
+  channel_rank_rho_gain_mean_min: 0.02
+  channel_rank_rho_gain_positive_subjects_min: 6
+  block_shuffle_relative_sse_gain_mean_min: 0.01
+  block_shuffle_positive_subjects_min: 6
+  channel_permutation_relative_sse_gain_mean_min: 0.01
+  channel_permutation_positive_subjects_min: 6
+population_inference_allowed: false
+confirmatory_execution_authorized: false
+wearable_s1_s3_reuse_allowed: false
+decoder_checkpoint_reuse_allowed: false

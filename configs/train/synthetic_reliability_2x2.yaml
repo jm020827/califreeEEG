@@ -1,0 +1,25 @@
+base_config: configs/train/synthetic_reliability_candidate.yaml
+reliability_family:
+  schema: cfeg.reliability-mechanism-family.v1
+  candidate_id: reliability-spatial-v1
+  roles: [A0, A_M, A_Q, A_QM]
+  primary_contrast: A_QM_minus_A_Q
+  secondary_contrast: A_M_minus_A0
+  treatment_axes: [query_qc_access, external_metadata_access]
+  evidence_scope: synthetic_engineering_only
+  population_inference_allowed: false
+  confirmatory_execution_authorized: false
+  wearable_s1_s3_reuse_allowed: false
+variants:
+  A0:
+    model.conditioning.spatial_reliability.query_qc_mode: "null"
+    model.condition_encoder.external_metadata_mode: "null"
+  A_M:
+    model.conditioning.spatial_reliability.query_qc_mode: "null"
+    model.condition_encoder.external_metadata_mode: observed
+  A_Q:
+    model.conditioning.spatial_reliability.query_qc_mode: observed
+    model.condition_encoder.external_metadata_mode: "null"
+  A_QM:
+    model.conditioning.spatial_reliability.query_qc_mode: observed
+    model.condition_encoder.external_metadata_mode: observed

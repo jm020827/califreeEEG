@@ -26,6 +26,9 @@ from cfeg.data.metadata_controls import (
     normalize_development_control,
 )
 from cfeg.data.preprocess import CanonicalChannelMap
+from cfeg.data.query_reliability_corruption import (
+    apply_query_reliability_training_mixture,
+)
 from cfeg.data.schema import load_manifest
 from cfeg.data.splits import (
     make_confirmatory_lockbox_split,
@@ -35,6 +38,7 @@ from cfeg.data.splits import (
     make_cross_subject_split,
     make_cross_subject_train_val_split,
     make_development_subject_fold_split,
+    make_fixed_subject_partition,
     make_joint_subject_condition_split,
 )
 from cfeg.data.transforms import make_two_views
@@ -51,6 +55,12 @@ from cfeg.governance import (
 from cfeg.losses import kl_normal, representation_consistency_loss, symmetric_kl_logits
 from cfeg.metrics import classification_metrics, itr_bits_per_min
 from cfeg.models.full_model import ConditionedEEGDecoder
+from cfeg.query_reliability_contract import (
+    query_reliability_contract_marker_present,
+    reject_query_reliability_beta_lockbox_access,
+    validate_query_reliability_training_preflight,
+)
+from cfeg.reliability_contract import validate_reliability_training_preflight
 from cfeg.runtime import RuntimeMeasurement, resolve_device
 from cfeg.seed import seed_everything
 from cfeg.utils.checkpoint import (
@@ -65,6 +75,8 @@ from cfeg.utils.checkpoint import (
 from cfeg.utils.config import save_config
 from cfeg.utils.params import count_parameters
 
+_RELIABILITY_ORCHESTRATOR_AUTHORIZATION = object()
+
 
 def run_training(
     cfg: dict,
@@ -72,7 +84,24 @@ def run_training(
     dry_run: bool = False,
     resume_exact: bool = False,
     _test_crash_after_epoch_commit: int | None = None,
+    _artifact_output_dir: str | Path | None = None,
+    _reliability_orchestrator_authorization: object | None = None,
 ) -> dict:
+    architecture = cfg.get("model", {}).get("conditioning", {}).get("architecture")
+    if (
+        architecture == "reliability_spatial_v1"
+        and _reliability_orchestrator_authorization is not _RELIABILITY_ORCHESTRATOR_AUTHORIZATION
+    ):
+        raise GovernanceError(
+            "reliability_spatial_v1 training is authorized only inside the exact "
+            "four-arm Stage-1 orchestrator; direct train.py/API execution is forbidden."
+        )
+    if query_reliability_contract_marker_present(cfg) and not dry_run:
+        raise GovernanceError(
+            "query_reliability_spatial_v1 outcome training is blocked while its exact "
+            "human-data bundle remains an implementation draft. Only outcome-free "
+            "dry-run graph validation is currently permitted."
+        )
     if dry_run and resume_exact:
         raise ValueError("dry_run and resume_exact cannot be combined.")
     if resume_exact:
@@ -85,6 +114,7 @@ def run_training(
             dry_run=dry_run,
             resume_exact=resume_exact,
             test_crash_after_epoch_commit=_test_crash_after_epoch_commit,
+            artifact_output_dir=_artifact_output_dir,
             run_started=run_started,
             measurement_holder=measurement_holder,
         )
@@ -92,7 +122,11 @@ def run_training(
         measurement = measurement_holder.get("measurement")
         if measurement is not None:
             attempt_metrics = measurement.finish(status="failed", error=exc)
-            output_dir = Path(cfg.get("output_dir", "outputs/debug"))
+            output_dir = Path(
+                _artifact_output_dir
+                if _artifact_output_dir is not None
+                else cfg.get("output_dir", "outputs/debug")
+            )
             if not dry_run and output_dir.is_dir():
                 _record_runtime_attempt(output_dir, attempt_metrics)
         raise
@@ -120,21 +154,24 @@ def _run_training_impl(
     dry_run: bool,
     resume_exact: bool,
     test_crash_after_epoch_commit: int | None,
+    artifact_output_dir: str | Path | None,
     run_started: float,
     measurement_holder: dict[str, RuntimeMeasurement],
 ) -> dict:
+    validate_reliability_training_preflight(cfg, dry_run=dry_run)
+    validate_query_reliability_training_preflight(cfg, dry_run=dry_run, verify_assets=True)
     access = resolve_research_access(cfg)
     development_control, training_external_control = _validate_development_control_access(
         cfg, access
     )
     _resolve_augmentation_channel_sets(cfg)
-    if (
-        not dry_run
-        and access.governed
-        and access.execution_phase == "development"
-    ):
+    if not dry_run and access.governed and access.execution_phase == "development":
         validate_physical_development_training_authorization(cfg)
-    output_dir = Path(cfg.get("output_dir", "outputs/debug"))
+    output_dir = Path(
+        artifact_output_dir
+        if artifact_output_dir is not None
+        else cfg.get("output_dir", "outputs/debug")
+    )
     resume_config_sha256 = _resume_config_sha256(cfg)
     resume_state = None
     resume_loaded_commit = None
@@ -162,6 +199,16 @@ def _run_training_impl(
     asset_manifest = pd.concat([load_manifest(root) for root in processed_roots], ignore_index=True)
     cohort = bind_cohort(asset_manifest, access)
     loader_settings = resolve_loader_settings(cfg["data"], device_type=device.type)
+    if loader_settings.preload_hdf5_to_memory:
+        preload_manifest = asset_manifest
+        if access.governed:
+            preload_manifest = asset_manifest.loc[
+                asset_manifest["subject_id"].astype(str).isin(cohort.selected_subject_ids)
+            ]
+        reject_query_reliability_beta_lockbox_access(
+            preload_manifest,
+            action="whole_cohort_preload_before_split",
+        )
     full_ds = EEGProcessedDataset(
         cfg["data"]["processed_dirs"],
         expected_revisions=cfg["data"].get("expected_revisions"),
@@ -212,6 +259,15 @@ def _run_training_impl(
             training_subject_ids=list(cfg["data"]["training_subject_ids"]),
             lockbox_subject_ids=list(cfg["data"]["lockbox_subject_ids"]),
         )
+    elif split_name == "fixed_subject_partition":
+        split = make_fixed_subject_partition(
+            cohort_manifest,
+            training_subject_ids=list(cfg["data"]["training_subject_ids"]),
+            validation_subject_ids=list(cfg["data"]["validation_subject_ids"]),
+            test_subject_ids=list(cfg["data"]["test_subject_ids"]),
+            excluded_subject_ids=list(cfg["data"].get("excluded_subject_ids") or []),
+            allow_empty_validation=bool(cfg["data"].get("allow_empty_validation", False)),
+        )
     elif split_name == "cross_dataset":
         split = make_cross_dataset_split(
             cohort_manifest,
@@ -241,10 +297,20 @@ def _run_training_impl(
         raise ValueError(
             f"Unknown data.split={split_name!r}; use cross_subject, cross_subject_train_val, "
             "development_subject_fold, confirmatory_lockbox, cross_subject_fold, "
-            "cross_dataset, cross_condition, "
+            "fixed_subject_partition, cross_dataset, cross_condition, "
             "or joint_subject_condition."
         )
     _validate_primary_split_contract(cfg, manifest, split, access=access, cohort=cohort)
+    train_validation_indices = np.concatenate([split.train, split.val])
+    reject_query_reliability_beta_lockbox_access(
+        manifest.iloc[train_validation_indices],
+        action="training_or_checkpoint_selection",
+    )
+    if access.allow_outer_test_during_training:
+        reject_query_reliability_beta_lockbox_access(
+            manifest.iloc[np.asarray(split.test, dtype=int)],
+            action="outer_test_during_training",
+        )
     if bool(cfg["data"].get("preload_train_indices_to_memory", False)):
         if bool(cfg["data"].get("preload_hdf5_to_memory", False)):
             raise ValueError("Choose either whole-cohort preload or train-only preload, not both.")
@@ -277,7 +343,7 @@ def _run_training_impl(
     n_classes = int(cfg.get("model", {}).get("n_classes", 0))
     # Model construction/training governance may inspect source train+validation
     # labels, but not the final held-out target labels before checkpoint freeze.
-    selected_indices = np.concatenate([split.train, split.val])
+    selected_indices = train_validation_indices
     selected_labels = manifest.iloc[selected_indices]["label"].astype(int)
     if len(selected_labels) and (selected_labels.min() < 0 or selected_labels.max() >= n_classes):
         raise ValueError(
@@ -378,6 +444,9 @@ def _run_training_impl(
         "development_control": control_plan.contract,
         "elapsed_time_sec": float(time.perf_counter() - run_started),
     }
+    initial_diagnostics = _summarize_reliability_aux([out.aux])
+    if initial_diagnostics:
+        dry_result["reliability_diagnostics"] = initial_diagnostics
     measurement.finish_phase()
     if dry_run:
         return dry_result
@@ -1148,7 +1217,7 @@ def _record_runtime_attempt(
             "cuda_oom": any(bool(attempt.get("cuda_oom")) for attempt in attempts),
             "runtime_attempts": [
                 {
-                    "path": str(path),
+                    "path": path.relative_to(output_dir).as_posix(),
                     "sha256": _sha256_file(path),
                     "status": attempt.get("status"),
                     "elapsed_time_sec": attempt.get("elapsed_time_sec"),
@@ -1230,7 +1299,7 @@ def _train_epoch(
         batch = _to_device(batch, device)
         optimizer.zero_grad(set_to_none=True)
         with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
-            loss = _step_loss(model, batch, cfg)
+            loss = _step_loss(model, batch, cfg, draw_index=epoch)
         scaler.scale(loss).backward()
         grad_clip = cfg["train"].get("grad_clip_norm")
         if grad_clip:
@@ -1265,10 +1334,28 @@ def _train_epoch(
     return total / max(count, 1), global_step
 
 
-def _step_loss(model, batch, cfg) -> torch.Tensor:
+def _step_loss(model, batch, cfg, *, draw_index: int = 0) -> torch.Tensor:
     loss_cfg = cfg.get("loss", {})
     aug = cfg.get("augment", {})
     y = batch["y"]
+    query_corruption = aug.get("query_reliability_corruption", {})
+    if bool(query_corruption.get("enabled", False)):
+        if aug.get("make_two_views", False):
+            raise ValueError(
+                "query_reliability_corruption cannot be combined with legacy two-view "
+                "augmentation because that path invalidates the Q contract."
+            )
+        corrupted_x, corrupted_cond, _affected = apply_query_reliability_training_mixture(
+            batch["x"],
+            batch["cond"],
+            sample_ids=list(batch["sample_id"]),
+            cell_ids=list(query_corruption.get("cell_ids") or []),
+            seed=int(query_corruption.get("seed", cfg.get("seed", 42))),
+            draw_index=int(draw_index),
+            clean_probability=float(query_corruption.get("clean_probability", 0.25)),
+        )
+        out = model(corrupted_x, corrupted_cond, use_latent=True)
+        return F.cross_entropy(out.logits, y)
     if not aug.get("make_two_views", True):
         out = model(batch["x"], batch["cond"], use_latent=True)
         loss = F.cross_entropy(out.logits, y)
@@ -1325,12 +1412,15 @@ def evaluate_loader(
     model.eval()
     labels = []
     logits = []
+    reliability_aux: list[dict[str, torch.Tensor]] = []
     for batch in loader:
         batch = _to_device(batch, device)
         with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
             out = model(batch["x"], batch["cond"], use_latent=False)
         labels.append(batch["y"].detach().cpu())
         logits.append(out.logits.detach().float().cpu())
+        if "spatial_operator_frobenius_norm" in out.aux:
+            reliability_aux.append(out.aux)
     if not labels:
         return {
             "accuracy": 0.0,
@@ -1340,11 +1430,44 @@ def evaluate_loader(
             "ece": 0.0,
             "n_samples": 0,
         }
-    return classification_metrics(
+    metrics = classification_metrics(
         torch.cat(labels).numpy(),
         torch.cat(logits).numpy(),
         trial_time_sec=trial_time_sec,
     )
+    metrics.update(_summarize_reliability_aux(reliability_aux))
+    return metrics
+
+
+def _summarize_reliability_aux(
+    batches: list[dict[str, torch.Tensor]],
+) -> dict[str, float]:
+    keys = (
+        "metadata_residual_alpha",
+        "spatial_operator_frobenius_norm",
+        "query_spatial_operator_frobenius_norm",
+        "metadata_spatial_residual_frobenius_norm",
+        "spatial_self_gain_min",
+        "spatial_self_gain_max",
+        "spatial_offdiagonal_row_l1_max",
+        "channel_query_available_count",
+        "channel_metadata_available_count",
+    )
+    values: dict[str, list[torch.Tensor]] = {key: [] for key in keys}
+    for batch in batches:
+        for key in keys:
+            value = batch.get(key)
+            if torch.is_tensor(value):
+                values[key].append(value.detach().float().flatten().cpu())
+    summary: dict[str, float] = {}
+    for key, parts in values.items():
+        if not parts:
+            continue
+        combined = torch.cat(parts)
+        summary[f"diagnostic_{key}_mean"] = float(combined.mean())
+        summary[f"diagnostic_{key}_min"] = float(combined.min())
+        summary[f"diagnostic_{key}_max"] = float(combined.max())
+    return summary
 
 
 def _to_device(batch, device):
@@ -1363,6 +1486,7 @@ def _processed_asset_provenance(roots: list[Path]) -> dict:
         if path.exists():
             with path.open("r", encoding="utf-8") as handle:
                 info = json.load(handle)
+        analysis_only_fingerprints = _analysis_only_artifact_fingerprints(root, info)
         datasets.append(
             {
                 "processed_dir": str(root),
@@ -1387,12 +1511,33 @@ def _processed_asset_provenance(roots: list[Path]) -> dict:
                     )
                     if (root / name).exists()
                 },
+                "analysis_only_artifact_fingerprints": analysis_only_fingerprints,
                 "signals_h5_size_bytes": (
                     (root / "signals.h5").stat().st_size if (root / "signals.h5").exists() else None
                 ),
             }
         )
     return {"processed_dirs": [str(root) for root in roots], "datasets": datasets}
+
+
+def _analysis_only_artifact_fingerprints(root: Path, info: dict) -> dict[str, str]:
+    artifacts = info.get("analysis_only_artifacts") or {}
+    if not isinstance(artifacts, dict):
+        raise TypeError("asset_info.analysis_only_artifacts must be a mapping.")
+    fingerprints: dict[str, str] = {}
+    for name, contract in sorted(artifacts.items()):
+        if Path(name).name != name or not isinstance(contract, dict):
+            raise ValueError("Analysis-only artifact paths/contracts must be simple file entries.")
+        if contract.get("model_input") is not False:
+            raise ValueError(f"Analysis-only artifact {name!r} must declare model_input=false.")
+        artifact_path = root / name
+        if not artifact_path.is_file():
+            raise ValueError(f"Analysis-only artifact is missing: {artifact_path}.")
+        observed = _sha256_file(artifact_path)
+        if contract.get("sha256") != observed:
+            raise ValueError(f"Analysis-only artifact digest mismatch: {artifact_path}.")
+        fingerprints[name] = observed
+    return fingerprints
 
 
 def _runtime_contract(
@@ -1416,17 +1561,10 @@ def _runtime_contract(
         }
         for name, parameter in model.named_parameters()
     ]
-    state_digest = hashlib.sha256()
-    for name, parameter in model.named_parameters():
-        if not parameter.requires_grad:
-            continue
-        state_digest.update(name.encode("utf-8"))
-        tensor = parameter.detach().cpu().contiguous()
-        state_digest.update(tensor.view(torch.uint8).numpy().tobytes())
     environment = _environment_contract()
     return {
         "parameter_schema_sha256": _sha256_json(schema),
-        "initial_trainable_state_sha256": state_digest.hexdigest(),
+        "initial_trainable_state_sha256": _trainable_state_sha256(model),
         "split_assignment_sha256": _split_assignment_hash(manifest, split),
         "vocabulary_sha256": _sha256_json(vocab),
         "asset_provenance_sha256": _sha256_json(asset_provenance),
@@ -1447,6 +1585,17 @@ def _runtime_contract(
         "environment_sha256": _sha256_json(environment),
         **_source_revision_contract(),
     }
+
+
+def _trainable_state_sha256(model) -> str:
+    digest = hashlib.sha256()
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        digest.update(name.encode("utf-8"))
+        tensor = parameter.detach().cpu().contiguous().reshape(-1)
+        digest.update(tensor.view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
 
 
 def _environment_contract() -> dict[str, object]:

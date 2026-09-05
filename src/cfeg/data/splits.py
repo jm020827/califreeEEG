@@ -63,6 +63,79 @@ def make_cross_subject_train_val_split(
     return split
 
 
+def make_fixed_subject_partition(
+    manifest: pd.DataFrame,
+    *,
+    training_subject_ids: list[str],
+    validation_subject_ids: list[str],
+    test_subject_ids: list[str],
+    excluded_subject_ids: list[str] | None = None,
+    allow_empty_validation: bool = False,
+) -> SplitIndices:
+    """Apply an explicit, participant-disjoint train/validation/test partition.
+
+    This split is intended for preregistered public-dataset studies where the
+    participant identities, rather than a pseudo-random ratio, are part of the
+    scientific contract.  It does not itself authorize access to the test rows.
+    The caller's research-access policy still decides whether a test loader may
+    be constructed.
+    """
+
+    named = {
+        "training": {str(value) for value in training_subject_ids},
+        "validation": {str(value) for value in validation_subject_ids},
+        "test": {str(value) for value in test_subject_ids},
+    }
+    excluded = {str(value) for value in (excluded_subject_ids or [])}
+    required_roles = {"training", "test"}
+    if not allow_empty_validation:
+        required_roles.add("validation")
+    empty = sorted(name for name in required_roles if not named[name])
+    if empty:
+        raise ValueError(f"Fixed subject partition has empty role(s): {empty}.")
+    overlaps = {
+        f"{left}/{right}": sorted(named[left] & named[right])
+        for left, right in (
+            ("training", "validation"),
+            ("training", "test"),
+            ("validation", "test"),
+        )
+        if named[left] & named[right]
+    }
+    if overlaps:
+        raise ValueError(f"Fixed subject partition roles overlap: {overlaps}.")
+    role_subjects = set().union(*named.values())
+    excluded_overlap = sorted(role_subjects & excluded)
+    if excluded_overlap:
+        raise ValueError(
+            "Fixed subject partition exclusions overlap analysis roles: "
+            f"{excluded_overlap[:5]}."
+        )
+
+    observed = set(manifest["subject_id"].astype(str))
+    declared = role_subjects | excluded
+    if declared != observed:
+        raise ValueError(
+            "Fixed subject roles plus exclusions must cover the supplied cohort exactly: "
+            f"missing={sorted(observed - declared)[:5]}, "
+            f"extra={sorted(declared - observed)[:5]}."
+        )
+    subjects = manifest["subject_id"].astype(str)
+    split = SplitIndices(
+        train=np.flatnonzero(subjects.isin(named["training"]).to_numpy()),
+        val=np.flatnonzero(subjects.isin(named["validation"]).to_numpy()),
+        test=np.flatnonzero(subjects.isin(named["test"]).to_numpy()),
+    )
+    if allow_empty_validation:
+        if not len(split.train) or not len(split.test):
+            raise ValueError(
+                "fixed-subject-partition produced an empty training or test role."
+            )
+    else:
+        _ensure_nonempty(split.train, split.val, split.test, context="fixed-subject-partition")
+    return split
+
+
 def make_development_subject_fold_split(
     manifest: pd.DataFrame,
     *,

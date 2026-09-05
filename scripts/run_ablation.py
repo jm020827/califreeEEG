@@ -6,6 +6,7 @@ import copy
 import hashlib
 import json
 import os
+import tempfile
 import traceback
 from pathlib import Path
 
@@ -14,10 +15,34 @@ from _bootstrap import add_src_to_path
 
 add_src_to_path()
 
+from cfeg.analysis.synthetic_reliability_stage1 import (
+    finalize_synthetic_reliability_stage1,
+    validate_synthetic_reliability_stage1_publication_inputs,
+)
 from cfeg.execution_manifest import validate_primary_pair_and_hash
-from cfeg.governance import GovernanceError
-from cfeg.train_loop import run_training
+from cfeg.governance import (
+    GovernanceError,
+    current_source_revision_contract,
+    implementation_contract_sha256,
+)
+from cfeg.reliability_contract import (
+    RELIABILITY_ROLES,
+    validate_reliability_family,
+    validate_reliability_runtime_family,
+    validate_reliability_stage0_gate,
+)
+from cfeg.train_loop import _RELIABILITY_ORCHESTRATOR_AUTHORIZATION, run_training
 from cfeg.utils.config import load_config, merge_overrides
+
+REPO = Path(__file__).resolve().parents[1]
+CANONICAL_RELIABILITY_SUITE = REPO / "configs/train/synthetic_reliability_2x2.yaml"
+CANONICAL_RELIABILITY_BASE = REPO / "configs/train/synthetic_reliability_candidate.yaml"
+CANONICAL_RELIABILITY_STAGE1_ROOT = (
+    REPO / "outputs/engineering/reliability-spatial-v1/stage1"
+)
+CANONICAL_RELIABILITY_DRY_RUN_PARENT = (
+    REPO / "outputs/dry-runs/reliability-spatial-v1"
+)
 
 
 def main() -> None:
@@ -43,6 +68,12 @@ def main() -> None:
     base_config = args.base_config or os.environ.get(
         "CFEG_ABLATION_BASE_CONFIG", suite["base_config"]
     )
+    if suite.get("reliability_family") is not None:
+        _validate_reliability_orchestrator_args(
+            args,
+            base_config=base_config,
+            dry_run=args.dry_run,
+        )
     base = merge_overrides(load_config(base_config, strict_env=False), args.override)
     _validate_development_grid_execution(base, dry_run=args.dry_run)
     _apply_runtime_environment(base)
@@ -53,6 +84,34 @@ def main() -> None:
     )
     control_family_hash = _validate_development_control_family(base, suite)
     mechanism_family_hash = _validate_physical_mechanism_family(base, suite)
+    reliability_family_hash = validate_reliability_family(base, suite)
+    reliability_stage0_receipt_sha256 = (
+        validate_reliability_stage0_gate(base, require_receipt=not args.dry_run)
+        if reliability_family_hash is not None
+        else None
+    )
+    canonical_output_root = Path(args.output_root)
+    artifact_output_root = canonical_output_root
+    reliability_staging_root: Path | None = None
+    reliability_reservation: Path | None = None
+    if reliability_family_hash is not None and not args.dry_run:
+        canonical_output_root.parent.mkdir(parents=True, exist_ok=True)
+        reliability_reservation = _reserve_reliability_stage1_execution(
+            canonical_output_root,
+            contract=_reliability_attempt_contract(
+                base,
+                reliability_family_hash=reliability_family_hash,
+                stage0_receipt_sha256=reliability_stage0_receipt_sha256,
+            ),
+        )
+        reliability_staging_root = Path(
+            tempfile.mkdtemp(
+                prefix=f".{canonical_output_root.name}.staging-",
+                dir=canonical_output_root.parent,
+            )
+        )
+        reliability_staging_root.chmod(0o700)
+        artifact_output_root = reliability_staging_root
     selected = set(args.only.split(",")) if args.only else None
     optional = set(suite.get("optional_variants", []))
     rows = []
@@ -74,6 +133,15 @@ def main() -> None:
             cfg.setdefault("protocol", {})["physical_mechanism_family_sha256"] = (
                 mechanism_family_hash
             )
+        if reliability_family_hash is not None:
+            cfg.setdefault("protocol", {})["reliability_mechanism_family_sha256"] = (
+                reliability_family_hash
+            )
+            if name in RELIABILITY_ROLES:
+                cfg["protocol"]["reliability_family_role"] = name
+                cfg["protocol"]["reliability_stage0_receipt_sha256"] = (
+                    reliability_stage0_receipt_sha256
+                )
         if name in {"A0_eeg_only", "A2_structured_condition_prompt"}:
             protocol_cfg = cfg.setdefault("protocol", {})
             protocol_cfg["primary_fairness_hash"] = primary_fairness_hash
@@ -86,6 +154,16 @@ def main() -> None:
                 cfg,
                 dry_run=args.dry_run,
                 resume_exact=args.resume_exact,
+                _artifact_output_dir=(
+                    artifact_output_root / name
+                    if reliability_staging_root is not None
+                    else None
+                ),
+                _reliability_orchestrator_authorization=(
+                    _RELIABILITY_ORCHESTRATOR_AUTHORIZATION
+                    if reliability_family_hash is not None
+                    else None
+                ),
             )
             runtime_metrics = result.get("runtime_metrics") or {}
             control = result.get("development_control") or {}
@@ -96,11 +174,37 @@ def main() -> None:
                 "n_folds": cfg.get("data", {}).get("n_folds"),
                 "fold_index": cfg.get("data", {}).get("fold_index"),
                 "base_config": base_config,
+                "candidate_id": cfg.get("protocol", {}).get("candidate_id"),
+                "candidate_plan_sha256": cfg.get("protocol", {}).get(
+                    "candidate_plan_sha256"
+                ),
+                "predecessor_retirement_receipt_sha256": cfg.get("protocol", {}).get(
+                    "predecessor_retirement_receipt_sha256"
+                ),
+                "reliability_query_feature_schema": cfg.get("protocol", {}).get(
+                    "reliability_query_feature_schema"
+                ),
                 "primary_fairness_hash": (
                     primary_fairness_hash
                     if name in {"A0_eeg_only", "A2_structured_condition_prompt"}
                     else None
                 ),
+                "reliability_mechanism_family_sha256": (
+                    reliability_family_hash if name in RELIABILITY_ROLES else None
+                ),
+                "reliability_family_role": name if name in RELIABILITY_ROLES else None,
+                "reliability_stage0_receipt_sha256": (
+                    reliability_stage0_receipt_sha256
+                    if name in RELIABILITY_ROLES
+                    else None
+                ),
+                "query_qc_mode": cfg.get("model", {})
+                .get("conditioning", {})
+                .get("spatial_reliability", {})
+                .get("query_qc_mode"),
+                "external_metadata_mode": cfg.get("model", {})
+                .get("condition_encoder", {})
+                .get("external_metadata_mode"),
                 "status": "dry_run" if args.dry_run else "completed",
                 "best_validation_accuracy": result.get(
                     "best_validation_accuracy", result.get("best_accuracy")
@@ -133,6 +237,13 @@ def main() -> None:
                     "environment_sha256"
                 ),
                 "execution_phase": (result.get("runtime_contract") or {}).get("execution_phase"),
+                "analysis_plan_status": (result.get("runtime_contract") or {}).get(
+                    "analysis_plan_status"
+                ),
+                "cohort_role": (result.get("runtime_contract") or {}).get("cohort_role"),
+                "loader_settings_sha256": (result.get("runtime_contract") or {}).get(
+                    "loader_settings_sha256"
+                ),
                 "analysis_plan_sha256": (result.get("runtime_contract") or {}).get(
                     "analysis_plan_sha256"
                 ),
@@ -187,11 +298,35 @@ def main() -> None:
                 row["test_accuracy"] = (result.get("test") or {}).get("accuracy")
                 row["test_balanced_accuracy"] = (result.get("test") or {}).get("balanced_accuracy")
             rows.append(row)
-        except GovernanceError:
-            raise
+        except GovernanceError as exc:
+            if reliability_staging_root is None:
+                raise
+            failed = True
+            failure_metrics = _load_failure_runtime_metrics(
+                artifact_output_root / name
+            )
+            rows.append(
+                {
+                    "variant": name,
+                    "seed": cfg.get("seed"),
+                    "split_seed": cfg.get("data", {}).get("split_seed", 42),
+                    "base_config": base_config,
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "output_dir": str(artifact_output_root / name),
+                    **_flatten_runtime_metrics(failure_metrics),
+                }
+            )
+            traceback.print_exc()
+            break
         except Exception as exc:  # noqa: BLE001 - preserve and report failed research runs
             failed = True
-            failure_metrics = _load_failure_runtime_metrics(Path(cfg["output_dir"]))
+            failure_metrics = _load_failure_runtime_metrics(
+                artifact_output_root / name
+                if reliability_staging_root is not None
+                else Path(cfg["output_dir"])
+            )
             rows.append(
                 {
                     "variant": name,
@@ -202,7 +337,11 @@ def main() -> None:
                     "status": "failed",
                     "error_type": type(exc).__name__,
                     "error": str(exc),
-                    "output_dir": cfg["output_dir"],
+                    "output_dir": str(
+                        artifact_output_root / name
+                        if reliability_staging_root is not None
+                        else Path(cfg["output_dir"])
+                    ),
                     "development_control_name": cfg.get("protocol", {}).get(
                         "development_control", "none"
                     ),
@@ -250,12 +389,146 @@ def main() -> None:
             }
         )
 
-    out = Path(args.output_root) / "summary.csv"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(out, index=False)
-    print(out)
+    try:
+        reliability_status = validate_reliability_runtime_family(
+            rows, suite.get("reliability_family")
+        )
+        for row in rows:
+            if row.get("variant") in RELIABILITY_ROLES:
+                row["reliability_family_runtime_status"] = reliability_status
+    except ValueError as exc:
+        failed = True
+        rows.append(
+            {
+                "variant": "__reliability_family_guard__",
+                "status": "failed",
+                "error": str(exc),
+            }
+        )
+
+    if (
+        reliability_family_hash is not None
+        and not args.dry_run
+        and not failed
+        and reliability_status == "verified_equal"
+    ):
+        try:
+            candidate_plan_path = REPO / str(base["protocol"]["candidate_plan"])
+            candidate_plan = load_config(candidate_plan_path, strict_env=False)
+            analysis_receipt = finalize_synthetic_reliability_stage1(
+                artifact_output_root,
+                runtime_rows=rows,
+                candidate_plan=candidate_plan,
+                candidate_plan_path=candidate_plan_path,
+                stage0_receipt_sha256=str(reliability_stage0_receipt_sha256),
+            )
+            analysis_receipt_sha256 = _sha256_file(analysis_receipt)
+            for row in rows:
+                if row.get("variant") in RELIABILITY_ROLES:
+                    row["stage1_analysis_receipt"] = str(analysis_receipt)
+                    row["stage1_analysis_receipt_sha256"] = analysis_receipt_sha256
+        except Exception as exc:  # noqa: BLE001 - publish a terminal failed attempt
+            failed = True
+            rows.append(
+                {
+                    "variant": "__stage1_analysis_guard__",
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+            traceback.print_exc()
+
+    out = artifact_output_root / "summary.csv"
+    try:
+        summary_rows = copy.deepcopy(rows)
+        if reliability_staging_root is not None and not failed:
+            _rewrite_reliability_success_paths(
+                summary_rows,
+                staging_root=reliability_staging_root,
+                canonical_root=canonical_output_root,
+            )
+        _write_summary_csv(summary_rows, out)
+    except Exception as exc:
+        if reliability_staging_root is None:
+            raise
+        rows.append(
+            {
+                "variant": "__stage1_summary_guard__",
+                "status": "failed",
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+        )
+        # If even this minimal failure summary cannot be persisted, the fixed
+        # reservation remains as the explicit crash/review boundary.
+        _write_summary_csv(rows, out)
+        attempt_receipt = _write_failed_reliability_attempt(
+            reliability_staging_root,
+            canonical_root=canonical_output_root,
+            rows=rows,
+            attempt_contract=_reliability_attempt_contract(
+                base,
+                reliability_family_hash=reliability_family_hash,
+                stage0_receipt_sha256=reliability_stage0_receipt_sha256,
+            ),
+        )
+        traceback.print_exc()
+        print(attempt_receipt)
+        print(out)
+        raise SystemExit(1) from exc
     if failed:
+        if reliability_staging_root is not None:
+            attempt_receipt = _write_failed_reliability_attempt(
+                reliability_staging_root,
+                canonical_root=canonical_output_root,
+                rows=rows,
+                attempt_contract=_reliability_attempt_contract(
+                    base,
+                    reliability_family_hash=reliability_family_hash,
+                    stage0_receipt_sha256=reliability_stage0_receipt_sha256,
+                ),
+            )
+            print(attempt_receipt)
+        print(out)
         raise SystemExit(1)
+    if reliability_staging_root is not None:
+        try:
+            _publish_reliability_stage1_root(
+                reliability_staging_root,
+                canonical_root=canonical_output_root,
+            )
+        except Exception as exc:
+            if not reliability_staging_root.exists():
+                raise
+            rows.append(
+                {
+                    "variant": "__stage1_publication_guard__",
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+            _write_summary_csv(rows, out)
+            attempt_receipt = _write_failed_reliability_attempt(
+                reliability_staging_root,
+                canonical_root=canonical_output_root,
+                rows=rows,
+                attempt_contract=_reliability_attempt_contract(
+                    base,
+                    reliability_family_hash=reliability_family_hash,
+                    stage0_receipt_sha256=reliability_stage0_receipt_sha256,
+                ),
+            )
+            traceback.print_exc()
+            print(attempt_receipt)
+            print(out)
+            raise SystemExit(1) from exc
+        out = canonical_output_root / "summary.csv"
+        if reliability_reservation is None:  # pragma: no cover - coupled above
+            raise RuntimeError("Reliability Stage-1 publication lacks its reservation.")
+        _release_reliability_stage1_execution(reliability_reservation)
+    print(out)
 
 
 def _apply_runtime_environment(cfg: dict) -> None:
@@ -285,6 +558,80 @@ def _apply_runtime_environment(cfg: dict) -> None:
     )
     if os.environ.get("WANDB_ENTITY"):
         wandb_cfg["entity"] = os.environ["WANDB_ENTITY"]
+
+
+def _validate_reliability_orchestrator_args(
+    args: argparse.Namespace,
+    *,
+    base_config: str,
+    dry_run: bool,
+) -> None:
+    suite_path = Path(args.config).resolve()
+    base_path = Path(base_config).resolve()
+    if suite_path != CANONICAL_RELIABILITY_SUITE.resolve():
+        raise GovernanceError(
+            "reliability-spatial-v1 requires its canonical four-arm suite."
+        )
+    if base_path != CANONICAL_RELIABILITY_BASE.resolve():
+        raise GovernanceError(
+            "reliability-spatial-v1 requires its canonical frozen base config."
+        )
+    if args.override:
+        raise GovernanceError(
+            "reliability-spatial-v1 does not permit in-memory recipe overrides."
+        )
+    if args.only is not None:
+        raise GovernanceError(
+            "Reliability Stage-1 must execute all four arms together; --only is forbidden."
+        )
+    if args.include_optional or args.continue_on_error or args.resume_exact:
+        raise GovernanceError(
+            "Reliability Stage-1 forbids optional, continue-on-error, and resume overrides."
+        )
+    output_root = Path(args.output_root).resolve()
+    if dry_run:
+        if (
+            output_root == CANONICAL_RELIABILITY_STAGE1_ROOT.resolve()
+            or CANONICAL_RELIABILITY_STAGE1_ROOT.resolve() in output_root.parents
+        ):
+            raise GovernanceError(
+                "Reliability dry-run cannot target or create the canonical Stage-1 root."
+            )
+        if (
+            output_root.parent != CANONICAL_RELIABILITY_DRY_RUN_PARENT.resolve()
+            or not output_root.name.startswith("stage1-contract-")
+            or not output_root.name.removeprefix("stage1-contract-")
+        ):
+            raise GovernanceError(
+                "Reliability dry-run must use a direct fresh child named "
+                "stage1-contract-* under its dedicated dry-runs directory."
+            )
+        if output_root.exists() or output_root.is_symlink():
+            raise GovernanceError(
+                "Reliability dry-run output root must be fresh."
+            )
+    else:
+        if output_root != CANONICAL_RELIABILITY_STAGE1_ROOT.resolve():
+            raise GovernanceError(
+                "Reliability Stage-1 must use its canonical output root."
+            )
+        if output_root.exists() or output_root.is_symlink():
+            raise GovernanceError(
+                "Reliability Stage-1 output root already exists; refusing an overwrite or rerun."
+            )
+        reservation = _reliability_stage1_reservation_path(output_root)
+        if reservation.exists() or reservation.is_symlink():
+            raise GovernanceError(
+                "A Reliability Stage-1 execution reservation already exists; retry "
+                "requires a new owner decision after reservation review."
+            )
+        failed_attempts = _noncanonical_reliability_attempts(output_root)
+        if failed_attempts:
+            raise GovernanceError(
+                "A prior noncanonical Reliability Stage-1 attempt exists; retry requires "
+                "a new owner decision after attempt review: "
+                f"{[str(path) for path in failed_attempts]}."
+            )
 
 
 def _validate_development_grid_execution(base: dict, *, dry_run: bool) -> None:
@@ -505,12 +852,343 @@ def _flatten_runtime_metrics(metrics: dict) -> dict:
     }
 
 
+def _rewrite_reliability_success_paths(
+    rows: list[dict],
+    *,
+    staging_root: Path,
+    canonical_root: Path,
+) -> None:
+    for row in rows:
+        for field in (
+            "output_dir",
+            "runtime_metrics_path",
+            "stage1_analysis_receipt",
+        ):
+            value = row.get(field)
+            if not value:
+                continue
+            observed = Path(str(value)).resolve()
+            try:
+                relative = observed.relative_to(staging_root.resolve())
+            except ValueError as exc:
+                raise ValueError(
+                    f"Reliability success path {field!r} escaped its staging root."
+                ) from exc
+            row[field] = str(canonical_root / relative)
+
+
+def _write_summary_csv(rows: list[dict], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.tmp-",
+        dir=path.parent,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as handle:
+            pd.DataFrame(rows).to_csv(handle, index=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        _fsync_directory(path.parent)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def _reliability_attempt_contract(
+    base: dict,
+    *,
+    reliability_family_hash: str | None,
+    stage0_receipt_sha256: str | None,
+) -> dict[str, object]:
+    return {
+        "candidate_id": base.get("protocol", {}).get("candidate_id"),
+        "candidate_plan_sha256": base.get("protocol", {}).get(
+            "candidate_plan_sha256"
+        ),
+        "reliability_mechanism_family_sha256": reliability_family_hash,
+        "stage0_receipt_sha256": stage0_receipt_sha256,
+        "implementation_contract_sha256": implementation_contract_sha256(),
+        **current_source_revision_contract(),
+    }
+
+
+def _reliability_stage1_reservation_path(canonical_root: Path) -> Path:
+    return canonical_root.parent / f".{canonical_root.name}.execution-reservation"
+
+
+def _reserve_reliability_stage1_execution(
+    canonical_root: Path,
+    *,
+    contract: dict[str, object],
+) -> Path:
+    reservation = _reliability_stage1_reservation_path(canonical_root)
+    try:
+        reservation.mkdir(mode=0o700)
+    except FileExistsError as exc:
+        raise GovernanceError(
+            "Reliability Stage-1 is already reserved by another or prior execution."
+        ) from exc
+    if canonical_root.exists() or canonical_root.is_symlink():
+        reservation.rmdir()
+        _fsync_directory(reservation.parent)
+        raise GovernanceError(
+            "Reliability Stage-1 canonical output appeared before reservation "
+            "acquisition; refusing another execution."
+        )
+    receipt = reservation / "reservation.json"
+    payload = {
+        "schema": "cfeg.synthetic-reliability-stage1-reservation.v1",
+        "status": "active_until_complete_atomic_publication",
+        "canonical_output_root": str(canonical_root),
+        "process_id": os.getpid(),
+        "retry_authorized": False,
+        "retry_requires_new_owner_decision_after_crash": True,
+        "contract": contract,
+    }
+    with receipt.open("x", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True, allow_nan=False)
+        handle.flush()
+        os.fsync(handle.fileno())
+    _fsync_directory(reservation)
+    _fsync_directory(reservation.parent)
+    return reservation
+
+
+def _release_reliability_stage1_execution(reservation: Path) -> None:
+    receipt = reservation / "reservation.json"
+    entries = list(reservation.iterdir()) if reservation.is_dir() else []
+    if (
+        reservation.is_symlink()
+        or len(entries) != 1
+        or entries[0] != receipt
+        or not receipt.is_file()
+        or receipt.is_symlink()
+    ):
+        raise ValueError("Reliability Stage-1 reservation is unsafe to release.")
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    if (
+        payload.get("schema")
+        != "cfeg.synthetic-reliability-stage1-reservation.v1"
+        or payload.get("status") != "active_until_complete_atomic_publication"
+        or payload.get("process_id") != os.getpid()
+    ):
+        raise ValueError("Reliability Stage-1 reservation ownership changed.")
+    receipt.unlink()
+    reservation.rmdir()
+    _fsync_directory(reservation.parent)
+
+
+def _write_failed_reliability_attempt(
+    staging_root: Path,
+    *,
+    canonical_root: Path,
+    rows: list[dict],
+    attempt_contract: dict,
+) -> Path:
+    summary = staging_root / "summary.csv"
+    if not summary.is_file() or summary.is_symlink():
+        raise ValueError("Failed reliability attempt lacks a safe summary artifact.")
+    receipt = staging_root / "stage1_attempt_receipt.json"
+    payload = {
+        "schema": "cfeg.synthetic-reliability-stage1-attempt.v1",
+        "status": "failed_noncanonical_attempt",
+        "canonical_output_root": str(canonical_root),
+        "staging_output_root": str(staging_root),
+        "canonical_published": False,
+        "retry_authorized": False,
+        "retry_requires_new_owner_decision": True,
+        "summary_sha256": _sha256_file(summary),
+        "runtime_rows_sha256": _sha256_json(rows),
+        "attempt_contract": attempt_contract,
+        "asset_provenance_sha256": sorted(
+            {
+                str(row["asset_provenance_sha256"])
+                for row in rows
+                if row.get("asset_provenance_sha256")
+            }
+        ),
+        "roles_completed": sorted(
+            str(row["variant"])
+            for row in rows
+            if row.get("variant") in RELIABILITY_ROLES
+            and row.get("status") == "completed"
+        ),
+        "failures": [
+            {
+                "variant": row.get("variant"),
+                "error_type": row.get("error_type"),
+                "error": row.get("error"),
+            }
+            for row in rows
+            if row.get("status") == "failed"
+        ],
+        "claims": {
+            "synthetic_integration_claim_allowed": False,
+            "human_eeg_claim_allowed": False,
+            "population_inference_allowed": False,
+        },
+        "artifacts": _fingerprint_noncanonical_attempt(staging_root),
+    }
+    with receipt.open("x", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True, allow_nan=False)
+        handle.flush()
+        os.fsync(handle.fileno())
+    with summary.open("rb") as handle:
+        os.fsync(handle.fileno())
+    _fsync_directory(staging_root)
+    return receipt
+
+
+def _noncanonical_reliability_attempts(canonical_root: Path) -> list[Path]:
+    if not canonical_root.parent.is_dir():
+        return []
+    return sorted(
+        path
+        for path in canonical_root.parent.glob(f".{canonical_root.name}.staging-*")
+        if path.exists() or path.is_symlink()
+    )
+
+
+def _fingerprint_noncanonical_attempt(staging_root: Path) -> dict[str, dict[str, object]]:
+    artifacts: dict[str, dict[str, object]] = {}
+    for path in sorted(staging_root.rglob("*")):
+        if path.is_symlink():
+            raise ValueError("Failed reliability attempt contains a symlink.")
+        if path.is_file():
+            relative = path.relative_to(staging_root).as_posix()
+            if relative == "stage1_attempt_receipt.json":
+                continue
+            artifacts[relative] = {
+                "sha256": _sha256_file(path),
+                "size_bytes": path.stat().st_size,
+            }
+        elif not path.is_dir():
+            raise ValueError("Failed reliability attempt contains a special file.")
+    return artifacts
+
+
+def _publish_reliability_stage1_root(
+    staging_root: Path,
+    *,
+    canonical_root: Path,
+) -> None:
+    expected = {*RELIABILITY_ROLES, "analysis", "summary.csv"}
+    entries = list(staging_root.iterdir())
+    if {path.name for path in entries} != expected:
+        raise ValueError("Reliability Stage-1 staging root is incomplete or unexpected.")
+    if any(
+        (path.name == "summary.csv" and (not path.is_file() or path.is_symlink()))
+        or (path.name != "summary.csv" and (not path.is_dir() or path.is_symlink()))
+        for path in entries
+    ):
+        raise ValueError("Reliability Stage-1 staging root contains an unsafe entry.")
+    _validate_reliability_stage1_summary(
+        staging_root,
+        canonical_root=canonical_root,
+    )
+    _fsync_tree(staging_root)
+    validate_synthetic_reliability_stage1_publication_inputs(staging_root)
+    _validate_reliability_stage1_summary(
+        staging_root,
+        canonical_root=canonical_root,
+    )
+    if canonical_root.exists() or canonical_root.is_symlink():
+        raise FileExistsError(
+            f"Reliability Stage-1 canonical root appeared before publication: {canonical_root}."
+        )
+    os.replace(staging_root, canonical_root)
+    _fsync_directory(canonical_root.parent)
+
+
+def _validate_reliability_stage1_summary(
+    staging_root: Path,
+    *,
+    canonical_root: Path,
+) -> None:
+    path = staging_root / "summary.csv"
+    if not path.is_file() or path.is_symlink():
+        raise ValueError("Reliability Stage-1 summary is missing or unsafe.")
+    frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+    required = {
+        "variant",
+        "status",
+        "reliability_family_runtime_status",
+        "output_dir",
+        "runtime_metrics_path",
+        "stage1_analysis_receipt",
+        "stage1_analysis_receipt_sha256",
+    }
+    if (
+        not required.issubset(frame.columns)
+        or len(frame) != len(RELIABILITY_ROLES)
+        or set(frame["variant"]) != set(RELIABILITY_ROLES)
+        or frame["variant"].duplicated().any()
+        or set(frame["status"]) != {"completed"}
+        or set(frame["reliability_family_runtime_status"]) != {"verified_equal"}
+    ):
+        raise ValueError("Reliability Stage-1 summary does not contain four completed arms.")
+    receipt_path = canonical_root / "analysis/stage1_receipt.json"
+    receipt_sha256 = _sha256_file(staging_root / "analysis/stage1_receipt.json")
+    for row in frame.to_dict(orient="records"):
+        role = str(row["variant"])
+        if (
+            row["output_dir"] != str(canonical_root / role)
+            or row["runtime_metrics_path"]
+            != str(canonical_root / role / "runtime_metrics.json")
+            or row["stage1_analysis_receipt"] != str(receipt_path)
+            or row["stage1_analysis_receipt_sha256"] != receipt_sha256
+        ):
+            raise ValueError("Reliability Stage-1 summary contains stale artifact paths.")
+    if ".stage1.staging-" in path.read_text(encoding="utf-8"):
+        raise ValueError("Reliability Stage-1 summary exposes a staging path.")
+
+
+def _fsync_tree(root: Path) -> None:
+    paths = list(root.rglob("*"))
+    if any(path.is_symlink() for path in paths):
+        raise ValueError("Reliability Stage-1 staging tree cannot contain symlinks.")
+    for path in paths:
+        if path.is_file():
+            with path.open("rb") as handle:
+                os.fsync(handle.fileno())
+        elif not path.is_dir():
+            raise ValueError("Reliability Stage-1 staging tree contains a special file.")
+    directories = sorted(
+        (path for path in paths if path.is_dir()),
+        key=lambda path: len(path.parts),
+        reverse=True,
+    )
+    for directory in [*directories, root]:
+        _fsync_directory(directory)
+
+
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256_json(value) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+        default=str,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _validate_primary_ablation_contract(base: dict, variants: dict) -> str | None:
