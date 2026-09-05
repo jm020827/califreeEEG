@@ -84,7 +84,7 @@ support_operators:
     formula: p_equals_one_minus_lambda_times_p_FBCCA_plus_lambda_times_p_support
     lambda_max_grid: [0.10, 0.20, 0.30]
     budget_factor: k_divided_by_k_plus_one
-    query_quality_factor: one_minus_normalized_entropy_of_p_FBCCA
+    query_quality_factor: normalized_entropy_of_p_FBCCA
     exact_null_candidate: true
     direct_return_without_arithmetic_when_disabled: true
     l1_probability_displacement_bound: two_times_lambda

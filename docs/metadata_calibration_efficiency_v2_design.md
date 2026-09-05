@@ -52,7 +52,8 @@ V1 source 39명 결과는 후보 선택용 데이터로 다시 쓰지 않는다.
 `p_AQ = (1-lambda) p_FBCCA + lambda p_support`
 
 이고 `lambda`는 최대 0.10/0.20/0.30 중 development에서 하나만 고른다. support가
-적을수록, 그리고 FBCCA 자체가 확신할수록 lambda가 더 작다. 명시적인 `lambda=0`
+적을수록, 그리고 FBCCA 자체가 확신할수록(`normalized entropy`가 낮을수록) lambda가
+더 작다. 명시적인 `lambda=0`
 후보가 있으며 gate가 실패하면 산술 혼합도 하지 않고 원래 FBCCA 객체를 그대로
 반환한다.
 
