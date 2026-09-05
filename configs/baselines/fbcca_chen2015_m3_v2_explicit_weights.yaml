@@ -1,0 +1,24 @@
+bands:
+- [6.0, 90.0]
+- [14.0, 90.0]
+- [22.0, 90.0]
+- [30.0, 90.0]
+- [38.0, 90.0]
+- [46.0, 90.0]
+- [54.0, 90.0]
+weights:
+- 1.25
+- 0.6704482076268572
+- 0.5032785618838642
+- 0.42677669529663687
+- 0.38374806099528436
+- 0.35649051737437876
+- 0.33782687899303776
+order: 4
+n_harmonics: 5
+regularization: 1.0e-8
+weight_exponent: 1.25
+weight_offset: 0.25
+filter_family: chebyshev1
+passband_ripple_db: 0.5
+reproduction_contract: chen2015_m3_v2_explicit_weights_numpy_version_independent

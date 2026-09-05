@@ -39,7 +39,7 @@ V2_EXTERNAL_COHORTS = ("development", "independent_gate")
 V2_BUDGETS = (0, 1, 3)
 V2_EAUC_WEIGHTS = {0: 1.0 / 6.0, 1: 1.0 / 2.0, 3: 1.0 / 3.0}
 V2_N_CLASSES = 40
-V2_FBCCA_CONFIG_SHA256 = "494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5"
+V2_FBCCA_CONFIG_SHA256 = "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"
 V2_DEVELOPMENT_SENSITIVITY_SEED = 20260906
 V2_GATE_SENSITIVITY_SEED = 20260907
 V2_DEFAULT_RESAMPLES = 20_000
@@ -352,7 +352,7 @@ def validate_v2_plan_and_allocation(
         "candidate_id": V2_CANDIDATE_ID,
         "decision_id": "DEC-20260906-001",
         "status": "method_and_source_gate_frozen_held_forbidden_until_all_gates_pass",
-        "method_revision": "r5_pre_outcome_prequential_prefix_execution",
+        "method_revision": "r6_pre_outcome_explicit_filterbank_weights",
     }:
         raise ValueError("V2 plan header differs from the frozen contract.")
 
@@ -372,7 +372,7 @@ def validate_v2_plan_and_allocation(
         "candidate_codebook_rule": anchor.get("candidate_codebook_rule"),
     } != {
         "implementation": "src/cfeg/baselines/fbcca.py::predict_fbcca",
-        "filterbank_config": "configs/baselines/fbcca_chen2015_m3.yaml",
+        "filterbank_config": "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml",
         "filterbank_config_sha256": V2_FBCCA_CONFIG_SHA256,
         "score_schema": "strict_fbcca_bound_filterbank_raw_scores_v1",
         "candidate_codebook_rule": "all_classes_same_order_for_every_row",

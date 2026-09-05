@@ -1,6 +1,6 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v2_pre_outcome_explicit_B3_state_mapping
+generator_revision: v3_pre_outcome_explicit_filterbank_weights
 status: frozen_before_any_synthetic_outcome
 pre_outcome_amendments:
   - revision: v2_explicit_B3_state_mapping
@@ -9,6 +9,13 @@ pre_outcome_amendments:
       mapping from the two block states to waveform regimes and bind N4's
       independent state draw. Population, contrasts, thresholds, seeds, and
       stopping rules are unchanged.
+  - revision: v3_explicit_filterbank_weights
+    reason: >-
+      Before either reserved seed was executed, bind the seven diagnostic
+      strict-FBCCA weights explicitly. NumPy 1.26 and 2.2 round the former
+      power expression differently by one ULP; explicit values retain the
+      already frozen operator vector across environments. Population,
+      contrasts, thresholds, seeds, and stopping rules are unchanged.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -74,8 +81,8 @@ waveform:
   noise:
     process: stationary_AR1_per_channel
     rho: 0.55
-  filterbank_config: configs/baselines/fbcca_chen2015_m3.yaml
-  filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
+  filterbank_config: configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml
+  filterbank_config_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
   exact_subband_weights:
     - 1.25
     - 0.6704482076268572

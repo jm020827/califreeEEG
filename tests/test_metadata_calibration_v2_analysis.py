@@ -180,8 +180,8 @@ def _score_request(
     }
 
 
-def test_r5_contract_and_allocation_replay_are_exact(contract: V2ContractBinding) -> None:
-    assert contract.plan["method_revision"] == "r5_pre_outcome_prequential_prefix_execution"
+def test_r6_contract_and_allocation_replay_are_exact(contract: V2ContractBinding) -> None:
+    assert contract.plan["method_revision"] == "r6_pre_outcome_explicit_filterbank_weights"
     assert contract.allocation_sha256 == (
         "3722449446183a7d5a4b7006b6a28c38cbcf536bbeac7bc74a07317143077cf4"
     )
@@ -227,7 +227,7 @@ def test_r5_contract_and_allocation_replay_are_exact(contract: V2ContractBinding
         (("relative_context", "A_Q_context_policy"), "allow_context"),
     ],
 )
-def test_plan_validator_rejects_pre_r5_or_formula_drift(
+def test_plan_validator_rejects_pre_r6_or_formula_drift(
     tmp_path: Path,
     field_path: tuple[str, ...],
     replacement: object,
@@ -543,7 +543,7 @@ def test_score_adapter_requires_typed_p2_cache_provenance(
     request["template_query_class_scores"] = [list(range(40)), list(reversed(range(40)))]
     request["template_score_provenance"] = {
         "schema": "cfeg.metadata-calibration-v2-template-provenance.v1",
-        "filterbank_sha256": ("494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5"),
+        "filterbank_sha256": ("b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"),
         "preprocessing_sha256": "b" * 64,
         "query_partition_sha256": "c" * 64,
         "support_partition_sha256": "d" * 64,

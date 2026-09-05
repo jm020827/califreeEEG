@@ -2,7 +2,7 @@ schema: cfeg.metadata-calibration-efficiency-plan.v2
 candidate_id: metadata-calibration-efficiency-v2
 decision_id: DEC-20260906-001
 status: method_and_source_gate_frozen_held_forbidden_until_all_gates_pass
-method_revision: r5_pre_outcome_prequential_prefix_execution
+method_revision: r6_pre_outcome_explicit_filterbank_weights
 pre_outcome_amendments:
   - revision: r3_effective_support_mass
     reason: >-
@@ -21,9 +21,18 @@ pre_outcome_amendments:
       separate receipt-gated prequential application API for support depths
       one through four while keeping the final-query budget API and every
       endpoint, cohort, threshold, and candidate unchanged.
+  - revision: r6_explicit_filterbank_weights
+    reason: >-
+      Before any V2 EEG or reserved synthetic outcome was computed, bind the
+      seven anchor weights explicitly in a V2-only filter-bank file. NumPy
+      1.26 and 2.2 round the former power expression differently by one ULP.
+      The explicit values preserve the already frozen operator values and make
+      execution independent of that library-version detail. Hypotheses,
+      candidates, cohorts, endpoints, thresholds, seeds, and stopping rules
+      are unchanged.
   - unchanged: >-
       Candidate grid, participant cohorts, endpoints, thresholds, allocation,
-      stopping rules, and held boundary are identical to r2 and r3.
+      stopping rules, and held boundary are identical to r2 through r5.
 
 objective: >-
   Test whether pre-query acquisition context can reduce labeled target-user
@@ -73,8 +82,8 @@ roles:
 
 anchor:
   implementation: src/cfeg/baselines/fbcca.py::predict_fbcca
-  filterbank_config: configs/baselines/fbcca_chen2015_m3.yaml
-  filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
+  filterbank_config: configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml
+  filterbank_config_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
   score_schema: strict_fbcca_bound_filterbank_raw_scores_v1
   candidate_codebook_rule: all_classes_same_order_for_every_row
   dataset_channel_views:
@@ -111,7 +120,7 @@ support_operators:
     statistic: weighted_signed_squared_multichannel_template_correlation
     source_EEG_access: false
     filterbank: exact_anchor_filterbank
-    filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
+    filterbank_config_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
     subband_weights:
       - 1.25
       - 0.6704482076268572

@@ -1,0 +1,31 @@
+{
+  "schema": "cfeg.metadata-calibration-v2-synthetic-freeze-receipt.v3",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "created_at": "2026-09-06T02:27:10+09:00",
+  "status": "design_frozen_generator_implementation_pending",
+  "revision": "v3_explicit_filterbank_weights",
+  "supersedes": {
+    "receipt_path": "configs/governance/metadata_calibration_v2_synthetic_freeze_r2.json",
+    "plan_sha256": "5b7bb7d091e5ce937d4818659931cf70f83e198836370ee748556933698d11bd",
+    "reason": "the implicit NumPy power expression differed by one ULP across NumPy 1.26 and 2.2; neither reserved seed had been executed"
+  },
+  "design_parent_commit": "c003ada85d39fdb48d47edc964bfa643ff6f3f4f",
+  "plan_path": "configs/analysis/metadata_calibration_v2_synthetic.yaml",
+  "plan_sha256": "f87af6434fc968dfa61ed67e7b1c55b60a9c077ae644ec69a49107f817abaadd",
+  "filterbank_path": "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml",
+  "filterbank_sha256": "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380",
+  "development_root_seed": 20260906,
+  "independent_lockbox_root_seed": 20260907,
+  "synthetic_outcomes_seen_before_freeze": false,
+  "human_eeg_v2_outcomes_seen_before_freeze": false,
+  "population_contrasts_thresholds_and_seeds_changed": false,
+  "operator_weight_vector_changed": false,
+  "lockbox_authorized": false,
+  "generator_commit": null,
+  "lockbox_execution_receipt": null,
+  "terminal_rules": {
+    "one_time_lockbox": true,
+    "failed_gate_forbids_real_independent_and_wearable_held_access": true,
+    "retuning_requires_new_schema_seeds_amendment_and_unseen_lockbox": true
+  }
+}

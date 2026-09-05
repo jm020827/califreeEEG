@@ -1,12 +1,15 @@
 # Metadata-assisted low-calibration SSVEP — V2 frozen design
 
-상태: **V2 방법 r5·외부 source gate 동결 / held 60명 접근 금지**
+상태: **V2 방법 r6·외부 source gate 동결 / held 60명 접근 금지**
 
-r3–r5는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
+r3–r6는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
 빠져 있던 `effective support mass` 항을 명시했고, r4는 P1/P2의 실행 수식과
 fail-closed gate/provenance를 완전히 적었다. r5는 최종 endpoint의 k=3/5를 계산하는
 과정에서 필요한 중간 prefix depth 2/4를 전용 prequential API로만 허용한다. 후보 수·
 participant 할당·평가 지표·threshold·held 경계는 바꾸지 않았다.
+r6는 NumPy 1.26과 2.2가 다섯 번째 filter-bank weight를 1 ULP 다르게 계산하는
+환경 의존성을 제거했다. V2 전용 config에 이미 frozen operator가 쓰던 7개 값을
+명시했으며 가설·후보·cohort·endpoint·threshold·seed·stopping rule은 그대로다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
