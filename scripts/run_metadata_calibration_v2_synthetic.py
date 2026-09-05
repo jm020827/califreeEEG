@@ -30,7 +30,7 @@ from cfeg.analysis.metadata_calibration_v2_synthetic import (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the v10 synthetic governance phases at their exact canonical paths. "
+            "Run the v11 synthetic governance phases at their exact canonical paths. "
             "The one-time lockbox transaction claims before any beacon network access."
         )
     )

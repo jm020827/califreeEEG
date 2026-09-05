@@ -114,10 +114,10 @@ def _identity() -> synthetic.GitIdentity:
     )
 
 
-def test_v10_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
+def test_v11_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
     assert contract.plan_sha256 == synthetic.EXPECTED_SYNTHETIC_PLAN_SHA256
     assert (
-        contract.plan["generator_revision"] == "v10_claim_before_fetch_transaction"
+        contract.plan["generator_revision"] == "v11_terminal_receipt_precedence"
     )
     resolved = np.asarray(
         resolve_filterbank_parameters(contract.filterbank, sfreq=250.0)["weights"],
@@ -335,7 +335,7 @@ def test_exact_waveform_reconstruction_ar1_gain_placement_and_golden_hashes(cont
         "b7bb38da05dc991fa5d52fead2b87a62c80f0ee227feee72926057b186bf8845"
     )
     assert participant.partition_sha256s[0] == (
-        "fbe2bc0b2ba8fe8aa48630cd0fc72a6edaac87d72ba081b43cefb889981c0e5a"
+        "a7187309efa9e28458eb42009c8a50d693a8ac28b462bf515bfbbe5cf7aee4a5"
     )
 
     n3 = synthetic.generate_synthetic_participant(
@@ -1358,11 +1358,25 @@ def test_partial_claim_or_result_write_still_gets_separate_terminal_receipt(
         )
 
 
+def test_terminal_receipt_has_strict_precedence_over_scientific_result(
+    tmp_path: Path, contract
+) -> None:
+    isolated = _contract_with_paths(tmp_path, contract)
+    result_path = synthetic.canonical_execution_path(isolated, "lockbox_result")
+    terminal_path = synthetic.canonical_execution_path(
+        isolated, "lockbox_terminal_receipt"
+    )
+    synthetic.write_json_exclusive(result_path, {"otherwise": "valid-result-fixture"})
+    synthetic.write_json_exclusive(terminal_path, {"status": "consumed"})
+    with pytest.raises(ValueError, match="strict precedence"):
+        synthetic._validate_lockbox_scientific_result(isolated, result_path)
+
+
 def test_cli_exposes_every_canonical_governance_phase() -> None:
     script = Path("scripts/run_metadata_calibration_v2_synthetic.py").resolve()
     sys.path.insert(0, str(script.parent))
     try:
-        spec = importlib.util.spec_from_file_location("synthetic_cli_v10", script)
+        spec = importlib.util.spec_from_file_location("synthetic_cli_v11", script)
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

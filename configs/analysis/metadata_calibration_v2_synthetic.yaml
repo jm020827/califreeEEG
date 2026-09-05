@@ -1,7 +1,7 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v10_claim_before_fetch_transaction
-status: frozen_after_v9_development_before_any_lockbox_seed_or_outcome
+generator_revision: v11_terminal_receipt_precedence
+status: frozen_after_v10_interrupted_development_before_any_lockbox_seed_or_outcome
 pre_outcome_amendments:
   - revision: v2_explicit_B3_state_mapping
     reason: >-
@@ -92,6 +92,17 @@ pre_outcome_amendments:
       population, contrast, threshold, development seed, promotion rule, or
       scientific stopping rule is changed; the disclosed V8/V9 development failure
       remains non-gating exactly as previously frozen.
+  - revision: v11_terminal_receipt_precedence
+    reason: >-
+      After V10 preparation and an interrupted development-only replay, but before
+      a V10 development receipt, authorization, beacon fetch, seed derivation, claim,
+      or lockbox outcome existed, final audit found that a complete result and a
+      later infrastructure terminal receipt could coexist if post-write validation
+      failed transiently. Abandon V10 before any lockbox information. Give the
+      separate terminal receipt strict precedence over any scientific result, add a
+      regression test, use fresh canonical paths and a later future pulse. No DGP,
+      candidate, population, contrast, threshold, development seed, promotion rule,
+      or scientific stopping rule is changed.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -118,12 +129,12 @@ rng:
     derivation_revision: nist_beacon_v1
     provider: NIST_Randomness_Beacon_2.0
     official_specification: https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20
-    target_timestamp_utc: '2026-09-05T21:00:00.000Z'
-    target_timestamp_unix_milliseconds: 1788642000000
-    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788642000000
-    required_exact_pulse_timestamp: '2026-09-05T21:00:00.000Z'
-    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v10|2026-09-05T21:00:00.000Z'
-    statement_sha256: a4ed39f51a603cd9499910bc78f84cc01c878b794f2d487a244092e2eb473d62
+    target_timestamp_utc: '2026-09-05T21:30:00.000Z'
+    target_timestamp_unix_milliseconds: 1788643800000
+    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788643800000
+    required_exact_pulse_timestamp: '2026-09-05T21:30:00.000Z'
+    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v11|2026-09-05T21:30:00.000Z'
+    statement_sha256: 33d8e8a1ff6b6415ccce2fcd3fbd47794b975e65e725acba66000c2fe1092fe7
     output_value_encoding: exact_128_uppercase_hex_characters_decoded_to_64_bytes
     digest_formula: SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes
     root_seed_formula: unsigned_big_endian_integer_of_all_32_digest_bytes
@@ -421,21 +432,21 @@ hard_assertions_before_efficacy:
 freeze_and_stopping:
   canonical_execution_paths:
     preparation_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/preparation.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/preparation.json
     development_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/development-seed-20260906.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/development-seed-20260906.json
     full_suite_test_evidence: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/prelockbox-full-suite-tests.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/prelockbox-full-suite-tests.json
     beacon_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/nist-beacon-20260905T210000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/nist-beacon-20260905T213000Z.json
     lockbox_authorization: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-authorization-nist-20260905T210000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-authorization-nist-20260905T213000Z.json
     lockbox_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-nist-20260905T210000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-nist-20260905T213000Z.json
     lockbox_terminal_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-nist-20260905T210000Z.terminal.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v11/lockbox-nist-20260905T213000Z.terminal.json
     seed_global_lockbox_claim: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T210000Z-v10.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T213000Z-v11.json
   canonical_paths_are_local_execution_governance_not_portable_data_locations: true
   every_seed_touching_primitive_requires_internal_governed_context_for_reserved_seeds: true
   lockbox_seed_is_reserved_immediately_after_beacon_derivation: true

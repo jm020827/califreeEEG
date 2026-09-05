@@ -49,7 +49,7 @@ SYNTHETIC_TEST_EVIDENCE_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-test-ev
 SYNTHETIC_BEACON_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-beacon.v1"
 SYNTHETIC_TERMINAL_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-terminal.v1"
 
-EXPECTED_SYNTHETIC_PLAN_SHA256 = "48e1276cd53722bec10628b151bd321c6bbb19ef07e6aceb7b916b42c730c3a3"
+EXPECTED_SYNTHETIC_PLAN_SHA256 = "9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c"
 EXPECTED_FILTERBANK_SHA256 = "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"
 DEVELOPMENT_ROOT_SEED = 20260906
 
@@ -436,14 +436,14 @@ def _require_canonical_path(contract: SyntheticContract, name: str, path: str | 
 def validate_synthetic_contract(
     plan_path: str | Path = DEFAULT_SYNTHETIC_PLAN_PATH,
 ) -> SyntheticContract:
-    """Load the byte-frozen v10 plan and its separately frozen FBCCA contract."""
+    """Load the byte-frozen v11 plan and its separately frozen FBCCA contract."""
 
     path = _regular_nonsymlink_file(plan_path, "synthetic plan")
     plan_bytes = _read_bytes_nofollow(path, "synthetic plan")
     observed_sha = _sha256_bytes(plan_bytes)
     if observed_sha != EXPECTED_SYNTHETIC_PLAN_SHA256:
         raise ValueError(
-            "Synthetic plan byte hash drifted from frozen v10: "
+            "Synthetic plan byte hash drifted from frozen v11: "
             f"expected {EXPECTED_SYNTHETIC_PLAN_SHA256}, observed {observed_sha}."
         )
     decoded = yaml.safe_load(plan_bytes.decode("utf-8"))
@@ -453,9 +453,9 @@ def validate_synthetic_contract(
     if (
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != "metadata-calibration-efficiency-v2"
-        or plan.get("generator_revision") != "v10_claim_before_fetch_transaction"
+        or plan.get("generator_revision") != "v11_terminal_receipt_precedence"
         or plan.get("status")
-        != "frozen_after_v9_development_before_any_lockbox_seed_or_outcome"
+        != "frozen_after_v10_interrupted_development_before_any_lockbox_seed_or_outcome"
     ):
         raise ValueError("Synthetic plan identity or pre-outcome freeze status is invalid.")
 
@@ -566,14 +566,14 @@ def validate_synthetic_contract(
         "official_specification": (
             "https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20"
         ),
-        "target_timestamp_utc": "2026-09-05T21:00:00.000Z",
-        "target_timestamp_unix_milliseconds": 1788642000000,
-        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788642000000"),
-        "required_exact_pulse_timestamp": "2026-09-05T21:00:00.000Z",
+        "target_timestamp_utc": "2026-09-05T21:30:00.000Z",
+        "target_timestamp_unix_milliseconds": 1788643800000,
+        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788643800000"),
+        "required_exact_pulse_timestamp": "2026-09-05T21:30:00.000Z",
         "statement_utf8": (
-            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v10|2026-09-05T21:00:00.000Z"
+            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v11|2026-09-05T21:30:00.000Z"
         ),
-        "statement_sha256": ("a4ed39f51a603cd9499910bc78f84cc01c878b794f2d487a244092e2eb473d62"),
+        "statement_sha256": ("33d8e8a1ff6b6415ccce2fcd3fbd47794b975e65e725acba66000c2fe1092fe7"),
         "output_value_encoding": ("exact_128_uppercase_hex_characters_decoded_to_64_bytes"),
         "digest_formula": "SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes",
         "root_seed_formula": "unsigned_big_endian_integer_of_all_32_digest_bytes",
@@ -600,7 +600,7 @@ def validate_synthetic_contract(
             "unavailable_with_current_service_certificate_signature_size_mismatch"
         ),
     }:
-        raise ValueError("Synthetic v10 future-beacon derivation contract is not exact.")
+        raise ValueError("Synthetic v11 future-beacon derivation contract is not exact.")
     expected_paths = {
         "preparation_receipt",
         "development_result",
@@ -615,7 +615,7 @@ def validate_synthetic_contract(
     if set(path_values) != expected_paths or any(
         not Path(str(value)).is_absolute() for value in path_values.values()
     ):
-        raise ValueError("Synthetic v10 canonical execution paths are not exact absolute paths.")
+        raise ValueError("Synthetic v11 canonical execution paths are not exact absolute paths.")
     severe = plan.get("promotion_requirements", {}).get("severe_harm", {})
     if severe.get("contrast_ids") != [
         "B1:P1_A_Q-A0:eAUC",
@@ -627,7 +627,7 @@ def validate_synthetic_contract(
         "N3:P1_A_Q-A0:eAUC",
         "N4:P1_A_QM_correct-P1_A_Q:eAUC",
     ]:
-        raise ValueError("Synthetic v10 severe-harm estimand set is not exact.")
+        raise ValueError("Synthetic v11 severe-harm estimand set is not exact.")
     if (
         waveform.get("filterbank_config")
         != "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
@@ -3934,11 +3934,11 @@ def fetch_nist_beacon_receipt(
     *,
     output_path: str | Path,
 ) -> Path:
-    """Standalone seed-bearing beacon retrieval is forbidden by the V10 contract."""
+    """Standalone seed-bearing beacon retrieval is forbidden by the V11 contract."""
 
     _require_canonical_path(contract, "beacon_receipt", output_path)
     raise RuntimeError(
-        "V10 forbids standalone beacon fetch; use the one-time lockbox transaction."
+        "V11 forbids standalone beacon fetch; use the one-time lockbox transaction."
     )
 
 
@@ -4671,6 +4671,13 @@ def _validate_lockbox_scientific_result(
     contract: SyntheticContract,
     path: Path,
 ) -> dict[str, Any]:
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
+    try:
+        _validated_unused_output_path(terminal_path)
+    except FileExistsError as error:
+        raise ValueError(
+            "A consumed/error terminal receipt has strict precedence over any scientific result."
+        ) from error
     _readonly_receipt_file(path, "synthetic lockbox scientific result")
     observed = load_json_object(path, name="synthetic lockbox scientific result")
     _require_exact_keys(observed, _LOCKBOX_RESULT_FIELDS, "lockbox scientific result")
