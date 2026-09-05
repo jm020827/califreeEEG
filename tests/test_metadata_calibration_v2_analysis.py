@@ -131,6 +131,8 @@ def _score_request(
     budget: int,
     gate_enabled: bool | None,
     variant: str = "A_Q",
+    cohort: str = "development",
+    development_selection_receipt: dict[str, object] | None = None,
 ) -> dict[str, object]:
     support_count = budget * 40 if gate_enabled is True else 0
     return {
@@ -140,10 +142,11 @@ def _score_request(
         "allocation_sha256": contract.allocation_sha256,
         **contract.asset_binding("beta_v1"),
         "dataset_id": "beta_v1",
-        "cohort": "development",
+        "cohort": cohort,
         "candidate": candidate.as_dict(),
+        "development_selection_receipt": development_selection_receipt,
         "variant": variant,
-        "subject_id": contract.subject_ids("beta_v1", "development")[0],
+        "subject_id": contract.subject_ids("beta_v1", cohort)[0],
         "budget": budget,
         "query_tokens": ["opaque-query-0001", "opaque-query-0002"],
         "query_fbcca_scores": [list(range(40)), list(reversed(range(40)))],
@@ -460,6 +463,51 @@ def test_score_adapter_runs_active_aq_and_binds_output(contract: V2ContractBindi
     assert receipt["relative_context_pairing_sha256"] is None
     assert receipt["comparable_context_pair_count"] == 0
     assert np.asarray(receipt["lambdas"]).min() > 0.0
+
+
+def test_independent_scoring_requires_exact_selected_candidate_receipt(
+    contract: V2ContractBinding,
+) -> None:
+    candidates = v2_candidate_grid(contract)
+    development = _participant_delta_frame(
+        contract,
+        cohort="development",
+        candidates=candidates,
+        gains=lambda _candidate, _dataset, _subject: (0.02, 0.04),
+    )
+    selection = select_v2_development_candidate(development, contract=contract, n_resamples=32)
+    selected = next(
+        candidate
+        for candidate in candidates
+        if candidate.candidate_key == selection["selected_candidate"]["candidate_key"]
+    )
+    unauthorized = _score_request(
+        contract,
+        candidate=selected,
+        budget=1,
+        gate_enabled=True,
+        cohort="independent_gate",
+    )
+    with pytest.raises(PermissionError, match="selection receipt"):
+        score_v2_external_request(unauthorized, contract=contract)
+
+    authorized = _score_request(
+        contract,
+        candidate=selected,
+        budget=1,
+        gate_enabled=True,
+        cohort="independent_gate",
+        development_selection_receipt=selection,
+    )
+    receipt = score_v2_external_request(authorized, contract=contract)
+    assert (
+        receipt["development_selection_receipt_sha256"] == (selection["completion_receipt_sha256"])
+    )
+    assert receipt["variant"] == "A_Q"
+
+    authorized["variant"] = "A_QM"
+    with pytest.raises(PermissionError, match="permits A_Q only"):
+        score_v2_external_request(authorized, contract=contract)
 
 
 def test_score_adapter_binds_aqm_pairing_and_context_count(

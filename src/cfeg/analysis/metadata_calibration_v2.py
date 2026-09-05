@@ -25,8 +25,8 @@ V2_ALLOCATION_SCHEMA = "cfeg.metadata-calibration-efficiency-v2.external-allocat
 V2_PREPARATION_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-preparation-completion.v1"
 V2_SELECTION_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-development-selection-completion.v1"
 V2_GATE_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-independent-aq-gate-completion.v1"
-V2_SCORE_REQUEST_SCHEMA = "cfeg.metadata-calibration-v2-score-request.v1"
-V2_SCORE_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-score-completion.v1"
+V2_SCORE_REQUEST_SCHEMA = "cfeg.metadata-calibration-v2-score-request.v2"
+V2_SCORE_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-score-completion.v2"
 
 _REPOSITORY = Path(__file__).resolve().parents[3]
 DEFAULT_V2_PLAN_PATH = _REPOSITORY / "configs/analysis/metadata_calibration_efficiency_v2.yaml"
@@ -218,6 +218,7 @@ _SCORE_REQUEST_FIELDS = {
     "dataset_id",
     "cohort",
     "candidate",
+    "development_selection_receipt",
     "variant",
     "subject_id",
     "budget",
@@ -253,6 +254,7 @@ _SCORE_RECEIPT_FIELDS = {
     "dataset_id",
     "cohort",
     "candidate",
+    "development_selection_receipt_sha256",
     "variant",
     "subject_id",
     "budget",
@@ -1165,9 +1167,31 @@ def score_v2_external_request(
     candidate = candidates.get(candidate_key)
     if candidate is None or candidate.as_dict() != dict(candidate_value):
         raise ValueError("V2 score request candidate is outside the frozen grid.")
+    raw_selection = request.get("development_selection_receipt")
+    selection_sha256: str | None = None
+    if cohort == "development":
+        if raw_selection is not None:
+            raise PermissionError("Development scoring must not claim a selection receipt.")
+    else:
+        if not isinstance(raw_selection, Mapping):
+            raise PermissionError(
+                "Independent-gate scoring requires the frozen development-selection receipt."
+            )
+        selection = validate_v2_development_selection_receipt(raw_selection, contract=contract)
+        if (
+            selection.get("status") != "selected_candidate_frozen"
+            or selection.get("independent_gate_authorized") is not True
+            or selection.get("selected_candidate") != candidate.as_dict()
+        ):
+            raise PermissionError(
+                "Independent-gate scoring is not authorized for this exact candidate."
+            )
+        selection_sha256 = str(selection["completion_receipt_sha256"])
     variant = request.get("variant")
     if variant not in {"A_Q", "A_QM"}:
         raise ValueError("V2 score request variant must be exactly A_Q or A_QM.")
+    if cohort == "independent_gate" and variant != "A_Q":
+        raise PermissionError("The frozen independent external gate permits A_Q only.")
     budget = request.get("budget")
     if type(budget) is not int or budget not in V2_BUDGETS:
         raise ValueError("V2 external score budget must be one of 0, 1, or 3.")
@@ -1370,6 +1394,7 @@ def score_v2_external_request(
         "dataset_id": dataset_id,
         "cohort": cohort,
         "candidate": candidate.as_dict(),
+        "development_selection_receipt_sha256": selection_sha256,
         "variant": str(output.variant),
         "subject_id": subject_id,
         "budget": budget,
@@ -1466,7 +1491,7 @@ def validate_v2_score_receipt(
         or cohort not in V2_EXTERNAL_COHORTS
         or subject_id not in contract.subject_ids(dataset_id, cohort)  # type: ignore[arg-type]
         or receipt.get("variant") not in {"A_Q", "A_QM"}
-        or receipt.get("operator_schema") != "cfeg.metadata-calibration-v2-safe-operator.v2"
+        or receipt.get("operator_schema") != "cfeg.metadata-calibration-v2-safe-operator.v3"
         or receipt.get("query_outcomes_loaded") is not False
         or receipt.get("v1_source39_accessed") is not False
         or receipt.get("wearable_held60_accessed") is not False
@@ -1481,6 +1506,13 @@ def validate_v2_score_receipt(
         candidate
     ):
         raise ValueError("V2 score completion receipt has a non-frozen candidate.")
+    selection_sha256 = receipt.get("development_selection_receipt_sha256")
+    if (
+        (cohort == "development" and selection_sha256 is not None)
+        or (cohort == "independent_gate" and not _is_sha256(selection_sha256))
+        or (cohort == "independent_gate" and receipt.get("variant") != "A_Q")
+    ):
+        raise ValueError("V2 score completion has an invalid phase-authorization binding.")
     tokens = receipt.get("query_tokens")
     predictions = receipt.get("predictions")
     base_predictions = receipt.get("base_predictions")
