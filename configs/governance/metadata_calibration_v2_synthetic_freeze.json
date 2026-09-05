@@ -1,0 +1,21 @@
+{
+  "schema": "cfeg.metadata-calibration-v2-synthetic-freeze-receipt.v1",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "created_at": "2026-09-06T01:57:54+09:00",
+  "status": "design_frozen_generator_implementation_pending",
+  "design_parent_commit": "7b86f7140d22d860cf3a18783436b12df6233e85",
+  "plan_path": "configs/analysis/metadata_calibration_v2_synthetic.yaml",
+  "plan_sha256": "f93528bca7b172e6b1cf273b3077cf084a8ce614de27e5a70d47c51fba004c4a",
+  "development_root_seed": 20260906,
+  "independent_lockbox_root_seed": 20260907,
+  "synthetic_outcomes_seen_before_freeze": false,
+  "human_eeg_v2_outcomes_seen_before_freeze": false,
+  "lockbox_authorized": false,
+  "generator_commit": null,
+  "lockbox_execution_receipt": null,
+  "terminal_rules": {
+    "one_time_lockbox": true,
+    "failed_gate_forbids_real_independent_and_wearable_held_access": true,
+    "retuning_requires_new_schema_seeds_amendment_and_unseen_lockbox": true
+  }
+}

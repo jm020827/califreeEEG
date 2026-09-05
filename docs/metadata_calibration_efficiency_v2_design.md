@@ -172,7 +172,10 @@ reasonable request가 필요하다. 라이선스, 동의 범위, 기존 Zhu 102�
 1. **형식/단위시험:** k=0 exact FBCCA, off exact fallback, all-missing exact AQ,
    no-query-label API, order/permutation invariance, probability simplex, convex bound.
 2. **합성 development와 별도 synthetic lockbox:** 도움이 되는 support, 무작위 label,
-   오염 block, context-null, correct/shuffled pairing을 모두 검사한다.
+   오염 block, context-null, correct/shuffled pairing을 모두 검사한다. 생성식·독립 RNG
+   key·판정 기준·개발/lockbox seed는
+   `configs/analysis/metadata_calibration_v2_synthetic.yaml`에 결과 전에 별도로 동결한다.
+   이것은 구현과 메커니즘의 필요조건이지 human EEG 효능 근거가 아니다.
 3. **BETA23+Dong19 선택:** operator와 작은 grid에서 하나만 선택하고 즉시 동결한다.
 4. **BETA45+Dong39 독립 AQ gate:** pooled eAUC lower bound>0, observed gain>=.01,
    dataset별 k=1 평균>=0 및 harm-tail 기준을 모두 요구한다.
