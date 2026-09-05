@@ -1,0 +1,224 @@
+schema: cfeg.dataset.choi2019.v1
+dataset_id: choi2019
+dataset_revision: choi2019_gigadb_100660_20260906
+freeze_status: frozen_pre_outcome
+freeze_date: 2026-09-06
+
+official_source:
+  dataset_doi: 10.5524/100660
+  article_doi: 10.1093/gigascience/giz133
+  dataset_url: https://gigadb.org/dataset/100660
+  gigadb_dataset_api: https://gigadb.org/gigadb/api/dataset/get_dataset/?dataset_id=100660
+  gigadb_files_api: https://gigadb.org/gigadb/api/dataset/list_dataset_files/?dataset_id=100660&per_page=1000&start=1
+  gigadb_samples_api: https://gigadb.org/gigadb/api/dataset/list_dataset_samples/?dataset_id=100660&per_page=1000&start=1
+  datacite_api: https://api.datacite.org/dois/10.5524/100660
+  license_spdx: CC0-1.0
+  license_url: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+  access: public_without_credentials
+
+# GigaDB currently exposes an empty checksum field in its file-list API. The
+# object MD5s below are frozen from immutable-looking S3 object metadata
+# (x-amz-meta-md5chksum for the multipart archive; single-part ETag for the two
+# small files) and were independently reproduced after download. SHA-256 is a
+# local stronger digest over the exact downloaded bytes.
+files:
+  - gigadb_file_id: 419467
+    name: mrk-and-cnt_datasets.tar.gz
+    url: https://s3.ap-northeast-1.wasabisys.com/gigadb-datasets/live/pub/10.5524/100001_101000/100660/mrk-and-cnt_datasets.tar.gz
+    catalog_size_bytes: 11067348725
+    object_size_bytes: 11067348725
+    md5: 0c7156a80ede01ee1a62e1f489f2677f
+    md5_evidence: s3_x_amz_meta_md5chksum_and_local_reproduction
+    sha256: e58921007e5fcd93775ed2b9fc276e13d65e74f6ddc1d2188cbbf89a04df3434
+    etag: fdadb2d10d83254b67a45937e0f8327c-2111
+    etag_is_md5: false
+  - gigadb_file_id: 379994
+    name: readme_100660.txt
+    url: https://s3.ap-northeast-1.wasabisys.com/gigadb-datasets/live/pub/10.5524/100001_101000/100660/readme_100660.txt
+    catalog_size_bytes: 3187
+    object_size_bytes: 3267
+    known_catalog_object_size_drift: true
+    md5: 9ccf901cb40a6cc8ce007ba8c32cd9c7
+    md5_evidence: s3_single_part_etag_and_local_reproduction
+    sha256: 29c25b539ab191a77341356249ef2702852244dcefb64cd182951791b17092ab
+    etag: 9ccf901cb40a6cc8ce007ba8c32cd9c7
+    etag_is_md5: true
+  - gigadb_file_id: 379942
+    name: questionnaires_answers.csv
+    url: https://s3.ap-northeast-1.wasabisys.com/gigadb-datasets/live/pub/10.5524/100001_101000/100660/questionnaires_answers.csv
+    catalog_size_bytes: 2147
+    object_size_bytes: 2147
+    md5: c860cabdb782311a0506cc9a0e986b85
+    md5_evidence: s3_single_part_etag_and_local_reproduction
+    sha256: 5decd7baa975dfb5de98ff9f0c5fd38f372ca451ba02f516ca827a69dc3c6813
+    etag: c860cabdb782311a0506cc9a0e986b85
+    etag_is_md5: true
+
+archive:
+  name: mrk-and-cnt_datasets.tar.gz
+  extraction_subdir: extracted
+  regular_files: 720
+  directories: 90
+  uncompressed_regular_file_bytes: 11109841350
+  allowed_member_regex: '^S([1-9]|[12][0-9]|30)/Day([12])/(cnt|mrk)_(LOW|MID|HIGH)\(([12])\)\.mat$'
+
+expected:
+  n_subjects: 30
+  n_days: 2
+  n_frequency_bands: 3
+  n_sessions_per_band_day: 2
+  n_trials_per_session: 40
+  n_trials_per_class_session: 10
+  n_trials_total: 14400
+  n_eeg_channels: 33
+  n_auxiliary_channels: 6
+  n_channels_distributed: 39
+  n_marker_events_per_session: 80
+  n_stimulus_events_per_session: 40
+  n_marker_classes: 5
+
+raw_sfreq: 200.0
+acquisition_sfreq: 1000.0
+marker_time_unit: one_based_distributed_sample_index
+reference: fcz
+ground: fpz
+hardware_id: brain_products_brainamp
+cap_type: unknown
+electrode_type: active_contact_medium_unreported
+environment_note_code: unknown
+
+channel_names:
+  - Fp1
+  - Fp2
+  - AF4
+  - AF3
+  - F5
+  - Fz
+  - FC1
+  - FC5
+  - F6
+  - FC2
+  - FC6
+  - C4
+  - Cz
+  - C3
+  - CP1
+  - CP2
+  - CP6
+  - P8
+  - P4
+  - Pz
+  - POz
+  - PO4
+  - PO8
+  - O2
+  - Oz
+  - O1
+  - PO3
+  - P3
+  - CP5
+  - P7
+  - PO7
+  - T7
+  - T8
+raw_channel_names:
+  - Fp1
+  - Fp2
+  - AF4
+  - AF3
+  - F5
+  - Fz
+  - FC1
+  - FC5
+  - F6
+  - FC2
+  - FC6
+  - C4
+  - Cz
+  - C3
+  - CP1
+  - CP2
+  - CP6
+  - P8
+  - P4
+  - Pz
+  - POz
+  - PO4
+  - PO8
+  - O2
+  - Oz
+  - O1
+  - PO3
+  - P3
+  - CP5
+  - P7
+  - PO7
+  - T7
+  - T8
+  - Respiratory
+  - Gyro
+  - Temperature
+  - EMG1
+  - EMG2
+  - ECG1
+auxiliary_channel_names: [Respiratory, Gyro, Temperature, EMG1, EMG2, ECG1]
+
+marker_class_names: [Up_L, Up_R, Bottom_L, Bottom_R, Fixation]
+stimulus_by_band:
+  LOW:
+    frequencies_hz: [5.0, 5.5, 6.0, 6.5]
+  MID:
+    frequencies_hz: [21.0, 21.5, 22.0, 22.5]
+  HIGH:
+    frequencies_hz: [40.0, 40.5, 41.0, 41.5]
+canonical_class_frequencies:
+  - 5.0
+  - 5.5
+  - 6.0
+  - 6.5
+  - 21.0
+  - 21.5
+  - 22.0
+  - 22.5
+  - 40.0
+  - 40.5
+  - 41.0
+  - 41.5
+
+preprocess:
+  target_sfreq: 200.0
+  window_start_sec: 0.14
+  window_duration_sec: 2.0
+  bandpass_low_hz: 4.0
+  bandpass_high_hz: 90.0
+  notch_hz: 60.0
+  normalize: per_trial_channel_zscore
+  c_max: 64
+
+# The paper excluded these participant-days only from its aggregate spectral
+# analysis because some trials had very large non-stimulation-frequency
+# amplitudes. The converter flags but never silently drops them.
+paper_reported_aggregate_exclusions:
+  - S2/Day1
+  - S2/Day2
+  - S10/Day2
+  - S11/Day1
+  - S11/Day2
+  - S13/Day2
+  - S18/Day1
+  - S20/Day1
+  - S29/Day1
+  - S29/Day2
+
+questionnaire_policy:
+  normalize_to_companion_table: true
+  join_to_trial_manifest: false
+  reason: one_before_after_pair_per_subject_has_no_published_day_linkage
+  sex_identity_source: before_row_only_for_descriptive_audit_not_model_input
+  known_source_issue: S7_After_reports_W_while_S7_Before_reports_M
+
+metadata_claim_boundary:
+  impedance_available: false
+  randomized_wet_dry_available: false
+  permitted_role: cross_day_and_frequency_band_contextual_sensitivity
+  forbidden_claim: independent_wet_dry_or_impedance_replication

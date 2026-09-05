@@ -1,0 +1,106 @@
+schema: cfeg.baseline.fbcca-choi2019-bandwise.v1
+freeze_status: frozen_pre_outcome
+freeze_date: 2026-09-06
+dataset_revision: choi2019_gigadb_100660_20260906
+parent_config: configs/baselines/fbcca_chen2015_m3.yaml
+
+# Choi trials are four-choice runs. The LOW, MID, and HIGH targets never
+# co-occur in one run, so treating the manifest's twelve frequency labels as a
+# single twelve-choice task would construct a task that participants did not
+# perform. Every prediction therefore receives only its run band’s four
+# candidate frequencies.
+evaluation_view:
+  class_space: within_band_four_class
+  candidate_set_source: frequency_band
+  pool_twelve_frequencies: false
+  bands_required: [LOW, MID, HIGH]
+  band_selection_from_outcomes: forbidden
+  participant_unit: subject_id
+  participant_summary: unweighted_mean_of_three_band_accuracies
+  cohort_summary: paired_over_all_30_participants
+  paper_reported_aggregate_exclusion_policy: retain_and_flag_never_silently_drop
+
+# Deterministic, nested calibration view for a cross-day external anchor.
+# Marker order in the two Day-1 sessions defines chronology. Day 2 never
+# supplies support and the same two complete Day-2 sessions remain query at
+# every budget.
+support_query:
+  budgets_trials_per_class: [0, 1, 3, 5]
+  support_session_id: day01
+  support_order:
+    - numeric_session_order
+    - source_marker_event_index
+  support_selection: chronological_first_k_per_within_band_label
+  query_session_id: day02
+  query_selection: both_sessions_all_80_trials_per_band
+  query_reuse_across_budgets: immutable
+  support_query_overlap: forbidden
+  split_seed: null
+
+sampling_frequency_hz: 200.0
+nyquist_hz: 100.0
+common_parameters:
+  order: 4
+  regularization: 1.0e-8
+  weight_exponent: 1.25
+  weight_offset: 0.25
+  filter_family: chebyshev1
+  passband_ripple_db: 0.5
+  score_fusion: sum_weighted_squared_canonical_correlations
+
+# This is a protocol-compatibility correction, not an outcome-selected
+# hyperparameter search. At 200 Hz, the parent n_harmonics=5 requests 112.5 Hz
+# for MID and 207.5 Hz for HIGH, which the implementation correctly rejects.
+# For LOW, the parent first subband starts at 6 Hz and therefore removes the
+# 5/5.5-Hz fundamentals. The smallest declared changes are: preserve all LOW
+# fundamentals by lowering only its first cutoff to 4 Hz, and use the largest
+# common strictly-Nyquist-safe harmonic count for each higher band.
+band_parameters:
+  LOW:
+    candidate_frequencies_hz: [5.0, 5.5, 6.0, 6.5]
+    n_harmonics: 5
+    max_reference_component_hz: 32.5
+    bands:
+      - [4.0, 90.0]
+      - [14.0, 90.0]
+      - [22.0, 90.0]
+      - [30.0, 90.0]
+      - [38.0, 90.0]
+      - [46.0, 90.0]
+      - [54.0, 90.0]
+    deviation_from_parent: first_subband_low_cutoff_6_to_4_hz
+    reproduction_contract: chen2015_m3_with_preoutcome_low_frequency_coverage_correction
+  MID:
+    candidate_frequencies_hz: [21.0, 21.5, 22.0, 22.5]
+    n_harmonics: 4
+    max_reference_component_hz: 90.0
+    bands:
+      - [6.0, 90.0]
+      - [14.0, 90.0]
+      - [22.0, 90.0]
+      - [30.0, 90.0]
+      - [38.0, 90.0]
+      - [46.0, 90.0]
+      - [54.0, 90.0]
+    deviation_from_parent: n_harmonics_5_to_4_for_strict_nyquist_safety
+    reproduction_contract: chen2015_m3_with_preoutcome_mid_nyquist_correction
+  HIGH:
+    candidate_frequencies_hz: [40.0, 40.5, 41.0, 41.5]
+    n_harmonics: 2
+    max_reference_component_hz: 83.0
+    bands:
+      - [6.0, 90.0]
+      - [14.0, 90.0]
+      - [22.0, 90.0]
+      - [30.0, 90.0]
+      - [38.0, 90.0]
+      - [46.0, 90.0]
+      - [54.0, 90.0]
+    deviation_from_parent: n_harmonics_5_to_2_for_strict_nyquist_safety
+    reproduction_contract: chen2015_m3_with_preoutcome_high_nyquist_correction
+
+forbidden_alternatives:
+  - apply_parent_n_harmonics_5_to_mid_or_high
+  - upsample_200_hz_data_to_manufacture_unobserved_harmonics
+  - pool_three_nonconcurrent_bands_into_a_twelve_choice_task
+  - choose_or_drop_a_frequency_band_after_viewing_outcomes
