@@ -1,7 +1,14 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v1_pre_outcome
+generator_revision: v2_pre_outcome_explicit_B3_state_mapping
 status: frozen_before_any_synthetic_outcome
+pre_outcome_amendments:
+  - revision: v2_explicit_B3_state_mapping
+    reason: >-
+      Before either reserved seed was executed, bind the previously implicit
+      mapping from the two block states to waveform regimes and bind N4's
+      independent state draw. Population, contrasts, thresholds, seeds, and
+      stopping rules are unchanged.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -121,6 +128,14 @@ families:
     target_amplitude: 1.0
     matched_cross_frequency_amplitude: 0.75
     matched_cross_frequency_class: class_plus_1_plus_participant_mod_3_mod_12
+    state_minus_one_odd_block_regime:
+      cross_frequency_class: matched_cross_frequency_class
+      extra_phase_radians: 0.0
+      noise_innovation_sd: 0.85
+    state_plus_one_even_block_regime:
+      cross_frequency_class: opposite_cross_frequency_class
+      extra_phase_radians: 1.5707963267948966
+      noise_innovation_sd: 1.30
     opposite_cross_frequency_class: class_plus_4_plus_participant_mod_3_mod_12
     opposite_extra_phase_radians: 1.5707963267948966
     opposite_noise_innovation_sd: 1.30
@@ -165,7 +180,9 @@ families:
   N4_context_independent_of_signal:
     role: null_metadata
     waveform: B3_marginal_signal_mixture_with_signal_state_keyed_independently
+    signal_state_draw: keyed_Bernoulli_one_half_mapped_to_minus_one_or_plus_one
     context: impedance_and_interface_packet_keyed_independently_of_signal_state
+    context_state_draw: separate_keyed_Bernoulli_one_half_mapped_to_minus_one_or_plus_one
     exchangeability: correct_and_pair_shuffled_metadata_are_exchangeable
     contrasts:
       - P1_A_QM_minus_identical_P1_A_Q_by_budget
