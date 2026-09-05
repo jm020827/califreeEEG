@@ -11,6 +11,7 @@ import re
 import stat
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from collections.abc import Mapping, Sequence
 from contextlib import redirect_stdout
@@ -48,7 +49,7 @@ SYNTHETIC_TEST_EVIDENCE_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-test-ev
 SYNTHETIC_BEACON_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-beacon.v1"
 SYNTHETIC_TERMINAL_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-terminal.v1"
 
-EXPECTED_SYNTHETIC_PLAN_SHA256 = "2e9f49f1d7500f7dd69d97481ea84125ef5ca16eb6941f842fbd712714324a99"
+EXPECTED_SYNTHETIC_PLAN_SHA256 = "48e1276cd53722bec10628b151bd321c6bbb19ef07e6aceb7b916b42c730c3a3"
 EXPECTED_FILTERBANK_SHA256 = "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"
 DEVELOPMENT_ROOT_SEED = 20260906
 
@@ -87,6 +88,8 @@ DEFAULT_FILTERBANK_PATH = (
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _GIT_OBJECT_RE = re.compile(r"[0-9a-f]{40,64}")
 _UPPER_HEX_128_RE = re.compile(r"[0-9A-F]{128}")
+_LOWER_HEX_128_RE = re.compile(r"[0-9a-f]{128}")
+_UPPER_HEX_1024_RE = re.compile(r"[0-9A-F]{1024}")
 _GOVERNED_SEED_SENTINEL = object()
 _DYNAMIC_RESERVED_SEEDS: set[int] = set()
 _VALIDATED_BEACON_SEED_CACHE: dict[str, tuple[tuple[int, int, int], int]] = {}
@@ -161,15 +164,113 @@ class HardInvariantFailure(RuntimeError):
     pass
 
 
+class _RejectHTTPRedirect(urllib.request.HTTPRedirectHandler):
+    """Fail before issuing a second request to a redirect Location."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        del newurl
+        raise urllib.error.HTTPError(
+            req.full_url,
+            code,
+            "Redirect forbidden by the frozen NIST transport contract",
+            headers,
+            fp,
+        )
+
+
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def _sha256_file(path: Path) -> str:
+def _open_parent_directory_nofollow(path: str | Path, name: str) -> tuple[int, Path]:
+    """Pin every absolute parent component without following symbolic links."""
+
+    target = Path(path).expanduser().absolute()
+    if target.name in {"", ".", ".."}:
+        raise ValueError(f"{name} must name a file below an absolute parent directory.")
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    descriptor = os.open(os.sep, flags)
+    try:
+        for component in target.parent.parts[1:]:
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        parent_stat = os.fstat(descriptor)
+        if not stat.S_ISDIR(parent_stat.st_mode):
+            raise ValueError(f"{name} parent is not a directory.")
+        return descriptor, target
+    except OSError as error:
+        os.close(descriptor)
+        raise ValueError(f"{name} has an unavailable or symlinked parent component.") from error
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _safe_regular_file_stat(path: str | Path, name: str) -> tuple[Path, os.stat_result]:
+    parent_descriptor, target = _open_parent_directory_nofollow(path, name)
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        descriptor = os.open(target.name, flags, dir_fd=parent_descriptor)
+        try:
+            observed = os.fstat(descriptor)
+            if not stat.S_ISREG(observed.st_mode):
+                raise ValueError(f"{name} must be one nonsymlink regular file: {target}")
+            return target, observed
+        finally:
+            os.close(descriptor)
+    except OSError as error:
+        raise ValueError(f"{name} must be one existing nonsymlink regular file: {target}") from error
+    finally:
+        os.close(parent_descriptor)
+
+
+def _read_bytes_nofollow(path: str | Path, name: str) -> bytes:
+    parent_descriptor, target = _open_parent_directory_nofollow(path, name)
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        descriptor = os.open(target.name, flags, dir_fd=parent_descriptor)
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError(f"{name} must be a nonsymlink regular file.")
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            return b"".join(chunks)
+        finally:
+            os.close(descriptor)
+    except OSError as error:
+        raise ValueError(f"{name} must be one existing nonsymlink regular file: {target}") from error
+    finally:
+        os.close(parent_descriptor)
+
+
+def _sha256_file(path: str | Path) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
+    parent_descriptor, target = _open_parent_directory_nofollow(path, "hashed file")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        descriptor = os.open(target.name, flags, dir_fd=parent_descriptor)
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError(f"Hashed path is not a regular file: {target}")
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(parent_descriptor)
     return digest.hexdigest()
 
 
@@ -214,16 +315,25 @@ def _require_exact_keys(value: Mapping[str, Any], expected: set[str], name: str)
         )
 
 
+def _reject_symlink_ancestors(path: str | Path, name: str) -> None:
+    absolute = Path(path).expanduser().absolute()
+    for candidate in (absolute, *absolute.parents):
+        try:
+            mode = candidate.lstat().st_mode
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(mode):
+            raise ValueError(f"{name} has a forbidden symlink ancestor: {candidate}")
+
+
 def _regular_nonsymlink_file(path: str | Path, name: str) -> Path:
-    resolved = Path(path)
-    if not resolved.exists() or resolved.is_symlink() or not resolved.is_file():
-        raise ValueError(f"{name} must be one existing nonsymlink regular file: {resolved}")
+    resolved, _ = _safe_regular_file_stat(path, name)
     return resolved
 
 
 def _readonly_receipt_file(path: str | Path, name: str) -> Path:
-    source = _regular_nonsymlink_file(path, name)
-    if stat.S_IMODE(source.stat().st_mode) != stat.S_IRUSR:
+    source, observed = _safe_regular_file_stat(path, name)
+    if stat.S_IMODE(observed.st_mode) != stat.S_IRUSR:
         raise ValueError(f"{name} must have exact read-only owner mode 0400.")
     return source
 
@@ -300,6 +410,21 @@ def canonical_execution_path(contract: SyntheticContract, name: str) -> Path:
     return path
 
 
+def prepare_canonical_artifact_directories(contract: SyntheticContract) -> None:
+    """Create only the immediate governed artifact directories as private directories."""
+
+    paths = {
+        canonical_execution_path(contract, name).parent
+        for name in contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
+    }
+    for directory in sorted(paths, key=str):
+        _reject_symlink_ancestors(directory, "canonical artifact directory")
+        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+        _reject_symlink_ancestors(directory, "canonical artifact directory")
+        if stat.S_IMODE(directory.stat().st_mode) != 0o700:
+            raise ValueError(f"Canonical artifact directory must have exact mode 0700: {directory}")
+
+
 def _require_canonical_path(contract: SyntheticContract, name: str, path: str | Path) -> Path:
     expected = canonical_execution_path(contract, name)
     observed = Path(path).expanduser().absolute()
@@ -311,25 +436,26 @@ def _require_canonical_path(contract: SyntheticContract, name: str, path: str | 
 def validate_synthetic_contract(
     plan_path: str | Path = DEFAULT_SYNTHETIC_PLAN_PATH,
 ) -> SyntheticContract:
-    """Load the byte-frozen v9 plan and its separately frozen FBCCA contract."""
+    """Load the byte-frozen v10 plan and its separately frozen FBCCA contract."""
 
     path = _regular_nonsymlink_file(plan_path, "synthetic plan")
-    observed_sha = _sha256_file(path)
+    plan_bytes = _read_bytes_nofollow(path, "synthetic plan")
+    observed_sha = _sha256_bytes(plan_bytes)
     if observed_sha != EXPECTED_SYNTHETIC_PLAN_SHA256:
         raise ValueError(
-            "Synthetic plan byte hash drifted from frozen v9: "
+            "Synthetic plan byte hash drifted from frozen v10: "
             f"expected {EXPECTED_SYNTHETIC_PLAN_SHA256}, observed {observed_sha}."
         )
-    decoded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    decoded = yaml.safe_load(plan_bytes.decode("utf-8"))
     if not isinstance(decoded, Mapping):
         raise TypeError("Synthetic plan must decode to one mapping.")
     plan = dict(decoded)
     if (
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != "metadata-calibration-efficiency-v2"
-        or plan.get("generator_revision") != "v9_post_development_pre_lockbox_interpreter_fix"
+        or plan.get("generator_revision") != "v10_claim_before_fetch_transaction"
         or plan.get("status")
-        != "frozen_after_v8_development_before_any_lockbox_seed_or_outcome"
+        != "frozen_after_v9_development_before_any_lockbox_seed_or_outcome"
     ):
         raise ValueError("Synthetic plan identity or pre-outcome freeze status is invalid.")
 
@@ -440,21 +566,41 @@ def validate_synthetic_contract(
         "official_specification": (
             "https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20"
         ),
-        "target_timestamp_utc": "2026-09-05T20:00:00.000Z",
-        "target_timestamp_unix_milliseconds": 1788638400000,
-        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788638400000"),
-        "required_exact_pulse_timestamp": "2026-09-05T20:00:00.000Z",
+        "target_timestamp_utc": "2026-09-05T21:00:00.000Z",
+        "target_timestamp_unix_milliseconds": 1788642000000,
+        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788642000000"),
+        "required_exact_pulse_timestamp": "2026-09-05T21:00:00.000Z",
         "statement_utf8": (
-            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v9|2026-09-05T20:00:00.000Z"
+            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v10|2026-09-05T21:00:00.000Z"
         ),
-        "statement_sha256": ("4d84df32fbc8f5ee86ae076ea50c8cacfb64a7fd33200133a8a7817d6b5a5e8e"),
+        "statement_sha256": ("a4ed39f51a603cd9499910bc78f84cc01c878b794f2d487a244092e2eb473d62"),
         "output_value_encoding": ("exact_128_uppercase_hex_characters_decoded_to_64_bytes"),
         "digest_formula": "SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes",
         "root_seed_formula": "unsigned_big_endian_integer_of_all_32_digest_bytes",
         "retrieval_not_before_target_timestamp": True,
         "require_https_nist_host_exact_pulse_fields_and_full_response_receipt": True,
+        "authorization_must_be_sealed_before_target_timestamp": True,
+        "standalone_beacon_fetch_phase": "forbidden",
+        "transaction_order": [
+            "validate_pretarget_authorization_and_all_prelockbox_evidence",
+            "create_canonical_global_O_EXCL_claim_before_network_access",
+            "fetch_exact_NIST_HTTPS_endpoint_without_dependency_injection_or_redirect",
+            "verify_exact_pulse_and_deployed_protocol_SHA512_output_value",
+            "derive_seed_material_and_persist_claim_bound_beacon_receipt",
+            "execute_reserved_seed_once",
+            "persist_terminal_result",
+        ],
+        "deployed_json_serialization_revision": (
+            "nist_v2_cipher0_four_byte_length_prefixes_raw_signature"
+        ),
+        "transport_authentication": (
+            "default_verified_TLS_to_exact_beacon_dot_nist_dot_gov"
+        ),
+        "local_RSA_signature_verification": (
+            "unavailable_with_current_service_certificate_signature_size_mismatch"
+        ),
     }:
-        raise ValueError("Synthetic v9 future-beacon derivation contract is not exact.")
+        raise ValueError("Synthetic v10 future-beacon derivation contract is not exact.")
     expected_paths = {
         "preparation_receipt",
         "development_result",
@@ -462,13 +608,14 @@ def validate_synthetic_contract(
         "beacon_receipt",
         "lockbox_authorization",
         "lockbox_result",
+        "lockbox_terminal_receipt",
         "seed_global_lockbox_claim",
     }
     path_values = plan.get("freeze_and_stopping", {}).get("canonical_execution_paths", {})
     if set(path_values) != expected_paths or any(
         not Path(str(value)).is_absolute() for value in path_values.values()
     ):
-        raise ValueError("Synthetic v9 canonical execution paths are not exact absolute paths.")
+        raise ValueError("Synthetic v10 canonical execution paths are not exact absolute paths.")
     severe = plan.get("promotion_requirements", {}).get("severe_harm", {})
     if severe.get("contrast_ids") != [
         "B1:P1_A_Q-A0:eAUC",
@@ -480,7 +627,7 @@ def validate_synthetic_contract(
         "N3:P1_A_Q-A0:eAUC",
         "N4:P1_A_QM_correct-P1_A_Q:eAUC",
     ]:
-        raise ValueError("Synthetic v9 severe-harm estimand set is not exact.")
+        raise ValueError("Synthetic v10 severe-harm estimand set is not exact.")
     if (
         waveform.get("filterbank_config")
         != "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
@@ -497,7 +644,9 @@ def validate_synthetic_contract(
     filterbank_sha = _sha256_file(filterbank_path)
     if filterbank_sha != EXPECTED_FILTERBANK_SHA256:
         raise ValueError("Frozen strict-FBCCA config byte hash drifted.")
-    filterbank = yaml.safe_load(filterbank_path.read_text(encoding="utf-8"))
+    filterbank = yaml.safe_load(
+        _read_bytes_nofollow(filterbank_path, "frozen filterbank config").decode("utf-8")
+    )
     if not isinstance(filterbank, Mapping):
         raise TypeError("FBCCA config must decode to one mapping.")
     resolved = resolve_filterbank_parameters(filterbank, sfreq=250.0)
@@ -2407,31 +2556,66 @@ def _json_payload_bytes(payload: Mapping[str, Any]) -> bytes:
 
 
 def _validated_unused_output_path(path: str | Path) -> Path:
-    candidate = Path(path).expanduser().absolute()
-    parent = candidate.parent
-    if not parent.exists() or parent.is_symlink() or not parent.is_dir():
-        raise ValueError("Output parent must be one existing nonsymlink directory.")
-    if candidate.exists() or candidate.is_symlink():
+    parent_descriptor, candidate = _open_parent_directory_nofollow(path, "governed output")
+    try:
+        parent_stat = os.fstat(parent_descriptor)
+        if (
+            stat.S_IMODE(parent_stat.st_mode) != 0o700
+            or parent_stat.st_uid != os.geteuid()
+        ):
+            raise ValueError("Governed output parent must be owner-controlled mode 0700.")
+        try:
+            os.stat(candidate.name, dir_fd=parent_descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            return candidate
         raise FileExistsError(f"Refusing to overwrite existing output: {candidate}")
-    return candidate
+    finally:
+        os.close(parent_descriptor)
 
 
 def _write_bytes_exclusive(path: str | Path, payload: bytes) -> Path:
-    target = _validated_unused_output_path(path)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(target, flags, stat.S_IRUSR | stat.S_IWUSR)
-    with os.fdopen(descriptor, "wb", closefd=True) as handle:
-        handle.write(payload)
-        handle.flush()
-        os.fsync(handle.fileno())
-        os.fchmod(handle.fileno(), stat.S_IRUSR)
-        os.fsync(handle.fileno())
-    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
-    directory_descriptor = os.open(target.parent, directory_flags)
+    parent_descriptor, target = _open_parent_directory_nofollow(path, "governed output")
     try:
-        os.fsync(directory_descriptor)
+        parent_stat = os.fstat(parent_descriptor)
+        if (
+            stat.S_IMODE(parent_stat.st_mode) != 0o700
+            or parent_stat.st_uid != os.geteuid()
+        ):
+            raise ValueError("Governed output parent must be owner-controlled mode 0700.")
+        flags = (
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+        )
+        descriptor = os.open(
+            target.name,
+            flags,
+            stat.S_IRUSR | stat.S_IWUSR,
+            dir_fd=parent_descriptor,
+        )
+        with os.fdopen(descriptor, "wb", closefd=True) as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+            os.fchmod(handle.fileno(), stat.S_IRUSR)
+            os.fsync(handle.fileno())
+        os.fsync(parent_descriptor)
+        verification_descriptor, _ = _open_parent_directory_nofollow(
+            target, "governed output verification"
+        )
+        try:
+            verification_stat = os.fstat(verification_descriptor)
+            if (verification_stat.st_dev, verification_stat.st_ino) != (
+                parent_stat.st_dev,
+                parent_stat.st_ino,
+            ):
+                raise RuntimeError("Governed output parent changed during exclusive write.")
+        finally:
+            os.close(verification_descriptor)
     finally:
-        os.close(directory_descriptor)
+        os.close(parent_descriptor)
     return target
 
 
@@ -2443,7 +2627,7 @@ def write_json_exclusive(path: str | Path, payload: Mapping[str, Any]) -> Path:
 
 def load_json_object(path: str | Path, *, name: str) -> dict[str, Any]:
     source = _regular_nonsymlink_file(path, name)
-    decoded = json.loads(source.read_text(encoding="utf-8"))
+    decoded = json.loads(_read_bytes_nofollow(source, name).decode("utf-8"))
     if not isinstance(decoded, Mapping):
         raise TypeError(f"{name} must decode to one JSON object.")
     return dict(decoded)
@@ -2625,26 +2809,18 @@ def build_preparation_receipt(
     contract: SyntheticContract,
     *,
     output_path: str | Path,
-    identity: GitIdentity | None = None,
-    environment: Mapping[str, Any] | None = None,
-    now: datetime | None = None,
 ) -> dict[str, Any]:
     target = _require_canonical_path(contract, "preparation_receipt", output_path)
     _validated_unused_output_path(target)
-    resolved_identity = current_git_identity() if identity is None else identity
-    _require_clean_identity(resolved_identity)
-    created = datetime.now(timezone.utc) if now is None else now
-    if created.tzinfo is None:
-        raise ValueError("Preparation creation time must be timezone-aware.")
-    created = created.astimezone(timezone.utc)
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    created = datetime.now(timezone.utc)
     commit_time = datetime.fromisoformat(
-        resolved_identity.commit_timestamp_utc.replace("Z", "+00:00")
+        identity.commit_timestamp_utc.replace("Z", "+00:00")
     )
     if created >= _target_datetime(contract) or commit_time >= _target_datetime(contract):
         raise ValueError("Preparation and exact HEAD commit must both predate the beacon target.")
-    resolved_environment = _validate_environment_receipt(
-        current_environment_receipt() if environment is None else environment
-    )
+    environment = _validate_environment_receipt(current_environment_receipt())
     receipt: dict[str, Any] = {
         "schema": SYNTHETIC_PREPARATION_SCHEMA,
         "candidate_id": "metadata-calibration-efficiency-v2",
@@ -2655,9 +2831,9 @@ def build_preparation_receipt(
         "filterbank_path": str(contract.filterbank_path),
         "filterbank_sha256": contract.filterbank_sha256,
         "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-        **_identity_mapping(resolved_identity),
+        **_identity_mapping(identity),
         "created_at_utc": created.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
-        "environment": resolved_environment,
+        "environment": environment,
         "canonical_execution_paths": dict(
             contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
         ),
@@ -2677,6 +2853,7 @@ def _validate_preparation_receipt(
 ) -> tuple[dict[str, Any], Path]:
     path = canonical_execution_path(contract, "preparation_receipt")
     _readonly_receipt_file(path, "synthetic preparation receipt")
+    _require_file_strictly_predates_target(path, contract, "synthetic preparation receipt")
     receipt = load_json_object(path, name="synthetic preparation receipt")
     _require_exact_keys(receipt, _PREPARATION_FIELDS, "synthetic preparation receipt")
     claimed = receipt.pop("completion_receipt_sha256")
@@ -2797,6 +2974,17 @@ _DEVELOPMENT_RESULT_FIELDS = _RESULT_BASE_FIELDS | {
     "generator_commit_timestamp_utc",
     "environment",
     "preparation_receipt_sha256",
+    "result_sha256",
+}
+_LOCKBOX_RESULT_FIELDS = _RESULT_BASE_FIELDS | {
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "authorization_receipt_sha256",
+    "beacon_receipt_sha256",
+    "one_time_claim_sha256",
     "result_sha256",
 }
 
@@ -3170,9 +3358,8 @@ def run_full_suite_test_evidence(
     contract: SyntheticContract,
     *,
     output_path: str | Path,
-    _runner: Any = subprocess.run,
 ) -> Path:
-    """Run the actual complete suite; unit tests inject a subprocess double."""
+    """Run the actual complete suite with the exact current Python entry point."""
 
     target = _require_canonical_path(contract, "full_suite_test_evidence", output_path)
     _validated_unused_output_path(target)
@@ -3194,7 +3381,7 @@ def run_full_suite_test_evidence(
         preparation_receipt_sha256=preparation["completion_receipt_sha256"],
     )
     argv = [str(environment["python_executable"]), "-m", "pytest", "-q"]
-    completed = _runner(
+    completed = subprocess.run(
         argv,
         cwd=_REPOSITORY,
         check=False,
@@ -3307,6 +3494,11 @@ _BEACON_RECEIPT_FIELDS = {
     "pulse_status_code",
     "signature_value",
     "output_value",
+    "deployed_json_serialization_revision",
+    "signed_message_sha512",
+    "output_value_recomputed",
+    "output_value_protocol_verified",
+    "transport_authentication",
     "output_value_raw_sha256",
     "full_response_utf8",
     "full_response_sha256",
@@ -3321,7 +3513,33 @@ _BEACON_RECEIPT_FIELDS = {
     "preparation_receipt_sha256",
     "development_result_sha256",
     "test_evidence_sha256",
+    "one_time_claim_sha256",
     "beacon_receipt_sha256",
+}
+_LOCKBOX_CLAIM_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "plan_sha256",
+    "claim_created_at_utc",
+    "future_beacon_target_utc",
+    "future_beacon_statement_sha256",
+    "network_access_before_claim",
+    "authorization_path",
+    "authorization_file_sha256",
+    "authorization_receipt_sha256",
+    "authorization_created_at_utc",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "git_worktree_clean",
+    "generator_commit_timestamp_utc",
+    "environment_sha256",
+    "beacon_receipt_path",
+    "output_path",
+    "terminal_receipt_path",
+    "claim_sha256",
 }
 
 
@@ -3330,12 +3548,106 @@ def _target_datetime(contract: SyntheticContract) -> datetime:
     return datetime.fromisoformat(str(text).replace("Z", "+00:00"))
 
 
+def _require_file_strictly_predates_target(
+    path: str | Path, contract: SyntheticContract, name: str
+) -> None:
+    source = _readonly_receipt_file(path, name)
+    target_ns = int(_target_datetime(contract).timestamp() * 1_000_000_000)
+    _, observed = _safe_regular_file_stat(source, name)
+    if observed.st_mtime_ns >= target_ns or observed.st_ctime_ns >= target_ns:
+        raise ValueError(f"{name} filesystem timestamps do not predate the beacon target.")
+
+
+def _parse_exact_utc(value: Any, name: str) -> datetime:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        raise ValueError(f"{name} must be an exact UTC timestamp ending in Z.")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError(f"{name} is not a valid UTC timestamp.") from error
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        raise ValueError(f"{name} must resolve to UTC.")
+    return parsed
+
+
+def _validate_pre_network_claim(
+    contract: SyntheticContract,
+    *,
+    claim_path: str | Path,
+    authorization_path: str | Path,
+    authorization: Mapping[str, Any],
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+) -> tuple[dict[str, Any], str]:
+    """Read back and validate the durable claim that precedes beacon access."""
+
+    path = _require_canonical_path(contract, "seed_global_lockbox_claim", claim_path)
+    _readonly_receipt_file(path, "canonical pre-network lockbox claim")
+    claim = load_json_object(path, name="canonical pre-network lockbox claim")
+    _require_exact_keys(claim, _LOCKBOX_CLAIM_FIELDS, "pre-network lockbox claim")
+    claimed = claim.pop("claim_sha256")
+    if not isinstance(claimed, str) or claimed != _canonical_json_sha256(claim):
+        raise ValueError("Pre-network lockbox claim self-hash mismatch.")
+
+    auth_path = _require_canonical_path(
+        contract, "lockbox_authorization", authorization_path
+    )
+    _readonly_receipt_file(auth_path, "synthetic lockbox authorization")
+    _require_file_strictly_predates_target(
+        auth_path, contract, "synthetic lockbox authorization"
+    )
+    auth_receipt = authorization.get("authorization_receipt_sha256")
+    auth_created = authorization.get("authorization_created_at_utc")
+    validated_authorization_sha = _validate_consumed_authorization_binding(
+        authorization,
+        contract=contract,
+        identity=identity,
+        environment=environment,
+    )
+    if auth_receipt != validated_authorization_sha:
+        raise ValueError("Global claim authorization digest is not a valid sealed record.")
+    claim_created = _parse_exact_utc(claim["claim_created_at_utc"], "claim creation time")
+    authorization_created = _parse_exact_utc(auth_created, "authorization creation time")
+    target = _target_datetime(contract)
+    if authorization_created >= target or claim_created < target:
+        raise ValueError("Authorization/claim timestamps do not straddle the beacon target.")
+    if (
+        claim["schema"] != SYNTHETIC_LOCKBOX_CLAIM_SCHEMA
+        or claim["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or claim["phase"] != "lockbox-pre-network-claim"
+        or claim["status"]
+        != "one_time_global_claimed_before_beacon_fetch_seed_or_rng"
+        or claim["plan_sha256"] != contract.plan_sha256
+        or claim["future_beacon_target_utc"]
+        != contract.plan["rng"]["independent_lockbox_root_seed"]["target_timestamp_utc"]
+        or claim["future_beacon_statement_sha256"]
+        != contract.plan["rng"]["independent_lockbox_root_seed"]["statement_sha256"]
+        or claim["network_access_before_claim"] is not False
+        or claim["authorization_path"] != str(auth_path)
+        or claim["authorization_file_sha256"] != _sha256_file(auth_path)
+        or claim["authorization_receipt_sha256"] != auth_receipt
+        or claim["authorization_created_at_utc"] != auth_created
+        or claim["generator_commit"] != identity.commit
+        or claim["generator_tree"] != identity.tree
+        or claim["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or claim["git_worktree_clean"] is not True
+        or claim["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or claim["environment_sha256"] != environment["environment_sha256"]
+        or claim["beacon_receipt_path"]
+        != str(canonical_execution_path(contract, "beacon_receipt"))
+        or claim["output_path"]
+        != str(canonical_execution_path(contract, "lockbox_result"))
+        or claim["terminal_receipt_path"]
+        != str(canonical_execution_path(contract, "lockbox_terminal_receipt"))
+    ):
+        raise ValueError("Pre-network lockbox claim is forged, stale, or noncanonical.")
+    return claim, claimed
+
+
 def _extract_beacon_pulse(full_response: Mapping[str, Any]) -> Mapping[str, Any]:
     if set(full_response) != {"pulse"} or not isinstance(full_response["pulse"], Mapping):
         raise ValueError("NIST beacon response must have the exact top-level pulse field.")
     pulse = full_response["pulse"]
-    if "timeStamp" not in pulse or "outputValue" not in pulse:
-        raise ValueError("NIST beacon pulse lacks exact timeStamp/outputValue fields.")
     required = {
         "uri",
         "version",
@@ -3350,16 +3662,18 @@ def _extract_beacon_pulse(full_response: Mapping[str, Any]) -> Mapping[str, Any]
         "statusCode",
         "signatureValue",
         "outputValue",
+        "external",
+        "listValues",
     }
-    if not required <= set(pulse):
-        raise ValueError("NIST beacon pulse lacks required exact v2 core fields.")
+    if set(pulse) != required:
+        raise ValueError("NIST beacon pulse lacks the exact deployed v2 JSON field set.")
     chain_index = pulse["chainIndex"]
     pulse_index = pulse["pulseIndex"]
     if (
         pulse["version"] != "2.0"
+        or pulse["cipherSuite"] != 0
         or pulse["period"] != 60000
         or pulse["statusCode"] != 0
-        or type(pulse["cipherSuite"]) is not int
         or type(chain_index) is not int
         or chain_index <= 0
         or type(pulse_index) is not int
@@ -3369,23 +3683,111 @@ def _extract_beacon_pulse(full_response: Mapping[str, Any]) -> Mapping[str, Any]
     expected_uri = f"https://beacon.nist.gov/beacon/2.0/chain/{chain_index}/pulse/{pulse_index}"
     if pulse["uri"] != expected_uri:
         raise ValueError("NIST pulse URI does not exactly bind its chain and pulse indices.")
-    for name in (
-        "certificateId",
-        "localRandomValue",
-        "precommitmentValue",
-        "outputValue",
-    ):
+    certificate_id = pulse["certificateId"]
+    if not isinstance(certificate_id, str) or not _LOWER_HEX_128_RE.fullmatch(certificate_id):
+        raise ValueError("NIST pulse certificateId must be exact lowercase 128-hex.")
+    for name in ("localRandomValue", "precommitmentValue", "outputValue"):
         if not isinstance(pulse[name], str) or not _UPPER_HEX_128_RE.fullmatch(pulse[name]):
             raise ValueError(f"NIST pulse {name} must be exact uppercase 128-hex.")
     signature = pulse["signatureValue"]
-    if (
-        not isinstance(signature, str)
-        or not signature
-        or len(signature) % 2
-        or re.fullmatch(r"[0-9A-F]+", signature) is None
-    ):
-        raise ValueError("NIST pulse signatureValue must be nonempty uppercase hexadecimal.")
+    if not isinstance(signature, str) or not _UPPER_HEX_1024_RE.fullmatch(signature):
+        raise ValueError("NIST cipher-suite-0 signatureValue must be exact uppercase 1024-hex.")
+    external = pulse["external"]
+    if not isinstance(external, Mapping) or set(external) != {"sourceId", "statusCode", "value"}:
+        raise ValueError("NIST pulse external packet must have its exact deployed fields.")
+    if type(external["statusCode"]) is not int or external["statusCode"] < 0:
+        raise ValueError("NIST external statusCode must be a nonnegative exact integer.")
+    for name in ("sourceId", "value"):
+        if not isinstance(external[name], str) or not _UPPER_HEX_128_RE.fullmatch(external[name]):
+            raise ValueError(f"NIST external {name} must be exact uppercase 128-hex.")
+    list_values = pulse["listValues"]
+    if not isinstance(list_values, list) or len(list_values) != 5:
+        raise ValueError("NIST pulse must contain exactly five skip-list values.")
+    expected_types = {"previous", "hour", "day", "month", "year"}
+    observed_types: set[str] = set()
+    for item in list_values:
+        if not isinstance(item, Mapping) or set(item) != {"uri", "type", "value"}:
+            raise ValueError("Every NIST skip-list item must have exact uri/type/value fields.")
+        item_type = item["type"]
+        if not isinstance(item_type, str) or item_type not in expected_types:
+            raise ValueError("NIST skip-list type is invalid.")
+        if item_type in observed_types:
+            raise ValueError("NIST skip-list types must be unique.")
+        observed_types.add(item_type)
+        if (
+            not isinstance(item["uri"], str)
+            or not item["uri"].startswith(
+                f"https://beacon.nist.gov/beacon/2.0/chain/{chain_index}/pulse/"
+            )
+            or not isinstance(item["value"], str)
+            or not _UPPER_HEX_128_RE.fullmatch(item["value"])
+        ):
+            raise ValueError("NIST skip-list URI or value is invalid.")
+    if observed_types != expected_types:
+        raise ValueError("NIST skip-list type set is incomplete.")
     return pulse
+
+
+def _uint_bytes(value: Any, width: int, name: str) -> bytes:
+    if type(value) is not int or value < 0 or value >= 1 << (8 * width):
+        raise ValueError(f"{name} does not fit its exact unsigned integer width.")
+    return value.to_bytes(width, byteorder="big", signed=False)
+
+
+def _deployed_length_prefixed_bytes(value: bytes) -> bytes:
+    return _uint_bytes(len(value), 4, "deployed JSON field length") + value
+
+
+def _deployed_length_prefixed_string(value: Any, name: str) -> bytes:
+    if not isinstance(value, str):
+        raise TypeError(f"{name} must be a string.")
+    return _deployed_length_prefixed_bytes(value.encode("utf-8"))
+
+
+def _deployed_length_prefixed_hex(value: Any, name: str) -> bytes:
+    if not isinstance(value, str) or len(value) % 2 or re.fullmatch(r"[0-9A-Fa-f]+", value) is None:
+        raise ValueError(f"{name} must be nonempty hexadecimal.")
+    return _deployed_length_prefixed_bytes(bytes.fromhex(value))
+
+
+def _serialize_deployed_nist_signed_message(pulse: Mapping[str, Any]) -> bytes:
+    """Serialize fields 1--19 as deployed by the NIST v2 JSON service."""
+
+    list_by_type = {str(item["type"]): item["value"] for item in pulse["listValues"]}
+    external = pulse["external"]
+    return b"".join(
+        (
+            _deployed_length_prefixed_string(pulse["uri"], "pulse uri"),
+            _deployed_length_prefixed_string(pulse["version"], "pulse version"),
+            _uint_bytes(pulse["cipherSuite"], 4, "cipherSuite"),
+            _uint_bytes(pulse["period"], 4, "period"),
+            _deployed_length_prefixed_hex(pulse["certificateId"], "certificateId"),
+            _uint_bytes(pulse["chainIndex"], 8, "chainIndex"),
+            _uint_bytes(pulse["pulseIndex"], 8, "pulseIndex"),
+            _deployed_length_prefixed_string(pulse["timeStamp"], "timeStamp"),
+            _deployed_length_prefixed_hex(pulse["localRandomValue"], "localRandomValue"),
+            _deployed_length_prefixed_hex(external["sourceId"], "external.sourceId"),
+            _uint_bytes(external["statusCode"], 4, "external.statusCode"),
+            _deployed_length_prefixed_hex(external["value"], "external.value"),
+            *(
+                _deployed_length_prefixed_hex(list_by_type[name], f"listValues.{name}")
+                for name in ("previous", "hour", "day", "month", "year")
+            ),
+            _deployed_length_prefixed_hex(
+                pulse["precommitmentValue"], "precommitmentValue"
+            ),
+            _uint_bytes(pulse["statusCode"], 4, "statusCode"),
+        )
+    )
+
+
+def _verify_deployed_nist_output_value(pulse: Mapping[str, Any]) -> tuple[str, str]:
+    signed_message = _serialize_deployed_nist_signed_message(pulse)
+    signature = bytes.fromhex(str(pulse["signatureValue"]))
+    recomputed = hashlib.sha512(signed_message + signature).hexdigest().upper()
+    if recomputed != pulse["outputValue"]:
+        raise ValueError("NIST outputValue does not match its deployed protocol SHA-512 preimage.")
+    return hashlib.sha512(signed_message).hexdigest(), recomputed
 
 
 def _derive_seed_material(
@@ -3424,6 +3826,34 @@ def _derive_lockbox_seed_from_beacon_receipt(
     claimed = receipt.pop("beacon_receipt_sha256")
     if not isinstance(claimed, str) or claimed != _canonical_json_sha256(receipt):
         raise ValueError("NIST beacon receipt self-hash mismatch.")
+    authorization_path = canonical_execution_path(contract, "lockbox_authorization")
+    authorization = load_json_object(
+        authorization_path, name="synthetic lockbox authorization"
+    )
+    receipt_identity = GitIdentity(
+        commit=str(receipt["generator_commit"]),
+        tree=str(receipt["generator_tree"]),
+        source_bundle_sha256=str(receipt["generator_source_bundle_sha256"]),
+        clean=receipt["git_worktree_clean"] is True,
+        commit_timestamp_utc=str(receipt["generator_commit_timestamp_utc"]),
+    )
+    receipt_environment = receipt["environment"]
+    if not isinstance(receipt_environment, Mapping):
+        raise TypeError("NIST beacon receipt environment must be a mapping.")
+    claim, claim_digest = _validate_pre_network_claim(
+        contract,
+        claim_path=canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        authorization_path=authorization_path,
+        authorization=authorization,
+        identity=receipt_identity,
+        environment=receipt_environment,
+    )
+    if (
+        claim["beacon_receipt_path"] != str(path)
+        or claim["output_path"] != str(canonical_execution_path(contract, "lockbox_result"))
+        or receipt["one_time_claim_sha256"] != claim_digest
+    ):
+        raise ValueError("NIST beacon receipt is not bound to the canonical pre-network claim.")
     raw_response = receipt["full_response_utf8"]
     if (
         not isinstance(raw_response, str)
@@ -3455,16 +3885,27 @@ def _derive_lockbox_seed_from_beacon_receipt(
         pulse_timestamp=pulse["timeStamp"],
         output_value=pulse["outputValue"],
     )
+    signed_message_sha512, recomputed_output = _verify_deployed_nist_output_value(pulse)
     beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
     fetched_at = receipt["fetched_at_utc"]
-    if not isinstance(fetched_at, str) or datetime.fromisoformat(
-        fetched_at.replace("Z", "+00:00")
-    ) < _target_datetime(contract):
+    fetched_time = _parse_exact_utc(fetched_at, "beacon fetch time")
+    claim_time = _parse_exact_utc(claim["claim_created_at_utc"], "claim creation time")
+    if fetched_time < _target_datetime(contract) or fetched_time < claim_time:
         raise ValueError("NIST beacon receipt claims retrieval before the frozen target.")
+    claim_path = _readonly_receipt_file(
+        canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        "canonical pre-network lockbox claim",
+    )
+    _, claim_stat = _safe_regular_file_stat(
+        claim_path, "canonical pre-network lockbox claim"
+    )
+    _, beacon_stat = _safe_regular_file_stat(path, "canonical NIST beacon receipt")
+    if claim_stat.st_ctime_ns > beacon_stat.st_ctime_ns:
+        raise ValueError("Beacon receipt filesystem creation predates the global claim.")
     if (
         receipt["schema"] != SYNTHETIC_BEACON_RECEIPT_SCHEMA
         or receipt["candidate_id"] != "metadata-calibration-efficiency-v2"
-        or receipt["phase"] != "fetch-beacon"
+        or receipt["phase"] != "lockbox-beacon-after-claim"
         or receipt["status"] != "exact_future_pulse_recorded"
         or receipt["plan_sha256"] != contract.plan_sha256
         or receipt["provider"] != beacon["provider"]
@@ -3472,9 +3913,17 @@ def _derive_lockbox_seed_from_beacon_receipt(
         or receipt["target_timestamp_utc"] != beacon["target_timestamp_utc"]
         or receipt["statement_utf8"] != beacon["statement_utf8"]
         or receipt["statement_sha256"] != beacon["statement_sha256"]
+        or receipt["deployed_json_serialization_revision"]
+        != beacon["deployed_json_serialization_revision"]
+        or receipt["signed_message_sha512"] != signed_message_sha512
+        or receipt["output_value_recomputed"] != recomputed_output
+        or receipt["output_value_protocol_verified"] is not True
+        or receipt["transport_authentication"] != beacon["transport_authentication"]
         or receipt["output_value_raw_sha256"] != raw_sha
         or receipt["derived_seed_sha256"] != digest
         or receipt["root_seed_formula"] != beacon["root_seed_formula"]
+        or not isinstance(receipt["one_time_claim_sha256"], str)
+        or not _SHA256_RE.fullmatch(receipt["one_time_claim_sha256"])
     ):
         raise ValueError("NIST beacon receipt is not the exact frozen derivation.")
     return root_seed
@@ -3484,45 +3933,60 @@ def fetch_nist_beacon_receipt(
     contract: SyntheticContract,
     *,
     output_path: str | Path,
-    now: datetime | None = None,
-    _opener: Any = urllib.request.urlopen,
 ) -> Path:
-    target = _require_canonical_path(contract, "beacon_receipt", output_path)
+    """Standalone seed-bearing beacon retrieval is forbidden by the V10 contract."""
+
+    _require_canonical_path(contract, "beacon_receipt", output_path)
+    raise RuntimeError(
+        "V10 forbids standalone beacon fetch; use the one-time lockbox transaction."
+    )
+
+
+def _fetch_nist_beacon_after_global_claim(
+    contract: SyntheticContract,
+    *,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+    preparation_receipt_sha256: str,
+    development_result_sha256: str,
+    test_evidence_sha256: str,
+    one_time_claim_sha256: str,
+) -> tuple[Path, dict[str, Any], int]:
+    """Fetch and persist the future pulse only after the global claim exists."""
+
+    target = canonical_execution_path(contract, "beacon_receipt")
     _validated_unused_output_path(target)
-    observed_now = datetime.now(timezone.utc) if now is None else now
-    if observed_now.tzinfo is None:
-        raise ValueError("Beacon retrieval time must be timezone-aware.")
-    observed_now = observed_now.astimezone(timezone.utc)
+    authorization_path = canonical_execution_path(contract, "lockbox_authorization")
+    authorization = load_json_object(
+        authorization_path, name="synthetic lockbox authorization"
+    )
+    _, validated_claim_sha = _validate_pre_network_claim(
+        contract,
+        claim_path=canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        authorization_path=authorization_path,
+        authorization=authorization,
+        identity=identity,
+        environment=environment,
+    )
+    if (
+        validated_claim_sha != one_time_claim_sha256
+        or authorization["preparation_evidence"]["receipt_sha256"]
+        != preparation_receipt_sha256
+        or authorization["development_evidence"]["receipt_sha256"]
+        != development_result_sha256
+        or authorization["test_evidence"]["receipt_sha256"] != test_evidence_sha256
+    ):
+        raise ValueError("Beacon fetch is not bound to the durable global claim and evidence.")
+    observed_now = datetime.now(timezone.utc)
     if observed_now < _target_datetime(contract):
         raise ValueError("The exact NIST pulse cannot be fetched before its target timestamp.")
-
-    identity = current_git_identity()
-    _require_clean_identity(identity)
-    environment = _validate_environment_receipt(current_environment_receipt())
-    preparation, _ = _validate_preparation_receipt(
-        contract,
-        identity=identity,
-        environment=environment,
-    )
-    development = _development_evidence(
-        contract=contract,
-        identity=identity,
-        environment=environment,
-        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
-    )
-    tests = _validate_test_evidence(
-        contract,
-        identity=identity,
-        environment=environment,
-        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
-        development_result_sha256=development["result_sha256"],
-    )
     beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
     endpoint = str(beacon["exact_endpoint"])
     if not endpoint.startswith("https://beacon.nist.gov/"):
         raise ValueError("Frozen beacon endpoint must use exact NIST HTTPS host.")
     request = urllib.request.Request(endpoint, headers={"Accept": "application/json"})
-    response = _opener(request, timeout=30)
+    opener = urllib.request.build_opener(_RejectHTTPRedirect())
+    response = opener.open(request, timeout=30)
     try:
         response_url = response.geturl() if hasattr(response, "geturl") else endpoint
         status_code = getattr(response, "status", 200)
@@ -3546,17 +4010,20 @@ def fetch_nist_beacon_receipt(
         pulse_timestamp=pulse["timeStamp"],
         output_value=pulse["outputValue"],
     )
+    signed_message_sha512, recomputed_output = _verify_deployed_nist_output_value(pulse)
     _DYNAMIC_RESERVED_SEEDS.add(root_seed)
     receipt: dict[str, Any] = {
         "schema": SYNTHETIC_BEACON_RECEIPT_SCHEMA,
         "candidate_id": "metadata-calibration-efficiency-v2",
-        "phase": "fetch-beacon",
+        "phase": "lockbox-beacon-after-claim",
         "status": "exact_future_pulse_recorded",
         "plan_sha256": contract.plan_sha256,
         "provider": beacon["provider"],
         "endpoint": endpoint,
         "target_timestamp_utc": beacon["target_timestamp_utc"],
-        "fetched_at_utc": observed_now.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "fetched_at_utc": datetime.now(timezone.utc)
+        .isoformat(timespec="milliseconds")
+        .replace("+00:00", "Z"),
         "statement_utf8": beacon["statement_utf8"],
         "statement_sha256": beacon["statement_sha256"],
         "pulse_timestamp": pulse["timeStamp"],
@@ -3572,6 +4039,13 @@ def fetch_nist_beacon_receipt(
         "pulse_status_code": pulse["statusCode"],
         "signature_value": pulse["signatureValue"],
         "output_value": pulse["outputValue"],
+        "deployed_json_serialization_revision": beacon[
+            "deployed_json_serialization_revision"
+        ],
+        "signed_message_sha512": signed_message_sha512,
+        "output_value_recomputed": recomputed_output,
+        "output_value_protocol_verified": True,
+        "transport_authentication": beacon["transport_authentication"],
         "output_value_raw_sha256": raw_sha,
         "full_response_utf8": response_text,
         "full_response_sha256": _sha256_bytes(response_bytes),
@@ -3579,12 +4053,14 @@ def fetch_nist_beacon_receipt(
         "root_seed_formula": beacon["root_seed_formula"],
         **_identity_mapping(identity),
         "environment": environment,
-        "preparation_receipt_sha256": preparation["completion_receipt_sha256"],
-        "development_result_sha256": development["result_sha256"],
-        "test_evidence_sha256": tests["test_evidence_sha256"],
+        "preparation_receipt_sha256": preparation_receipt_sha256,
+        "development_result_sha256": development_result_sha256,
+        "test_evidence_sha256": test_evidence_sha256,
+        "one_time_claim_sha256": one_time_claim_sha256,
     }
     receipt["beacon_receipt_sha256"] = _canonical_json_sha256(receipt)
-    return write_json_exclusive(target, receipt)
+    written = write_json_exclusive(target, receipt)
+    return written, receipt, root_seed
 
 
 def _validate_beacon_evidence(
@@ -3595,6 +4071,7 @@ def _validate_beacon_evidence(
     preparation_receipt_sha256: str,
     development_result_sha256: str,
     test_evidence_sha256: str,
+    one_time_claim_sha256: str,
 ) -> tuple[dict[str, Any], int]:
     path = canonical_execution_path(contract, "beacon_receipt")
     root_seed = _derive_lockbox_seed_from_beacon_receipt(contract, path)
@@ -3609,6 +4086,7 @@ def _validate_beacon_evidence(
         or receipt["preparation_receipt_sha256"] != preparation_receipt_sha256
         or receipt["development_result_sha256"] != development_result_sha256
         or receipt["test_evidence_sha256"] != test_evidence_sha256
+        or receipt["one_time_claim_sha256"] != one_time_claim_sha256
     ):
         raise ValueError("NIST beacon receipt source/environment/evidence binding drifted.")
     _DYNAMIC_RESERVED_SEEDS.add(root_seed)
@@ -3624,6 +4102,7 @@ _AUTHORIZATION_FIELDS = {
     "authorized",
     "authorized_by",
     "authorization_basis",
+    "authorization_created_at_utc",
     "plan_sha256",
     "filterbank_sha256",
     "diagnostic_operator_configs_sha256",
@@ -3636,18 +4115,33 @@ _AUTHORIZATION_FIELDS = {
     "preparation_evidence",
     "development_evidence",
     "test_evidence",
-    "beacon_evidence",
-    "derived_seed_sha256",
+    "future_beacon_commitment",
     "unused_one_time_output",
     "one_time_nonce_sha256",
     "authorization_receipt_sha256",
 }
 _OUTPUT_BINDING_FIELDS = {
     "path",
+    "terminal_receipt_path",
+    "beacon_receipt_path",
     "seed_global_claim_path",
     "observed_output_absent",
+    "observed_terminal_receipt_absent",
+    "observed_beacon_absent",
     "observed_global_claim_absent",
     "never_overwrite",
+}
+_FUTURE_BEACON_COMMITMENT_FIELDS = {
+    "provider",
+    "target_timestamp_utc",
+    "target_timestamp_unix_milliseconds",
+    "exact_endpoint",
+    "statement_utf8",
+    "statement_sha256",
+    "digest_formula",
+    "root_seed_formula",
+    "standalone_beacon_fetch_phase",
+    "transaction_order",
 }
 
 
@@ -3659,15 +4153,19 @@ def _evidence_reference(path: Path, receipt_sha256: str) -> dict[str, str]:
     }
 
 
-def _authorization_evidence(
+def _prelockbox_authorization_evidence(
     contract: SyntheticContract,
     identity: GitIdentity,
     environment: Mapping[str, Any],
-) -> tuple[dict[str, dict[str, str]], str]:
+) -> dict[str, dict[str, str]]:
     preparation, preparation_path = _validate_preparation_receipt(
         contract,
         identity=identity,
         environment=environment,
+    )
+    development_path = canonical_execution_path(contract, "development_result")
+    _require_file_strictly_predates_target(
+        development_path, contract, "synthetic development result"
     )
     development = _development_evidence(
         contract=contract,
@@ -3675,6 +4173,15 @@ def _authorization_evidence(
         environment=environment,
         preparation_receipt_sha256=preparation["completion_receipt_sha256"],
     )
+    test_path = canonical_execution_path(contract, "full_suite_test_evidence")
+    _require_file_strictly_predates_target(
+        test_path, contract, "synthetic full-suite test evidence"
+    )
+    for transcript, name in zip(
+        _test_transcript_paths(test_path),
+        ("captured pytest stdout", "captured pytest stderr"),
+    ):
+        _require_file_strictly_predates_target(transcript, contract, name)
     tests = _validate_test_evidence(
         contract,
         identity=identity,
@@ -3682,55 +4189,148 @@ def _authorization_evidence(
         preparation_receipt_sha256=preparation["completion_receipt_sha256"],
         development_result_sha256=development["result_sha256"],
     )
-    beacon, _root_seed = _validate_beacon_evidence(
-        contract,
-        identity=identity,
-        environment=environment,
-        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
-        development_result_sha256=development["result_sha256"],
-        test_evidence_sha256=tests["test_evidence_sha256"],
-    )
     references = {
         "preparation_evidence": _evidence_reference(
             preparation_path, preparation["completion_receipt_sha256"]
         ),
         "development_evidence": _evidence_reference(
-            canonical_execution_path(contract, "development_result"),
+            development_path,
             development["result_sha256"],
         ),
         "test_evidence": _evidence_reference(
-            canonical_execution_path(contract, "full_suite_test_evidence"),
+            test_path,
             tests["test_evidence_sha256"],
         ),
-        "beacon_evidence": _evidence_reference(
-            canonical_execution_path(contract, "beacon_receipt"),
-            beacon["beacon_receipt_sha256"],
-        ),
     }
-    return references, str(beacon["derived_seed_sha256"])
+    return references
+
+
+def _future_beacon_commitment(contract: SyntheticContract) -> dict[str, Any]:
+    beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
+    return {
+        name: beacon[name]
+        for name in (
+            "provider",
+            "target_timestamp_utc",
+            "target_timestamp_unix_milliseconds",
+            "exact_endpoint",
+            "statement_utf8",
+            "statement_sha256",
+            "digest_formula",
+            "root_seed_formula",
+            "standalone_beacon_fetch_phase",
+            "transaction_order",
+        )
+    }
+
+
+def _validate_consumed_authorization_binding(
+    authorization: Mapping[str, Any],
+    *,
+    contract: SyntheticContract,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+) -> str:
+    """Validate a sealed authorization after its bound outputs have been claimed."""
+
+    record = dict(authorization)
+    _require_exact_keys(record, _AUTHORIZATION_FIELDS, "lockbox authorization")
+    claimed = record.pop("authorization_receipt_sha256")
+    if (
+        not isinstance(claimed, str)
+        or not _SHA256_RE.fullmatch(claimed)
+        or claimed != _canonical_json_sha256(record)
+    ):
+        raise ValueError("Lockbox authorization self-hash mismatch.")
+    created = _parse_exact_utc(
+        record["authorization_created_at_utc"], "authorization creation time"
+    )
+    if (
+        record["schema"] != SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA
+        or record["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or record["phase"] != "lockbox"
+        or record["status"] != "authorized_for_one_time_execution"
+        or record["authorized"] is not True
+        or not isinstance(record["authorized_by"], str)
+        or not record["authorized_by"].strip()
+        or not isinstance(record["authorization_basis"], str)
+        or not record["authorization_basis"].strip()
+        or not isinstance(record["one_time_nonce_sha256"], str)
+        or not _SHA256_RE.fullmatch(record["one_time_nonce_sha256"])
+        or created >= _target_datetime(contract)
+        or record["plan_sha256"] != contract.plan_sha256
+        or record["filterbank_sha256"] != contract.filterbank_sha256
+        or record["diagnostic_operator_configs_sha256"]
+        != contract.diagnostic_operator_configs_sha256
+        or record["generator_commit"] != identity.commit
+        or record["generator_tree"] != identity.tree
+        or record["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or record["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or record["git_worktree_clean"] is not True
+        or record["environment"] != dict(environment)
+    ):
+        raise ValueError("Lockbox authorization source, scope, or time binding is invalid.")
+    references = _prelockbox_authorization_evidence(contract, identity, environment)
+    for name, expected in references.items():
+        observed = record[name]
+        if not isinstance(observed, Mapping):
+            raise TypeError(f"Authorization {name} must be a mapping.")
+        _require_exact_keys(dict(observed), _EVIDENCE_REFERENCE_FIELDS, name)
+        if dict(observed) != expected:
+            raise ValueError(f"Authorization {name} is forged, stale, or noncanonical.")
+    future = record["future_beacon_commitment"]
+    if not isinstance(future, Mapping):
+        raise TypeError("Authorization future-beacon commitment must be a mapping.")
+    _require_exact_keys(
+        dict(future), _FUTURE_BEACON_COMMITMENT_FIELDS, "future-beacon commitment"
+    )
+    if dict(future) != _future_beacon_commitment(contract):
+        raise ValueError("Authorization future-beacon commitment drifted.")
+    target = canonical_execution_path(contract, "lockbox_result")
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
+    claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    beacon_path = canonical_execution_path(contract, "beacon_receipt")
+    output_binding = record["unused_one_time_output"]
+    if not isinstance(output_binding, Mapping):
+        raise TypeError("Authorization unused-output binding must be a mapping.")
+    _require_exact_keys(dict(output_binding), _OUTPUT_BINDING_FIELDS, "unused lockbox output")
+    if dict(output_binding) != {
+        "path": str(target),
+        "terminal_receipt_path": str(terminal_path),
+        "beacon_receipt_path": str(beacon_path),
+        "seed_global_claim_path": str(claim_path),
+        "observed_output_absent": True,
+        "observed_terminal_receipt_absent": True,
+        "observed_beacon_absent": True,
+        "observed_global_claim_absent": True,
+        "never_overwrite": True,
+    }:
+        raise ValueError("Authorization does not bind the canonical one-time outputs.")
+    return claimed
 
 
 def build_lockbox_authorization_template(
     contract: SyntheticContract,
     *,
     output_path: str | Path,
-    identity: GitIdentity | None = None,
-    environment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a non-authorizing record from separately verified evidence artifacts."""
+    """Build a pre-target record binding all evidence and the future pulse commitment."""
 
     target = _require_canonical_path(contract, "lockbox_result", output_path)
     _validated_unused_output_path(target)
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
+    _validated_unused_output_path(terminal_path)
     claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
     _validated_unused_output_path(claim_path)
-    resolved_identity = current_git_identity() if identity is None else identity
-    _require_clean_identity(resolved_identity)
-    resolved_environment = _validate_environment_receipt(
-        current_environment_receipt() if environment is None else environment
-    )
-    references, derived_seed_sha256 = _authorization_evidence(
-        contract, resolved_identity, resolved_environment
-    )
+    beacon_path = canonical_execution_path(contract, "beacon_receipt")
+    _validated_unused_output_path(beacon_path)
+    created = datetime.now(timezone.utc)
+    if created >= _target_datetime(contract):
+        raise ValueError("Lockbox authorization must be created before the beacon target.")
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    references = _prelockbox_authorization_evidence(contract, identity, environment)
     record: dict[str, Any] = {
         "schema": SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA,
         "candidate_id": "metadata-calibration-efficiency-v2",
@@ -3739,17 +4339,24 @@ def build_lockbox_authorization_template(
         "authorized": False,
         "authorized_by": "",
         "authorization_basis": "",
+        "authorization_created_at_utc": created.isoformat(timespec="milliseconds").replace(
+            "+00:00", "Z"
+        ),
         "plan_sha256": contract.plan_sha256,
         "filterbank_sha256": contract.filterbank_sha256,
         "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-        **_identity_mapping(resolved_identity),
-        "environment": resolved_environment,
+        **_identity_mapping(identity),
+        "environment": environment,
         **references,
-        "derived_seed_sha256": derived_seed_sha256,
+        "future_beacon_commitment": _future_beacon_commitment(contract),
         "unused_one_time_output": {
             "path": str(target),
+            "terminal_receipt_path": str(terminal_path),
+            "beacon_receipt_path": str(beacon_path),
             "seed_global_claim_path": str(claim_path),
             "observed_output_absent": True,
+            "observed_terminal_receipt_absent": True,
+            "observed_beacon_absent": True,
             "observed_global_claim_absent": True,
             "never_overwrite": True,
         },
@@ -3773,76 +4380,24 @@ def validate_lockbox_authorization(
     *,
     contract: SyntheticContract,
     output_path: str | Path,
-    identity: GitIdentity | None = None,
-    environment: Mapping[str, Any] | None = None,
 ) -> str:
-    record = dict(authorization)
-    _require_exact_keys(record, _AUTHORIZATION_FIELDS, "lockbox authorization")
-    claimed = record.pop("authorization_receipt_sha256")
-    if not isinstance(claimed, str) or not _SHA256_RE.fullmatch(claimed):
-        raise ValueError("Lockbox authorization requires a lowercase SHA-256 self-hash.")
-    if claimed != _canonical_json_sha256(record):
-        raise ValueError("Lockbox authorization self-hash mismatch.")
-    if (
-        record["schema"] != SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA
-        or record["candidate_id"] != "metadata-calibration-efficiency-v2"
-        or record["phase"] != "lockbox"
-        or record["status"] != "authorized_for_one_time_execution"
-        or record["authorized"] is not True
-        or not isinstance(record["authorized_by"], str)
-        or not record["authorized_by"].strip()
-        or not isinstance(record["authorization_basis"], str)
-        or not record["authorization_basis"].strip()
-        or not isinstance(record["one_time_nonce_sha256"], str)
-        or not _SHA256_RE.fullmatch(record["one_time_nonce_sha256"])
-        or record["plan_sha256"] != contract.plan_sha256
-        or record["filterbank_sha256"] != contract.filterbank_sha256
-        or record["diagnostic_operator_configs_sha256"]
-        != contract.diagnostic_operator_configs_sha256
-    ):
-        raise ValueError("Lockbox record does not exactly authorize this one-time execution.")
-    resolved_identity = current_git_identity() if identity is None else identity
-    _require_clean_identity(resolved_identity)
-    resolved_environment = _validate_environment_receipt(
-        current_environment_receipt() if environment is None else environment
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    claimed = _validate_consumed_authorization_binding(
+        authorization,
+        contract=contract,
+        identity=identity,
+        environment=environment,
     )
-    if (
-        record["generator_commit"] != resolved_identity.commit
-        or record["generator_tree"] != resolved_identity.tree
-        or record["generator_source_bundle_sha256"] != resolved_identity.source_bundle_sha256
-        or record["generator_commit_timestamp_utc"] != resolved_identity.commit_timestamp_utc
-        or record["git_worktree_clean"] is not True
-        or record["environment"] != resolved_environment
-    ):
-        raise ValueError("Lockbox authorization source or environment binding drifted.")
-    references, seed_digest = _authorization_evidence(
-        contract, resolved_identity, resolved_environment
-    )
-    for name, expected in references.items():
-        observed = record[name]
-        if not isinstance(observed, Mapping):
-            raise TypeError(f"Authorization {name} must be a mapping.")
-        _require_exact_keys(dict(observed), _EVIDENCE_REFERENCE_FIELDS, name)
-        if dict(observed) != expected:
-            raise ValueError(f"Authorization {name} is forged, stale, or not separately recorded.")
-    if record["derived_seed_sha256"] != seed_digest:
-        raise ValueError("Authorization future-beacon seed digest drifted.")
     target = _require_canonical_path(contract, "lockbox_result", output_path)
     _validated_unused_output_path(target)
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
+    _validated_unused_output_path(terminal_path)
     claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
     _validated_unused_output_path(claim_path)
-    output_binding = record["unused_one_time_output"]
-    if not isinstance(output_binding, Mapping):
-        raise TypeError("Authorization unused-output binding must be a mapping.")
-    _require_exact_keys(dict(output_binding), _OUTPUT_BINDING_FIELDS, "unused lockbox output")
-    if dict(output_binding) != {
-        "path": str(target),
-        "seed_global_claim_path": str(claim_path),
-        "observed_output_absent": True,
-        "observed_global_claim_absent": True,
-        "never_overwrite": True,
-    }:
-        raise ValueError("Authorization does not bind the exact unused result/global claim.")
+    beacon_path = canonical_execution_path(contract, "beacon_receipt")
+    _validated_unused_output_path(beacon_path)
     return claimed
 
 
@@ -3853,7 +4408,7 @@ def _terminal_receipt(
     identity: GitIdentity,
     environment: Mapping[str, Any],
     authorization_sha256: str,
-    beacon_receipt_sha256: str,
+    beacon_receipt_sha256: str | None,
     claim_sha256: str,
     error: BaseException,
 ) -> dict[str, Any]:
@@ -3886,15 +4441,24 @@ def run_lockbox_to_path(
     authorization_path: str | Path,
     output_path: str | Path,
 ) -> Path:
-    """Consume the canonical global claim before any lockbox RNG is constructed."""
+    """Consume the global claim before network access, seed derivation, or RNG."""
 
     target = _require_canonical_path(contract, "lockbox_result", output_path)
     auth_path = _require_canonical_path(contract, "lockbox_authorization", authorization_path)
     claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    beacon_path = canonical_execution_path(contract, "beacon_receipt")
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
     # A global claim consumes the seed even if a prior process never wrote a terminal result.
     _validated_unused_output_path(claim_path)
+    _validated_unused_output_path(beacon_path)
     _validated_unused_output_path(target)
+    _validated_unused_output_path(terminal_path)
     _readonly_receipt_file(auth_path, "synthetic lockbox authorization")
+    _require_file_strictly_predates_target(
+        auth_path, contract, "synthetic lockbox authorization"
+    )
+    if datetime.now(timezone.utc) < _target_datetime(contract):
+        raise ValueError("The one-time transaction cannot start before the beacon target.")
     authorization = load_json_object(auth_path, name="synthetic lockbox authorization")
     identity = current_git_identity()
     _require_clean_identity(identity)
@@ -3903,41 +4467,101 @@ def run_lockbox_to_path(
         authorization,
         contract=contract,
         output_path=target,
-        identity=identity,
-        environment=environment,
     )
-    beacon, root_seed = _validate_beacon_evidence(
-        contract,
-        identity=identity,
-        environment=environment,
-        preparation_receipt_sha256=authorization["preparation_evidence"]["receipt_sha256"],
-        development_result_sha256=authorization["development_evidence"]["receipt_sha256"],
-        test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
-    )
-    if authorization["beacon_evidence"]["receipt_sha256"] != beacon["beacon_receipt_sha256"]:
-        raise ValueError("Authorization does not bind the exact validated beacon receipt.")
-    # The claim is independent of caller-supplied output paths and is O_EXCL before RNG.
+    if (
+        current_git_identity() != identity
+        or _validate_environment_receipt(current_environment_receipt()) != environment
+    ):
+        raise ValueError("Source or numerical environment changed during preclaim validation.")
+    # The claim is O_EXCL before the first network byte or seed-bearing value is obtained.
+    beacon_commitment = authorization["future_beacon_commitment"]
     claim: dict[str, Any] = {
         "schema": SYNTHETIC_LOCKBOX_CLAIM_SCHEMA,
-        "status": "one_time_global_seed_claimed_before_lockbox_rng",
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "lockbox-pre-network-claim",
+        "status": "one_time_global_claimed_before_beacon_fetch_seed_or_rng",
         "plan_sha256": contract.plan_sha256,
-        "derived_seed_sha256": beacon["derived_seed_sha256"],
+        "claim_created_at_utc": datetime.now(timezone.utc)
+        .isoformat(timespec="milliseconds")
+        .replace("+00:00", "Z"),
+        "future_beacon_target_utc": beacon_commitment["target_timestamp_utc"],
+        "future_beacon_statement_sha256": beacon_commitment["statement_sha256"],
+        "network_access_before_claim": False,
         "authorization_path": str(auth_path),
         "authorization_file_sha256": _sha256_file(auth_path),
         "authorization_receipt_sha256": authorization_sha,
+        "authorization_created_at_utc": authorization["authorization_created_at_utc"],
         "generator_commit": identity.commit,
         "generator_tree": identity.tree,
         "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "git_worktree_clean": identity.clean,
         "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
         "environment_sha256": environment["environment_sha256"],
+        "beacon_receipt_path": str(beacon_path),
         "output_path": str(target),
+        "terminal_receipt_path": str(terminal_path),
     }
     claim["claim_sha256"] = _canonical_json_sha256(claim)
-    write_json_exclusive(claim_path, claim)
-
-    context = _governed_seed_context(contract, phase="lockbox", root_seed=root_seed)
-    metrics = contract.plan["metrics"]["sensitivity_only"]
     try:
+        write_json_exclusive(claim_path, claim)
+    except FileExistsError:
+        raise
+    except Exception as error:
+        if not (claim_path.exists() or claim_path.is_symlink()):
+            raise
+        terminal = _terminal_receipt(
+            status="consumed_inconclusive_claim_write_error",
+            contract=contract,
+            identity=identity,
+            environment=environment,
+            authorization_sha256=authorization_sha,
+            beacon_receipt_sha256=None,
+            claim_sha256=claim["claim_sha256"],
+            error=error,
+        )
+        return write_json_exclusive(terminal_path, terminal)
+
+    metrics = contract.plan["metrics"]["sensitivity_only"]
+    beacon_receipt_sha256: str | None = None
+    try:
+        _, validated_claim_sha = _validate_pre_network_claim(
+            contract,
+            claim_path=claim_path,
+            authorization_path=auth_path,
+            authorization=authorization,
+            identity=identity,
+            environment=environment,
+        )
+        if validated_claim_sha != claim["claim_sha256"]:
+            raise ValueError("Read-back global claim digest differs before beacon access.")
+        _, fetched_beacon, _ = _fetch_nist_beacon_after_global_claim(
+            contract,
+            identity=identity,
+            environment=environment,
+            preparation_receipt_sha256=authorization["preparation_evidence"][
+                "receipt_sha256"
+            ],
+            development_result_sha256=authorization["development_evidence"][
+                "receipt_sha256"
+            ],
+            test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
+            one_time_claim_sha256=claim["claim_sha256"],
+        )
+        beacon_receipt_sha256 = fetched_beacon["beacon_receipt_sha256"]
+        beacon, root_seed = _validate_beacon_evidence(
+            contract,
+            identity=identity,
+            environment=environment,
+            preparation_receipt_sha256=authorization["preparation_evidence"][
+                "receipt_sha256"
+            ],
+            development_result_sha256=authorization["development_evidence"][
+                "receipt_sha256"
+            ],
+            test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
+            one_time_claim_sha256=claim["claim_sha256"],
+        )
+        context = _governed_seed_context(contract, phase="lockbox", root_seed=root_seed)
         result = _execute_synthetic(
             contract,
             phase="lockbox",
@@ -3949,6 +4573,11 @@ def run_lockbox_to_path(
             fbcca_producer=produce_strict_fbcca,
             governed_context=context,
         )
+        if (
+            current_git_identity() != identity
+            or _validate_environment_receipt(current_environment_receipt()) != environment
+        ):
+            raise RuntimeError("Source or numerical environment changed during lockbox execution.")
         result.pop("result_sha256")
         result.update(
             {
@@ -3964,7 +4593,9 @@ def run_lockbox_to_path(
         )
         result["result_sha256"] = _canonical_json_sha256(result)
         encoded = _json_payload_bytes(result)
-        return _write_bytes_exclusive(target, encoded)
+        written = _write_bytes_exclusive(target, encoded)
+        validate_lockbox_terminal_artifact(contract, artifact_path=written)
+        return written
     except HardInvariantFailure as error:
         terminal = _terminal_receipt(
             status="terminal_invariant_fail",
@@ -3972,11 +4603,11 @@ def run_lockbox_to_path(
             identity=identity,
             environment=environment,
             authorization_sha256=authorization_sha,
-            beacon_receipt_sha256=beacon["beacon_receipt_sha256"],
+            beacon_receipt_sha256=beacon_receipt_sha256,
             claim_sha256=claim["claim_sha256"],
             error=error,
         )
-        return write_json_exclusive(target, terminal)
+        return write_json_exclusive(terminal_path, terminal)
     except Exception as error:  # noqa: BLE001 - every caught post-claim failure is terminal.
         terminal = _terminal_receipt(
             status="consumed_inconclusive_infrastructure_error",
@@ -3984,8 +4615,251 @@ def run_lockbox_to_path(
             identity=identity,
             environment=environment,
             authorization_sha256=authorization_sha,
-            beacon_receipt_sha256=beacon["beacon_receipt_sha256"],
+            beacon_receipt_sha256=beacon_receipt_sha256,
             claim_sha256=claim["claim_sha256"],
             error=error,
         )
-        return write_json_exclusive(target, terminal)
+        return write_json_exclusive(terminal_path, terminal)
+
+
+_TERMINAL_RECEIPT_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "human_claim_boundary",
+    "plan_sha256",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "authorization_receipt_sha256",
+    "beacon_receipt_sha256",
+    "one_time_claim_sha256",
+    "error_type",
+    "error_message",
+    "automatic_retry",
+    "result_sha256",
+}
+
+
+def _live_lockbox_bindings(
+    contract: SyntheticContract,
+) -> tuple[GitIdentity, dict[str, Any], dict[str, Any], str]:
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    authorization_path = canonical_execution_path(contract, "lockbox_authorization")
+    _readonly_receipt_file(authorization_path, "synthetic lockbox authorization")
+    _require_file_strictly_predates_target(
+        authorization_path, contract, "synthetic lockbox authorization"
+    )
+    authorization = load_json_object(
+        authorization_path, name="synthetic lockbox authorization"
+    )
+    authorization_sha = _validate_consumed_authorization_binding(
+        authorization,
+        contract=contract,
+        identity=identity,
+        environment=environment,
+    )
+    return identity, environment, authorization, authorization_sha
+
+
+def _validate_lockbox_scientific_result(
+    contract: SyntheticContract,
+    path: Path,
+) -> dict[str, Any]:
+    _readonly_receipt_file(path, "synthetic lockbox scientific result")
+    observed = load_json_object(path, name="synthetic lockbox scientific result")
+    _require_exact_keys(observed, _LOCKBOX_RESULT_FIELDS, "lockbox scientific result")
+    claimed = observed.pop("result_sha256")
+    if not isinstance(claimed, str) or claimed != _canonical_json_sha256(observed):
+        raise ValueError("Synthetic lockbox result self-hash mismatch.")
+    identity, environment, authorization, authorization_sha = _live_lockbox_bindings(
+        contract
+    )
+    claim, claim_sha = _validate_pre_network_claim(
+        contract,
+        claim_path=canonical_execution_path(contract, "seed_global_lockbox_claim"),
+        authorization_path=canonical_execution_path(contract, "lockbox_authorization"),
+        authorization=authorization,
+        identity=identity,
+        environment=environment,
+    )
+    beacon, root_seed = _validate_beacon_evidence(
+        contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=authorization["preparation_evidence"][
+            "receipt_sha256"
+        ],
+        development_result_sha256=authorization["development_evidence"][
+            "receipt_sha256"
+        ],
+        test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
+        one_time_claim_sha256=claim_sha,
+    )
+    expected_assertions = {name: True for name in contract.plan["hard_assertions_before_efficacy"]}
+    if (
+        observed["schema"] != SYNTHETIC_RESULT_SCHEMA
+        or observed["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or observed["phase"] != "lockbox"
+        or observed["status"] not in {"terminal_pass", "terminal_scientific_fail"}
+        or observed["human_claim_boundary"]
+        != "synthetic_pass_is_necessary_but_never_sufficient"
+        or observed["plan_sha256"] != contract.plan_sha256
+        or observed["filterbank_sha256"] != contract.filterbank_sha256
+        or observed["diagnostic_operator_configs_sha256"]
+        != contract.diagnostic_operator_configs_sha256
+        or observed["root_seed"] != root_seed
+        or observed["participants_per_family"] != 64
+        or observed["families"] != list(FAMILY_NAMES)
+        or observed["support_budgets"] != list(SUPPORT_BUDGETS)
+        or observed["query_blocks"]
+        != list(contract.plan["population"]["immutable_query_blocks"])
+        or observed["hard_assertions_completed_before_metrics"] is not True
+        or observed["hard_assertions"] != expected_assertions
+        or observed["development_outputs_are_engineering_only"] is not False
+        or observed["lockbox_terminal"] is not True
+        or observed["generator_commit"] != identity.commit
+        or observed["generator_tree"] != identity.tree
+        or observed["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or observed["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or observed["environment"] != environment
+        or observed["authorization_receipt_sha256"] != authorization_sha
+        or observed["beacon_receipt_sha256"] != beacon["beacon_receipt_sha256"]
+        or observed["one_time_claim_sha256"] != claim_sha
+        or claim["output_path"] != str(path)
+        or observed["rng"]
+        != {
+            "bit_generator": "numpy.random.PCG64DXSM",
+            "construction": "numpy.random.SeedSequence",
+            "complete_key_order": list(contract.plan["rng"]["key_order"]),
+        }
+    ):
+        raise ValueError("Synthetic lockbox result source, evidence, or grid binding drifted.")
+    metric_rows = _validate_complete_metric_grid(observed["participant_metrics"])
+    contrasts = _validate_contrast_schema(observed["primary_contrasts"])
+    promotion = _validate_promotion_schema(observed["promotion"])
+    metrics = contract.plan["metrics"]["sensitivity_only"]
+    context = _governed_seed_context(contract, phase="lockbox", root_seed=root_seed)
+    recomputed_contrasts, recomputed_promotion = summarize_synthetic_metrics(
+        metric_rows,
+        contract=contract,
+        root_seed=root_seed,
+        families=FAMILY_NAMES,
+        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
+        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
+        _governed_context=context,
+    )
+    expected_status = (
+        "terminal_pass" if recomputed_promotion["all_requirements_passed"] else "terminal_scientific_fail"
+    )
+    if (
+        observed["status"] != expected_status
+        or _canonical_json_bytes({"value": contrasts})
+        != _canonical_json_bytes({"value": recomputed_contrasts})
+        or _canonical_json_bytes({"value": promotion})
+        != _canonical_json_bytes({"value": recomputed_promotion})
+    ):
+        raise ValueError("Lockbox contrasts, promotion, or terminal status do not recompute.")
+    observed["result_sha256"] = claimed
+    return observed
+
+
+def _validate_lockbox_error_receipt(
+    contract: SyntheticContract,
+    path: Path,
+) -> dict[str, Any]:
+    _readonly_receipt_file(path, "synthetic lockbox terminal receipt")
+    receipt = load_json_object(path, name="synthetic lockbox terminal receipt")
+    _require_exact_keys(receipt, _TERMINAL_RECEIPT_FIELDS, "lockbox terminal receipt")
+    claimed = receipt.pop("result_sha256")
+    if not isinstance(claimed, str) or claimed != _canonical_json_sha256(receipt):
+        raise ValueError("Synthetic terminal receipt self-hash mismatch.")
+    identity, environment, authorization, authorization_sha = _live_lockbox_bindings(
+        contract
+    )
+    allowed = {
+        "terminal_invariant_fail",
+        "consumed_inconclusive_infrastructure_error",
+        "consumed_inconclusive_claim_write_error",
+    }
+    if (
+        receipt["schema"] != SYNTHETIC_TERMINAL_RECEIPT_SCHEMA
+        or receipt["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or receipt["phase"] != "lockbox"
+        or receipt["status"] not in allowed
+        or receipt["human_claim_boundary"]
+        != "synthetic_pass_is_necessary_but_never_sufficient"
+        or receipt["plan_sha256"] != contract.plan_sha256
+        or receipt["generator_commit"] != identity.commit
+        or receipt["generator_tree"] != identity.tree
+        or receipt["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or receipt["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or receipt["environment"] != environment
+        or receipt["authorization_receipt_sha256"] != authorization_sha
+        or not isinstance(receipt["one_time_claim_sha256"], str)
+        or not _SHA256_RE.fullmatch(receipt["one_time_claim_sha256"])
+        or receipt["automatic_retry"] != "forbidden"
+        or not isinstance(receipt["error_type"], str)
+        or not receipt["error_type"]
+        or not isinstance(receipt["error_message"], str)
+    ):
+        raise ValueError("Synthetic terminal receipt source or evidence binding drifted.")
+    claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    if receipt["status"] == "consumed_inconclusive_claim_write_error":
+        _regular_nonsymlink_file(claim_path, "partial canonical global claim")
+    else:
+        _, claim_sha = _validate_pre_network_claim(
+            contract,
+            claim_path=claim_path,
+            authorization_path=canonical_execution_path(contract, "lockbox_authorization"),
+            authorization=authorization,
+            identity=identity,
+            environment=environment,
+        )
+        if receipt["one_time_claim_sha256"] != claim_sha:
+            raise ValueError("Terminal receipt does not bind the durable global claim.")
+    beacon_sha = receipt["beacon_receipt_sha256"]
+    if beacon_sha is not None and (
+        not isinstance(beacon_sha, str) or not _SHA256_RE.fullmatch(beacon_sha)
+    ):
+        raise ValueError("Terminal receipt beacon digest must be null or SHA-256.")
+    if beacon_sha is not None:
+        beacon, _ = _validate_beacon_evidence(
+            contract,
+            identity=identity,
+            environment=environment,
+            preparation_receipt_sha256=authorization["preparation_evidence"][
+                "receipt_sha256"
+            ],
+            development_result_sha256=authorization["development_evidence"][
+                "receipt_sha256"
+            ],
+            test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
+            one_time_claim_sha256=receipt["one_time_claim_sha256"],
+        )
+        if beacon["beacon_receipt_sha256"] != beacon_sha:
+            raise ValueError("Terminal receipt does not bind the canonical beacon receipt.")
+    receipt["result_sha256"] = claimed
+    return receipt
+
+
+def validate_lockbox_terminal_artifact(
+    contract: SyntheticContract,
+    *,
+    artifact_path: str | Path,
+) -> dict[str, Any]:
+    """Validate the single scientific result or separate consumed-error receipt."""
+
+    observed = Path(artifact_path).expanduser().absolute()
+    result_path = canonical_execution_path(contract, "lockbox_result")
+    terminal_path = canonical_execution_path(contract, "lockbox_terminal_receipt")
+    if observed == result_path:
+        return _validate_lockbox_scientific_result(contract, observed)
+    if observed == terminal_path:
+        return _validate_lockbox_error_receipt(contract, observed)
+    raise ValueError("Lockbox terminal artifact must use one exact canonical result path.")

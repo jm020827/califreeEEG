@@ -14,13 +14,14 @@ from cfeg.analysis.metadata_calibration_v2_synthetic import (
     build_lockbox_authorization_template,
     build_preparation_receipt,
     canonical_execution_path,
-    fetch_nist_beacon_receipt,
     load_json_object,
+    prepare_canonical_artifact_directories,
     run_development_to_path,
     run_full_suite_test_evidence,
     run_lockbox_to_path,
     seal_authorization_record,
     validate_lockbox_authorization,
+    validate_lockbox_terminal_artifact,
     validate_synthetic_contract,
     write_json_exclusive,
 )
@@ -29,8 +30,8 @@ from cfeg.analysis.metadata_calibration_v2_synthetic import (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the v9 synthetic governance phases at their exact canonical paths. "
-            "The beacon phase refuses network access before the frozen target time."
+            "Run the v10 synthetic governance phases at their exact canonical paths. "
+            "The one-time lockbox transaction claims before any beacon network access."
         )
     )
     parser.add_argument("--plan", type=Path, default=DEFAULT_SYNTHETIC_PLAN_PATH)
@@ -38,7 +39,6 @@ def _parser() -> argparse.ArgumentParser:
     phases.add_parser("prepare")
     phases.add_parser("development")
     phases.add_parser("test-evidence")
-    phases.add_parser("fetch-beacon")
     phases.add_parser("auth-template")
     authorization = phases.add_parser("authorize")
     authorization.add_argument("--authorized-by", required=True)
@@ -64,11 +64,11 @@ def _receipt_digest(payload: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     contract = validate_synthetic_contract(args.plan)
+    prepare_canonical_artifact_directories(contract)
     phase_to_artifact = {
         "prepare": "preparation_receipt",
         "development": "development_result",
         "test-evidence": "full_suite_test_evidence",
-        "fetch-beacon": "beacon_receipt",
         "auth-template": "lockbox_authorization",
         "authorize": "lockbox_authorization",
         "lockbox": "lockbox_result",
@@ -89,9 +89,6 @@ def main(argv: list[str] | None = None) -> int:
     elif args.phase == "test-evidence":
         written = run_full_suite_test_evidence(contract, output_path=output)
         payload = load_json_object(written, name="synthetic test evidence")
-    elif args.phase == "fetch-beacon":
-        written = fetch_nist_beacon_receipt(contract, output_path=output)
-        payload = load_json_object(written, name="synthetic beacon receipt")
     elif args.phase == "auth-template":
         payload = build_lockbox_authorization_template(
             contract,
@@ -127,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
             authorization_path=canonical_execution_path(contract, "lockbox_authorization"),
             output_path=output,
         )
-        payload = load_json_object(written, name="synthetic lockbox terminal result")
+        payload = validate_lockbox_terminal_artifact(contract, artifact_path=written)
     else:  # pragma: no cover - argparse enforces the choices.
         raise AssertionError(f"Unhandled phase {args.phase!r}.")
 

@@ -6,9 +6,11 @@ import inspect
 import json
 import os
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -49,8 +51,10 @@ def _contract_with_paths(
     root = tmp_path / "artifacts"
     synthetic_dir = root / "synthetic"
     claims = root / "claims"
-    synthetic_dir.mkdir(parents=True)
-    claims.mkdir(parents=True)
+    synthetic_dir.mkdir(mode=0o700, parents=True)
+    claims.mkdir(mode=0o700, parents=True)
+    synthetic_dir.chmod(0o700)
+    claims.chmod(0o700)
     paths = plan["freeze_and_stopping"]["canonical_execution_paths"]
     paths.update(
         {
@@ -60,10 +64,44 @@ def _contract_with_paths(
             "beacon_receipt": str(synthetic_dir / "beacon.json"),
             "lockbox_authorization": str(synthetic_dir / "authorization.json"),
             "lockbox_result": str(synthetic_dir / "lockbox.json"),
+            "lockbox_terminal_receipt": str(synthetic_dir / "lockbox.terminal.json"),
             "seed_global_lockbox_claim": str(claims / "global.json"),
         }
     )
     return replace(contract, plan=plan)
+
+
+def _retarget_beacon(
+    contract: synthetic.SyntheticContract, target: datetime
+) -> synthetic.SyntheticContract:
+    plan = deepcopy(contract.plan)
+    target = target.astimezone(timezone.utc)
+    timestamp = target.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    milliseconds = int(target.timestamp() * 1000)
+    statement = f"cfeg.synthetic-unit-test|{timestamp}"
+    beacon = plan["rng"]["independent_lockbox_root_seed"]
+    beacon.update(
+        {
+            "target_timestamp_utc": timestamp,
+            "target_timestamp_unix_milliseconds": milliseconds,
+            "exact_endpoint": (
+                f"https://beacon.nist.gov/beacon/2.0/pulse/time/{milliseconds}"
+            ),
+            "required_exact_pulse_timestamp": timestamp,
+            "statement_utf8": statement,
+            "statement_sha256": hashlib.sha256(statement.encode()).hexdigest(),
+        }
+    )
+    return replace(contract, plan=plan)
+
+
+class _FrozenDateTime(datetime):
+    observed_now = datetime.now(timezone.utc)
+
+    @classmethod
+    def now(cls, tz=None):
+        value = cls.observed_now
+        return value if tz is None else value.astimezone(tz)
 
 
 def _identity() -> synthetic.GitIdentity:
@@ -76,10 +114,10 @@ def _identity() -> synthetic.GitIdentity:
     )
 
 
-def test_v9_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
+def test_v10_contract_filterbank_and_operator_weights_are_bitwise_exact(contract) -> None:
     assert contract.plan_sha256 == synthetic.EXPECTED_SYNTHETIC_PLAN_SHA256
     assert (
-        contract.plan["generator_revision"] == "v9_post_development_pre_lockbox_interpreter_fix"
+        contract.plan["generator_revision"] == "v10_claim_before_fetch_transaction"
     )
     resolved = np.asarray(
         resolve_filterbank_parameters(contract.filterbank, sfreq=250.0)["weights"],
@@ -99,7 +137,7 @@ def test_plan_byte_drift_and_symlink_are_rejected(tmp_path: Path, contract) -> N
         synthetic.validate_synthetic_contract(drifted)
     linked = tmp_path / "linked.yaml"
     linked.symlink_to(contract.plan_path)
-    with pytest.raises(ValueError, match="nonsymlink"):
+    with pytest.raises(ValueError, match="symlink"):
         synthetic.validate_synthetic_contract(linked)
 
 
@@ -297,7 +335,7 @@ def test_exact_waveform_reconstruction_ar1_gain_placement_and_golden_hashes(cont
         "b7bb38da05dc991fa5d52fead2b87a62c80f0ee227feee72926057b186bf8845"
     )
     assert participant.partition_sha256s[0] == (
-        "5cf6af932d4e15ad01b377d3be0997439379665d7101fb5d5b1ff1fe2ab0c829"
+        "fbe2bc0b2ba8fe8aa48630cd0fc72a6edaac87d72ba081b43cefb889981c0e5a"
     )
 
     n3 = synthetic.generate_synthetic_participant(
@@ -518,29 +556,82 @@ def test_cache_is_exclusive_pickle_free_and_seed_bound(tmp_path: Path, contract)
         )
 
 
-def _valid_beacon_receipt(
-    contract: synthetic.SyntheticContract,
-    identity: synthetic.GitIdentity,
-    environment: dict,
-) -> tuple[dict, int]:
+def test_governed_writer_rejects_ancestor_symlink_and_has_one_race_winner(
+    tmp_path: Path,
+) -> None:
+    real_parent = tmp_path / "real"
+    real_parent.mkdir(mode=0o700)
+    alias = tmp_path / "alias"
+    alias.symlink_to(real_parent, target_is_directory=True)
+    with pytest.raises(ValueError, match="symlinked parent"):
+        synthetic.write_json_exclusive(alias / "forbidden.json", {"value": 1})
+
+    target = real_parent / "race.json"
+    barrier = threading.Barrier(2)
+
+    def contender(value: int):
+        barrier.wait()
+        try:
+            return synthetic.write_json_exclusive(target, {"value": value})
+        except FileExistsError:
+            return None
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(contender, (1, 2)))
+    assert sum(outcome == target for outcome in outcomes) == 1
+    assert sum(outcome is None for outcome in outcomes) == 1
+    assert synthetic.load_json_object(target, name="race winner")["value"] in {1, 2}
+
+
+def _mock_beacon_pulse(contract: synthetic.SyntheticContract) -> dict:
     beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
     pulse = {
         "uri": "https://beacon.nist.gov/beacon/2.0/chain/7/pulse/11",
         "version": "2.0",
         "cipherSuite": 0,
         "period": 60000,
-        "certificateId": "A" * 128,
+        "certificateId": "a" * 128,
         "chainIndex": 7,
         "pulseIndex": 11,
         "timeStamp": beacon["required_exact_pulse_timestamp"],
         "localRandomValue": "B" * 128,
-        "external": {"sourceId": "unit-test"},
-        "listValues": [],
+        "external": {
+            "sourceId": "0" * 128,
+            "statusCode": 0,
+            "value": "1" * 128,
+        },
+        "listValues": [
+            {
+                "uri": f"https://beacon.nist.gov/beacon/2.0/chain/7/pulse/{index}",
+                "type": name,
+                "value": character * 128,
+            }
+            for index, (name, character) in enumerate(
+                zip(("previous", "hour", "day", "month", "year"), "23456"),
+                start=1,
+            )
+        ],
         "precommitmentValue": "C" * 128,
         "statusCode": 0,
-        "signatureValue": "ABCD",
-        "outputValue": "D" * 128,
+        "signatureValue": "AB" * 512,
+        "outputValue": "0" * 128,
     }
+    signed = synthetic._serialize_deployed_nist_signed_message(pulse)
+    pulse["outputValue"] = hashlib.sha512(
+        signed + bytes.fromhex(pulse["signatureValue"])
+    ).hexdigest().upper()
+    return pulse
+
+
+def _valid_beacon_receipt(
+    contract: synthetic.SyntheticContract,
+    identity: synthetic.GitIdentity,
+    environment: dict,
+    *,
+    claim_sha256: str,
+) -> tuple[dict, int]:
+    beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
+    pulse = _mock_beacon_pulse(contract)
     response = json.dumps({"pulse": pulse}, sort_keys=True, separators=(",", ":"))
     root_seed, digest, raw_sha = synthetic._derive_seed_material(
         contract,
@@ -550,13 +641,15 @@ def _valid_beacon_receipt(
     receipt = {
         "schema": synthetic.SYNTHETIC_BEACON_RECEIPT_SCHEMA,
         "candidate_id": "metadata-calibration-efficiency-v2",
-        "phase": "fetch-beacon",
+        "phase": "lockbox-beacon-after-claim",
         "status": "exact_future_pulse_recorded",
         "plan_sha256": contract.plan_sha256,
         "provider": beacon["provider"],
         "endpoint": beacon["exact_endpoint"],
         "target_timestamp_utc": beacon["target_timestamp_utc"],
-        "fetched_at_utc": "2026-09-05T20:00:01.000Z",
+        "fetched_at_utc": (
+            synthetic._target_datetime(contract) + timedelta(seconds=2)
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
         "statement_utf8": beacon["statement_utf8"],
         "statement_sha256": beacon["statement_sha256"],
         "pulse_timestamp": pulse["timeStamp"],
@@ -572,6 +665,15 @@ def _valid_beacon_receipt(
         "pulse_status_code": pulse["statusCode"],
         "signature_value": pulse["signatureValue"],
         "output_value": pulse["outputValue"],
+        "deployed_json_serialization_revision": beacon[
+            "deployed_json_serialization_revision"
+        ],
+        "signed_message_sha512": hashlib.sha512(
+            synthetic._serialize_deployed_nist_signed_message(pulse)
+        ).hexdigest(),
+        "output_value_recomputed": pulse["outputValue"],
+        "output_value_protocol_verified": True,
+        "transport_authentication": beacon["transport_authentication"],
         "output_value_raw_sha256": raw_sha,
         "full_response_utf8": response,
         "full_response_sha256": hashlib.sha256(response.encode()).hexdigest(),
@@ -586,17 +688,73 @@ def _valid_beacon_receipt(
         "preparation_receipt_sha256": "4" * 64,
         "development_result_sha256": "5" * 64,
         "test_evidence_sha256": "6" * 64,
+        "one_time_claim_sha256": claim_sha256,
     }
     receipt["beacon_receipt_sha256"] = synthetic._canonical_json_sha256(receipt)
     return receipt, root_seed
 
 
 def test_future_beacon_seed_uses_full_digest_and_fresh_process_guard(
-    tmp_path: Path, contract
+    tmp_path: Path, contract, monkeypatch
 ) -> None:
-    isolated = _contract_with_paths(tmp_path, contract)
+    isolated = _retarget_beacon(
+        _contract_with_paths(tmp_path, contract), datetime.now(timezone.utc) + timedelta(hours=1)
+    )
     environment = synthetic.current_environment_receipt()
-    receipt, root_seed = _valid_beacon_receipt(isolated, _identity(), environment)
+    identity = _identity()
+    auth_path = synthetic.canonical_execution_path(isolated, "lockbox_authorization")
+    auth = {
+        "authorization_created_at_utc": (
+            synthetic._target_datetime(isolated) - timedelta(minutes=10)
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "authorization_receipt_sha256": "8" * 64,
+    }
+    synthetic.write_json_exclusive(auth_path, auth)
+    claim_path = synthetic.canonical_execution_path(isolated, "seed_global_lockbox_claim")
+    claim = {
+        "schema": synthetic.SYNTHETIC_LOCKBOX_CLAIM_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "lockbox-pre-network-claim",
+        "status": "one_time_global_claimed_before_beacon_fetch_seed_or_rng",
+        "plan_sha256": isolated.plan_sha256,
+        "claim_created_at_utc": (
+            synthetic._target_datetime(isolated) + timedelta(seconds=1)
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "future_beacon_target_utc": isolated.plan["rng"][
+            "independent_lockbox_root_seed"
+        ]["target_timestamp_utc"],
+        "future_beacon_statement_sha256": isolated.plan["rng"][
+            "independent_lockbox_root_seed"
+        ]["statement_sha256"],
+        "network_access_before_claim": False,
+        "authorization_path": str(auth_path),
+        "authorization_file_sha256": synthetic._sha256_file(auth_path),
+        "authorization_receipt_sha256": auth["authorization_receipt_sha256"],
+        "authorization_created_at_utc": auth["authorization_created_at_utc"],
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "git_worktree_clean": True,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment_sha256": environment["environment_sha256"],
+        "beacon_receipt_path": str(
+            synthetic.canonical_execution_path(isolated, "beacon_receipt")
+        ),
+        "output_path": str(synthetic.canonical_execution_path(isolated, "lockbox_result")),
+        "terminal_receipt_path": str(
+            synthetic.canonical_execution_path(isolated, "lockbox_terminal_receipt")
+        ),
+    }
+    claim["claim_sha256"] = synthetic._canonical_json_sha256(claim)
+    synthetic.write_json_exclusive(claim_path, claim)
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_consumed_authorization_binding",
+        lambda *args, **kwargs: auth["authorization_receipt_sha256"],
+    )
+    receipt, root_seed = _valid_beacon_receipt(
+        isolated, identity, environment, claim_sha256=claim["claim_sha256"]
+    )
     path = synthetic.canonical_execution_path(isolated, "beacon_receipt")
     synthetic.write_json_exclusive(path, receipt)
     beacon = isolated.plan["rng"]["independent_lockbox_root_seed"]
@@ -634,70 +792,216 @@ def test_future_beacon_seed_uses_full_digest_and_fresh_process_guard(
     synthetic._VALIDATED_BEACON_SEED_CACHE.clear()
 
 
-def test_beacon_fetch_refuses_pre_target_before_network_or_evidence(
-    tmp_path: Path, contract
-) -> None:
+def test_standalone_beacon_fetch_is_always_forbidden(tmp_path: Path, contract) -> None:
     isolated = _contract_with_paths(tmp_path, contract)
-    called = False
-
-    def opener(*args, **kwargs):
-        nonlocal called
-        called = True
-        raise AssertionError("network must not be called")
-
-    with pytest.raises(ValueError, match="before its target"):
+    with pytest.raises(RuntimeError, match="forbids standalone"):
         synthetic.fetch_nist_beacon_receipt(
             isolated,
             output_path=synthetic.canonical_execution_path(isolated, "beacon_receipt"),
-            now=datetime(2026, 9, 5, 19, 29, tzinfo=timezone.utc),
-            _opener=opener,
         )
-    assert called is False
+    assert set(inspect.signature(synthetic.fetch_nist_beacon_receipt).parameters) == {
+        "contract",
+        "output_path",
+    }
+
+
+def test_internal_beacon_fetch_requires_durable_claim_before_network(
+    tmp_path: Path, contract, monkeypatch
+) -> None:
+    target_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    isolated = _retarget_beacon(_contract_with_paths(tmp_path, contract), target_time)
+    identity = _identity()
+    environment = synthetic.current_environment_receipt()
+    references = {
+        name: {
+            "path": str(tmp_path / f"{name}.json"),
+            "file_sha256": character * 64,
+            "receipt_sha256": character * 64,
+        }
+        for name, character in zip(
+            ("preparation_evidence", "development_evidence", "test_evidence"),
+            "456",
+        )
+    }
+    monkeypatch.setattr(synthetic, "current_git_identity", lambda: identity)
+    monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
+    monkeypatch.setattr(
+        synthetic, "_prelockbox_authorization_evidence", lambda *args, **kwargs: references
+    )
+    _FrozenDateTime.observed_now = target_time - timedelta(minutes=10)
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+    authorization = synthetic.build_lockbox_authorization_template(
+        isolated,
+        output_path=synthetic.canonical_execution_path(isolated, "lockbox_result"),
+    )
+    authorization.update(
+        {
+            "status": "authorized_for_one_time_execution",
+            "authorized": True,
+            "authorized_by": "unit test",
+            "authorization_basis": "unit test missing-claim boundary",
+            "one_time_nonce_sha256": "a" * 64,
+        }
+    )
+    authorization = synthetic.seal_authorization_record(authorization)
+    synthetic.write_json_exclusive(
+        synthetic.canonical_execution_path(isolated, "lockbox_authorization"),
+        authorization,
+    )
+    built = False
+    contacted = False
+
+    class ForbiddenOpener:
+        def open(self, *args, **kwargs):
+            nonlocal contacted
+            contacted = True
+            raise AssertionError("network must not be reached without a durable claim")
+
+    def forbidden_opener_factory(*args, **kwargs):
+        nonlocal built
+        built = True
+        return ForbiddenOpener()
+
+    _FrozenDateTime.observed_now = target_time + timedelta(seconds=1)
+    monkeypatch.setattr(synthetic.urllib.request, "build_opener", forbidden_opener_factory)
+    with pytest.raises(ValueError, match="existing nonsymlink"):
+        synthetic._fetch_nist_beacon_after_global_claim(
+            isolated,
+            identity=identity,
+            environment=environment,
+            preparation_receipt_sha256="4" * 64,
+            development_result_sha256="5" * 64,
+            test_evidence_sha256="6" * 64,
+            one_time_claim_sha256="7" * 64,
+        )
+    assert built is False
+    assert contacted is False
+    assert "_opener" not in inspect.signature(
+        synthetic._fetch_nist_beacon_after_global_claim
+    ).parameters
+
+
+def test_nist_transport_rejects_redirect_before_location_request() -> None:
+    handler = synthetic._RejectHTTPRedirect()
+    request = synthetic.urllib.request.Request(
+        "https://beacon.nist.gov/beacon/2.0/pulse/time/1"
+    )
+    with pytest.raises(synthetic.urllib.error.HTTPError, match="Redirect forbidden"):
+        handler.redirect_request(
+            request,
+            None,
+            302,
+            "Found",
+            {"Location": "https://example.invalid/forbidden"},
+            "https://example.invalid/forbidden",
+        )
 
 
 def test_beacon_pulse_core_fields_are_fail_closed(contract) -> None:
-    valid = {
-        "uri": "https://beacon.nist.gov/beacon/2.0/chain/1/pulse/2",
-        "version": "2.0",
-        "cipherSuite": 0,
-        "period": 60000,
-        "certificateId": "A" * 128,
-        "chainIndex": 1,
-        "pulseIndex": 2,
-        "timeStamp": contract.plan["rng"]["independent_lockbox_root_seed"][
-            "required_exact_pulse_timestamp"
-        ],
-        "localRandomValue": "B" * 128,
-        "precommitmentValue": "C" * 128,
-        "statusCode": 0,
-        "signatureValue": "AB",
-        "outputValue": "D" * 128,
-    }
+    valid = _mock_beacon_pulse(contract)
     assert synthetic._extract_beacon_pulse({"pulse": valid}) == valid
+    signed_hash, recomputed = synthetic._verify_deployed_nist_output_value(valid)
+    assert len(signed_hash) == 128 and recomputed == valid["outputValue"]
     for field, wrong in (
         ("version", "1.0"),
         ("period", 1),
         ("statusCode", 1),
         ("uri", "https://example.invalid"),
-        ("certificateId", "a" * 128),
+        ("certificateId", "A" * 128),
         ("signatureValue", "xyz"),
     ):
         with pytest.raises(ValueError):
             synthetic._extract_beacon_pulse({"pulse": {**valid, field: wrong}})
+    tampered = {**valid, "localRandomValue": "E" * 128}
+    with pytest.raises(ValueError, match="outputValue"):
+        synthetic._verify_deployed_nist_output_value(tampered)
 
 
-def test_preparation_binds_pre_target_creation_and_head_commit(tmp_path: Path, contract) -> None:
-    isolated = _contract_with_paths(tmp_path, contract)
-    environment = synthetic.current_environment_receipt()
-    output = synthetic.canonical_execution_path(isolated, "preparation_receipt")
-    receipt = synthetic.build_preparation_receipt(
-        isolated,
-        output_path=output,
-        identity=_identity(),
-        environment=environment,
-        now=datetime(2026, 9, 5, 18, 30, tzinfo=timezone.utc),
+def test_deployed_nist_serializer_matches_frozen_historical_oracle() -> None:
+    fixture_path = Path("tests/fixtures/nist_beacon_v2_20260905T180000Z.json")
+    oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
+    assert oracle["source_endpoint"] == (
+        "https://beacon.nist.gov/beacon/2.0/pulse/time/1788631200000"
     )
-    assert receipt["created_at_utc"] == "2026-09-05T18:30:00.000Z"
+    assert synthetic._canonical_json_sha256(oracle["response"]) == oracle[
+        "parsed_response_canonical_sha256"
+    ]
+    pulse = synthetic._extract_beacon_pulse(oracle["response"])
+    signed_message = synthetic._serialize_deployed_nist_signed_message(pulse)
+    assert len(signed_message) == oracle["signed_message_length_bytes"] == 807
+    assert hashlib.sha512(signed_message).hexdigest() == oracle["signed_message_sha512"]
+    _, recomputed = synthetic._verify_deployed_nist_output_value(pulse)
+    assert recomputed == pulse["outputValue"]
+    assert recomputed == (
+        "BADC50F6F9E38477950DA01DBF00C0F637FEB4A2F5A1BC9232B0CCF084DE2612"
+        "5539608A6138566AB5B904B816229D3D9B322B7F0B894C35EDAD1C4A057BEB03"
+    )
+
+
+def test_historical_nist_oracle_binds_each_signed_field_and_signature() -> None:
+    oracle = json.loads(
+        Path("tests/fixtures/nist_beacon_v2_20260905T180000Z.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    pulse = oracle["response"]["pulse"]
+
+    def flip_hex(value: str) -> str:
+        return ("0" if value[0] != "0" else "1") + value[1:]
+
+    mutations = []
+    for field, value in (
+        ("uri", pulse["uri"] + "/changed"),
+        ("version", "2.1"),
+        ("cipherSuite", 1),
+        ("period", 60001),
+        ("certificateId", flip_hex(pulse["certificateId"])),
+        ("chainIndex", pulse["chainIndex"] + 1),
+        ("pulseIndex", pulse["pulseIndex"] + 1),
+        ("timeStamp", "2026-09-05T18:00:01.000Z"),
+        ("localRandomValue", flip_hex(pulse["localRandomValue"])),
+        ("precommitmentValue", flip_hex(pulse["precommitmentValue"])),
+        ("statusCode", 1),
+        ("signatureValue", flip_hex(pulse["signatureValue"])),
+    ):
+        changed = deepcopy(pulse)
+        changed[field] = value
+        mutations.append(changed)
+    for field in ("sourceId", "statusCode", "value"):
+        changed = deepcopy(pulse)
+        changed["external"][field] = (
+            1 if field == "statusCode" else flip_hex(changed["external"][field])
+        )
+        mutations.append(changed)
+    for index in range(5):
+        changed = deepcopy(pulse)
+        changed["listValues"][index]["value"] = flip_hex(
+            changed["listValues"][index]["value"]
+        )
+        mutations.append(changed)
+    assert len(mutations) == 20
+    for changed in mutations:
+        with pytest.raises(ValueError, match="outputValue"):
+            synthetic._verify_deployed_nist_output_value(changed)
+
+
+def test_preparation_binds_pre_target_creation_and_head_commit(
+    tmp_path: Path, contract, monkeypatch
+) -> None:
+    observed_now = datetime.now(timezone.utc)
+    isolated = _retarget_beacon(
+        _contract_with_paths(tmp_path, contract), observed_now + timedelta(hours=1)
+    )
+    environment = synthetic.current_environment_receipt()
+    monkeypatch.setattr(synthetic, "current_git_identity", lambda: _identity())
+    monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
+    _FrozenDateTime.observed_now = observed_now
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+    output = synthetic.canonical_execution_path(isolated, "preparation_receipt")
+    receipt = synthetic.build_preparation_receipt(isolated, output_path=output)
+    assert receipt["created_at_utc"] == observed_now.isoformat(
+        timespec="milliseconds"
+    ).replace("+00:00", "Z")
     assert receipt["generator_commit_timestamp_utc"] == "2026-09-05T18:00:00Z"
     synthetic.write_json_exclusive(output, receipt)
     assert (output.stat().st_mode & 0o777) == 0o400
@@ -706,14 +1010,77 @@ def test_preparation_binds_pre_target_creation_and_head_commit(tmp_path: Path, c
     )
     assert validated == receipt
 
-    late = _contract_with_paths(tmp_path / "late", contract)
+    late = _retarget_beacon(
+        _contract_with_paths(tmp_path / "late", contract), observed_now + timedelta(hours=1)
+    )
+    _FrozenDateTime.observed_now = synthetic._target_datetime(late)
     with pytest.raises(ValueError, match="predate"):
         synthetic.build_preparation_receipt(
             late,
             output_path=synthetic.canonical_execution_path(late, "preparation_receipt"),
-            identity=_identity(),
+        )
+    assert set(inspect.signature(synthetic.build_preparation_receipt).parameters) == {
+        "contract",
+        "output_path",
+    }
+
+
+def test_consumed_authorization_revalidates_exact_sealed_binding(
+    tmp_path: Path, contract, monkeypatch
+) -> None:
+    observed_now = datetime.now(timezone.utc)
+    isolated = _retarget_beacon(
+        _contract_with_paths(tmp_path, contract), observed_now + timedelta(hours=1)
+    )
+    identity = _identity()
+    environment = synthetic.current_environment_receipt()
+    references = {
+        name: {
+            "path": str(tmp_path / f"{name}.json"),
+            "file_sha256": character * 64,
+            "receipt_sha256": character.upper().lower() * 64,
+        }
+        for name, character in zip(
+            ("preparation_evidence", "development_evidence", "test_evidence"),
+            "456",
+        )
+    }
+    monkeypatch.setattr(synthetic, "current_git_identity", lambda: identity)
+    monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
+    monkeypatch.setattr(
+        synthetic, "_prelockbox_authorization_evidence", lambda *args, **kwargs: references
+    )
+    _FrozenDateTime.observed_now = observed_now
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+    record = synthetic.build_lockbox_authorization_template(
+        isolated,
+        output_path=synthetic.canonical_execution_path(isolated, "lockbox_result"),
+    )
+    record.update(
+        {
+            "status": "authorized_for_one_time_execution",
+            "authorized": True,
+            "authorized_by": "unit test",
+            "authorization_basis": "unit test only",
+            "one_time_nonce_sha256": "a" * 64,
+        }
+    )
+    record = synthetic.seal_authorization_record(record)
+    assert synthetic._validate_consumed_authorization_binding(
+        record,
+        contract=isolated,
+        identity=identity,
+        environment=environment,
+    ) == record["authorization_receipt_sha256"]
+
+    forged = {**record, "generator_tree": "f" * 40}
+    forged = synthetic.seal_authorization_record(forged)
+    with pytest.raises(ValueError, match="source, scope, or time"):
+        synthetic._validate_consumed_authorization_binding(
+            forged,
+            contract=isolated,
+            identity=identity,
             environment=environment,
-            now=datetime(2026, 9, 5, 20, 0, tzinfo=timezone.utc),
         )
 
 
@@ -759,7 +1126,8 @@ def test_full_suite_evidence_uses_exact_current_python_and_captures_transcripts(
         return SimpleNamespace(returncode=0, stdout=b"all passed\n", stderr=b"")
 
     output = synthetic.canonical_execution_path(isolated, "full_suite_test_evidence")
-    synthetic.run_full_suite_test_evidence(isolated, output_path=output, _runner=runner)
+    monkeypatch.setattr(synthetic.subprocess, "run", runner)
+    synthetic.run_full_suite_test_evidence(isolated, output_path=output)
     receipt = synthetic.load_json_object(output, name="test receipt")
     assert observed["argv"] == [os.path.abspath(sys.executable), "-m", "pytest", "-q"]
     assert observed["cwd"] == synthetic._REPOSITORY
@@ -769,6 +1137,10 @@ def test_full_suite_evidence_uses_exact_current_python_and_captures_transcripts(
     assert stdout_path.read_bytes() == b"all passed\n"
     assert stderr_path.read_bytes() == b""
     assert (output.stat().st_mode & 0o777) == 0o400
+    assert set(inspect.signature(synthetic.run_full_suite_test_evidence).parameters) == {
+        "contract",
+        "output_path",
+    }
 
 
 def test_forged_full_suite_receipt_is_rejected(tmp_path: Path, contract) -> None:
@@ -824,22 +1196,49 @@ def test_forged_full_suite_receipt_is_rejected(tmp_path: Path, contract) -> None
 def test_global_claim_consumes_seed_and_alternate_output_cannot_retry(
     tmp_path: Path, contract, monkeypatch, postclaim_error, expected_status
 ) -> None:
-    isolated = _contract_with_paths(tmp_path, contract)
+    target_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    isolated = _retarget_beacon(_contract_with_paths(tmp_path, contract), target_time)
     identity = _identity()
     environment = synthetic.current_environment_receipt()
     auth_path = synthetic.canonical_execution_path(isolated, "lockbox_authorization")
     output = synthetic.canonical_execution_path(isolated, "lockbox_result")
     authorization = {
+        "authorization_created_at_utc": (
+            target_time - timedelta(minutes=10)
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "authorization_receipt_sha256": "8" * 64,
         "preparation_evidence": {"receipt_sha256": "4" * 64},
         "development_evidence": {"receipt_sha256": "5" * 64},
         "test_evidence": {"receipt_sha256": "6" * 64},
-        "beacon_evidence": {"receipt_sha256": "7" * 64},
+        "future_beacon_commitment": synthetic._future_beacon_commitment(isolated),
     }
     synthetic.write_json_exclusive(auth_path, authorization)
     monkeypatch.setattr(synthetic, "current_git_identity", lambda: identity)
     monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
     monkeypatch.setattr(
         synthetic, "validate_lockbox_authorization", lambda *args, **kwargs: "8" * 64
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_consumed_authorization_binding",
+        lambda *args, **kwargs: "8" * 64,
+    )
+    _FrozenDateTime.observed_now = target_time + timedelta(seconds=1)
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+
+    def fetch_after_claim(*args, **kwargs):
+        claim_path = synthetic.canonical_execution_path(
+            isolated, "seed_global_lockbox_claim"
+        )
+        assert claim_path.exists()
+        return (
+            synthetic.canonical_execution_path(isolated, "beacon_receipt"),
+            {"beacon_receipt_sha256": "7" * 64},
+            NON_RESERVED_SEED + 99,
+        )
+
+    monkeypatch.setattr(
+        synthetic, "_fetch_nist_beacon_after_global_claim", fetch_after_claim
     )
     monkeypatch.setattr(
         synthetic,
@@ -857,8 +1256,14 @@ def test_global_claim_consumes_seed_and_alternate_output_cannot_retry(
     written = synthetic.run_lockbox_to_path(
         isolated, authorization_path=auth_path, output_path=output
     )
+    assert written == synthetic.canonical_execution_path(
+        isolated, "lockbox_terminal_receipt"
+    )
     terminal = synthetic.load_json_object(written, name="terminal receipt")
     assert terminal["status"] == expected_status
+    assert synthetic.validate_lockbox_terminal_artifact(
+        isolated, artifact_path=written
+    )["status"] == expected_status
     claim = synthetic.canonical_execution_path(isolated, "seed_global_lockbox_claim")
     assert claim.exists() and (claim.stat().st_mode & 0o777) == 0o400
     with pytest.raises(FileExistsError):
@@ -868,11 +1273,96 @@ def test_global_claim_consumes_seed_and_alternate_output_cannot_retry(
         synthetic.run_lockbox_to_path(isolated, authorization_path=auth_path, output_path=alternate)
 
 
+@pytest.mark.parametrize(
+    ("failure_point", "expected_status"),
+    (
+        ("claim", "consumed_inconclusive_claim_write_error"),
+        ("result", "consumed_inconclusive_infrastructure_error"),
+    ),
+)
+def test_partial_claim_or_result_write_still_gets_separate_terminal_receipt(
+    tmp_path: Path, contract, monkeypatch, failure_point, expected_status
+) -> None:
+    target_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    isolated = _retarget_beacon(_contract_with_paths(tmp_path, contract), target_time)
+    identity = _identity()
+    environment = synthetic.current_environment_receipt()
+    auth_path = synthetic.canonical_execution_path(isolated, "lockbox_authorization")
+    result_path = synthetic.canonical_execution_path(isolated, "lockbox_result")
+    claim_path = synthetic.canonical_execution_path(isolated, "seed_global_lockbox_claim")
+    terminal_path = synthetic.canonical_execution_path(
+        isolated, "lockbox_terminal_receipt"
+    )
+    authorization = {
+        "authorization_created_at_utc": (
+            target_time - timedelta(minutes=10)
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "authorization_receipt_sha256": "8" * 64,
+        "preparation_evidence": {"receipt_sha256": "4" * 64},
+        "development_evidence": {"receipt_sha256": "5" * 64},
+        "test_evidence": {"receipt_sha256": "6" * 64},
+        "future_beacon_commitment": synthetic._future_beacon_commitment(isolated),
+    }
+    synthetic.write_json_exclusive(auth_path, authorization)
+    monkeypatch.setattr(synthetic, "current_git_identity", lambda: identity)
+    monkeypatch.setattr(synthetic, "current_environment_receipt", lambda: environment)
+    monkeypatch.setattr(
+        synthetic, "validate_lockbox_authorization", lambda *args, **kwargs: "8" * 64
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_consumed_authorization_binding",
+        lambda *args, **kwargs: "8" * 64,
+    )
+    _FrozenDateTime.observed_now = target_time + timedelta(seconds=1)
+    monkeypatch.setattr(synthetic, "datetime", _FrozenDateTime)
+
+    def fetched(*args, **kwargs):
+        assert claim_path.exists()
+        return result_path.with_name("beacon.json"), {"beacon_receipt_sha256": "7" * 64}, 91
+
+    monkeypatch.setattr(synthetic, "_fetch_nist_beacon_after_global_claim", fetched)
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_beacon_evidence",
+        lambda *args, **kwargs: ({"beacon_receipt_sha256": "7" * 64}, 91),
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "_execute_synthetic",
+        lambda *args, **kwargs: {"status": "terminal_pass", "result_sha256": "0" * 64},
+    )
+    original_write = synthetic._write_bytes_exclusive
+    failed_path = claim_path if failure_point == "claim" else result_path
+
+    def partial_then_fail(path, payload):
+        if Path(path) == failed_path:
+            original_write(path, b"{")
+            raise OSError(f"simulated partial {failure_point} write")
+        return original_write(path, payload)
+
+    monkeypatch.setattr(synthetic, "_write_bytes_exclusive", partial_then_fail)
+    written = synthetic.run_lockbox_to_path(
+        isolated, authorization_path=auth_path, output_path=result_path
+    )
+    assert written == terminal_path
+    terminal = synthetic.load_json_object(terminal_path, name="terminal receipt")
+    assert terminal["status"] == expected_status
+    assert synthetic.validate_lockbox_terminal_artifact(
+        isolated, artifact_path=terminal_path
+    )["status"] == expected_status
+    assert failed_path.exists()
+    with pytest.raises(FileExistsError):
+        synthetic.run_lockbox_to_path(
+            isolated, authorization_path=auth_path, output_path=result_path
+        )
+
+
 def test_cli_exposes_every_canonical_governance_phase() -> None:
     script = Path("scripts/run_metadata_calibration_v2_synthetic.py").resolve()
     sys.path.insert(0, str(script.parent))
     try:
-        spec = importlib.util.spec_from_file_location("synthetic_cli_v9", script)
+        spec = importlib.util.spec_from_file_location("synthetic_cli_v10", script)
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -883,7 +1373,6 @@ def test_cli_exposes_every_canonical_governance_phase() -> None:
         "prepare",
         "development",
         "test-evidence",
-        "fetch-beacon",
         "auth-template",
         "authorize",
         "lockbox",

@@ -1,7 +1,7 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v9_post_development_pre_lockbox_interpreter_fix
-status: frozen_after_v8_development_before_any_lockbox_seed_or_outcome
+generator_revision: v10_claim_before_fetch_transaction
+status: frozen_after_v9_development_before_any_lockbox_seed_or_outcome
 pre_outcome_amendments:
   - revision: v2_explicit_B3_state_mapping
     reason: >-
@@ -73,6 +73,25 @@ pre_outcome_amendments:
       candidate, population, contrast, threshold, development seed, promotion rule,
       or scientific stopping rule is changed. The observed V8 development promotion
       failure is disclosed and remains explicitly non-gating as already frozen.
+  - revision: v10_claim_before_fetch_transaction
+    reason: >-
+      After the byte-identical V9 development metrics and valid full-suite receipt
+      were recorded, but before its future beacon was fetched or existed locally,
+      an independent audit found that public dependency-injection seams could forge
+      canonical preparation, test, or beacon receipts and that a separately fetched
+      beacon receipt disclosed the derived seed before the global claim. Retain all
+      failed/abandoned V8 and V9 receipts. Remove dependency injection from every
+      production canonical writer, require authorization to be sealed before the
+      target, remove the standalone fetch phase, and execute one transaction ordered
+      authorization validation, global O_EXCL claim, exact HTTPS fetch, deployed-
+      protocol SHA-512 output verification, seed derivation, RNG, terminal result.
+      Every failure after the pre-network claim consumes the lockbox without retry.
+      A separate canonical terminal-receipt path remains writable even if publishing
+      the scientific result creates a partial destination before failing.
+      Use fresh canonical paths and a later future NIST pulse. No DGP, candidate,
+      population, contrast, threshold, development seed, promotion rule, or
+      scientific stopping rule is changed; the disclosed V8/V9 development failure
+      remains non-gating exactly as previously frozen.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -99,17 +118,30 @@ rng:
     derivation_revision: nist_beacon_v1
     provider: NIST_Randomness_Beacon_2.0
     official_specification: https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20
-    target_timestamp_utc: '2026-09-05T20:00:00.000Z'
-    target_timestamp_unix_milliseconds: 1788638400000
-    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788638400000
-    required_exact_pulse_timestamp: '2026-09-05T20:00:00.000Z'
-    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v9|2026-09-05T20:00:00.000Z'
-    statement_sha256: 4d84df32fbc8f5ee86ae076ea50c8cacfb64a7fd33200133a8a7817d6b5a5e8e
+    target_timestamp_utc: '2026-09-05T21:00:00.000Z'
+    target_timestamp_unix_milliseconds: 1788642000000
+    exact_endpoint: https://beacon.nist.gov/beacon/2.0/pulse/time/1788642000000
+    required_exact_pulse_timestamp: '2026-09-05T21:00:00.000Z'
+    statement_utf8: 'cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v10|2026-09-05T21:00:00.000Z'
+    statement_sha256: a4ed39f51a603cd9499910bc78f84cc01c878b794f2d487a244092e2eb473d62
     output_value_encoding: exact_128_uppercase_hex_characters_decoded_to_64_bytes
     digest_formula: SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes
     root_seed_formula: unsigned_big_endian_integer_of_all_32_digest_bytes
     retrieval_not_before_target_timestamp: true
     require_https_nist_host_exact_pulse_fields_and_full_response_receipt: true
+    authorization_must_be_sealed_before_target_timestamp: true
+    standalone_beacon_fetch_phase: forbidden
+    transaction_order:
+      - validate_pretarget_authorization_and_all_prelockbox_evidence
+      - create_canonical_global_O_EXCL_claim_before_network_access
+      - fetch_exact_NIST_HTTPS_endpoint_without_dependency_injection_or_redirect
+      - verify_exact_pulse_and_deployed_protocol_SHA512_output_value
+      - derive_seed_material_and_persist_claim_bound_beacon_receipt
+      - execute_reserved_seed_once
+      - persist_terminal_result
+    deployed_json_serialization_revision: nist_v2_cipher0_four_byte_length_prefixes_raw_signature
+    transport_authentication: default_verified_TLS_to_exact_beacon_dot_nist_dot_gov
+    local_RSA_signature_verification: unavailable_with_current_service_certificate_signature_size_mismatch
   family_codes:
     B1_participant_specific_class_confusion: 101
     B2_participant_phase_spatial_shift: 102
@@ -389,19 +421,21 @@ hard_assertions_before_efficacy:
 freeze_and_stopping:
   canonical_execution_paths:
     preparation_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/preparation.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/preparation.json
     development_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/development-seed-20260906.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/development-seed-20260906.json
     full_suite_test_evidence: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/prelockbox-full-suite-tests.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/prelockbox-full-suite-tests.json
     beacon_receipt: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/nist-beacon-20260905T200000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/nist-beacon-20260905T210000Z.json
     lockbox_authorization: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/lockbox-authorization-nist-20260905T200000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-authorization-nist-20260905T210000Z.json
     lockbox_result: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v9/lockbox-nist-20260905T200000Z.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-nist-20260905T210000Z.json
+    lockbox_terminal_receipt: >-
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic-v10/lockbox-nist-20260905T210000Z.terminal.json
     seed_global_lockbox_claim: >-
-      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T200000Z-v9.json
+      /home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-nist-20260905T210000Z-v10.json
   canonical_paths_are_local_execution_governance_not_portable_data_locations: true
   every_seed_touching_primitive_requires_internal_governed_context_for_reserved_seeds: true
   lockbox_seed_is_reserved_immediately_after_beacon_derivation: true
@@ -453,11 +487,13 @@ freeze_and_stopping:
     - generator_config_and_code_frozen
     - diagnostic_operator_configs_unchanged
     - exact_full_suite_test_receipt_recorded
-    - exact_future_beacon_pulse_recorded_after_source_freeze
-    - one_time_lockbox_receipt_created_exclusively
+    - pretarget_one_time_authorization_recorded
+    - one_time_global_claim_created_before_network_or_seed_access
+    - exact_future_beacon_pulse_recorded_only_after_global_claim
   post_claim_terminal_states:
     promotion_failure: terminal_scientific_fail
     hard_invariant_failure: terminal_invariant_fail
+    partial_claim_write_after_successful_O_EXCL: consumed_inconclusive_claim_write_error
     runtime_IO_OOM_process_or_serialization_failure: consumed_inconclusive_infrastructure_error
     claim_without_result_due_to_uncatchable_termination: consumed_inconclusive_missing_terminal_receipt
     automatic_retry_after_any_post_claim_state: forbidden
