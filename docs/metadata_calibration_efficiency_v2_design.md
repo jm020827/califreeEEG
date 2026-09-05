@@ -1,6 +1,10 @@
 # Metadata-assisted low-calibration SSVEP — V2 frozen design
 
-상태: **V2 방법·외부 source gate 동결 준비 / held 60명 접근 금지**
+상태: **V2 방법 r3·외부 source gate 동결 / held 60명 접근 금지**
+
+r3는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r2에 빠져 있던
+`effective support mass` 항을 아래 수식에 명시했으며, 후보 수·participant 할당·평가
+지표·threshold·held 경계는 바꾸지 않았다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
@@ -68,10 +72,23 @@ AQM은 별도 분류기를 만들지 않는다. query block과 calibration block
 support는 덜 믿는다. impedance는 `log2(1+kOhm)` 공간의 median 차이로 비교한다.
 두 배 정도 차이나면 affinity가 절반이 되는 고정 함수다.
 
+AQ의 query별 혼합량을
+
+`lambda_AQ = lambda_max * k/(k+1) * normalized_entropy(p_FBCCA)`
+
+라고 하면, AQM은 클래스별 평균 query-support affinity를 다시 동일 가중 평균한
+`m_context`를 사용해 `lambda_AQM = lambda_AQ * m_context`로 둔다. `m_context=1`이면
+AQ와 완전히 같고, 측정 조건이 멀수록 support residual 전체를 덜 믿는다. 이 항은
+P2의 k=1에서 특히 필요하다. 클래스마다 support가 하나뿐이면 그 하나의 scalar
+가중치는 정규화된 waveform 평균에서 상쇄되기 때문이다.
+
 중요한 제한은 다음과 같다.
 
 - M은 FBCCA anchor나 query precision을 바꿀 수 없다.
-- M은 support prototype의 가중치만 바꿀 수 있다.
+- M은 support 내부 가중치와 그 가중치의 클래스 균형 평균인 residual 유효 증거량만
+  바꿀 수 있다. anchor 자체나 query precision은 바꾸지 않는다.
+- P1에서는 affinity가 ideal-prototype pseudocount 대비 sample 기여와 residual 유효
+  증거량을 모두 줄이는 보수적 이중 attenuation으로 작동한다.
 - k=0에는 support가 없으므로 pair 코드를 호출하지 않고 `AQM == AQ == A0`이다.
 - 비교 가능한 M이 모두 없으면 `AQM == AQ`를 bitwise exact하게 반환한다.
 - subject ID, sample ID, 파일명, row 순서는 입력이 아니다.

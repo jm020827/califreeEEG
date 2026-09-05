@@ -2,6 +2,13 @@ schema: cfeg.metadata-calibration-efficiency-plan.v2
 candidate_id: metadata-calibration-efficiency-v2
 decision_id: DEC-20260906-001
 status: method_and_source_gate_frozen_held_forbidden_until_all_gates_pass
+method_revision: r3_pre_outcome_effective_support_mass_clarification
+pre_outcome_amendment: >-
+  Before any V2 EEG outcome was computed, the executable contract made explicit
+  that relative-context weights also define the aggregate effective mass of the
+  support residual. This resolves the k=1 scalar-weight cancellation of the
+  template candidate and binds the already implemented formula without changing
+  the candidate grid, cohorts, endpoints, thresholds, or held boundary.
 
 objective: >-
   Test whether pre-query acquisition context can reduce labeled target-user
@@ -85,6 +92,8 @@ support_operators:
     lambda_max_grid: [0.10, 0.20, 0.30]
     budget_factor: k_divided_by_k_plus_one
     query_quality_factor: normalized_entropy_of_p_FBCCA
+    A_Q_lambda: lambda_max_times_budget_factor_times_query_quality_factor
+    A_QM_lambda: A_Q_lambda_times_equal_class_mean_query_support_affinity
     exact_null_candidate: true
     direct_return_without_arithmetic_when_disabled: true
     l1_probability_displacement_bound: two_times_lambda
@@ -101,9 +110,16 @@ target_local_gate:
   claim_boundary: empirical_gate_with_exact_abstention_not_unseen_no_harm_guarantee
 
 relative_context:
-  model_effect: support_weight_only
+  model_effect: support_weight_and_aggregate_effective_support_mass_only
   may_change_anchor_or_query_precision: false
   per_query_class_prototype: true
+  support_mass_factor: equal_class_mean_query_support_affinity
+  score_prototype_note: >-
+    affinity changes both each support sample's contribution relative to the
+    fixed ideal-prototype pseudocount and the aggregate residual mass
+  template_residual_note: >-
+    aggregate residual mass is retained because a single within-class scalar
+    weight otherwise cancels from a normalized k1 waveform template
   comparable_fields:
     - electrode_interface
     - impedance_kohm_by_channel
