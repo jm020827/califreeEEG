@@ -2,13 +2,21 @@ schema: cfeg.metadata-calibration-efficiency-plan.v2
 candidate_id: metadata-calibration-efficiency-v2
 decision_id: DEC-20260906-001
 status: method_and_source_gate_frozen_held_forbidden_until_all_gates_pass
-method_revision: r3_pre_outcome_effective_support_mass_clarification
-pre_outcome_amendment: >-
-  Before any V2 EEG outcome was computed, the executable contract made explicit
-  that relative-context weights also define the aggregate effective mass of the
-  support residual. This resolves the k=1 scalar-weight cancellation of the
-  template candidate and binds the already implemented formula without changing
-  the candidate grid, cohorts, endpoints, thresholds, or held boundary.
+method_revision: r4_pre_outcome_executable_formula_and_fail_closed_gate
+pre_outcome_amendments:
+  - revision: r3_effective_support_mass
+    reason: >-
+      Relative-context weights also define the aggregate effective mass of the
+      support residual. This resolves k1 scalar-weight cancellation for the
+      template candidate.
+  - revision: r4_executable_formula_and_fail_closed_gate
+    reason: >-
+      Bind the complete P1/P2 equations, overflow-safe score normalization,
+      explicit gate authorization, chronological prefix provenance, P2 cache
+      provenance, and metadata-pairing receipt before any V2 EEG outcome.
+  - unchanged: >-
+      Candidate grid, participant cohorts, endpoints, thresholds, allocation,
+      stopping rules, and held boundary are identical to r2 and r3.
 
 objective: >-
   Test whether pre-query acquisition context can reduce labeled target-user
@@ -59,6 +67,7 @@ roles:
 anchor:
   implementation: src/cfeg/baselines/fbcca.py::predict_fbcca
   filterbank_config: configs/baselines/fbcca_chen2015_m3.yaml
+  filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
   score_schema: strict_fbcca_bound_filterbank_raw_scores_v1
   candidate_codebook_rule: all_classes_same_order_for_every_row
   dataset_channel_views:
@@ -69,7 +78,8 @@ anchor:
   common_six_channel_sensitivity: [PO3, POz, PO4, O1, Oz, O2]
 
 score_normalization:
-  formula: row_center_then_divide_by_root_mean_square_with_epsilon
+  formula: overflow_safe_row_scale_then_center_then_divide_by_root_mean_square_with_epsilon
+  overflow_safe_row_scale: divide_by_row_max_absolute_value_before_equivalent_center_RMS_standardization
   epsilon: 1.0e-12
   probability: softmax_normalized_score_temperature_one
   base_argmax: raw_FBCCA_argmax
@@ -82,11 +92,32 @@ support_operators:
   score_prototype_shrinkage:
     base_distribution: normalized_FBCCA_probability
     ideal_prototype_smoothing: 0.05
+    ideal_prototype_formula: smoothing_divided_by_C_plus_one_minus_smoothing_on_true_class
     prototype_prior_pseudocount_grid: [1.0, 4.0, 16.0]
+    prototype_formula: >-
+      prior_times_ideal_plus_sum_affinity_times_support_probability_divided_by
+      prior_plus_sum_affinity_within_each_class
     similarity: negative_Jensen_Shannon_divergence
+    query_class_score: negative_Jensen_Shannon_between_query_probability_and_class_prototype
+    support_probability: apply_frozen_score_normalization_and_softmax_to_query_class_scores
   filterbank_target_template_residual:
     statistic: weighted_signed_squared_multichannel_template_correlation
     source_EEG_access: false
+    filterbank: exact_anchor_filterbank
+    filterbank_config_sha256: 494ca99cd54c7254e085e5b58a4f81acd501d3122bb8860339d1d803f5e125c5
+    subband_weights:
+      - 1.25
+      - 0.6704482076268572
+      - 0.5032785618838642
+      - 0.42677669529663687
+      - 0.38374806099528436
+      - 0.35649051737437876
+      - 0.33782687899303776
+    class_template_formula: affinity_weighted_mean_of_filtered_support_within_class
+    correlation: Pearson_after_flattening_channel_and_time_within_each_subband
+    query_class_score: sum_subband_weight_times_sign_rho_times_rho_squared
+    support_probability: apply_frozen_score_normalization_and_softmax_to_query_class_scores
+    governed_precomputed_path: requires_schema_preprocess_filterbank_query_partition_and_support_partition_SHA256
   fusion:
     formula: p_equals_one_minus_lambda_times_p_FBCCA_plus_lambda_times_p_support
     lambda_max_grid: [0.10, 0.20, 0.30]
@@ -103,6 +134,10 @@ target_local_gate:
   k1: no_local_validation_global_external_development_gate_only
   k3: chronological_prequential_blocks_1_to_2_and_1_2_to_3
   k5: chronological_prequential_blocks_1_to_2_through_1_4_to_5
+  authorization: explicit_required_for_every_enabled_k_greater_than_zero_call
+  missing_authorization: exact_anchor_before_support_access
+  prequential_probability: final_fused_candidate_probability
+  prequential_prefix_receipt: fit_blocks_must_equal_1_through_evaluation_block_minus_one
   enable_when:
     - mean_prequential_balanced_accuracy_delta_ge_0
     - mean_prequential_log_probability_delta_ge_0
@@ -137,6 +172,8 @@ relative_context:
     - stale_support_context
     - opposite_support_interface
   integrity_binding: relative_context_pairing_sha256
+  A_Q_context_policy: reject_every_context_or_pairing_input
+  A_QM_context_policy: require_pairing_SHA256_and_report_comparable_pair_count
 
 calibration_contract:
   unit: complete_labeled_block_per_participant_per_condition

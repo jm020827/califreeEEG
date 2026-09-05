@@ -1,10 +1,11 @@
 # Metadata-assisted low-calibration SSVEP — V2 frozen design
 
-상태: **V2 방법 r3·외부 source gate 동결 / held 60명 접근 금지**
+상태: **V2 방법 r4·외부 source gate 동결 / held 60명 접근 금지**
 
-r3는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r2에 빠져 있던
-`effective support mass` 항을 아래 수식에 명시했으며, 후보 수·participant 할당·평가
-지표·threshold·held 경계는 바꾸지 않았다.
+r3와 r4는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
+빠져 있던 `effective support mass` 항을 명시했고, r4는 P1/P2의 실행 수식과
+fail-closed gate/provenance를 완전히 적었다. 후보 수·participant 할당·평가 지표·
+threshold·held 경계는 바꾸지 않았다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
@@ -51,6 +52,18 @@ V1 source 39명 결과는 후보 선택용 데이터로 다시 쓰지 않는다.
 이 점수 분포를 작은 prototype으로 저장하고 새 query의 점수 분포가 어느 prototype과
 가까운지 본다.
 
+구체적으로 class 수를 `C`, smoothing을 `s=0.05`, pseudocount를 `nu`, support
+affinity를 `a_qi`라 하면 ideal prototype은
+
+`u_cj = s/C + (1-s) * 1[j=c]`
+
+이고 실제 prototype은
+
+`r_qc = (nu*u_c + sum_{i:y_i=c} a_qi*p_i) / (nu + sum_{i:y_i=c} a_qi)`
+
+이다. query와 각 `r_qc` 사이의 negative Jensen–Shannon divergence를 class score로
+만들고, 같은 overflow-safe row-center/RMS/softmax 변환으로 `p_support`를 얻는다.
+
 그러나 이 prototype으로 FBCCA를 대체하지 않는다. 최종 확률은
 
 `p_AQ = (1-lambda) p_FBCCA + lambda p_support`
@@ -64,6 +77,11 @@ V1 source 39명 결과는 후보 선택용 데이터로 다시 쓰지 않는다.
 비교할 하나의 secondary 후보는 waveform target-template residual이다. V1의 standalone
 template 성능이 약했으므로 이것도 작은 convex residual로만 허용한다. BETA/Dong
 development에서 두 operator와 12개 고정 조합을 비교한 뒤 하나만 source gate로 보낸다.
+P2는 anchor와 동일한 7개 filter band 및 정확한 subband weight를 쓴다. 각 band에서
+support를 affinity-weighted class template로 평균하고, query와 template의 channel×time을
+펴서 Pearson `rho`를 계산한 뒤 `sum_b w_b*sign(rho_b)*rho_b^2`를 class score로 쓴다.
+사전계산 score를 사용할 때는 producer schema와 preprocessing, filterbank,
+query/support partition SHA-256을 모두 receipt로 묶어야 한다.
 
 ### AQM — “이 calibration이 지금 query와 같은 조건에서 얻어졌나?”
 
@@ -107,6 +125,11 @@ k=1에서는 유일한 trial을 hold-out하면 학습할 trial이 남지 않는�
 원문도 각각 최소 K=2와 2 trials/class를 요구한다. 한 trial을 시간 절반으로 나누는
 것은 독립 validation이 아니므로 V2 gate로 쓰지 않는다. 대신 BETA/Dong의 별도
 development participant에서 k=1이 사전 비열등 기준을 통과한 고정 updater만 허용한다.
+
+모든 `k>0` operator 호출은 gate authorization을 명시해야 한다. 빠뜨리면 support를
+읽기 전에 exact FBCCA로 돌아간다. k=3/5 prequential receipt는 평가 block `b`마다
+fit block이 정확히 `1..b-1`임을 기록하고 검사한다. A_Q 호출은 context 입력을 전부
+거부하며, A_QM은 query/support key와 metadata packet pairing hash를 감사용으로 남긴다.
 
 이 설계가 보장하는 것은 “미지의 사람에게 절대 손상이 없다”가 아니다. 보장되는 것은
 `off`일 때의 exact fallback과 `||p_new-p_FBCCA||_1 <= 2 lambda`라는 perturbation bound다.
