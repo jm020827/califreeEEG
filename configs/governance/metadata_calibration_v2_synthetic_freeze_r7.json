@@ -1,0 +1,37 @@
+{
+  "schema": "cfeg.metadata-calibration-v2-synthetic-freeze-receipt.v7",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "created_at": "2026-09-06T02:52:47+09:00",
+  "status": "design_frozen_generator_implementation_revision_required",
+  "revision": "v7_reserved_seed_and_global_claim_guards",
+  "supersedes": {
+    "receipt_path": "configs/governance/metadata_calibration_v2_synthetic_freeze_r6.json",
+    "plan_sha256": "f207d0b7a795578d1f6dbcc43bcdd57ae798a114a647cbbab1b719b9902ce7c2",
+    "reason": "the implementation audit found direct reserved-seed primitive paths and output-local rather than seed-global claims; neither reserved seed had been executed"
+  },
+  "design_parent_commit": "6a2bdb9bce1ba9b335d51415244841fbe9641873",
+  "plan_path": "configs/analysis/metadata_calibration_v2_synthetic.yaml",
+  "plan_sha256": "94b8bcb0282a45cb7e35ee5b46a9e8a17fa6da3320cb754fc58f659016cf4e1b",
+  "filterbank_path": "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml",
+  "filterbank_sha256": "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380",
+  "development_root_seed": 20260906,
+  "independent_lockbox_root_seed": 20260907,
+  "canonical_development_result": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/development-seed-20260906.json",
+  "canonical_lockbox_authorization": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/lockbox-authorization-seed-20260907.json",
+  "canonical_lockbox_result": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/synthetic/lockbox-seed-20260907.json",
+  "seed_global_lockbox_claim": "/home/whwovy/v2-artifacts/metadata-calibration-efficiency-v2-20260906/claims/synthetic-lockbox-seed-20260907.json",
+  "synthetic_outcomes_seen_before_freeze": false,
+  "human_eeg_v2_outcomes_seen_before_freeze": false,
+  "population_contrasts_thresholds_and_seeds_changed": false,
+  "operator_weight_vector_changed": false,
+  "public_reserved_seed_primitive_access_forbidden": true,
+  "alternate_output_path_repeat_forbidden": true,
+  "lockbox_authorized": false,
+  "generator_commit": null,
+  "lockbox_execution_receipt": null,
+  "terminal_rules": {
+    "one_time_lockbox": true,
+    "failed_gate_forbids_real_independent_and_wearable_held_access": true,
+    "retuning_requires_new_schema_seeds_amendment_and_unseen_lockbox": true
+  }
+}

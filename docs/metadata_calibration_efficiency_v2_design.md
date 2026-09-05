@@ -15,6 +15,18 @@ Synthetic generator v4는 별도로 spatial/phase/gain/context의 random-variabl
 그 block의 모든 class trial에 동일하게 결합된다.
 v5는 target/cross-frequency harmonic의 phase가 각각 `h×(class phase+block drift)`와
 `h×(cross-class phase+extra phase+block drift)`임을 괄호까지 명시한다.
+v6는 synthetic shuffled/stale context가 현재 support prefix 밖의 future/evaluation/query
+packet을 쓰지 못하게 한다. 두 control은 관측된 support packet 안에서만 재배열되므로
+k=1에서는 정직한 exact no-op이다.
+v7은 public RNG/participant primitive에서 reserved seed를 직접 쓰는 경로를 막고,
+lockbox result 경로와 무관한 하나의 canonical seed-global claim을 RNG보다 먼저 만든다.
+다른 output 이름으로 같은 lockbox seed를 다시 실행할 수 없다. 독립 감사 결과, 평문으로
+공개된 고정 seed는 기술적으로 unseen일 수 없으므로 v8에서 미실행 `20260907`을 폐기했다.
+대신 source를 먼저 clean tag로 동결하고 나서 2026-09-05 19:30 UTC에 공개될 정확한
+NIST Randomness Beacon pulse를 사전 명시한 식에 넣어 256-bit lockbox seed를 만든다.
+v8은 또한 전체 Git worktree·Python/NumPy/SciPy/BLAS 환경, full-suite test receipt,
+5,888-row development artifact와 19개 contrast의 재계산, 정확한 8개 severe-harm
+estimand, claim 이후 실패도 재시도 없이 소비되는 terminal 상태임을 고정한다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
