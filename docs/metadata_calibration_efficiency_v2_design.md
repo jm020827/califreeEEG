@@ -1,11 +1,12 @@
 # Metadata-assisted low-calibration SSVEP — V2 frozen design
 
-상태: **V2 방법 r4·외부 source gate 동결 / held 60명 접근 금지**
+상태: **V2 방법 r5·외부 source gate 동결 / held 60명 접근 금지**
 
-r3와 r4는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
+r3–r5는 어떤 V2 EEG outcome도 계산하기 전에 만든 재현성 수정이다. r3는 r2에
 빠져 있던 `effective support mass` 항을 명시했고, r4는 P1/P2의 실행 수식과
-fail-closed gate/provenance를 완전히 적었다. 후보 수·participant 할당·평가 지표·
-threshold·held 경계는 바꾸지 않았다.
+fail-closed gate/provenance를 완전히 적었다. r5는 최종 endpoint의 k=3/5를 계산하는
+과정에서 필요한 중간 prefix depth 2/4를 전용 prequential API로만 허용한다. 후보 수·
+participant 할당·평가 지표·threshold·held 경계는 바꾸지 않았다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,
@@ -130,6 +131,14 @@ development participant에서 k=1이 사전 비열등 기준을 통과한 고정
 읽기 전에 exact FBCCA로 돌아간다. k=3/5 prequential receipt는 평가 block `b`마다
 fit block이 정확히 `1..b-1`임을 기록하고 검사한다. A_Q 호출은 context 입력을 전부
 거부하며, A_QM은 query/support key와 metadata packet pairing hash를 감사용으로 남긴다.
+
+여기서 최종 query 예산과 gate를 만드는 중간 support depth를 구분한다. 최종 query
+API는 여전히 k=0/1/3/5만 받는다. 별도 prequential API만 `evaluation_block=b`와
+`fit_blocks=1..b-1` receipt를 받은 뒤 depth 1/2/3/4를 허용하며, 오직 그 다음
+calibration block의 candidate probability를 계산한다. 이 경로는 최종 query를 받을 수
+없고 출력에 depth와 receipt를 그대로 남긴다. 따라서 k=3에서 block 1로 block 2를,
+blocks 1–2로 block 3을 실제로 계산할 수 있으면서도 k=2/4를 새 endpoint처럼 공개하지
+않는다.
 
 이 설계가 보장하는 것은 “미지의 사람에게 절대 손상이 없다”가 아니다. 보장되는 것은
 `off`일 때의 exact fallback과 `||p_new-p_FBCCA||_1 <= 2 lambda`라는 perturbation bound다.
