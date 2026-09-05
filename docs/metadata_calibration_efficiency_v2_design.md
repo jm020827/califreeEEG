@@ -10,6 +10,9 @@ participant 할당·평가 지표·threshold·held 경계는 바꾸지 않았다
 r6는 NumPy 1.26과 2.2가 다섯 번째 filter-bank weight를 1 ULP 다르게 계산하는
 환경 의존성을 제거했다. V2 전용 config에 이미 frozen operator가 쓰던 7개 값을
 명시했으며 가설·후보·cohort·endpoint·threshold·seed·stopping rule은 그대로다.
+Synthetic generator v4는 별도로 spatial/phase/gain/context의 random-variable axis를
+명시한다. 특히 impedance는 실제 측정 방식과 같이 block 전에 얻는 channel vector이고,
+그 block의 모든 class trial에 동일하게 결합된다.
 
 기준 설정은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. 이
 문서는 수식을 쉽게 설명하고, 왜 V1을 수선하지 않고 별도 V2 후보로 만드는지,

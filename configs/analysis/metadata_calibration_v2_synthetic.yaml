@@ -1,6 +1,6 @@
 schema: cfeg.metadata-calibration-v2-synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v2
-generator_revision: v3_pre_outcome_explicit_filterbank_weights
+generator_revision: v4_pre_outcome_explicit_generator_axes
 status: frozen_before_any_synthetic_outcome
 pre_outcome_amendments:
   - revision: v2_explicit_B3_state_mapping
@@ -16,6 +16,16 @@ pre_outcome_amendments:
       power expression differently by one ULP; explicit values retain the
       already frozen operator vector across environments. Population,
       contrasts, thresholds, seeds, and stopping rules are unchanged.
+  - revision: v4_explicit_generator_axes
+    reason: >-
+      Before either reserved seed was executed, bind every previously implicit
+      random-variable axis. Channel gain and impedance are acquisition-block
+      packets shared by all class trials in that block; harmonic phase follows
+      h times the class phase plus block drift; and a cross-frequency component
+      shares the intended class spatial signature. The implementation draft's
+      class-specific impedance noise was corrected to match the pre-block
+      acquisition-context semantics. Population, contrasts, thresholds,
+      seeds, and stopping rules are unchanged.
 purpose: >-
   Mechanism, leakage, abstention, and implementation validation only. Synthetic
   outcomes cannot establish human EEG efficacy or acquisition-context validity.
@@ -78,6 +88,14 @@ waveform:
   class_phase: participant_by_class_uniform_minus_pi_to_pi
   block_phase_drift_radians_sd: 0.08
   channel_gain_distribution: lognormal_meanlog_0_sdlog_0.12
+  random_variable_axes:
+    spatial_signature: participant_by_intended_class_by_channel_shared_across_blocks
+    class_phase: participant_by_frequency_class_shared_across_blocks
+    block_phase_drift: participant_by_block_shared_across_classes_and_channels
+    channel_gain: participant_by_block_by_channel_shared_across_all_class_trials
+    harmonic_phase: harmonic_index_times_class_phase_plus_block_phase_drift
+    cross_frequency_spatial_signature: intended_class_spatial_signature
+    impedance_noise: participant_by_block_by_channel_shared_across_all_class_trials
   noise:
     process: stationary_AR1_per_channel
     rho: 0.55

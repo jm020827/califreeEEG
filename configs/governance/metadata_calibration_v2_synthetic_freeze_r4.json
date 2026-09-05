@@ -1,0 +1,32 @@
+{
+  "schema": "cfeg.metadata-calibration-v2-synthetic-freeze-receipt.v4",
+  "candidate_id": "metadata-calibration-efficiency-v2",
+  "created_at": "2026-09-06T02:33:38+09:00",
+  "status": "design_frozen_generator_implementation_pending",
+  "revision": "v4_explicit_generator_axes",
+  "supersedes": {
+    "receipt_path": "configs/governance/metadata_calibration_v2_synthetic_freeze_r3.json",
+    "plan_sha256": "f87af6434fc968dfa61ed67e7b1c55b60a9c077ae644ec69a49107f817abaadd",
+    "reason": "random-variable axes and block-level impedance packet semantics were implicit; neither reserved seed had been executed"
+  },
+  "design_parent_commit": "d343d536e4439c06995d3df6a32e80e30563e211",
+  "plan_path": "configs/analysis/metadata_calibration_v2_synthetic.yaml",
+  "plan_sha256": "2db5487d4a9d569168182c29e7a08d075c9f1bafd758ca7157e46ddd0f5315c1",
+  "filterbank_path": "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml",
+  "filterbank_sha256": "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380",
+  "development_root_seed": 20260906,
+  "independent_lockbox_root_seed": 20260907,
+  "synthetic_outcomes_seen_before_freeze": false,
+  "human_eeg_v2_outcomes_seen_before_freeze": false,
+  "population_contrasts_thresholds_and_seeds_changed": false,
+  "operator_weight_vector_changed": false,
+  "generator_axis_semantics_changed_from_prior_draft": true,
+  "lockbox_authorized": false,
+  "generator_commit": null,
+  "lockbox_execution_receipt": null,
+  "terminal_rules": {
+    "one_time_lockbox": true,
+    "failed_gate_forbids_real_independent_and_wearable_held_access": true,
+    "retuning_requires_new_schema_seeds_amendment_and_unseen_lockbox": true
+  }
+}
