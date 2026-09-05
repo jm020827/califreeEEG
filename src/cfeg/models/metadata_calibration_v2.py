@@ -16,7 +16,7 @@ V2SupportOperator = Literal[
 ]
 V2Variant = Literal["A_Q", "A_QM"]
 
-_SCHEMA = "cfeg.metadata-calibration-v2-safe-operator.v2"
+_SCHEMA = "cfeg.metadata-calibration-v2-safe-operator.v3"
 _TEMPLATE_PROVENANCE_SCHEMA = "cfeg.metadata-calibration-v2-template-provenance.v1"
 _FINAL_BUDGETS = (0, 1, 3, 5)
 _PREQUENTIAL_FINAL_BUDGETS = (3, 5)
@@ -687,6 +687,10 @@ def apply_v2_prequential_operator(
     if fold_provenance.evaluation_block > resolved_final_budget:
         raise ValueError("evaluation_block must not exceed the declared final budget.")
     support_depth = fold_provenance.evaluation_block - 1
+    if template_score_provenance is not None and not isinstance(
+        template_score_provenance, TemplateScoreProvenance
+    ):
+        raise TypeError("template_score_provenance must be TemplateScoreProvenance.")
     if template_score_provenance is not None and (
         template_score_provenance.query_partition_sha256
         != fold_provenance.evaluation_partition_sha256

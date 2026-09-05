@@ -793,6 +793,18 @@ def test_prequential_p2_provenance_binds_evaluation_and_fit_partitions() -> None
         query_partition_sha256=provenance.evaluation_partition_sha256,
         support_partition_sha256=provenance.fit_partition_sha256,
     )
+    with pytest.raises(TypeError, match="TemplateScoreProvenance"):
+        apply_v2_prequential_operator(
+            query[:3],
+            final_budget=3,
+            fold_provenance=provenance,
+            operator="filterbank_target_template_residual",
+            variant="A_Q",
+            support_fbcca_scores=support,
+            support_labels=labels,
+            template_query_class_scores=scores,
+            template_score_provenance=object(),  # type: ignore[arg-type]
+        )
     output = apply_v2_prequential_operator(
         query[:3],
         final_budget=3,
