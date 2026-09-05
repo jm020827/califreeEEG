@@ -2,18 +2,25 @@ from __future__ import annotations
 
 import hashlib
 import inspect
+import io
 import json
 import math
 import os
+import platform as platform_module
 import re
 import stat
 import subprocess
+import sys
+import urllib.request
 from collections.abc import Mapping, Sequence
+from contextlib import redirect_stdout
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import scipy
 import yaml
 from scipy.stats import beta as beta_distribution
 from scipy.stats import t as student_t
@@ -37,12 +44,13 @@ SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA = (
 )
 SYNTHETIC_LOCKBOX_CLAIM_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-lockbox-claim.v1"
 SYNTHETIC_FBCCA_CACHE_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-fbcca-cache.v1"
+SYNTHETIC_TEST_EVIDENCE_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-test-evidence.v1"
+SYNTHETIC_BEACON_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-beacon.v1"
+SYNTHETIC_TERMINAL_RECEIPT_SCHEMA = "cfeg.metadata-calibration-v2-synthetic-terminal.v1"
 
-EXPECTED_SYNTHETIC_PLAN_SHA256 = "e7b9bf107b91a2e43d4456f11758ba5afc9ba6a0495e72ada63ac9d7858bf9ac"
+EXPECTED_SYNTHETIC_PLAN_SHA256 = "2b64dc8a1b422f52318c48f08e194eea0b727748d7cf5824d3e62b5a40021329"
 EXPECTED_FILTERBANK_SHA256 = "b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380"
 DEVELOPMENT_ROOT_SEED = 20260906
-LOCKBOX_ROOT_SEED = 20260907
-RESERVED_ROOT_SEEDS = frozenset((DEVELOPMENT_ROOT_SEED, LOCKBOX_ROOT_SEED))
 
 FAMILY_NAMES = (
     "B1_participant_specific_class_confusion",
@@ -76,21 +84,20 @@ DEFAULT_SYNTHETIC_PLAN_PATH = (
 DEFAULT_FILTERBANK_PATH = (
     _REPOSITORY / "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
 )
-_OWNED_SOURCE_PATHS = (
-    Path("src/cfeg/analysis/metadata_calibration_v2_synthetic.py"),
-    Path("scripts/run_metadata_calibration_v2_synthetic.py"),
-    Path("tests/test_metadata_calibration_v2_synthetic.py"),
-)
-_EXECUTION_SOURCE_PATHS = (
-    *_OWNED_SOURCE_PATHS,
-    Path("src/cfeg/models/metadata_calibration_v2.py"),
-    Path("src/cfeg/baselines/fbcca.py"),
-    Path("configs/analysis/metadata_calibration_v2_synthetic.yaml"),
-    Path("configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"),
-)
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _GIT_OBJECT_RE = re.compile(r"[0-9a-f]{40,64}")
-_RESERVED_EXECUTION_CAPABILITY = object()
+_UPPER_HEX_128_RE = re.compile(r"[0-9A-F]{128}")
+_GOVERNED_SEED_SENTINEL = object()
+_DYNAMIC_RESERVED_SEEDS: set[int] = set()
+_VALIDATED_BEACON_SEED_CACHE: dict[str, tuple[tuple[int, int, int], int]] = {}
+_THREAD_ENVIRONMENT_NAMES = (
+    "OMP_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "BLIS_NUM_THREADS",
+)
 
 
 @dataclass(frozen=True)
@@ -137,6 +144,21 @@ class GitIdentity:
     tree: str
     source_bundle_sha256: str
     clean: bool
+    commit_timestamp_utc: str
+
+
+@dataclass(frozen=True)
+class _GovernedSeedContext:
+    """Ordinary accidental-use guard, not a Python-introspection security boundary."""
+
+    contract_sha256: str
+    phase: str
+    root_seed: int
+    sentinel: object
+
+
+class HardInvariantFailure(RuntimeError):
+    pass
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -199,16 +221,103 @@ def _regular_nonsymlink_file(path: str | Path, name: str) -> Path:
     return resolved
 
 
+def _readonly_receipt_file(path: str | Path, name: str) -> Path:
+    source = _regular_nonsymlink_file(path, name)
+    if stat.S_IMODE(source.stat().st_mode) != stat.S_IRUSR:
+        raise ValueError(f"{name} must have exact read-only owner mode 0400.")
+    return source
+
+
+def _reserved_seed_values(contract: SyntheticContract) -> frozenset[int]:
+    rng = contract.plan["rng"]
+    values = {
+        int(rng["development_root_seed"]),
+        int(rng["superseded_unexecuted_plaintext_lockbox_root_seed"]),
+        *_DYNAMIC_RESERVED_SEEDS,
+    }
+    beacon_path = canonical_execution_path(contract, "beacon_receipt")
+    if beacon_path.exists() or beacon_path.is_symlink():
+        # Re-derive from the canonical receipt on every fresh-process public API
+        # path.  The process-local set is only a cache, never the source of truth.
+        file_stat = beacon_path.stat()
+        fingerprint = (file_stat.st_ino, file_stat.st_size, file_stat.st_mtime_ns)
+        cached = _VALIDATED_BEACON_SEED_CACHE.get(str(beacon_path))
+        if cached is None or cached[0] != fingerprint:
+            derived = _derive_lockbox_seed_from_beacon_receipt(contract, beacon_path)
+            _VALIDATED_BEACON_SEED_CACHE[str(beacon_path)] = (fingerprint, derived)
+        else:
+            derived = cached[1]
+        _DYNAMIC_RESERVED_SEEDS.add(derived)
+        values.add(derived)
+    return frozenset(values)
+
+
+def _governed_seed_context(
+    contract: SyntheticContract,
+    *,
+    phase: str,
+    root_seed: int,
+) -> _GovernedSeedContext:
+    return _GovernedSeedContext(
+        contract_sha256=contract.plan_sha256,
+        phase=phase,
+        root_seed=root_seed,
+        sentinel=_GOVERNED_SEED_SENTINEL,
+    )
+
+
+def _require_seed_access(
+    contract: SyntheticContract,
+    root_seed: int,
+    governed_context: _GovernedSeedContext | None,
+) -> None:
+    """Block accidental reserved-seed use through ordinary public APIs.
+
+    This deliberately is not presented as protection from hostile Python
+    introspection.  It is a fail-closed guard against an analyst accidentally
+    reaching a reserved stream outside the named governed phase.
+    """
+
+    if root_seed not in _reserved_seed_values(contract):
+        return
+    if not (
+        isinstance(governed_context, _GovernedSeedContext)
+        and governed_context.sentinel is _GOVERNED_SEED_SENTINEL
+        and governed_context.contract_sha256 == contract.plan_sha256
+        and governed_context.root_seed == root_seed
+        and governed_context.phase in {"development", "lockbox", "development-validation"}
+    ):
+        raise ValueError("Reserved seed requires an internal governed execution context.")
+
+
+def canonical_execution_path(contract: SyntheticContract, name: str) -> Path:
+    paths = contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
+    if name not in paths:
+        raise ValueError(f"Unknown canonical synthetic artifact {name!r}.")
+    path = Path(str(paths[name]))
+    if not path.is_absolute():
+        raise ValueError("Frozen synthetic execution paths must be absolute.")
+    return path
+
+
+def _require_canonical_path(contract: SyntheticContract, name: str, path: str | Path) -> Path:
+    expected = canonical_execution_path(contract, name)
+    observed = Path(path).expanduser().absolute()
+    if observed != expected:
+        raise ValueError(f"{name} must use the exact canonical path {expected}.")
+    return observed
+
+
 def validate_synthetic_contract(
     plan_path: str | Path = DEFAULT_SYNTHETIC_PLAN_PATH,
 ) -> SyntheticContract:
-    """Load the byte-frozen r2 plan and its separately frozen FBCCA contract."""
+    """Load the byte-frozen v8 plan and its separately frozen FBCCA contract."""
 
     path = _regular_nonsymlink_file(plan_path, "synthetic plan")
     observed_sha = _sha256_file(path)
     if observed_sha != EXPECTED_SYNTHETIC_PLAN_SHA256:
         raise ValueError(
-            "Synthetic plan byte hash drifted from frozen r2: "
+            "Synthetic plan byte hash drifted from frozen v8: "
             f"expected {EXPECTED_SYNTHETIC_PLAN_SHA256}, observed {observed_sha}."
         )
     decoded = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -218,7 +327,7 @@ def validate_synthetic_contract(
     if (
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != "metadata-calibration-efficiency-v2"
-        or plan.get("generator_revision") != "v5_pre_outcome_exact_component_phase_formulas"
+        or plan.get("generator_revision") != "v8_pre_outcome_future_beacon_and_integrity_contract"
         or plan.get("status") != "frozen_before_any_synthetic_outcome"
     ):
         raise ValueError("Synthetic plan identity or pre-outcome freeze status is invalid.")
@@ -245,7 +354,8 @@ def validate_synthetic_contract(
             "component_code",
         ]
         or rng.get("development_root_seed") != DEVELOPMENT_ROOT_SEED
-        or rng.get("independent_lockbox_root_seed") != LOCKBOX_ROOT_SEED
+        or not isinstance(rng.get("superseded_unexecuted_plaintext_lockbox_root_seed"), int)
+        or not isinstance(rng.get("independent_lockbox_root_seed"), Mapping)
         or tuple(rng.get("family_codes", ())) != FAMILY_NAMES
     ):
         raise ValueError("Synthetic RNG contract differs from the frozen keyed construction.")
@@ -279,7 +389,7 @@ def validate_synthetic_contract(
         or n4.get("context_state_draw")
         != "separate_keyed_Bernoulli_one_half_mapped_to_minus_one_or_plus_one"
     ):
-        raise ValueError("Synthetic r2 B3/N4 state mapping is not exact.")
+        raise ValueError("Synthetic B3/N4 state mapping is not exact.")
     expected_axes = {
         "spatial_signature": "participant_by_intended_class_by_channel_shared_across_blocks",
         "class_phase": "participant_by_frequency_class_shared_across_blocks",
@@ -300,6 +410,76 @@ def validate_synthetic_contract(
         ),
     }:
         raise ValueError("Synthetic v5 component phase formulas are not exact.")
+    if waveform.get("exact_signal_composition") != {
+        "target": (
+            "target_amplitude times intended_class_spatial_signature times the sum of "
+            "harmonic 1 and 0.35 times harmonic 2 at generated_target_class frequency "
+            "and phase"
+        ),
+        "cross_frequency": (
+            "cross_amplitude times the same intended_class_spatial_signature times the "
+            "sum of harmonic 1 and 0.35 times harmonic 2 at generated_cross_class "
+            "frequency and phase plus cross_extra_phase"
+        ),
+        "channel_gain_placement": "multiply_target_plus_cross_only_not_AR1_noise",
+        "final": ("channel_gain_times_parenthesized_target_plus_cross_plus_stationary_AR1_noise"),
+    }:
+        raise ValueError("Synthetic v8 signal-composition contract is not exact.")
+    if waveform.get("noise") != {
+        "process": "stationary_AR1_per_channel",
+        "rho": 0.55,
+        "initialization": "epsilon_0_equals_sigma_times_z_0_div_sqrt_1_minus_rho_squared",
+        "recurrence": "epsilon_t_equals_rho_times_epsilon_t_minus_1_plus_sigma_times_z_t",
+    }:
+        raise ValueError("Synthetic v8 AR(1) contract is not exact.")
+    beacon = dict(rng["independent_lockbox_root_seed"])
+    if beacon != {
+        "derivation_revision": "nist_beacon_v1",
+        "provider": "NIST_Randomness_Beacon_2.0",
+        "official_specification": (
+            "https://csrc.nist.gov/Projects/interoperable-randomness-beacons/beacon-20"
+        ),
+        "target_timestamp_utc": "2026-09-05T19:30:00.000Z",
+        "target_timestamp_unix_milliseconds": 1788636600000,
+        "exact_endpoint": ("https://beacon.nist.gov/beacon/2.0/pulse/time/1788636600000"),
+        "required_exact_pulse_timestamp": "2026-09-05T19:30:00.000Z",
+        "statement_utf8": (
+            "cfeg.metadata-calibration-efficiency-v2|synthetic-lockbox|v8|2026-09-05T19:30:00.000Z"
+        ),
+        "statement_sha256": ("11fe3ab3db97a070bacc7b83426a53366e338457275937eef3016f42316afe0e"),
+        "output_value_encoding": ("exact_128_uppercase_hex_characters_decoded_to_64_bytes"),
+        "digest_formula": "SHA256_UTF8_statement_then_LF_then_raw_output_value_bytes",
+        "root_seed_formula": "unsigned_big_endian_integer_of_all_32_digest_bytes",
+        "retrieval_not_before_target_timestamp": True,
+        "require_https_nist_host_exact_pulse_fields_and_full_response_receipt": True,
+    }:
+        raise ValueError("Synthetic v8 future-beacon derivation contract is not exact.")
+    expected_paths = {
+        "preparation_receipt",
+        "development_result",
+        "full_suite_test_evidence",
+        "beacon_receipt",
+        "lockbox_authorization",
+        "lockbox_result",
+        "seed_global_lockbox_claim",
+    }
+    path_values = plan.get("freeze_and_stopping", {}).get("canonical_execution_paths", {})
+    if set(path_values) != expected_paths or any(
+        not Path(str(value)).is_absolute() for value in path_values.values()
+    ):
+        raise ValueError("Synthetic v8 canonical execution paths are not exact absolute paths.")
+    severe = plan.get("promotion_requirements", {}).get("severe_harm", {})
+    if severe.get("contrast_ids") != [
+        "B1:P1_A_Q-A0:eAUC",
+        "B2:P2_A_Q-A0:eAUC",
+        "B3:P1_A_QM_correct-P1_A_Q:eAUC",
+        "N1:P1_A_Q-A0:eAUC",
+        "N1:P2_A_Q-A0:eAUC",
+        "N2:P1_A_Q-A0:eAUC",
+        "N3:P1_A_Q-A0:eAUC",
+        "N4:P1_A_QM_correct-P1_A_Q:eAUC",
+    ]:
+        raise ValueError("Synthetic v8 severe-harm estimand set is not exact.")
     if (
         waveform.get("filterbank_config")
         != "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
@@ -346,9 +526,11 @@ def keyed_rng(
     block: int,
     class_index: int,
     component: str,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> np.random.Generator:
     """Construct one loop-order-independent PCG64DXSM stream from all six keys."""
 
+    _require_seed_access(contract, root_seed, _governed_context)
     if family not in FAMILY_NAMES:
         raise ValueError(f"Unknown synthetic family {family!r}.")
     values = (root_seed, participant_index, block, class_index)
@@ -414,9 +596,11 @@ def generate_synthetic_participant(
     root_seed: int,
     family: str,
     participant_index: int,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> SyntheticParticipant:
     """Generate one participant; no family-sized EEG tensor is ever materialized."""
 
+    _require_seed_access(contract, root_seed, _governed_context)
     if family not in FAMILY_NAMES:
         raise ValueError(f"Unknown synthetic family {family!r}.")
     if type(participant_index) is not int or participant_index < 0:
@@ -442,6 +626,7 @@ def generate_synthetic_participant(
             block=0,
             class_index=class_index,
             component="spatial_signature",
+            _governed_context=_governed_context,
         ).standard_normal(n_channels)
         norm = float(np.linalg.norm(vector))
         if norm == 0.0:  # practically impossible, but deterministic failure is preferable.
@@ -455,6 +640,7 @@ def generate_synthetic_participant(
             block=0,
             class_index=class_index,
             component="class_phase",
+            _governed_context=_governed_context,
         ).uniform(-np.pi, np.pi)
 
     signals = np.empty((n_blocks, n_classes, n_channels, n_samples), dtype=np.float64)
@@ -480,6 +666,7 @@ def generate_synthetic_participant(
             block=block,
             class_index=0,
             component="block_phase_drift",
+            _governed_context=_governed_context,
         ).normal(0.0, 0.08)
         gains = keyed_rng(
             contract,
@@ -489,6 +676,7 @@ def generate_synthetic_participant(
             block=block,
             class_index=0,
             component="channel_gain",
+            _governed_context=_governed_context,
         ).lognormal(mean=0.0, sigma=0.12, size=n_channels)
 
         if family == "B3_context_dependent_support_query_shift":
@@ -502,6 +690,7 @@ def generate_synthetic_participant(
                 block=block,
                 class_index=0,
                 component="label_permutation",
+                _governed_context=_governed_context,
             ).integers(0, 2)
             context_draw = keyed_rng(
                 contract,
@@ -511,6 +700,7 @@ def generate_synthetic_participant(
                 block=block,
                 class_index=0,
                 component="metadata_shuffle",
+                _governed_context=_governed_context,
             ).integers(0, 2)
             signal_state = -1 if signal_draw == 0 else 1
             context_state = -1 if context_draw == 0 else 1
@@ -532,6 +722,7 @@ def generate_synthetic_participant(
                 block=block,
                 class_index=0,
                 component="metadata_noise",
+                _governed_context=_governed_context,
             ).normal(0.0, 0.05, size=n_channels)
             impedance_packet = np.exp(np.log(6.0) + 0.65 * context_state + metadata_noise) - 1.0
             impedance[block_index, :, :] = impedance_packet[None, :]
@@ -546,6 +737,7 @@ def generate_synthetic_participant(
                     block=block,
                     class_index=0,
                     component="label_permutation",
+                    _governed_context=_governed_context,
                 ).integers(1, n_classes)
             )
             recorded_labels[block_index] = (true_labels[block_index] + shift) % n_classes
@@ -618,6 +810,7 @@ def generate_synthetic_participant(
                 block=block,
                 class_index=class_index,
                 component="innovation_noise",
+                _governed_context=_governed_context,
             ).standard_normal((n_channels, n_samples))
             noise = _stationary_ar1_noise(
                 standard_normal,
@@ -752,9 +945,11 @@ def write_strict_fbcca_cache_exclusive(
     *,
     contract: SyntheticContract,
     participant: SyntheticParticipant,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> Path:
     """Write one participant-only cache without permitting overwrite or pickle payloads."""
 
+    _require_seed_access(contract, participant.root_seed, _governed_context)
     target = _validated_unused_output_path(path)
     manifest = {
         "schema": SYNTHETIC_FBCCA_CACHE_SCHEMA,
@@ -790,7 +985,9 @@ def load_strict_fbcca_cache(
     *,
     contract: SyntheticContract,
     participant: SyntheticParticipant,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> StrictFBCCAProduct:
+    _require_seed_access(contract, participant.root_seed, _governed_context)
     source = _regular_nonsymlink_file(path, "synthetic FBCCA cache")
     with np.load(source, allow_pickle=False) as archive:
         if set(archive.files) != {"manifest", "scores", "subbands", "subband_weights"}:
@@ -860,13 +1057,20 @@ def _metadata_source_blocks(
     support_blocks: Sequence[int],
     control: str,
     contract: SyntheticContract,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> tuple[int, ...]:
+    _require_seed_access(contract, participant.root_seed, governed_context)
+    support = tuple(int(block) for block in support_blocks)
+    if not support or support != tuple(range(1, len(support) + 1)) or len(support) > 5:
+        raise ValueError(
+            "Support metadata controls require the exact current prefix in blocks 1..5."
+        )
     if control == "correct" or control == "opposite_interface" or control == "all_missing":
-        return tuple(int(block) for block in support_blocks)
+        sources = support
     if control == "stale":
-        return tuple(10 if int(block) == 1 else int(block) - 1 for block in support_blocks)
-    if control == "pair_shuffled":
-        permutation = keyed_rng(
+        sources = support[-1:] + support[:-1]
+    elif control == "pair_shuffled":
+        participant_global_order = keyed_rng(
             contract,
             root_seed=participant.root_seed,
             family=participant.family,
@@ -874,9 +1078,14 @@ def _metadata_source_blocks(
             block=0,
             class_index=0,
             component="metadata_shuffle",
-        ).permutation(10)
-        return tuple(int(permutation[int(block) - 1]) + 1 for block in support_blocks)
-    raise ValueError(f"Unknown metadata pairing control {control!r}.")
+            _governed_context=governed_context,
+        ).permutation(np.arange(1, 6, dtype=np.int64))
+        sources = tuple(int(block) for block in participant_global_order if int(block) in support)
+    elif control not in {"correct", "opposite_interface", "all_missing"}:
+        raise ValueError(f"Unknown metadata pairing control {control!r}.")
+    if len(sources) != len(support) or set(sources) != set(support):
+        raise RuntimeError("Every metadata donor must be exactly one member of the support prefix.")
+    return sources
 
 
 def _context_arguments(
@@ -886,10 +1095,21 @@ def _context_arguments(
     query_blocks: Sequence[int],
     support_blocks: Sequence[int],
     control: str,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> tuple[dict[str, Any], str]:
     if control not in CONTEXT_CONTROLS:
         raise ValueError(f"Unknown metadata pairing control {control!r}.")
-    source_blocks = _metadata_source_blocks(participant, support_blocks, control, contract)
+    source_blocks = _metadata_source_blocks(
+        participant,
+        support_blocks,
+        control,
+        contract,
+        governed_context,
+    )
+    if set(source_blocks) != {int(value) for value in support_blocks} or set(source_blocks) & {
+        int(value) for value in query_blocks
+    }:
+        raise RuntimeError("Context pairing referenced evaluation, query, or future metadata.")
     pairing = {
         "schema": "cfeg.metadata-calibration-v2-synthetic-context-pairing.v1",
         "plan_sha256": contract.plan_sha256,
@@ -948,6 +1168,7 @@ def _operator_payload(
     operator: str,
     variant: str,
     context_control: str,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> dict[str, Any]:
     """Build support-only capabilities. This function has no query-label argument."""
 
@@ -976,6 +1197,7 @@ def _operator_payload(
             query_blocks=query_blocks,
             support_blocks=support_blocks,
             control=context_control,
+            governed_context=governed_context,
         )
         payload.update(context)
         payload["relative_context_pairing_sha256"] = pairing_sha
@@ -991,7 +1213,9 @@ def _prequential_gate(
     operator: str,
     variant: str,
     context_control: str,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> v2_operator.PrequentialGateDecision:
+    _require_seed_access(contract, participant.root_seed, governed_context)
     if budget not in {3, 5}:
         raise ValueError("Synthetic prequential gate is defined only for k=3 or k=5.")
     base_rows: list[np.ndarray] = []
@@ -1019,6 +1243,7 @@ def _prequential_gate(
             operator=operator,
             variant=variant,
             context_control=context_control,
+            governed_context=governed_context,
         )
         output = v2_operator.apply_v2_prequential_operator(
             evaluation_scores,
@@ -1056,9 +1281,11 @@ def _apply_final_query_operator(
     operator: str,
     variant: str,
     context_control: str = "correct",
+    governed_context: _GovernedSeedContext | None = None,
 ) -> tuple[v2_operator.V2OperatorOutput, v2_operator.PrequentialGateDecision | None]:
     """Score immutable query blocks without exposing their labels to the operator."""
 
+    _require_seed_access(contract, participant.root_seed, governed_context)
     query_blocks = tuple(
         int(value) for value in contract.plan["population"]["immutable_query_blocks"]
     )
@@ -1085,6 +1312,7 @@ def _apply_final_query_operator(
             operator=operator,
             variant=variant,
             context_control=context_control,
+            governed_context=governed_context,
         )
         gate_enabled = gate.enabled
     if not gate_enabled:
@@ -1110,6 +1338,7 @@ def _apply_final_query_operator(
         operator=operator,
         variant=variant,
         context_control=context_control,
+        governed_context=governed_context,
     )
     output = v2_operator.apply_v2_safe_operator(
         query_scores,
@@ -1173,9 +1402,12 @@ def evaluate_synthetic_participant(
     participant: SyntheticParticipant,
     product: StrictFBCCAProduct,
     contract: SyntheticContract,
+    *,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> list[dict[str, Any]]:
     """Return scalar participant metrics after label-free operator predictions exist."""
 
+    _require_seed_access(contract, participant.root_seed, _governed_context)
     query_blocks = tuple(contract.plan["population"]["immutable_query_blocks"])
     query_labels = _flatten_blocks(participant.true_labels, query_blocks).reshape(-1)
     query_scores = _flatten_blocks(product.scores, query_blocks)
@@ -1213,6 +1445,7 @@ def evaluate_synthetic_participant(
                 operator=operator,
                 variant=variant,
                 context_control=control,
+                governed_context=_governed_context,
             )
             # This is the first point at which immutable query labels meet predictions.
             ba = _balanced_accuracy(output.predictions, query_labels)
@@ -1275,9 +1508,12 @@ def validate_hard_assertions(
     participant: SyntheticParticipant,
     product: StrictFBCCAProduct,
     contract: SyntheticContract,
+    *,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> dict[str, bool]:
     """Execute every frozen hard invariant before any efficacy metric is recorded."""
 
+    _require_seed_access(contract, participant.root_seed, _governed_context)
     query_block = (6,)
     support_block = (1,)
     query_scores = _flatten_blocks(product.scores, query_block)
@@ -1504,6 +1740,7 @@ def validate_hard_assertions(
         query_blocks=query_block,
         support_blocks=support_block,
         control="all_missing",
+        governed_context=_governed_context,
     )
     pairing_echo = v2_operator.apply_v2_safe_operator(
         query_scores,
@@ -1540,6 +1777,7 @@ def validate_hard_assertions(
         operator="score_prototype_shrinkage",
         variant="A_Q",
         context_control="correct",
+        governed_context=_governed_context,
     )
     if (
         pairing_echo.relative_context_pairing_sha256 != pairing_sha
@@ -1566,6 +1804,47 @@ def validate_hard_assertions(
         prequential_parameters & forbidden_query_capabilities
     ):
         raise RuntimeError("A V2 operator API exposes query labels or identities.")
+
+    for depth in range(1, 6):
+        prefix = tuple(range(1, depth + 1))
+        for control in CONTEXT_CONTROLS:
+            donors = _metadata_source_blocks(
+                participant,
+                prefix,
+                control,
+                contract,
+                _governed_context,
+            )
+            if len(donors) != depth or set(donors) != set(prefix):
+                raise RuntimeError("A context donor escaped the current support prefix.")
+            if depth == 1 and donors != prefix:
+                raise RuntimeError("Depth-one context controls must be exact no-ops.")
+
+    for reserved_seed in _reserved_seed_values(contract):
+        try:
+            keyed_rng(
+                contract,
+                root_seed=reserved_seed,
+                family=FAMILY_NAMES[0],
+                participant_index=0,
+                block=0,
+                class_index=0,
+                component="spatial_signature",
+            )
+        except ValueError:
+            pass
+        else:  # pragma: no cover - protects the governance implementation itself.
+            raise RuntimeError("A public RNG primitive accepted a reserved seed.")
+
+    canonical_paths = contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
+    if Path(canonical_paths["seed_global_lockbox_claim"]) == Path(
+        canonical_paths["lockbox_result"]
+    ) or not bool(
+        contract.plan["freeze_and_stopping"][
+            "alternate_result_path_cannot_create_a_second_lockbox_claim"
+        ]
+    ):
+        raise RuntimeError("The frozen global claim binding is not canonical.")
 
     assertion_names = tuple(contract.plan["hard_assertions_before_efficacy"])
     return {name: True for name in assertion_names}
@@ -1730,6 +2009,7 @@ def _sensitivity_summary(
     contrast_index: int,
     sign_flip_draws: int,
     bootstrap_draws: int,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> dict[str, Any]:
     observed = np.asarray(values, dtype=np.float64)
     mean = float(np.mean(observed))
@@ -1741,6 +2021,7 @@ def _sensitivity_summary(
         block=1,
         class_index=contrast_index,
         component="sensitivity_resampling",
+        _governed_context=governed_context,
     )
     exceed = 0
     complete = 0
@@ -1761,6 +2042,7 @@ def _sensitivity_summary(
         block=2,
         class_index=contrast_index,
         component="sensitivity_resampling",
+        _governed_context=governed_context,
     )
     bootstrap_means = np.empty(bootstrap_draws, dtype=np.float64)
     complete = 0
@@ -1792,12 +2074,17 @@ def summarize_synthetic_metrics(
     families: Sequence[str],
     sign_flip_draws: int,
     bootstrap_draws: int,
+    _governed_context: _GovernedSeedContext | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    _require_seed_access(contract, root_seed, _governed_context)
     vectors = _contrast_vectors(metric_rows, families)
+    severe_harm_ids = tuple(contract.plan["promotion_requirements"]["severe_harm"]["contrast_ids"])
+    if set(severe_harm_ids) - set(vectors) and set(families) == set(FAMILY_NAMES):
+        raise RuntimeError("Frozen severe-harm contrasts are missing from the complete grid.")
     summaries: list[dict[str, Any]] = []
     for contrast_index, name in enumerate(sorted(vectors)):
         family, values, margin = vectors[name]
-        severe_harm_applicable = name.endswith(":eAUC")
+        severe_harm_applicable = name in severe_harm_ids
         harmful = int(np.count_nonzero(values < -0.10)) if severe_harm_applicable else 0
         summary = {
             "contrast": name,
@@ -1824,6 +2111,7 @@ def summarize_synthetic_metrics(
                 contrast_index=contrast_index,
                 sign_flip_draws=sign_flip_draws,
                 bootstrap_draws=bootstrap_draws,
+                governed_context=_governed_context,
             ),
         }
         summaries.append(summary)
@@ -1891,6 +2179,11 @@ def summarize_synthetic_metrics(
     abstention_rate = abstentions / len(adversarial_rows)
     adversarial_pass = abstention_rate >= 0.95
 
+    observed_safety_set = {
+        str(item["contrast"]) for item in summaries if item["severe_harm"]["applicable"]
+    }
+    if observed_safety_set != set(severe_harm_ids):
+        raise RuntimeError("Severe-harm applicability must equal the exact frozen eight-ID set.")
     severe_harm_pass = all(
         item["severe_harm"]["exact_one_sided_95_percent_upper_rate"] < 0.10
         for item in summaries
@@ -1932,7 +2225,8 @@ def summarize_synthetic_metrics(
             "passed": bool(adversarial_pass),
         },
         "severe_harm": {
-            "all_primary_contrasts_exact_upper_rate_below_0.10": bool(severe_harm_pass),
+            "contrast_ids": list(severe_harm_ids),
+            "all_declared_safety_contrasts_exact_upper_rate_below_0.10": bool(severe_harm_pass),
             "passed": bool(severe_harm_pass),
         },
         "all_requirements_passed": bool(all_pass),
@@ -1949,8 +2243,9 @@ def _execute_synthetic(
     sign_flip_draws: int,
     bootstrap_draws: int,
     fbcca_producer: Any = produce_strict_fbcca,
-    reserved_execution_capability: object | None = None,
+    governed_context: _GovernedSeedContext | None = None,
 ) -> dict[str, Any]:
+    _require_seed_access(contract, root_seed, governed_context)
     if type(participants_per_family) is not int or participants_per_family < 2:
         raise ValueError("Synthetic execution requires at least two participants per family.")
     selected_families = tuple(families)
@@ -1962,12 +2257,11 @@ def _execute_synthetic(
         raise ValueError("sign_flip_draws must be a positive exact integer.")
     if type(bootstrap_draws) is not int or bootstrap_draws < 1:
         raise ValueError("bootstrap_draws must be a positive exact integer.")
-    if root_seed in RESERVED_ROOT_SEEDS:
+    if root_seed in _reserved_seed_values(contract):
         sensitivity = contract.plan["metrics"]["sensitivity_only"]
-        expected_phase = "development" if root_seed == DEVELOPMENT_ROOT_SEED else "lockbox"
         if (
-            reserved_execution_capability is not _RESERVED_EXECUTION_CAPABILITY
-            or phase != expected_phase
+            governed_context is None
+            or governed_context.phase != phase
             or participants_per_family != 64
             or selected_families != FAMILY_NAMES
             or sign_flip_draws != int(sensitivity["sign_flip"]["draws"])
@@ -1987,16 +2281,43 @@ def _execute_synthetic(
                 root_seed=root_seed,
                 family=family,
                 participant_index=participant_index,
+                _governed_context=governed_context,
             )
             product = fbcca_producer(contract, participant.signals)
             if not isinstance(product, StrictFBCCAProduct):
                 raise TypeError("FBCCA producer must return StrictFBCCAProduct.")
             if hard_assertions is None:
-                hard_assertions = validate_hard_assertions(participant, product, contract)
+                try:
+                    hard_assertions = validate_hard_assertions(
+                        participant,
+                        product,
+                        contract,
+                        _governed_context=governed_context,
+                    )
+                except (MemoryError, OSError):
+                    raise
+                except (AssertionError, RuntimeError, TypeError, ValueError) as error:
+                    raise HardInvariantFailure(str(error)) from error
+                expected_assertions = {
+                    name: True for name in contract.plan["hard_assertions_before_efficacy"]
+                }
+                if hard_assertions != expected_assertions:
+                    raise HardInvariantFailure(
+                        "Hard-assertion key set/value set differs from the frozen plan."
+                    )
             # Efficacy metrics are not evaluated until all hard assertions have passed.
-            metric_rows.extend(evaluate_synthetic_participant(participant, product, contract))
+            metric_rows.extend(
+                evaluate_synthetic_participant(
+                    participant,
+                    product,
+                    contract,
+                    _governed_context=governed_context,
+                )
+            )
     if hard_assertions is None or not all(hard_assertions.values()):
-        raise RuntimeError("Synthetic hard assertions did not complete before efficacy metrics.")
+        raise HardInvariantFailure(
+            "Synthetic hard assertions did not complete before efficacy metrics."
+        )
     contrasts, promotion = summarize_synthetic_metrics(
         metric_rows,
         contract=contract,
@@ -2004,13 +2325,14 @@ def _execute_synthetic(
         families=selected_families,
         sign_flip_draws=sign_flip_draws,
         bootstrap_draws=bootstrap_draws,
+        _governed_context=governed_context,
     )
     status = (
         "engineering_only"
         if phase in {"diagnostic", "development"}
         else "terminal_pass"
         if promotion["all_requirements_passed"]
-        else "terminal_fail"
+        else "terminal_scientific_fail"
     )
     result: dict[str, Any] = {
         "schema": SYNTHETIC_RESULT_SCHEMA,
@@ -2055,9 +2377,9 @@ def run_synthetic_diagnostic(
 ) -> dict[str, Any]:
     """Run a small non-reserved engineering diagnostic for unit/property tests."""
 
-    if root_seed in RESERVED_ROOT_SEEDS:
-        raise ValueError("Reserved development/lockbox seeds cannot use the diagnostic path.")
     contract = validate_synthetic_contract(plan_path)
+    if root_seed in _reserved_seed_values(contract):
+        raise ValueError("Reserved development/lockbox seeds cannot use the diagnostic path.")
     return _execute_synthetic(
         contract,
         phase="diagnostic",
@@ -2070,32 +2392,116 @@ def run_synthetic_diagnostic(
     )
 
 
-def run_development(
-    contract: SyntheticContract,
-) -> dict[str, Any]:
-    """Run the frozen development seed with no alternate size or resampling path."""
-
-    identity = current_git_identity()
-    if not identity.clean:
-        raise ValueError("Frozen development execution requires a clean git worktree.")
-    metrics = contract.plan["metrics"]["sensitivity_only"]
-    return _execute_synthetic(
-        contract,
-        phase="development",
-        root_seed=DEVELOPMENT_ROOT_SEED,
-        participants_per_family=64,
-        families=FAMILY_NAMES,
-        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
-        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
-        fbcca_producer=produce_strict_fbcca,
-        reserved_execution_capability=_RESERVED_EXECUTION_CAPABILITY,
+def _json_payload_bytes(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(
+            dict(payload),
+            sort_keys=True,
+            indent=2,
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+        + b"\n"
     )
 
 
+def _validated_unused_output_path(path: str | Path) -> Path:
+    candidate = Path(path).expanduser().absolute()
+    parent = candidate.parent
+    if not parent.exists() or parent.is_symlink() or not parent.is_dir():
+        raise ValueError("Output parent must be one existing nonsymlink directory.")
+    if candidate.exists() or candidate.is_symlink():
+        raise FileExistsError(f"Refusing to overwrite existing output: {candidate}")
+    return candidate
+
+
+def _write_bytes_exclusive(path: str | Path, payload: bytes) -> Path:
+    target = _validated_unused_output_path(path)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(target, flags, stat.S_IRUSR | stat.S_IWUSR)
+    with os.fdopen(descriptor, "wb", closefd=True) as handle:
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+        os.fchmod(handle.fileno(), stat.S_IRUSR)
+        os.fsync(handle.fileno())
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    directory_descriptor = os.open(target.parent, directory_flags)
+    try:
+        os.fsync(directory_descriptor)
+    finally:
+        os.close(directory_descriptor)
+    return target
+
+
+def write_json_exclusive(path: str | Path, payload: Mapping[str, Any]) -> Path:
+    """Write a JSON receipt with O_EXCL and never replace an existing artifact."""
+
+    return _write_bytes_exclusive(path, _json_payload_bytes(payload))
+
+
+def load_json_object(path: str | Path, *, name: str) -> dict[str, Any]:
+    source = _regular_nonsymlink_file(path, name)
+    decoded = json.loads(source.read_text(encoding="utf-8"))
+    if not isinstance(decoded, Mapping):
+        raise TypeError(f"{name} must decode to one JSON object.")
+    return dict(decoded)
+
+
+def current_environment_receipt() -> dict[str, Any]:
+    configuration = io.StringIO()
+    with redirect_stdout(configuration):
+        np.show_config()
+    fields: dict[str, Any] = {
+        "python_implementation": platform_module.python_implementation(),
+        "python_version": sys.version,
+        "python_executable_realpath": os.path.realpath(sys.executable),
+        "platform": platform_module.platform(),
+        "numpy_version": np.__version__,
+        "numpy_configuration_sha256": _sha256_bytes(configuration.getvalue().encode("utf-8")),
+        "scipy_version": scipy.__version__,
+        "thread_environment": {name: os.environ.get(name) for name in _THREAD_ENVIRONMENT_NAMES},
+    }
+    required = set(
+        validate_synthetic_contract().plan["freeze_and_stopping"]["execution_identity"][
+            "required_environment_fields"
+        ]
+    )
+    if set(fields) != required:
+        raise RuntimeError("Runtime environment fields differ from the frozen contract.")
+    fields["environment_sha256"] = _canonical_json_sha256(fields)
+    return fields
+
+
+def _validate_environment_receipt(environment: Mapping[str, Any]) -> dict[str, Any]:
+    observed = dict(environment)
+    expected_fields = {
+        "python_implementation",
+        "python_version",
+        "python_executable_realpath",
+        "platform",
+        "numpy_version",
+        "numpy_configuration_sha256",
+        "scipy_version",
+        "thread_environment",
+        "environment_sha256",
+    }
+    _require_exact_keys(observed, expected_fields, "execution environment")
+    claimed = observed.pop("environment_sha256")
+    if not isinstance(claimed, str) or not _SHA256_RE.fullmatch(claimed):
+        raise ValueError("Environment receipt requires a lowercase SHA-256 self-hash.")
+    if claimed != _canonical_json_sha256(observed):
+        raise ValueError("Environment receipt self-hash mismatch.")
+    observed["environment_sha256"] = claimed
+    return observed
+
+
 def current_git_identity(repository: str | Path = _REPOSITORY) -> GitIdentity:
+    """Bind exact HEAD, HEAD tree, every tracked file, and full worktree status."""
+
     root = Path(repository).resolve()
 
-    def git(*arguments: str) -> str:
+    def git_text(*arguments: str) -> str:
         completed = subprocess.run(
             ["git", *arguments],
             cwd=root,
@@ -2105,38 +2511,107 @@ def current_git_identity(repository: str | Path = _REPOSITORY) -> GitIdentity:
         )
         return completed.stdout.strip()
 
-    relative_paths = [path.as_posix() for path in _EXECUTION_SOURCE_PATHS]
-    # Bind the latest commit touching any execution dependency, rather than an unrelated
-    # later research-log commit. The tree is the complete repository tree at that anchor.
-    commit = git("log", "-1", "--format=%H", "--", *relative_paths)
-    tree = git("rev-parse", f"{commit}^{{tree}}")
+    commit = git_text("rev-parse", "HEAD")
+    tree = git_text("rev-parse", "HEAD^{tree}")
+    commit_timestamp = git_text("show", "-s", "--format=%cI", "HEAD")
     if not _GIT_OBJECT_RE.fullmatch(commit) or not _GIT_OBJECT_RE.fullmatch(tree):
-        raise RuntimeError("Git did not return valid commit/tree object IDs.")
-    status_output = git("status", "--porcelain=v1", "--untracked-files=all", "--", *relative_paths)
-    bundle_records = []
-    for relative in _EXECUTION_SOURCE_PATHS:
-        path = _regular_nonsymlink_file(root / relative, f"generator source {relative}")
-        bundle_records.append({"path": relative.as_posix(), "sha256": _sha256_file(path)})
+        raise RuntimeError("Git did not return valid exact HEAD/tree object IDs.")
+    status_output = git_text("status", "--porcelain=v1", "--untracked-files=all")
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    ).stdout
+    records: list[dict[str, str]] = []
+    for raw_relative in tracked.split(b"\0"):
+        if not raw_relative:
+            continue
+        relative_text = raw_relative.decode("utf-8", errors="surrogateescape")
+        source = root / relative_text
+        if source.is_symlink():
+            digest = _sha256_bytes(os.readlink(source).encode("utf-8"))
+            kind = "symlink-target"
+        elif source.is_file():
+            digest = _sha256_file(source)
+            kind = "regular-file"
+        else:
+            raise RuntimeError(f"Tracked source is not materialized safely: {relative_text}")
+        records.append({"path": relative_text, "kind": kind, "sha256": digest})
+    source_bundle = {
+        "schema": "cfeg.metadata-calibration-v2-synthetic-source-bundle.v2",
+        "head": commit,
+        "tree": tree,
+        "files": records,
+    }
     return GitIdentity(
         commit=commit,
         tree=tree,
-        source_bundle_sha256=_canonical_json_sha256(
-            {
-                "schema": "cfeg.metadata-calibration-v2-synthetic-source-bundle.v1",
-                "files": bundle_records,
-            }
-        ),
+        source_bundle_sha256=_canonical_json_sha256(source_bundle),
         clean=status_output == "",
+        commit_timestamp_utc=(
+            datetime.fromisoformat(commit_timestamp.replace("Z", "+00:00"))
+            .astimezone(timezone.utc)
+            .isoformat(timespec="seconds")
+            .replace("+00:00", "Z")
+        ),
     )
 
 
+def _identity_mapping(identity: GitIdentity) -> dict[str, Any]:
+    return {
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "git_worktree_clean": identity.clean,
+    }
+
+
+def _require_clean_identity(identity: GitIdentity) -> None:
+    if not identity.clean:
+        raise ValueError("Governed synthetic execution requires the entire git worktree clean.")
+
+
 def _source_hashes(repository: Path = _REPOSITORY) -> dict[str, str]:
-    values: dict[str, str] = {}
-    for relative in _EXECUTION_SOURCE_PATHS:
-        values[relative.as_posix()] = _sha256_file(
-            _regular_nonsymlink_file(repository / relative, f"generator source {relative}")
-        )
-    return values
+    root = Path(repository).resolve()
+    completed = subprocess.run(["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True)
+    result: dict[str, str] = {}
+    for raw_relative in completed.stdout.split(b"\0"):
+        if raw_relative:
+            relative = raw_relative.decode("utf-8", errors="surrogateescape")
+            source = root / relative
+            result[relative] = (
+                _sha256_bytes(os.readlink(source).encode("utf-8"))
+                if source.is_symlink()
+                else _sha256_file(source)
+            )
+    return result
+
+
+_PREPARATION_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "plan_path",
+    "plan_sha256",
+    "filterbank_path",
+    "filterbank_sha256",
+    "diagnostic_operator_configs_sha256",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "git_worktree_clean",
+    "generator_commit_timestamp_utc",
+    "created_at_utc",
+    "environment",
+    "canonical_execution_paths",
+    "lockbox_seed_source",
+    "reserved_seed_executed",
+    "requested_output_path",
+    "completion_receipt_sha256",
+}
 
 
 def build_preparation_receipt(
@@ -2144,9 +2619,25 @@ def build_preparation_receipt(
     *,
     output_path: str | Path,
     identity: GitIdentity | None = None,
+    environment: Mapping[str, Any] | None = None,
+    now: datetime | None = None,
 ) -> dict[str, Any]:
+    target = _require_canonical_path(contract, "preparation_receipt", output_path)
+    _validated_unused_output_path(target)
     resolved_identity = current_git_identity() if identity is None else identity
-    target = _validated_unused_output_path(output_path)
+    _require_clean_identity(resolved_identity)
+    created = datetime.now(timezone.utc) if now is None else now
+    if created.tzinfo is None:
+        raise ValueError("Preparation creation time must be timezone-aware.")
+    created = created.astimezone(timezone.utc)
+    commit_time = datetime.fromisoformat(
+        resolved_identity.commit_timestamp_utc.replace("Z", "+00:00")
+    )
+    if created >= _target_datetime(contract) or commit_time >= _target_datetime(contract):
+        raise ValueError("Preparation and exact HEAD commit must both predate the beacon target.")
+    resolved_environment = _validate_environment_receipt(
+        current_environment_receipt() if environment is None else environment
+    )
     receipt: dict[str, Any] = {
         "schema": SYNTHETIC_PREPARATION_SCHEMA,
         "candidate_id": "metadata-calibration-efficiency-v2",
@@ -2157,106 +2648,1081 @@ def build_preparation_receipt(
         "filterbank_path": str(contract.filterbank_path),
         "filterbank_sha256": contract.filterbank_sha256,
         "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-        "generator_commit": resolved_identity.commit,
-        "generator_tree": resolved_identity.tree,
-        "generator_source_bundle_sha256": resolved_identity.source_bundle_sha256,
-        "git_worktree_clean": resolved_identity.clean,
-        "development_root_seed": DEVELOPMENT_ROOT_SEED,
-        "lockbox_root_seed": LOCKBOX_ROOT_SEED,
+        **_identity_mapping(resolved_identity),
+        "created_at_utc": created.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "environment": resolved_environment,
+        "canonical_execution_paths": dict(
+            contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
+        ),
+        "lockbox_seed_source": "exact_future_public_randomness_beacon_pulse",
         "reserved_seed_executed": False,
         "requested_output_path": str(target),
-        "lockbox_authorization_schema": SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA,
-        "lockbox_authorized": False,
     }
     receipt["completion_receipt_sha256"] = _canonical_json_sha256(receipt)
     return receipt
 
 
-def _development_evidence(
-    path: str | Path | None,
+def _validate_preparation_receipt(
+    contract: SyntheticContract,
+    *,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+) -> tuple[dict[str, Any], Path]:
+    path = canonical_execution_path(contract, "preparation_receipt")
+    _readonly_receipt_file(path, "synthetic preparation receipt")
+    receipt = load_json_object(path, name="synthetic preparation receipt")
+    _require_exact_keys(receipt, _PREPARATION_FIELDS, "synthetic preparation receipt")
+    claimed = receipt.pop("completion_receipt_sha256")
+    if claimed != _canonical_json_sha256(receipt):
+        raise ValueError("Synthetic preparation receipt self-hash mismatch.")
+    created_at = receipt.get("created_at_utc")
+    if not isinstance(created_at, str):
+        raise TypeError("Preparation receipt lacks its exact creation time.")
+    created_time = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    commit_time = datetime.fromisoformat(identity.commit_timestamp_utc.replace("Z", "+00:00"))
+    if created_time >= _target_datetime(contract) or commit_time >= _target_datetime(contract):
+        raise ValueError("Preparation/source freeze did not strictly predate the beacon target.")
+    expected = {
+        "schema": SYNTHETIC_PREPARATION_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "prepare",
+        "status": "validated_no_outcome_execution",
+        "plan_path": str(contract.plan_path),
+        "plan_sha256": contract.plan_sha256,
+        "filterbank_path": str(contract.filterbank_path),
+        "filterbank_sha256": contract.filterbank_sha256,
+        "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
+        **_identity_mapping(identity),
+        "created_at_utc": created_at,
+        "environment": dict(environment),
+        "canonical_execution_paths": dict(
+            contract.plan["freeze_and_stopping"]["canonical_execution_paths"]
+        ),
+        "lockbox_seed_source": "exact_future_public_randomness_beacon_pulse",
+        "reserved_seed_executed": False,
+        "requested_output_path": str(path),
+    }
+    if receipt != expected:
+        raise ValueError("Synthetic preparation receipt is incomplete, stale, or noncanonical.")
+    receipt["completion_receipt_sha256"] = claimed
+    return receipt, path
+
+
+_PARTICIPANT_METRIC_FIELDS = {
+    "family",
+    "participant_index",
+    "method",
+    "budget",
+    "balanced_accuracy",
+    "gate_enabled",
+    "gate_reason",
+    "exact_fallback",
+    "prediction_sha256",
+    "producer_sha256",
+    "operator_schema",
+    "support_depth",
+    "relative_context_pairing_sha256",
+    "comparable_context_pair_count",
+    "prequential",
+}
+_PREQUENTIAL_FIELDS = {
+    "evaluated_blocks",
+    "block_balanced_accuracy_deltas",
+    "block_log_probability_deltas",
+    "mean_balanced_accuracy_delta",
+    "mean_log_probability_delta",
+    "fold_provenance",
+}
+_FOLD_PROVENANCE_FIELDS = {
+    "schema",
+    "evaluation_block",
+    "fit_blocks",
+    "fit_block_partition_sha256s",
+    "fit_partition_sha256",
+    "evaluation_partition_sha256",
+}
+_CONTRAST_FIELDS = {
+    "contrast",
+    "family",
+    "n_participants",
+    "participant_deltas",
+    "observed_mean",
+    "paired_t_one_sided_95_percent_lower_bound",
+    "decision_margin",
+    "severe_harm",
+    "sensitivity_only",
+}
+_SEVERE_HARM_FIELDS = {
+    "definition",
+    "scale",
+    "applicable",
+    "count",
+    "exact_one_sided_95_percent_upper_rate",
+}
+_SENSITIVITY_FIELDS = {"sign_flip", "participant_bootstrap"}
+_RESULT_BASE_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "human_claim_boundary",
+    "plan_sha256",
+    "filterbank_sha256",
+    "diagnostic_operator_configs_sha256",
+    "root_seed",
+    "rng",
+    "participants_per_family",
+    "families",
+    "support_budgets",
+    "query_blocks",
+    "hard_assertions_completed_before_metrics",
+    "hard_assertions",
+    "participant_metrics",
+    "primary_contrasts",
+    "promotion",
+    "development_outputs_are_engineering_only",
+    "lockbox_terminal",
+}
+_DEVELOPMENT_RESULT_FIELDS = _RESULT_BASE_FIELDS | {
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "preparation_receipt_sha256",
+    "result_sha256",
+}
+
+
+def _expected_method_grid() -> dict[str, set[tuple[str, int]]]:
+    result: dict[str, set[tuple[str, int]]] = {}
+    for family in FAMILY_NAMES:
+        methods = {"A0", *(item[0] for item in _method_specs_for_family(family))}
+        result[family] = {(method, budget) for method in methods for budget in SUPPORT_BUDGETS}
+    return result
+
+
+def _validate_metric_row_schema(row: Mapping[str, Any], index: int) -> None:
+    _require_exact_keys(dict(row), _PARTICIPANT_METRIC_FIELDS, f"participant metric row {index}")
+    if (
+        row["family"] not in FAMILY_NAMES
+        or type(row["participant_index"]) is not int
+        or not 0 <= row["participant_index"] < 64
+        or type(row["budget"]) is not int
+        or row["budget"] not in SUPPORT_BUDGETS
+        or not isinstance(row["method"], str)
+        or not isinstance(row["balanced_accuracy"], (int, float))
+        or not math.isfinite(float(row["balanced_accuracy"]))
+        or not 0.0 <= float(row["balanced_accuracy"]) <= 1.0
+        or row["gate_enabled"] not in {None, True, False}
+        or type(row["exact_fallback"]) is not bool
+        or type(row["support_depth"]) is not int
+        or type(row["comparable_context_pair_count"]) is not int
+    ):
+        raise ValueError(f"Participant metric row {index} contains invalid frozen values.")
+    for digest_name in ("prediction_sha256", "producer_sha256"):
+        if not isinstance(row[digest_name], str) or not _SHA256_RE.fullmatch(row[digest_name]):
+            raise ValueError(f"Participant metric row {index} has invalid {digest_name}.")
+    prequential = row["prequential"]
+    if prequential is not None:
+        if not isinstance(prequential, Mapping):
+            raise TypeError("Prequential metric evidence must be a mapping or null.")
+        _require_exact_keys(
+            dict(prequential), _PREQUENTIAL_FIELDS, f"participant metric prequential {index}"
+        )
+        if not isinstance(prequential["fold_provenance"], list):
+            raise TypeError("Prequential fold provenance must be a list.")
+        for fold_index, fold in enumerate(prequential["fold_provenance"]):
+            if not isinstance(fold, Mapping):
+                raise TypeError("Prequential fold provenance entries must be mappings.")
+            _require_exact_keys(
+                dict(fold),
+                _FOLD_PROVENANCE_FIELDS,
+                f"participant metric fold {index}:{fold_index}",
+            )
+
+
+def _validate_complete_metric_grid(rows: Any) -> list[Mapping[str, Any]]:
+    if not isinstance(rows, list) or len(rows) != 5888:
+        raise ValueError("Development result must contain exactly 5888 participant metric rows.")
+    grid = _expected_method_grid()
+    observed: dict[tuple[str, int], set[tuple[str, int]]] = {}
+    cells: set[tuple[str, int, str, int]] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, Mapping):
+            raise TypeError("Every participant metric row must be a mapping.")
+        _validate_metric_row_schema(row, index)
+        family = str(row["family"])
+        participant = int(row["participant_index"])
+        cell = (family, participant, str(row["method"]), int(row["budget"]))
+        if cell in cells:
+            raise ValueError("Development participant metric grid contains a duplicate cell.")
+        cells.add(cell)
+        observed.setdefault((family, participant), set()).add((cell[2], cell[3]))
+    if set(observed) != {
+        (family, participant) for family in FAMILY_NAMES for participant in range(64)
+    }:
+        raise ValueError("Development participant IDs must be exact zero through 63 per family.")
+    for (family, _participant), method_budget in observed.items():
+        if method_budget != grid[family]:
+            raise ValueError("Development family/method/budget grid is incomplete or extra.")
+    return rows
+
+
+def _validate_contrast_schema(contrasts: Any) -> list[Mapping[str, Any]]:
+    if not isinstance(contrasts, list) or len(contrasts) != 19:
+        raise ValueError("Development result must contain exactly 19 primary contrasts.")
+    names: set[str] = set()
+    for index, item in enumerate(contrasts):
+        if not isinstance(item, Mapping):
+            raise TypeError("Every primary contrast must be a mapping.")
+        _require_exact_keys(dict(item), _CONTRAST_FIELDS, f"primary contrast {index}")
+        name = item["contrast"]
+        if not isinstance(name, str) or name in names:
+            raise ValueError("Primary contrast IDs must be unique strings.")
+        names.add(name)
+        if item["n_participants"] != 64 or not isinstance(item["participant_deltas"], list):
+            raise ValueError("Every primary contrast must contain 64 participant deltas.")
+        deltas = np.asarray(item["participant_deltas"], dtype=np.float64)
+        if deltas.shape != (64,) or not np.isfinite(deltas).all():
+            raise ValueError("Every primary contrast must contain 64 finite participant deltas.")
+        harm = item["severe_harm"]
+        sensitivity = item["sensitivity_only"]
+        if not isinstance(harm, Mapping) or not isinstance(sensitivity, Mapping):
+            raise TypeError("Contrast harm and sensitivity evidence must be mappings.")
+        _require_exact_keys(dict(harm), _SEVERE_HARM_FIELDS, f"contrast harm {index}")
+        _require_exact_keys(dict(sensitivity), _SENSITIVITY_FIELDS, f"sensitivity {index}")
+        sign_flip = sensitivity["sign_flip"]
+        bootstrap = sensitivity["participant_bootstrap"]
+        if not isinstance(sign_flip, Mapping) or set(sign_flip) != {
+            "draws",
+            "one_sided_p_greater_than_zero",
+        }:
+            raise ValueError("Sign-flip sensitivity schema is not exact.")
+        if not isinstance(bootstrap, Mapping) or set(bootstrap) != {
+            "draws",
+            "two_sided_95_percent_interval",
+        }:
+            raise ValueError("Bootstrap sensitivity schema is not exact.")
+    return contrasts
+
+
+def _validate_promotion_schema(promotion: Any) -> Mapping[str, Any]:
+    if not isinstance(promotion, Mapping):
+        raise TypeError("Development promotion result must be a mapping.")
+    _require_exact_keys(
+        dict(promotion),
+        {
+            "evaluated",
+            "helpful_families",
+            "B3_pairing_mechanism",
+            "null_noninferiority",
+            "adversarial_prequential_abstention",
+            "severe_harm",
+            "all_requirements_passed",
+        },
+        "development promotion",
+    )
+    if promotion["evaluated"] is not True or type(promotion["all_requirements_passed"]) is not bool:
+        raise ValueError("Complete development promotion must be evaluated exactly once.")
+    expected_nested = {
+        "helpful_families": {"details", "passed_count", "required_count", "passed"},
+        "B3_pairing_mechanism": {"contrast", "observed_minimum_gain", "passed"},
+        "null_noninferiority": {"N1", "N4", "passed"},
+        "adversarial_prequential_abstention": {
+            "abstentions",
+            "denominator",
+            "rate",
+            "minimum_rate",
+            "passed",
+        },
+        "severe_harm": {
+            "contrast_ids",
+            "all_declared_safety_contrasts_exact_upper_rate_below_0.10",
+            "passed",
+        },
+    }
+    for name, keys in expected_nested.items():
+        value = promotion[name]
+        if not isinstance(value, Mapping):
+            raise TypeError(f"Promotion {name} must be a mapping.")
+        _require_exact_keys(dict(value), keys, f"promotion {name}")
+    helpful = promotion["helpful_families"]["details"]
+    if not isinstance(helpful, Mapping) or set(helpful) != {"B1", "B2", "B3"}:
+        raise ValueError("Helpful-family promotion details are not exact.")
+    for name, value in helpful.items():
+        if not isinstance(value, Mapping) or set(value) != {"contrast", "passed"}:
+            raise ValueError(f"Helpful-family detail {name} schema is not exact.")
+    nulls = promotion["null_noninferiority"]
+    for name in ("N1", "N4"):
+        if not isinstance(nulls[name], Mapping) or set(nulls[name]) != {"contrasts", "passed"}:
+            raise ValueError(f"Null-noninferiority detail {name} schema is not exact.")
+    return promotion
+
+
+def validate_development_result(
+    result: Mapping[str, Any],
     *,
     contract: SyntheticContract,
     identity: GitIdentity,
-    permit_pending: bool,
+    environment: Mapping[str, Any],
+    preparation_receipt_sha256: str,
 ) -> dict[str, Any]:
-    if path is None:
-        if not permit_pending:
-            raise ValueError("Lockbox authorization requires a recorded development result.")
-        return {
-            "schema": SYNTHETIC_DEVELOPMENT_EVIDENCE_SCHEMA,
-            "status": "pending",
-            "path": None,
-            "file_sha256": None,
-            "result_sha256": None,
-            "plan_sha256": contract.plan_sha256,
-            "filterbank_sha256": contract.filterbank_sha256,
-            "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-            "root_seed": DEVELOPMENT_ROOT_SEED,
-            "participants_per_family": 64,
-            "families": list(FAMILY_NAMES),
+    """Reject anything short of the complete frozen development outcome."""
+
+    observed = dict(result)
+    _require_exact_keys(observed, _DEVELOPMENT_RESULT_FIELDS, "development result")
+    claimed_hash = observed.pop("result_sha256")
+    if not isinstance(claimed_hash, str) or claimed_hash != _canonical_json_sha256(observed):
+        raise ValueError("Synthetic development result self-hash is invalid.")
+    expected_assertions = {name: True for name in contract.plan["hard_assertions_before_efficacy"]}
+    if (
+        observed["schema"] != SYNTHETIC_RESULT_SCHEMA
+        or observed["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or observed["phase"] != "development"
+        or observed["status"] != "engineering_only"
+        or observed["human_claim_boundary"] != "synthetic_pass_is_necessary_but_never_sufficient"
+        or observed["plan_sha256"] != contract.plan_sha256
+        or observed["filterbank_sha256"] != contract.filterbank_sha256
+        or observed["diagnostic_operator_configs_sha256"]
+        != contract.diagnostic_operator_configs_sha256
+        or observed["root_seed"] != DEVELOPMENT_ROOT_SEED
+        or observed["participants_per_family"] != 64
+        or observed["families"] != list(FAMILY_NAMES)
+        or observed["support_budgets"] != list(SUPPORT_BUDGETS)
+        or observed["query_blocks"] != list(contract.plan["population"]["immutable_query_blocks"])
+        or observed["hard_assertions_completed_before_metrics"] is not True
+        or observed["hard_assertions"] != expected_assertions
+        or observed["development_outputs_are_engineering_only"] is not True
+        or observed["lockbox_terminal"] is not False
+        or observed["generator_commit"] != identity.commit
+        or observed["generator_tree"] != identity.tree
+        or observed["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or observed["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or observed["environment"] != dict(environment)
+        or observed["preparation_receipt_sha256"] != preparation_receipt_sha256
+        or observed["rng"]
+        != {
+            "bit_generator": "numpy.random.PCG64DXSM",
+            "construction": "numpy.random.SeedSequence",
+            "complete_key_order": list(contract.plan["rng"]["key_order"]),
+        }
+    ):
+        raise ValueError("Synthetic development result binding or hard assertions are not exact.")
+
+    metric_rows = _validate_complete_metric_grid(observed["participant_metrics"])
+    contrasts = _validate_contrast_schema(observed["primary_contrasts"])
+    promotion = _validate_promotion_schema(observed["promotion"])
+    metrics = contract.plan["metrics"]["sensitivity_only"]
+    context = _governed_seed_context(
+        contract,
+        phase="development-validation",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+    )
+    recomputed_contrasts, recomputed_promotion = summarize_synthetic_metrics(
+        metric_rows,
+        contract=contract,
+        root_seed=DEVELOPMENT_ROOT_SEED,
+        families=FAMILY_NAMES,
+        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
+        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
+        _governed_context=context,
+    )
+    if _canonical_json_bytes({"value": contrasts}) != _canonical_json_bytes(
+        {"value": recomputed_contrasts}
+    ) or _canonical_json_bytes({"value": promotion}) != _canonical_json_bytes(
+        {"value": recomputed_promotion}
+    ):
+        raise ValueError("Development contrasts/promotion do not canonically recompute from rows.")
+    observed["result_sha256"] = claimed_hash
+    return observed
+
+
+def _development_evidence(
+    *,
+    contract: SyntheticContract,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+    preparation_receipt_sha256: str,
+) -> dict[str, Any]:
+    path = canonical_execution_path(contract, "development_result")
+    _readonly_receipt_file(path, "synthetic development result")
+    result = load_json_object(path, name="synthetic development result")
+    validated = validate_development_result(
+        result,
+        contract=contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation_receipt_sha256,
+    )
+    return {
+        "schema": SYNTHETIC_DEVELOPMENT_EVIDENCE_SCHEMA,
+        "status": "recorded_complete_engineering_only",
+        "path": str(path),
+        "file_sha256": _sha256_file(path),
+        "result_sha256": validated["result_sha256"],
+    }
+
+
+def run_development(
+    contract: SyntheticContract,
+    *,
+    _governed_context: _GovernedSeedContext | None = None,
+) -> dict[str, Any]:
+    """Execute development only when the governed artifact entry point authorizes it."""
+
+    _require_seed_access(contract, DEVELOPMENT_ROOT_SEED, _governed_context)
+    if _governed_context is None or _governed_context.phase != "development":
+        raise ValueError("Development requires its exact internal governed phase context.")
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    metrics = contract.plan["metrics"]["sensitivity_only"]
+    return _execute_synthetic(
+        contract,
+        phase="development",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+        participants_per_family=64,
+        families=FAMILY_NAMES,
+        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
+        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
+        fbcca_producer=produce_strict_fbcca,
+        governed_context=_governed_context,
+    )
+
+
+def run_development_to_path(
+    contract: SyntheticContract,
+    *,
+    output_path: str | Path,
+) -> Path:
+    target = _require_canonical_path(contract, "development_result", output_path)
+    _validated_unused_output_path(target)
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    preparation, _ = _validate_preparation_receipt(
+        contract,
+        identity=identity,
+        environment=environment,
+    )
+    context = _governed_seed_context(
+        contract,
+        phase="development",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+    )
+    result = run_development(contract, _governed_context=context)
+    result.pop("result_sha256")
+    result.update(
+        {
             "generator_commit": identity.commit,
             "generator_tree": identity.tree,
             "generator_source_bundle_sha256": identity.source_bundle_sha256,
+            "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+            "environment": environment,
+            "preparation_receipt_sha256": preparation["completion_receipt_sha256"],
         }
-    source = _regular_nonsymlink_file(path, "synthetic development result").resolve()
-    result = load_json_object(source, name="synthetic development result")
-    result_sha = result.get("result_sha256")
-    unsigned = dict(result)
-    unsigned.pop("result_sha256", None)
-    if not isinstance(result_sha, str) or result_sha != _canonical_json_sha256(unsigned):
-        raise ValueError("Synthetic development result self-hash is invalid.")
-    if (
-        result.get("schema") != SYNTHETIC_RESULT_SCHEMA
-        or result.get("phase") != "development"
-        or result.get("status") != "engineering_only"
-        or result.get("plan_sha256") != contract.plan_sha256
-        or result.get("filterbank_sha256") != contract.filterbank_sha256
-        or result.get("diagnostic_operator_configs_sha256")
-        != contract.diagnostic_operator_configs_sha256
-        or result.get("root_seed") != DEVELOPMENT_ROOT_SEED
-        or result.get("participants_per_family") != 64
-        or result.get("families") != list(FAMILY_NAMES)
-        or result.get("generator_commit") != identity.commit
-        or result.get("generator_tree") != identity.tree
-        or result.get("generator_source_bundle_sha256") != identity.source_bundle_sha256
-    ):
-        raise ValueError("Synthetic development result is incomplete, stale, or not frozen.")
-    return {
-        "schema": SYNTHETIC_DEVELOPMENT_EVIDENCE_SCHEMA,
-        "status": "recorded_engineering_only",
-        "path": str(source),
-        "file_sha256": _sha256_file(source),
-        "result_sha256": result_sha,
+    )
+    result["result_sha256"] = _canonical_json_sha256(result)
+    return write_json_exclusive(target, result)
+
+
+_TEST_EVIDENCE_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "plan_sha256",
+    "argv",
+    "working_directory",
+    "scope",
+    "exit_code",
+    "stdout_path",
+    "stdout_sha256",
+    "stderr_path",
+    "stderr_sha256",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "git_worktree_clean",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "preparation_receipt_sha256",
+    "development_result_sha256",
+    "test_evidence_sha256",
+}
+
+
+def _test_transcript_paths(receipt_path: Path) -> tuple[Path, Path]:
+    return (
+        receipt_path.with_name(receipt_path.name + ".stdout.txt"),
+        receipt_path.with_name(receipt_path.name + ".stderr.txt"),
+    )
+
+
+def run_full_suite_test_evidence(
+    contract: SyntheticContract,
+    *,
+    output_path: str | Path,
+    _runner: Any = subprocess.run,
+) -> Path:
+    """Run the actual complete suite; unit tests inject a subprocess double."""
+
+    target = _require_canonical_path(contract, "full_suite_test_evidence", output_path)
+    _validated_unused_output_path(target)
+    stdout_path, stderr_path = _test_transcript_paths(target)
+    _validated_unused_output_path(stdout_path)
+    _validated_unused_output_path(stderr_path)
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    preparation, _ = _validate_preparation_receipt(
+        contract,
+        identity=identity,
+        environment=environment,
+    )
+    development = _development_evidence(
+        contract=contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+    )
+    argv = [os.path.realpath(sys.executable), "-m", "pytest", "-q"]
+    completed = _runner(
+        argv,
+        cwd=_REPOSITORY,
+        check=False,
+        capture_output=True,
+    )
+    stdout = (
+        completed.stdout.encode("utf-8")
+        if isinstance(completed.stdout, str)
+        else bytes(completed.stdout)
+    )
+    stderr = (
+        completed.stderr.encode("utf-8")
+        if isinstance(completed.stderr, str)
+        else bytes(completed.stderr)
+    )
+    after_identity = current_git_identity()
+    after_environment = _validate_environment_receipt(current_environment_receipt())
+    if after_identity != identity or after_environment != environment:
+        raise ValueError("Full-suite execution changed the clean source or numerical environment.")
+    _write_bytes_exclusive(stdout_path, stdout)
+    _write_bytes_exclusive(stderr_path, stderr)
+    receipt: dict[str, Any] = {
+        "schema": SYNTHETIC_TEST_EVIDENCE_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "test-evidence",
+        "status": "passed" if completed.returncode == 0 else "failed",
         "plan_sha256": contract.plan_sha256,
-        "filterbank_sha256": contract.filterbank_sha256,
-        "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-        "root_seed": DEVELOPMENT_ROOT_SEED,
-        "participants_per_family": 64,
-        "families": list(FAMILY_NAMES),
-        "generator_commit": identity.commit,
-        "generator_tree": identity.tree,
-        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "argv": argv,
+        "working_directory": str(_REPOSITORY),
+        "scope": "complete_repository_test_suite",
+        "exit_code": int(completed.returncode),
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": _sha256_bytes(stdout),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": _sha256_bytes(stderr),
+        **_identity_mapping(identity),
+        "environment": environment,
+        "preparation_receipt_sha256": preparation["completion_receipt_sha256"],
+        "development_result_sha256": development["result_sha256"],
     }
+    receipt["test_evidence_sha256"] = _canonical_json_sha256(receipt)
+    return write_json_exclusive(target, receipt)
+
+
+def _validate_test_evidence(
+    contract: SyntheticContract,
+    *,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+    preparation_receipt_sha256: str,
+    development_result_sha256: str,
+) -> dict[str, Any]:
+    path = canonical_execution_path(contract, "full_suite_test_evidence")
+    _readonly_receipt_file(path, "synthetic full-suite test evidence")
+    receipt = load_json_object(path, name="synthetic full-suite test evidence")
+    _require_exact_keys(receipt, _TEST_EVIDENCE_FIELDS, "full-suite test evidence")
+    claimed = receipt.pop("test_evidence_sha256")
+    if claimed != _canonical_json_sha256(receipt):
+        raise ValueError("Full-suite test evidence self-hash mismatch.")
+    stdout_path, stderr_path = _test_transcript_paths(path)
+    stdout = _readonly_receipt_file(stdout_path, "captured pytest stdout")
+    stderr = _readonly_receipt_file(stderr_path, "captured pytest stderr")
+    expected = {
+        "schema": SYNTHETIC_TEST_EVIDENCE_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "test-evidence",
+        "status": "passed",
+        "plan_sha256": contract.plan_sha256,
+        "argv": [os.path.realpath(sys.executable), "-m", "pytest", "-q"],
+        "working_directory": str(_REPOSITORY),
+        "scope": "complete_repository_test_suite",
+        "exit_code": 0,
+        "stdout_path": str(stdout_path),
+        "stdout_sha256": _sha256_file(stdout),
+        "stderr_path": str(stderr_path),
+        "stderr_sha256": _sha256_file(stderr),
+        **_identity_mapping(identity),
+        "environment": dict(environment),
+        "preparation_receipt_sha256": preparation_receipt_sha256,
+        "development_result_sha256": development_result_sha256,
+    }
+    if receipt != expected:
+        raise ValueError("Full-suite test evidence is failed, forged, stale, or noncanonical.")
+    receipt["test_evidence_sha256"] = claimed
+    return receipt
+
+
+_BEACON_RECEIPT_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "plan_sha256",
+    "provider",
+    "endpoint",
+    "target_timestamp_utc",
+    "fetched_at_utc",
+    "statement_utf8",
+    "statement_sha256",
+    "pulse_timestamp",
+    "pulse_uri",
+    "pulse_version",
+    "pulse_period_milliseconds",
+    "pulse_cipher_suite",
+    "certificate_id",
+    "chain_index",
+    "pulse_index",
+    "local_random_value",
+    "precommitment_value",
+    "pulse_status_code",
+    "signature_value",
+    "output_value",
+    "output_value_raw_sha256",
+    "full_response_utf8",
+    "full_response_sha256",
+    "derived_seed_sha256",
+    "root_seed_formula",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "git_worktree_clean",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "preparation_receipt_sha256",
+    "development_result_sha256",
+    "test_evidence_sha256",
+    "beacon_receipt_sha256",
+}
+
+
+def _target_datetime(contract: SyntheticContract) -> datetime:
+    text = contract.plan["rng"]["independent_lockbox_root_seed"]["target_timestamp_utc"]
+    return datetime.fromisoformat(str(text).replace("Z", "+00:00"))
+
+
+def _extract_beacon_pulse(full_response: Mapping[str, Any]) -> Mapping[str, Any]:
+    if set(full_response) != {"pulse"} or not isinstance(full_response["pulse"], Mapping):
+        raise ValueError("NIST beacon response must have the exact top-level pulse field.")
+    pulse = full_response["pulse"]
+    if "timeStamp" not in pulse or "outputValue" not in pulse:
+        raise ValueError("NIST beacon pulse lacks exact timeStamp/outputValue fields.")
+    required = {
+        "uri",
+        "version",
+        "cipherSuite",
+        "period",
+        "certificateId",
+        "chainIndex",
+        "pulseIndex",
+        "timeStamp",
+        "localRandomValue",
+        "precommitmentValue",
+        "statusCode",
+        "signatureValue",
+        "outputValue",
+    }
+    if not required <= set(pulse):
+        raise ValueError("NIST beacon pulse lacks required exact v2 core fields.")
+    chain_index = pulse["chainIndex"]
+    pulse_index = pulse["pulseIndex"]
+    if (
+        pulse["version"] != "2.0"
+        or pulse["period"] != 60000
+        or pulse["statusCode"] != 0
+        or type(pulse["cipherSuite"]) is not int
+        or type(chain_index) is not int
+        or chain_index <= 0
+        or type(pulse_index) is not int
+        or pulse_index <= 0
+    ):
+        raise ValueError("NIST pulse version/period/status/index fields are invalid.")
+    expected_uri = f"https://beacon.nist.gov/beacon/2.0/chain/{chain_index}/pulse/{pulse_index}"
+    if pulse["uri"] != expected_uri:
+        raise ValueError("NIST pulse URI does not exactly bind its chain and pulse indices.")
+    for name in (
+        "certificateId",
+        "localRandomValue",
+        "precommitmentValue",
+        "outputValue",
+    ):
+        if not isinstance(pulse[name], str) or not _UPPER_HEX_128_RE.fullmatch(pulse[name]):
+            raise ValueError(f"NIST pulse {name} must be exact uppercase 128-hex.")
+    signature = pulse["signatureValue"]
+    if (
+        not isinstance(signature, str)
+        or not signature
+        or len(signature) % 2
+        or re.fullmatch(r"[0-9A-F]+", signature) is None
+    ):
+        raise ValueError("NIST pulse signatureValue must be nonempty uppercase hexadecimal.")
+    return pulse
+
+
+def _derive_seed_material(
+    contract: SyntheticContract,
+    *,
+    pulse_timestamp: Any,
+    output_value: Any,
+) -> tuple[int, str, str]:
+    beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
+    if pulse_timestamp != beacon["required_exact_pulse_timestamp"]:
+        raise ValueError("NIST pulse timestamp does not equal the precommitted target.")
+    if not isinstance(output_value, str) or not _UPPER_HEX_128_RE.fullmatch(output_value):
+        raise ValueError("NIST outputValue must be exactly 128 uppercase hexadecimal characters.")
+    statement = str(beacon["statement_utf8"])
+    if _sha256_bytes(statement.encode("utf-8")) != beacon["statement_sha256"]:
+        raise ValueError("Frozen NIST derivation statement hash mismatch.")
+    raw_output = bytes.fromhex(output_value)
+    if len(raw_output) != 64:
+        raise ValueError("NIST outputValue must decode to exactly 64 bytes.")
+    digest = hashlib.sha256(statement.encode("utf-8") + b"\n" + raw_output).digest()
+    return (
+        int.from_bytes(digest, byteorder="big", signed=False),
+        digest.hex(),
+        _sha256_bytes(raw_output),
+    )
+
+
+def _derive_lockbox_seed_from_beacon_receipt(
+    contract: SyntheticContract,
+    receipt_path: str | Path,
+) -> int:
+    path = _require_canonical_path(contract, "beacon_receipt", receipt_path)
+    _readonly_receipt_file(path, "canonical NIST beacon receipt")
+    receipt = load_json_object(path, name="canonical NIST beacon receipt")
+    _require_exact_keys(receipt, _BEACON_RECEIPT_FIELDS, "NIST beacon receipt")
+    claimed = receipt.pop("beacon_receipt_sha256")
+    if not isinstance(claimed, str) or claimed != _canonical_json_sha256(receipt):
+        raise ValueError("NIST beacon receipt self-hash mismatch.")
+    raw_response = receipt["full_response_utf8"]
+    if (
+        not isinstance(raw_response, str)
+        or _sha256_bytes(raw_response.encode("utf-8")) != receipt["full_response_sha256"]
+    ):
+        raise ValueError("NIST full response hash mismatch.")
+    decoded = json.loads(raw_response)
+    if not isinstance(decoded, Mapping):
+        raise TypeError("NIST full response must decode to one object.")
+    pulse = _extract_beacon_pulse(decoded)
+    if (
+        pulse["timeStamp"] != receipt["pulse_timestamp"]
+        or pulse["outputValue"] != receipt["output_value"]
+        or pulse["uri"] != receipt["pulse_uri"]
+        or pulse["version"] != receipt["pulse_version"]
+        or pulse["period"] != receipt["pulse_period_milliseconds"]
+        or pulse["cipherSuite"] != receipt["pulse_cipher_suite"]
+        or pulse["certificateId"] != receipt["certificate_id"]
+        or pulse["chainIndex"] != receipt["chain_index"]
+        or pulse["pulseIndex"] != receipt["pulse_index"]
+        or pulse["localRandomValue"] != receipt["local_random_value"]
+        or pulse["precommitmentValue"] != receipt["precommitment_value"]
+        or pulse["statusCode"] != receipt["pulse_status_code"]
+        or pulse["signatureValue"] != receipt["signature_value"]
+    ):
+        raise ValueError("NIST receipt pulse fields differ from its full response.")
+    root_seed, digest, raw_sha = _derive_seed_material(
+        contract,
+        pulse_timestamp=pulse["timeStamp"],
+        output_value=pulse["outputValue"],
+    )
+    beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
+    fetched_at = receipt["fetched_at_utc"]
+    if not isinstance(fetched_at, str) or datetime.fromisoformat(
+        fetched_at.replace("Z", "+00:00")
+    ) < _target_datetime(contract):
+        raise ValueError("NIST beacon receipt claims retrieval before the frozen target.")
+    if (
+        receipt["schema"] != SYNTHETIC_BEACON_RECEIPT_SCHEMA
+        or receipt["candidate_id"] != "metadata-calibration-efficiency-v2"
+        or receipt["phase"] != "fetch-beacon"
+        or receipt["status"] != "exact_future_pulse_recorded"
+        or receipt["plan_sha256"] != contract.plan_sha256
+        or receipt["provider"] != beacon["provider"]
+        or receipt["endpoint"] != beacon["exact_endpoint"]
+        or receipt["target_timestamp_utc"] != beacon["target_timestamp_utc"]
+        or receipt["statement_utf8"] != beacon["statement_utf8"]
+        or receipt["statement_sha256"] != beacon["statement_sha256"]
+        or receipt["output_value_raw_sha256"] != raw_sha
+        or receipt["derived_seed_sha256"] != digest
+        or receipt["root_seed_formula"] != beacon["root_seed_formula"]
+    ):
+        raise ValueError("NIST beacon receipt is not the exact frozen derivation.")
+    return root_seed
+
+
+def fetch_nist_beacon_receipt(
+    contract: SyntheticContract,
+    *,
+    output_path: str | Path,
+    now: datetime | None = None,
+    _opener: Any = urllib.request.urlopen,
+) -> Path:
+    target = _require_canonical_path(contract, "beacon_receipt", output_path)
+    _validated_unused_output_path(target)
+    observed_now = datetime.now(timezone.utc) if now is None else now
+    if observed_now.tzinfo is None:
+        raise ValueError("Beacon retrieval time must be timezone-aware.")
+    observed_now = observed_now.astimezone(timezone.utc)
+    if observed_now < _target_datetime(contract):
+        raise ValueError("The exact NIST pulse cannot be fetched before its target timestamp.")
+
+    identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
+    preparation, _ = _validate_preparation_receipt(
+        contract,
+        identity=identity,
+        environment=environment,
+    )
+    development = _development_evidence(
+        contract=contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+    )
+    tests = _validate_test_evidence(
+        contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+        development_result_sha256=development["result_sha256"],
+    )
+    beacon = contract.plan["rng"]["independent_lockbox_root_seed"]
+    endpoint = str(beacon["exact_endpoint"])
+    if not endpoint.startswith("https://beacon.nist.gov/"):
+        raise ValueError("Frozen beacon endpoint must use exact NIST HTTPS host.")
+    request = urllib.request.Request(endpoint, headers={"Accept": "application/json"})
+    response = _opener(request, timeout=30)
+    try:
+        response_url = response.geturl() if hasattr(response, "geturl") else endpoint
+        status_code = getattr(response, "status", 200)
+        response_bytes = response.read()
+    finally:
+        close = getattr(response, "close", None)
+        if callable(close):
+            close()
+    if response_url != endpoint or status_code != 200:
+        raise ValueError("NIST beacon retrieval redirected or did not return HTTP 200.")
+    try:
+        response_text = response_bytes.decode("utf-8")
+        decoded = json.loads(response_text)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("NIST beacon response is not valid UTF-8 JSON.") from error
+    if not isinstance(decoded, Mapping):
+        raise TypeError("NIST beacon response must decode to one mapping.")
+    pulse = _extract_beacon_pulse(decoded)
+    root_seed, derived_digest, raw_sha = _derive_seed_material(
+        contract,
+        pulse_timestamp=pulse["timeStamp"],
+        output_value=pulse["outputValue"],
+    )
+    _DYNAMIC_RESERVED_SEEDS.add(root_seed)
+    receipt: dict[str, Any] = {
+        "schema": SYNTHETIC_BEACON_RECEIPT_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "fetch-beacon",
+        "status": "exact_future_pulse_recorded",
+        "plan_sha256": contract.plan_sha256,
+        "provider": beacon["provider"],
+        "endpoint": endpoint,
+        "target_timestamp_utc": beacon["target_timestamp_utc"],
+        "fetched_at_utc": observed_now.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "statement_utf8": beacon["statement_utf8"],
+        "statement_sha256": beacon["statement_sha256"],
+        "pulse_timestamp": pulse["timeStamp"],
+        "pulse_uri": pulse["uri"],
+        "pulse_version": pulse["version"],
+        "pulse_period_milliseconds": pulse["period"],
+        "pulse_cipher_suite": pulse["cipherSuite"],
+        "certificate_id": pulse["certificateId"],
+        "chain_index": pulse["chainIndex"],
+        "pulse_index": pulse["pulseIndex"],
+        "local_random_value": pulse["localRandomValue"],
+        "precommitment_value": pulse["precommitmentValue"],
+        "pulse_status_code": pulse["statusCode"],
+        "signature_value": pulse["signatureValue"],
+        "output_value": pulse["outputValue"],
+        "output_value_raw_sha256": raw_sha,
+        "full_response_utf8": response_text,
+        "full_response_sha256": _sha256_bytes(response_bytes),
+        "derived_seed_sha256": derived_digest,
+        "root_seed_formula": beacon["root_seed_formula"],
+        **_identity_mapping(identity),
+        "environment": environment,
+        "preparation_receipt_sha256": preparation["completion_receipt_sha256"],
+        "development_result_sha256": development["result_sha256"],
+        "test_evidence_sha256": tests["test_evidence_sha256"],
+    }
+    receipt["beacon_receipt_sha256"] = _canonical_json_sha256(receipt)
+    return write_json_exclusive(target, receipt)
+
+
+def _validate_beacon_evidence(
+    contract: SyntheticContract,
+    *,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+    preparation_receipt_sha256: str,
+    development_result_sha256: str,
+    test_evidence_sha256: str,
+) -> tuple[dict[str, Any], int]:
+    path = canonical_execution_path(contract, "beacon_receipt")
+    root_seed = _derive_lockbox_seed_from_beacon_receipt(contract, path)
+    receipt = load_json_object(path, name="canonical NIST beacon receipt")
+    if (
+        receipt["generator_commit"] != identity.commit
+        or receipt["generator_tree"] != identity.tree
+        or receipt["generator_source_bundle_sha256"] != identity.source_bundle_sha256
+        or receipt["generator_commit_timestamp_utc"] != identity.commit_timestamp_utc
+        or receipt["git_worktree_clean"] is not True
+        or receipt["environment"] != dict(environment)
+        or receipt["preparation_receipt_sha256"] != preparation_receipt_sha256
+        or receipt["development_result_sha256"] != development_result_sha256
+        or receipt["test_evidence_sha256"] != test_evidence_sha256
+    ):
+        raise ValueError("NIST beacon receipt source/environment/evidence binding drifted.")
+    _DYNAMIC_RESERVED_SEEDS.add(root_seed)
+    return receipt, root_seed
+
+
+_EVIDENCE_REFERENCE_FIELDS = {"path", "file_sha256", "receipt_sha256"}
+_AUTHORIZATION_FIELDS = {
+    "schema",
+    "candidate_id",
+    "phase",
+    "status",
+    "authorized",
+    "authorized_by",
+    "authorization_basis",
+    "plan_sha256",
+    "filterbank_sha256",
+    "diagnostic_operator_configs_sha256",
+    "generator_commit",
+    "generator_tree",
+    "generator_source_bundle_sha256",
+    "git_worktree_clean",
+    "generator_commit_timestamp_utc",
+    "environment",
+    "preparation_evidence",
+    "development_evidence",
+    "test_evidence",
+    "beacon_evidence",
+    "derived_seed_sha256",
+    "unused_one_time_output",
+    "one_time_nonce_sha256",
+    "authorization_receipt_sha256",
+}
+_OUTPUT_BINDING_FIELDS = {
+    "path",
+    "seed_global_claim_path",
+    "observed_output_absent",
+    "observed_global_claim_absent",
+    "never_overwrite",
+}
+
+
+def _evidence_reference(path: Path, receipt_sha256: str) -> dict[str, str]:
+    return {
+        "path": str(path),
+        "file_sha256": _sha256_file(path),
+        "receipt_sha256": receipt_sha256,
+    }
+
+
+def _authorization_evidence(
+    contract: SyntheticContract,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+) -> tuple[dict[str, dict[str, str]], str]:
+    preparation, preparation_path = _validate_preparation_receipt(
+        contract,
+        identity=identity,
+        environment=environment,
+    )
+    development = _development_evidence(
+        contract=contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+    )
+    tests = _validate_test_evidence(
+        contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+        development_result_sha256=development["result_sha256"],
+    )
+    beacon, _root_seed = _validate_beacon_evidence(
+        contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=preparation["completion_receipt_sha256"],
+        development_result_sha256=development["result_sha256"],
+        test_evidence_sha256=tests["test_evidence_sha256"],
+    )
+    references = {
+        "preparation_evidence": _evidence_reference(
+            preparation_path, preparation["completion_receipt_sha256"]
+        ),
+        "development_evidence": _evidence_reference(
+            canonical_execution_path(contract, "development_result"),
+            development["result_sha256"],
+        ),
+        "test_evidence": _evidence_reference(
+            canonical_execution_path(contract, "full_suite_test_evidence"),
+            tests["test_evidence_sha256"],
+        ),
+        "beacon_evidence": _evidence_reference(
+            canonical_execution_path(contract, "beacon_receipt"),
+            beacon["beacon_receipt_sha256"],
+        ),
+    }
+    return references, str(beacon["derived_seed_sha256"])
 
 
 def build_lockbox_authorization_template(
     contract: SyntheticContract,
     *,
     output_path: str | Path,
-    development_result_path: str | Path | None = None,
     identity: GitIdentity | None = None,
+    environment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a non-authorizing template that a separate decision must complete."""
+    """Build a non-authorizing record from separately verified evidence artifacts."""
 
+    target = _require_canonical_path(contract, "lockbox_result", output_path)
+    _validated_unused_output_path(target)
+    claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    _validated_unused_output_path(claim_path)
     resolved_identity = current_git_identity() if identity is None else identity
-    target = _validated_unused_output_path(output_path)
-    claim = _claim_path(target)
-    source_hashes = _source_hashes()
-    development_evidence = _development_evidence(
-        development_result_path,
-        contract=contract,
-        identity=resolved_identity,
-        permit_pending=True,
+    _require_clean_identity(resolved_identity)
+    resolved_environment = _validate_environment_receipt(
+        current_environment_receipt() if environment is None else environment
+    )
+    references, derived_seed_sha256 = _authorization_evidence(
+        contract, resolved_identity, resolved_environment
     )
     record: dict[str, Any] = {
         "schema": SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA,
@@ -2269,24 +3735,15 @@ def build_lockbox_authorization_template(
         "plan_sha256": contract.plan_sha256,
         "filterbank_sha256": contract.filterbank_sha256,
         "diagnostic_operator_configs_sha256": contract.diagnostic_operator_configs_sha256,
-        "lockbox_root_seed": LOCKBOX_ROOT_SEED,
-        "generator_commit": resolved_identity.commit,
-        "generator_tree": resolved_identity.tree,
-        "generator_source_bundle_sha256": resolved_identity.source_bundle_sha256,
-        "test_evidence": {
-            "schema": "cfeg.metadata-calibration-v2-synthetic-test-evidence.v1",
-            "status": "pending",
-            "command": "python -m pytest -q tests/test_metadata_calibration_v2_synthetic.py",
-            "exit_code": None,
-            "generator_commit": resolved_identity.commit,
-            "source_sha256s": source_hashes,
-        },
-        "development_evidence": development_evidence,
+        **_identity_mapping(resolved_identity),
+        "environment": resolved_environment,
+        **references,
+        "derived_seed_sha256": derived_seed_sha256,
         "unused_one_time_output": {
             "path": str(target),
-            "claim_path": str(claim),
-            "observed_output_absent": not target.exists(),
-            "observed_claim_absent": not claim.exists(),
+            "seed_global_claim_path": str(claim_path),
+            "observed_output_absent": True,
+            "observed_global_claim_absent": True,
             "never_overwrite": True,
         },
         "one_time_nonce_sha256": None,
@@ -2295,62 +3752,8 @@ def build_lockbox_authorization_template(
     return record
 
 
-_AUTHORIZATION_FIELDS = {
-    "schema",
-    "candidate_id",
-    "phase",
-    "status",
-    "authorized",
-    "authorized_by",
-    "authorization_basis",
-    "plan_sha256",
-    "filterbank_sha256",
-    "diagnostic_operator_configs_sha256",
-    "lockbox_root_seed",
-    "generator_commit",
-    "generator_tree",
-    "generator_source_bundle_sha256",
-    "test_evidence",
-    "development_evidence",
-    "unused_one_time_output",
-    "one_time_nonce_sha256",
-    "authorization_receipt_sha256",
-}
-_TEST_EVIDENCE_FIELDS = {
-    "schema",
-    "status",
-    "command",
-    "exit_code",
-    "generator_commit",
-    "source_sha256s",
-}
-_OUTPUT_BINDING_FIELDS = {
-    "path",
-    "claim_path",
-    "observed_output_absent",
-    "observed_claim_absent",
-    "never_overwrite",
-}
-_DEVELOPMENT_EVIDENCE_FIELDS = {
-    "schema",
-    "status",
-    "path",
-    "file_sha256",
-    "result_sha256",
-    "plan_sha256",
-    "filterbank_sha256",
-    "diagnostic_operator_configs_sha256",
-    "root_seed",
-    "participants_per_family",
-    "families",
-    "generator_commit",
-    "generator_tree",
-    "generator_source_bundle_sha256",
-}
-
-
 def seal_authorization_record(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Recompute a record self-hash; this does not itself grant authorization."""
+    """Self-hash a separately authorized record; hashing alone grants no authority."""
 
     sealed = dict(record)
     sealed.pop("authorization_receipt_sha256", None)
@@ -2364,15 +3767,14 @@ def validate_lockbox_authorization(
     contract: SyntheticContract,
     output_path: str | Path,
     identity: GitIdentity | None = None,
+    environment: Mapping[str, Any] | None = None,
 ) -> str:
-    """Fail closed unless an exact, fresh, clean-tree one-time receipt is present."""
-
     record = dict(authorization)
     _require_exact_keys(record, _AUTHORIZATION_FIELDS, "lockbox authorization")
-    claimed_hash = record.pop("authorization_receipt_sha256")
-    if not isinstance(claimed_hash, str) or not _SHA256_RE.fullmatch(claimed_hash):
-        raise ValueError("Lockbox authorization self-hash must be lowercase SHA-256.")
-    if claimed_hash != _canonical_json_sha256(record):
+    claimed = record.pop("authorization_receipt_sha256")
+    if not isinstance(claimed, str) or not _SHA256_RE.fullmatch(claimed):
+        raise ValueError("Lockbox authorization requires a lowercase SHA-256 self-hash.")
+    if claimed != _canonical_json_sha256(record):
         raise ValueError("Lockbox authorization self-hash mismatch.")
     if (
         record["schema"] != SYNTHETIC_LOCKBOX_AUTHORIZATION_SCHEMA
@@ -2380,200 +3782,203 @@ def validate_lockbox_authorization(
         or record["phase"] != "lockbox"
         or record["status"] != "authorized_for_one_time_execution"
         or record["authorized"] is not True
-    ):
-        raise ValueError("Lockbox receipt does not explicitly authorize one-time execution.")
-    if not isinstance(record["authorized_by"], str) or not record["authorized_by"].strip():
-        raise ValueError("Lockbox receipt must name a separate authorizer.")
-    if (
-        not isinstance(record["authorization_basis"], str)
+        or not isinstance(record["authorized_by"], str)
+        or not record["authorized_by"].strip()
+        or not isinstance(record["authorization_basis"], str)
         or not record["authorization_basis"].strip()
-    ):
-        raise ValueError("Lockbox receipt must state a non-empty authorization basis.")
-    if (
-        record["plan_sha256"] != contract.plan_sha256
+        or not isinstance(record["one_time_nonce_sha256"], str)
+        or not _SHA256_RE.fullmatch(record["one_time_nonce_sha256"])
+        or record["plan_sha256"] != contract.plan_sha256
         or record["filterbank_sha256"] != contract.filterbank_sha256
         or record["diagnostic_operator_configs_sha256"]
         != contract.diagnostic_operator_configs_sha256
-        or record["lockbox_root_seed"] != LOCKBOX_ROOT_SEED
     ):
-        raise ValueError("Lockbox receipt differs from a frozen config/seed binding.")
-
+        raise ValueError("Lockbox record does not exactly authorize this one-time execution.")
     resolved_identity = current_git_identity() if identity is None else identity
-    if not resolved_identity.clean:
-        raise ValueError("Lockbox execution requires a clean git worktree.")
+    _require_clean_identity(resolved_identity)
+    resolved_environment = _validate_environment_receipt(
+        current_environment_receipt() if environment is None else environment
+    )
     if (
         record["generator_commit"] != resolved_identity.commit
         or record["generator_tree"] != resolved_identity.tree
         or record["generator_source_bundle_sha256"] != resolved_identity.source_bundle_sha256
+        or record["generator_commit_timestamp_utc"] != resolved_identity.commit_timestamp_utc
+        or record["git_worktree_clean"] is not True
+        or record["environment"] != resolved_environment
     ):
-        raise ValueError("Lockbox generator commit/tree/source binding drifted.")
-
-    evidence = record["test_evidence"]
-    if not isinstance(evidence, Mapping):
-        raise TypeError("Lockbox test evidence must be one mapping.")
-    evidence = dict(evidence)
-    _require_exact_keys(evidence, _TEST_EVIDENCE_FIELDS, "lockbox test evidence")
-    if (
-        evidence["schema"] != "cfeg.metadata-calibration-v2-synthetic-test-evidence.v1"
-        or evidence["status"] != "passed"
-        or evidence["exit_code"] != 0
-        or evidence["command"]
-        != "python -m pytest -q tests/test_metadata_calibration_v2_synthetic.py"
-        or evidence["generator_commit"] != resolved_identity.commit
-        or evidence["source_sha256s"] != _source_hashes()
-    ):
-        raise ValueError("Lockbox test evidence is missing, stale, or not exact.")
-
-    development_evidence = record["development_evidence"]
-    if not isinstance(development_evidence, Mapping):
-        raise TypeError("Lockbox development evidence must be one mapping.")
-    development_evidence = dict(development_evidence)
-    _require_exact_keys(
-        development_evidence,
-        _DEVELOPMENT_EVIDENCE_FIELDS,
-        "lockbox development evidence",
+        raise ValueError("Lockbox authorization source or environment binding drifted.")
+    references, seed_digest = _authorization_evidence(
+        contract, resolved_identity, resolved_environment
     )
-    observed_development = _development_evidence(
-        development_evidence.get("path"),
-        contract=contract,
-        identity=resolved_identity,
-        permit_pending=False,
-    )
-    if development_evidence != observed_development:
-        raise ValueError("Lockbox development evidence is missing, stale, or not exact.")
-
-    target = _validated_unused_output_path(output_path)
-    claim = _claim_path(target)
+    for name, expected in references.items():
+        observed = record[name]
+        if not isinstance(observed, Mapping):
+            raise TypeError(f"Authorization {name} must be a mapping.")
+        _require_exact_keys(dict(observed), _EVIDENCE_REFERENCE_FIELDS, name)
+        if dict(observed) != expected:
+            raise ValueError(f"Authorization {name} is forged, stale, or not separately recorded.")
+    if record["derived_seed_sha256"] != seed_digest:
+        raise ValueError("Authorization future-beacon seed digest drifted.")
+    target = _require_canonical_path(contract, "lockbox_result", output_path)
+    _validated_unused_output_path(target)
+    claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    _validated_unused_output_path(claim_path)
     output_binding = record["unused_one_time_output"]
     if not isinstance(output_binding, Mapping):
-        raise TypeError("Lockbox unused-output binding must be one mapping.")
-    output_binding = dict(output_binding)
-    _require_exact_keys(output_binding, _OUTPUT_BINDING_FIELDS, "unused lockbox output")
-    if output_binding != {
+        raise TypeError("Authorization unused-output binding must be a mapping.")
+    _require_exact_keys(dict(output_binding), _OUTPUT_BINDING_FIELDS, "unused lockbox output")
+    if dict(output_binding) != {
         "path": str(target),
-        "claim_path": str(claim),
+        "seed_global_claim_path": str(claim_path),
         "observed_output_absent": True,
-        "observed_claim_absent": True,
+        "observed_global_claim_absent": True,
         "never_overwrite": True,
     }:
-        raise ValueError("Lockbox receipt does not bind this exact unused one-time output.")
-    nonce = record["one_time_nonce_sha256"]
-    if not isinstance(nonce, str) or not _SHA256_RE.fullmatch(nonce):
-        raise ValueError("Lockbox receipt requires a unique SHA-256 nonce commitment.")
-    return claimed_hash
+        raise ValueError("Authorization does not bind the exact unused result/global claim.")
+    return claimed
 
 
-def _validated_unused_output_path(path: str | Path) -> Path:
-    candidate = Path(path).expanduser().absolute()
-    parent = candidate.parent
-    if not parent.exists() or parent.is_symlink() or not parent.is_dir():
-        raise ValueError("Output parent must be one existing nonsymlink directory.")
-    if candidate.exists() or candidate.is_symlink():
-        raise FileExistsError(f"Refusing to overwrite existing output: {candidate}")
-    return candidate
-
-
-def _claim_path(output_path: Path) -> Path:
-    return output_path.with_name(output_path.name + ".lockbox-claim.json")
-
-
-def write_json_exclusive(path: str | Path, payload: Mapping[str, Any]) -> Path:
-    target = _validated_unused_output_path(path)
-    encoded = (
-        json.dumps(
-            dict(payload), sort_keys=True, indent=2, ensure_ascii=False, allow_nan=False
-        ).encode("utf-8")
-        + b"\n"
-    )
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(target, flags, stat.S_IRUSR | stat.S_IWUSR)
-    # The exclusive artifact is deliberately retained on write failure; callers must never
-    # silently reuse a partially consumed one-time output path.
-    with os.fdopen(descriptor, "wb", closefd=True) as handle:
-        handle.write(encoded)
-        handle.flush()
-        os.fsync(handle.fileno())
-    return target
-
-
-def run_development_to_path(
-    contract: SyntheticContract,
+def _terminal_receipt(
     *,
-    output_path: str | Path,
-) -> Path:
-    target = _validated_unused_output_path(output_path)
-    identity = current_git_identity()
-    if not identity.clean:
-        raise ValueError("Frozen development execution requires a clean git worktree.")
-    result = run_development(contract)
-    result.pop("result_sha256")
-    result.update(
-        {
-            "generator_commit": identity.commit,
-            "generator_tree": identity.tree,
-            "generator_source_bundle_sha256": identity.source_bundle_sha256,
-        }
-    )
-    result["result_sha256"] = _canonical_json_sha256(result)
-    return write_json_exclusive(target, result)
+    status: str,
+    contract: SyntheticContract,
+    identity: GitIdentity,
+    environment: Mapping[str, Any],
+    authorization_sha256: str,
+    beacon_receipt_sha256: str,
+    claim_sha256: str,
+    error: BaseException,
+) -> dict[str, Any]:
+    receipt: dict[str, Any] = {
+        "schema": SYNTHETIC_TERMINAL_RECEIPT_SCHEMA,
+        "candidate_id": "metadata-calibration-efficiency-v2",
+        "phase": "lockbox",
+        "status": status,
+        "human_claim_boundary": "synthetic_pass_is_necessary_but_never_sufficient",
+        "plan_sha256": contract.plan_sha256,
+        "generator_commit": identity.commit,
+        "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment": dict(environment),
+        "authorization_receipt_sha256": authorization_sha256,
+        "beacon_receipt_sha256": beacon_receipt_sha256,
+        "one_time_claim_sha256": claim_sha256,
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "automatic_retry": "forbidden",
+    }
+    receipt["result_sha256"] = _canonical_json_sha256(receipt)
+    return receipt
 
 
 def run_lockbox_to_path(
     contract: SyntheticContract,
     *,
-    authorization: Mapping[str, Any],
+    authorization_path: str | Path,
     output_path: str | Path,
 ) -> Path:
-    target = _validated_unused_output_path(output_path)
+    """Consume the canonical global claim before any lockbox RNG is constructed."""
+
+    target = _require_canonical_path(contract, "lockbox_result", output_path)
+    auth_path = _require_canonical_path(contract, "lockbox_authorization", authorization_path)
+    claim_path = canonical_execution_path(contract, "seed_global_lockbox_claim")
+    # A global claim consumes the seed even if a prior process never wrote a terminal result.
+    _validated_unused_output_path(claim_path)
+    _validated_unused_output_path(target)
+    _readonly_receipt_file(auth_path, "synthetic lockbox authorization")
+    authorization = load_json_object(auth_path, name="synthetic lockbox authorization")
     identity = current_git_identity()
+    _require_clean_identity(identity)
+    environment = _validate_environment_receipt(current_environment_receipt())
     authorization_sha = validate_lockbox_authorization(
         authorization,
         contract=contract,
         output_path=target,
         identity=identity,
+        environment=environment,
     )
-    claim_path = _claim_path(target)
+    beacon, root_seed = _validate_beacon_evidence(
+        contract,
+        identity=identity,
+        environment=environment,
+        preparation_receipt_sha256=authorization["preparation_evidence"]["receipt_sha256"],
+        development_result_sha256=authorization["development_evidence"]["receipt_sha256"],
+        test_evidence_sha256=authorization["test_evidence"]["receipt_sha256"],
+    )
+    if authorization["beacon_evidence"]["receipt_sha256"] != beacon["beacon_receipt_sha256"]:
+        raise ValueError("Authorization does not bind the exact validated beacon receipt.")
+    # The claim is independent of caller-supplied output paths and is O_EXCL before RNG.
     claim: dict[str, Any] = {
         "schema": SYNTHETIC_LOCKBOX_CLAIM_SCHEMA,
-        "status": "one_time_execution_claimed_before_outcome_generation",
-        "authorization_receipt_sha256": authorization_sha,
+        "status": "one_time_global_seed_claimed_before_lockbox_rng",
         "plan_sha256": contract.plan_sha256,
+        "derived_seed_sha256": beacon["derived_seed_sha256"],
+        "authorization_path": str(auth_path),
+        "authorization_file_sha256": _sha256_file(auth_path),
+        "authorization_receipt_sha256": authorization_sha,
         "generator_commit": identity.commit,
         "generator_tree": identity.tree,
+        "generator_source_bundle_sha256": identity.source_bundle_sha256,
+        "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+        "environment_sha256": environment["environment_sha256"],
         "output_path": str(target),
     }
     claim["claim_sha256"] = _canonical_json_sha256(claim)
     write_json_exclusive(claim_path, claim)
 
+    context = _governed_seed_context(contract, phase="lockbox", root_seed=root_seed)
     metrics = contract.plan["metrics"]["sensitivity_only"]
-    result = _execute_synthetic(
-        contract,
-        phase="lockbox",
-        root_seed=LOCKBOX_ROOT_SEED,
-        participants_per_family=64,
-        families=FAMILY_NAMES,
-        sign_flip_draws=int(metrics["sign_flip"]["draws"]),
-        bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
-        fbcca_producer=produce_strict_fbcca,
-        reserved_execution_capability=_RESERVED_EXECUTION_CAPABILITY,
-    )
-    result.pop("result_sha256")
-    result.update(
-        {
-            "generator_commit": identity.commit,
-            "generator_tree": identity.tree,
-            "generator_source_bundle_sha256": identity.source_bundle_sha256,
-            "authorization_receipt_sha256": authorization_sha,
-            "one_time_claim_sha256": claim["claim_sha256"],
-        }
-    )
-    result["result_sha256"] = _canonical_json_sha256(result)
-    return write_json_exclusive(target, result)
-
-
-def load_json_object(path: str | Path, *, name: str) -> dict[str, Any]:
-    source = _regular_nonsymlink_file(path, name)
-    decoded = json.loads(source.read_text(encoding="utf-8"))
-    if not isinstance(decoded, Mapping):
-        raise TypeError(f"{name} must decode to one JSON object.")
-    return dict(decoded)
+    try:
+        result = _execute_synthetic(
+            contract,
+            phase="lockbox",
+            root_seed=root_seed,
+            participants_per_family=64,
+            families=FAMILY_NAMES,
+            sign_flip_draws=int(metrics["sign_flip"]["draws"]),
+            bootstrap_draws=int(metrics["participant_bootstrap"]["draws"]),
+            fbcca_producer=produce_strict_fbcca,
+            governed_context=context,
+        )
+        result.pop("result_sha256")
+        result.update(
+            {
+                "generator_commit": identity.commit,
+                "generator_tree": identity.tree,
+                "generator_source_bundle_sha256": identity.source_bundle_sha256,
+                "generator_commit_timestamp_utc": identity.commit_timestamp_utc,
+                "environment": environment,
+                "authorization_receipt_sha256": authorization_sha,
+                "beacon_receipt_sha256": beacon["beacon_receipt_sha256"],
+                "one_time_claim_sha256": claim["claim_sha256"],
+            }
+        )
+        result["result_sha256"] = _canonical_json_sha256(result)
+        encoded = _json_payload_bytes(result)
+        return _write_bytes_exclusive(target, encoded)
+    except HardInvariantFailure as error:
+        terminal = _terminal_receipt(
+            status="terminal_invariant_fail",
+            contract=contract,
+            identity=identity,
+            environment=environment,
+            authorization_sha256=authorization_sha,
+            beacon_receipt_sha256=beacon["beacon_receipt_sha256"],
+            claim_sha256=claim["claim_sha256"],
+            error=error,
+        )
+        return write_json_exclusive(target, terminal)
+    except Exception as error:  # noqa: BLE001 - every caught post-claim failure is terminal.
+        terminal = _terminal_receipt(
+            status="consumed_inconclusive_infrastructure_error",
+            contract=contract,
+            identity=identity,
+            environment=environment,
+            authorization_sha256=authorization_sha,
+            beacon_receipt_sha256=beacon["beacon_receipt_sha256"],
+            claim_sha256=claim["claim_sha256"],
+            error=error,
+        )
+        return write_json_exclusive(target, terminal)
