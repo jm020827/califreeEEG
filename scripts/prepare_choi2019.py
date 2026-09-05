@@ -10,10 +10,10 @@ from _bootstrap import add_src_to_path
 add_src_to_path()
 
 from cfeg.data.prepare_choi2019 import (
-    _verify_raw_archive,
     audit_source_schema,
     ensure_extracted,
     prepare,
+    verify_raw_files,
 )
 from cfeg.utils.config import load_config
 
@@ -40,7 +40,7 @@ def main() -> None:
     raw_dir = Path(args.raw_dir)
     subjects = _parse_subjects(args.subjects)
     if args.extract_only or args.audit_only:
-        _verify_raw_archive(raw_dir.resolve(), cfg)
+        verify_raw_files(raw_dir.resolve(), cfg)
         extracted = ensure_extracted(raw_dir.resolve(), cfg)
     if args.extract_only:
         print(extracted)

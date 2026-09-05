@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pytest
 import yaml
 
@@ -17,11 +18,10 @@ def _runtime_filterbank(contract: dict, band: str) -> dict:
     selected = contract["band_parameters"][band]
     return {
         "bands": selected["bands"],
+        "weights": common["subband_weights"],
         "order": common["order"],
         "n_harmonics": selected["n_harmonics"],
         "regularization": common["regularization"],
-        "weight_exponent": common["weight_exponent"],
-        "weight_offset": common["weight_offset"],
         "filter_family": common["filter_family"],
         "passband_ripple_db": common["passband_ripple_db"],
         "reproduction_contract": selected["reproduction_contract"],
@@ -54,6 +54,13 @@ def test_frozen_bandwise_view_is_nyquist_safe_and_covers_low_fundamentals() -> N
     assert contract["support_query"]["query_reuse_across_budgets"] == "immutable"
 
     expected_harmonics = {"LOW": 5, "MID": 4, "HIGH": 2}
+    explicit_weight_bytes = np.asarray(
+        contract["common_parameters"]["subband_weights"], dtype="<f8"
+    ).tobytes()
+    assert contract["common_parameters"]["subband_weight_resolution"] == (
+        "explicit_vector_only_no_runtime_exponentiation"
+    )
+    assert contract["common_parameters"]["weight_formula_role"] == ("historical_provenance_only")
     for band, expected in expected_harmonics.items():
         selected = contract["band_parameters"][band]
         frequencies = dataset["stimulus_by_band"][band]["frequencies_hz"]
@@ -66,6 +73,7 @@ def test_frozen_bandwise_view_is_nyquist_safe_and_covers_low_fundamentals() -> N
         assert references.shape == (4, 2 * expected, 400)
         resolved = resolve_filterbank_parameters(_runtime_filterbank(contract, band), sfreq)
         assert resolved["n_harmonics"] == expected
+        assert np.asarray(resolved["weights"], dtype="<f8").tobytes() == explicit_weight_bytes
 
     low = contract["band_parameters"]["LOW"]
     assert low["bands"][0][0] <= min(low["candidate_frequencies_hz"])

@@ -1,0 +1,85 @@
+schema: cfeg.choi2019-processed-partition-governance.v1
+freeze_status: frozen_pre_outcome
+freeze_date: 2026-09-06
+dataset_revision: choi2019_gigadb_100660_20260906
+role: immutable_processed_asset_and_partition_identity_contract
+contains_scores_predictions_or_decoding_outcomes: false
+
+processed_assets:
+  signals.h5:
+    bytes: 712147685
+    sha256: c022e9e4c346bf792c2cfe7f03a445dadb825d2c35144f1257447861861589e7
+  manifest.jsonl:
+    bytes: 33142750
+    sha256: 08b4287300053894bb032650d2a0b3120391d5a6e829ddd6a4b1b8e5ecb61137
+  manifest.parquet:
+    bytes: 3599737
+    sha256: dd3b5737ca11a75dd8afe4b3efc88aa3e7b4da1f5f6216701b450a295c4cc19d
+  class_map.json:
+    bytes: 770
+    sha256: 26b462faa9461a49fea5b61458d08c4536415c54940e5116b248c6ca2e5a08e7
+  preprocess_config.yaml:
+    bytes: 173
+    sha256: d97176955b81050c6eb77600a42cfd595434ccc56dd1f0ef5b8fe4cc5d896494
+  asset_info.json:
+    bytes: 1604
+    sha256: 93d273a3a0dffaa1788c9915af8f123dfc11e9bbd50e07d4b492d776f879149c
+  questionnaire_normalized.csv:
+    bytes: 2772
+    sha256: 1598cbaa1311cb201248df8e8d68acd6ecace335588ebc47818e5b73bfbcb018
+
+repository_contracts:
+  configs/data/choi2019.yaml:
+    bytes: 6375
+    sha256: 1c809fbfc017ac62a437576ad7009fec74faab942ee82f3c067e53144ccd56a0
+  configs/baselines/fbcca_choi2019_bandwise_v1.yaml:
+    bytes: 4813
+    sha256: 7bf3179a9584b5d3f990b03d3f937235cfae7649afd924c4fd5ba081e44f84e2
+  configs/canonical_channels.yaml:
+    bytes: 3299
+    sha256: 9faa684b798eb3ed156dbc40af133e84c538985bbc10d6207705aed2382cfdbe
+
+partition:
+  assignment_records: 32040
+  assignment_bytes: 8671724
+  partition_assignment_sha256: 4e354b6ae73e09b027c68a9191e3b929b01fd7bd17a16dd3b82ee408b2deddea
+  sample_identity_records: 14400
+  sample_identity_sha256: 1e9b4f4e93cb1afd5a1003138c7572a547aaa2d26881783eaa5dfd44cf6b73fb
+  group_query_identity_sha256: de55ef91d3735d4c2c9d4db69c847aaba042f85483ae02de26ea3841552fce32
+
+evaluation_channels:
+  names: [PO7, PO3, POz, PO4, PO8, O1, Oz, O2]
+  canonical_channel_ids: [53, 55, 56, 57, 59, 61, 62, 63]
+  all_manifest_rows_present: true
+  all_signal_masks_true: true
+
+filterbank_weight_contract:
+  resolution: explicit_vector_only_no_runtime_exponentiation
+  float64_little_endian_sha256: 50f6a45a03855dbbded636553388571db189bdc1291b7b180b436e54f199b282
+  weights:
+    - 1.25
+    - 0.6704482076268572
+    - 0.5032785618838642
+    - 0.42677669529663687
+    - 0.38374806099528436
+    - 0.35649051737437876
+    - 0.33782687899303776
+  bands:
+    LOW:
+      n_subbands: 7
+      resolved_float64_le_sha256: 50f6a45a03855dbbded636553388571db189bdc1291b7b180b436e54f199b282
+      bitwise_equal_to_explicit_common_vector: true
+    MID:
+      n_subbands: 7
+      resolved_float64_le_sha256: 50f6a45a03855dbbded636553388571db189bdc1291b7b180b436e54f199b282
+      bitwise_equal_to_explicit_common_vector: true
+    HIGH:
+      n_subbands: 7
+      resolved_float64_le_sha256: 50f6a45a03855dbbded636553388571db189bdc1291b7b180b436e54f199b282
+      bitwise_equal_to_explicit_common_vector: true
+
+forbidden:
+  - outcome_conditioned_partition_changes
+  - outcome_conditioned_band_or_channel_selection
+  - runtime_subband_weight_exponentiation
+  - overwrite_of_governed_processed_or_partition_artifacts

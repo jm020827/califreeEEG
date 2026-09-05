@@ -81,10 +81,25 @@ fetch fails; it is never silently overwritten. The immutable receipt preserves
 the first successful run's transport status while idempotent reruns require the
 same file identities and hashes.
 
+An `--only` fetch is explicitly partial: it writes a selection-addressed
+`download_receipt.partial-<digest>.json` and can never create or occupy the
+canonical full-inventory `download_receipt.json`. Before extraction, schema
+audit, preparation, or questionnaire parsing, the preparation entry points
+rehash **all three** frozen raw files and require the configured byte count,
+MD5, and SHA-256 for each one.
+
 The archive audit accepts only the frozen path grammar, regular files, and the
 exact 30-subject × 2-day × 3-band × 2-session × `{cnt,mrk}` grid. The observed
 archive has 720 regular MAT files, 90 directories, and 11,109,841,350
-uncompressed regular-file bytes. The full source-schema audit found:
+uncompressed regular-file bytes. In addition to the archive-level digest, each
+member is streamed and SHA-256 hashed. The canonical aggregate is SHA-256 over
+path-sorted JSONL records with sorted keys and compact separators, one record
+`{"path":...,"sha256":...,"size_bytes":...}` per MAT file. Both the verified
+archive and the extracted tree must equal
+`86db8a34b66b14b92c02b41334ea05f8a730be042750ab4950ca2d24933f5202`.
+Reusing an extracted tree therefore rehashes every MAT byte and rejects any
+missing, duplicate, extra, symlink, or non-regular entry; a matching filename
+alone is never sufficient. The full source-schema audit found:
 
 - 360 exact `cnt`/`mrk` pairs and 14,400 stimulus trials;
 - MATLAB v7.3/HDF5 continuous arrays with 39 rows, distributed at 200 Hz;
@@ -101,6 +116,13 @@ channels, crops 2.0 s starting 0.14 s after each stimulus marker, and maps EEG
 channels into the canonical 64-slot representation. The manifest retains day,
 band, session, marker order, and pre-normalization signal-QC provenance. It
 never fabricates impedance or electrode type.
+
+Preparation is directory-atomic. It obtains an exclusive sibling lock, writes
+all seven final assets to a new sibling staging directory, verifies the complete
+asset inventory and absence of temporary filenames, and publishes with one
+rename. It refuses to overwrite an existing final directory. Failed staging
+directories are deliberately preserved for diagnosis; they are not promoted
+or silently deleted.
 
 The published analysis flagged ten participant-days for unusually large
 non-stimulation-frequency amplitudes: S2 days 1/2, S10 day 2, S11 days 1/2,
@@ -133,6 +155,14 @@ invented twelve-class task. All three bands are required and are averaged with
 equal weight within each participant before participant-level inference; no
 band may be selected or dropped after outcomes are seen.
 
+The source does not report the chronological acquisition order of LOW, MID,
+and HIGH runs. `[LOW, MID, HIGH]` is frozen solely as deterministic processing
+order and must not be interpreted or modeled as acquisition metadata. The
+evaluation montage is exactly `[PO7, PO3, POz, PO4, PO8, O1, Oz, O2]`, canonical
+channel IDs `[53, 55, 56, 57, 59, 61, 62, 63]`, in that order. Every one of the
+14,400 manifest rows and every corresponding HDF5 channel mask must contain all
+eight positions; missing-channel fallback is forbidden for this anchor.
+
 The existing Chen-M3 configuration cannot be copied literally at the
 distributed 200-Hz sampling rate. With `n_harmonics=5`, MID requests
 `22.5 × 5 = 112.5 Hz` and HIGH requests `41.5 × 5 = 207.5 Hz`, both outside
@@ -154,6 +184,14 @@ This is a separately named external-anchor view, not a silent alteration of
 the original baseline and not a hyperparameter search. Direct parent-config
 results for MID/HIGH are formally incompatible and must not be reported.
 
+The seven V2 c4 FBCCA subband weights are explicit decimal float64 values in
+the Choi anchor. Runtime evaluation of `m**(-1.25)+0.25` is forbidden because
+NumPy/libm implementations can differ by one ULP. The anchor validator resolves
+each band with the explicit vector and requires byte-for-byte float64 equality;
+the little-endian vector SHA-256 is
+`50f6a45a03855dbbded636553388571db189bdc1291b7b180b436e54f199b282`.
+The exponent and offset remain provenance only.
+
 For the cross-day few-shot view, Day 1 is the only support day. Budgets are
 `k={0,1,3,5}` trials per class, selected as nested chronological prefixes by
 numeric session then source marker order. Both complete Day-2 sessions—80
@@ -161,6 +199,39 @@ queries per band—remain the same immutable query set at every budget. There is
 no random split seed. This tests signal-only cross-day calibration behavior;
 it does not turn Choi's day or band labels into evidence for a wet/dry or
 impedance mechanism.
+
+The executable outcome-free constructor makes 20 complete Day-1 pseudo-blocks
+per participant × band. Pseudo-block `j` contains the `j`th chronological trial
+of each of the four within-band labels, where chronology is numeric source
+session then source-marker index. Budgets 1, 3, and 5 use pseudo-blocks 1,
+1–3, and 1–5 respectively; budget 0 is empty. Day 2 contributes both sessions,
+exactly 80 immutable query trials per band at every budget. The constructor
+checks exact counts, class balance, nesting, support/query disjointness, marker
+grids, and query-set identity without reading or producing decoding scores:
+
+```bash
+python scripts/build_choi2019_partition.py          # inspect identity receipt
+python scripts/build_choi2019_partition.py --write  # verify governance, publish once
+```
+
+`configs/data/choi2019_processed_partition_v1.yaml` binds all seven processed
+assets, the data/anchor/canonical-channel configs, the exact montage and
+weights, and the partition identities. The frozen partition has 32,040 JSONL
+assignments (8,671,724 bytes; SHA-256
+`4e354b6ae73e09b027c68a9191e3b929b01fd7bd17a16dd3b82ee408b2deddea`),
+14,400 sample identities (digest
+`1e9b4f4e93cb1afd5a1003138c7572a547aaa2d26881783eaa5dfd44cf6b73fb`),
+and group/query identity digest
+`de55ef91d3735d4c2c9d4db69c847aaba042f85483ae02de26ea3841552fce32`.
+The external receipt and assignments live under
+`/home/whwovy/eeg-data/processed/choi2019_v1/partitions/` and contain no scores,
+predictions, or decoding outcomes. The publisher rejects symlinks anywhere in
+the processed-root, governance-config, or output-parent path. It flushes and
+`fsync`s the assignment and receipt, changes all three bundle files to mode
+`0400`, records the receipt's SHA-256 in the detached
+`governance_receipt.sha256`, `fsync`s the staging directory, renames it, and
+then `fsync`s the parent directory. A pre-rename failure leaves the named
+staging directory intact and never creates the canonical final directory.
 
 ## 4. License and human-subject boundaries
 

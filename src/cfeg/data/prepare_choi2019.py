@@ -6,8 +6,11 @@ import json
 import os
 import re
 import shutil
+import stat
 import tarfile
+import tempfile
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -51,18 +54,21 @@ class ChoiMarkers:
     source_event_indices: np.ndarray
 
 
-PREPARED_FILENAMES = (
+FINAL_PREPARED_FILENAMES = (
     "signals.h5",
-    "signals.h5.tmp",
     "manifest.jsonl",
-    "manifest.jsonl.tmp",
     "manifest.parquet",
-    "manifest.parquet.tmp",
     "class_map.json",
     "preprocess_config.yaml",
     "questionnaire_normalized.csv",
     "asset_info.json",
 )
+TRANSIENT_PREPARED_FILENAMES = (
+    "signals.h5.tmp",
+    "manifest.jsonl.tmp",
+    "manifest.parquet.tmp",
+)
+PREPARED_FILENAMES = (*FINAL_PREPARED_FILENAMES, *TRANSIENT_PREPARED_FILENAMES)
 
 
 def prepare(
@@ -75,17 +81,76 @@ def prepare(
     """Prepare Choi2019 while retaining day/run provenance and published QC flags."""
 
     raw_dir = raw_dir.resolve()
-    out_dir = out_dir.resolve()
-    _verify_raw_archive(raw_dir, cfg)
+    out_dir = out_dir.expanduser().absolute()
+    verify_raw_files(raw_dir, cfg)
     extracted_root = ensure_extracted(raw_dir, cfg)
     pairs = discover_pairs(extracted_root, cfg, subjects=subjects)
-    existing_outputs = [name for name in PREPARED_FILENAMES if (out_dir / name).exists()]
-    if existing_outputs:
-        raise FileExistsError(
-            f"Refusing to overwrite an existing/partial prepared Choi dataset at {out_dir}: "
-            f"{existing_outputs}"
+    return _prepare_directory_atomically(
+        out_dir,
+        lambda staging: _prepare_into(staging, raw_dir, extracted_root, pairs, cfg),
+    )
+
+
+def _prepare_directory_atomically(
+    out_dir: Path,
+    builder: Callable[[Path], dict[str, Any]],
+) -> dict[str, Any]:
+    """Build in an exclusive sibling directory and publish with one rename.
+
+    Failed staging directories are intentionally retained for audit. The
+    short-lived lock prevents two cooperating preparation processes from
+    racing for the same final path.
+    """
+
+    out_dir = out_dir.expanduser().absolute()
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+    if out_dir.exists() or out_dir.is_symlink():
+        raise FileExistsError(f"Refusing to overwrite prepared Choi path: {out_dir}")
+    lock_path = out_dir.with_name(f".{out_dir.name}.prepare.lock")
+    try:
+        with lock_path.open("x", encoding="utf-8") as handle:
+            handle.write(f"pid={os.getpid()}\n")
+    except FileExistsError as exc:
+        raise FileExistsError(f"Another Choi preparation lock exists: {lock_path}") from exc
+
+    try:
+        staging = Path(
+            tempfile.mkdtemp(prefix=f".{out_dir.name}.staging-", dir=str(out_dir.parent))
         )
-    out_dir.mkdir(parents=True, exist_ok=True)
+        result = builder(staging)
+        with os.scandir(staging) as entries:
+            observed = list(entries)
+        names = {entry.name for entry in observed}
+        missing = sorted(set(FINAL_PREPARED_FILENAMES) - names)
+        unexpected = sorted(names - set(FINAL_PREPARED_FILENAMES))
+        unsafe = sorted(
+            entry.name
+            for entry in observed
+            if entry.is_symlink() or not entry.is_file(follow_symlinks=False)
+        )
+        if missing or unexpected or unsafe:
+            raise RuntimeError(
+                f"Incomplete Choi staging directory {staging}: "
+                f"missing={missing}, unexpected={unexpected}, unsafe={unsafe}"
+            )
+        if out_dir.exists() or out_dir.is_symlink():
+            raise FileExistsError(
+                f"Final Choi path appeared during preparation; staging preserved at {staging}"
+            )
+        os.rename(staging, out_dir)
+        return result
+    finally:
+        lock_path.unlink(missing_ok=True)
+
+
+def _prepare_into(
+    out_dir: Path,
+    raw_dir: Path,
+    extracted_root: Path,
+    pairs: list[ChoiPair],
+    cfg: dict[str, Any],
+) -> dict[str, Any]:
+    """Populate an already-exclusive staging directory."""
 
     pcfg = PreprocessConfig.from_dict(cfg.get("preprocess"))
     canonical_map = CanonicalChannelMap.from_yaml()
@@ -271,21 +336,38 @@ def _archive_spec(cfg: dict[str, Any]) -> dict[str, Any]:
     return matches[0]
 
 
+def verify_raw_files(raw_dir: Path, cfg: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Verify all three frozen source files before any extraction or parsing."""
+
+    verified = {}
+    for spec in cfg["files"]:
+        path = raw_dir / str(spec["name"])
+        if path.is_symlink() or not path.is_file():
+            raise FileNotFoundError(
+                f"Missing or unsafe frozen Choi file: {path}. Run scripts/fetch_choi2019.py first."
+            )
+        observed = _hash_file(path)
+        expected = {
+            "bytes": int(spec["object_size_bytes"]),
+            "md5": str(spec["md5"]),
+            "sha256": str(spec["sha256"]),
+        }
+        if observed != expected:
+            raise ValueError(
+                f"Frozen Choi source mismatch for {path.name}: "
+                f"expected={expected}, observed={observed}"
+            )
+        verified[path.name] = observed
+    expected_names = {str(spec["name"]) for spec in cfg["files"]}
+    if set(verified) != expected_names or len(verified) != 3:
+        raise ValueError(f"Expected exactly three verified Choi files, got {sorted(verified)}")
+    return verified
+
+
 def _verify_raw_archive(raw_dir: Path, cfg: dict[str, Any]) -> None:
-    spec = _archive_spec(cfg)
-    archive = raw_dir / str(spec["name"])
-    if not archive.exists():
-        raise FileNotFoundError(
-            f"Missing frozen Choi archive: {archive}. Run scripts/fetch_choi2019.py first."
-        )
-    observed = _hash_file(archive)
-    expected = {
-        "bytes": int(spec["object_size_bytes"]),
-        "md5": str(spec["md5"]),
-        "sha256": str(spec["sha256"]),
-    }
-    if observed != expected:
-        raise ValueError(f"Frozen Choi archive mismatch: expected={expected}, observed={observed}")
+    """Backward-compatible fail-closed alias; now verifies every raw file."""
+
+    verify_raw_files(raw_dir, cfg)
 
 
 def _hash_file(path: Path) -> dict[str, Any]:
@@ -300,6 +382,29 @@ def _hash_file(path: Path) -> dict[str, Any]:
     return {"bytes": size, "md5": md5.hexdigest(), "sha256": sha256.hexdigest()}
 
 
+def _sha256_stream(handle) -> tuple[int, str]:
+    digest = hashlib.sha256()
+    size = 0
+    while chunk := handle.read(8 * 1024 * 1024):
+        size += len(chunk)
+        digest.update(chunk)
+    return size, digest.hexdigest()
+
+
+def _member_manifest_sha256(records: list[tuple[str, int, str]]) -> str:
+    """Hash canonical JSONL records binding every member path, size, and SHA-256."""
+
+    aggregate = hashlib.sha256()
+    for path, size, digest in sorted(records, key=lambda value: value[0]):
+        record = json.dumps(
+            {"path": path, "sha256": digest, "size_bytes": int(size)},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        aggregate.update(record.encode("utf-8") + b"\n")
+    return aggregate.hexdigest()
+
+
 def _expected_archive_keys(cfg: dict[str, Any]) -> set[tuple[int, int, str, str, int]]:
     expected = cfg["expected"]
     return {
@@ -307,23 +412,32 @@ def _expected_archive_keys(cfg: dict[str, Any]) -> set[tuple[int, int, str, str,
         for subject in range(1, int(expected["n_subjects"]) + 1)
         for day in range(1, int(expected["n_days"]) + 1)
         for kind in ("cnt", "mrk")
-        for band in cfg["stimulus_by_band"]
+        for band in cfg["processing_band_order"]
         for session in range(1, int(expected["n_sessions_per_band_day"]) + 1)
     }
 
 
-def audit_archive(archive_path: Path, cfg: dict[str, Any]) -> dict[str, int]:
+def _expected_archive_directories(cfg: dict[str, Any]) -> set[str]:
+    return {
+        relative
+        for subject in range(1, int(cfg["expected"]["n_subjects"]) + 1)
+        for relative in (f"S{subject}", f"S{subject}/Day1", f"S{subject}/Day2")
+    }
+
+
+def audit_archive(archive_path: Path, cfg: dict[str, Any]) -> dict[str, int | str]:
     pattern = re.compile(str(cfg["archive"]["allowed_member_regex"]))
-    directory_pattern = re.compile(r"^S([1-9]|[12][0-9]|30)(?:/Day([12]))?/?$")
     observed: list[tuple[int, int, str, str, int]] = []
-    directory_count = 0
+    observed_directories: list[str] = []
+    content_records: list[tuple[str, int, str]] = []
     unpacked_bytes = 0
     with tarfile.open(archive_path, "r:gz") as archive:
         for member in archive:
             if member.isdir():
-                if not directory_pattern.fullmatch(member.name):
+                normalized = member.name.rstrip("/")
+                if normalized not in _expected_archive_directories(cfg):
                     raise ValueError(f"Unexpected Choi archive directory: {member.name!r}")
-                directory_count += 1
+                observed_directories.append(normalized)
                 continue
             if not member.isfile():
                 raise ValueError(f"Unsafe/non-regular Choi archive member: {member.name!r}")
@@ -339,7 +453,18 @@ def audit_archive(archive_path: Path, cfg: dict[str, Any]) -> dict[str, int]:
                     int(match.group(5)),
                 )
             )
-            unpacked_bytes += int(member.size)
+            source = archive.extractfile(member)
+            if source is None:
+                raise ValueError(f"Could not hash Choi archive member: {member.name!r}")
+            with source:
+                observed_size, digest = _sha256_stream(source)
+            if observed_size != int(member.size):
+                raise ValueError(
+                    f"Choi archive member size changed while reading {member.name!r}: "
+                    f"header={member.size}, read={observed_size}"
+                )
+            unpacked_bytes += observed_size
+            content_records.append((member.name, observed_size, digest))
     duplicates = [key for key, count in Counter(observed).items() if count != 1]
     expected_keys = _expected_archive_keys(cfg)
     if set(observed) != expected_keys or duplicates:
@@ -348,34 +473,61 @@ def audit_archive(archive_path: Path, cfg: dict[str, Any]) -> dict[str, int]:
             f"missing={len(expected_keys - set(observed))}, "
             f"extra={len(set(observed) - expected_keys)}, duplicates={len(duplicates)}"
         )
+    expected_directories = _expected_archive_directories(cfg)
+    duplicate_directories = [
+        name for name, count in Counter(observed_directories).items() if count != 1
+    ]
+    if set(observed_directories) != expected_directories or duplicate_directories:
+        raise ValueError(
+            "Choi archive directory inventory mismatch: "
+            f"missing={sorted(expected_directories - set(observed_directories))[:3]}, "
+            f"extra={sorted(set(observed_directories) - expected_directories)[:3]}, "
+            f"duplicates={duplicate_directories[:3]}"
+        )
     expected_archive = cfg["archive"]
     receipt = {
         "regular_files": len(observed),
-        "directories": directory_count,
+        "directories": len(observed_directories),
         "uncompressed_regular_file_bytes": unpacked_bytes,
+        "member_content_manifest_sha256": _member_manifest_sha256(content_records),
     }
-    for field, observed_value in receipt.items():
+    for field in ("regular_files", "directories", "uncompressed_regular_file_bytes"):
+        observed_value = receipt[field]
         if observed_value != int(expected_archive[field]):
             raise ValueError(
                 f"Choi archive {field} drift: expected={expected_archive[field]}, "
                 f"observed={observed_value}"
             )
+    if receipt["member_content_manifest_sha256"] != str(
+        expected_archive["member_content_manifest_sha256"]
+    ):
+        raise ValueError(
+            "Choi archive member-content manifest drift: "
+            f"expected={expected_archive['member_content_manifest_sha256']}, "
+            f"observed={receipt['member_content_manifest_sha256']}"
+        )
     return receipt
 
 
 def ensure_extracted(raw_dir: Path, cfg: dict[str, Any]) -> Path:
     archive_path = raw_dir / str(cfg["archive"]["name"])
-    audit_archive(archive_path, cfg)
+    archive_audit = audit_archive(archive_path, cfg)
     destination = raw_dir / str(cfg["archive"]["extraction_subdir"])
-    present = list(destination.rglob("*.mat")) if destination.exists() else []
-    if present:
-        _validate_extracted_inventory(destination, cfg)
+    if destination.exists() or destination.is_symlink():
+        extracted_audit = _validate_extracted_inventory(destination, cfg)
+        if (
+            extracted_audit["member_content_manifest_sha256"]
+            != archive_audit["member_content_manifest_sha256"]
+        ):
+            raise ValueError("Extracted Choi bytes are not bound to the verified archive")
         return destination
-    destination.mkdir(parents=True, exist_ok=True)
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".{destination.name}.staging-", dir=str(destination.parent))
+    )
     with tarfile.open(archive_path, "r:gz") as archive:
         for member in archive:
-            target = (destination / member.name).resolve()
-            if destination not in target.parents and target != destination:
+            target = (staging / member.name).resolve()
+            if staging not in target.parents and target != staging:
                 raise ValueError(f"Archive path traversal attempt: {member.name!r}")
             if member.isdir():
                 target.mkdir(parents=True, exist_ok=True)
@@ -388,32 +540,105 @@ def ensure_extracted(raw_dir: Path, cfg: dict[str, Any]) -> Path:
                 raise ValueError(f"Could not read archive member: {member.name!r}")
             with source, target.open("xb") as output:
                 shutil.copyfileobj(source, output, length=8 * 1024 * 1024)
-    _validate_extracted_inventory(destination, cfg)
+    extracted_audit = _validate_extracted_inventory(staging, cfg)
+    if (
+        extracted_audit["member_content_manifest_sha256"]
+        != archive_audit["member_content_manifest_sha256"]
+    ):
+        raise ValueError("Newly extracted Choi bytes differ from the verified archive")
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(f"Choi extraction target appeared; staging preserved at {staging}")
+    os.rename(staging, destination)
     return destination
 
 
-def _validate_extracted_inventory(root: Path, cfg: dict[str, Any]) -> None:
+def _hash_regular_file_no_follow(path: Path) -> tuple[int, str]:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError(f"Extracted Choi entry is not a regular file: {path}")
+        with os.fdopen(descriptor, "rb", closefd=False) as handle:
+            return _sha256_stream(handle)
+    finally:
+        os.close(descriptor)
+
+
+def _validate_extracted_inventory(root: Path, cfg: dict[str, Any]) -> dict[str, int | str]:
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError(f"Extracted Choi root is missing, non-directory, or symlinked: {root}")
     pattern = re.compile(str(cfg["archive"]["allowed_member_regex"]))
-    observed = []
-    for path in root.rglob("*.mat"):
-        relative = path.relative_to(root).as_posix()
-        match = pattern.fullmatch(relative)
-        if not match:
-            raise ValueError(f"Unexpected extracted Choi MAT path: {relative!r}")
-        observed.append(
-            (
-                int(match.group(1)),
-                int(match.group(2)),
-                match.group(3),
-                match.group(4),
-                int(match.group(5)),
-            )
+    expected_directories = _expected_archive_directories(cfg)
+    observed_directories: set[str] = set()
+    observed: list[tuple[int, int, str, str, int]] = []
+    content_records: list[tuple[str, int, str]] = []
+
+    def visit(directory: Path, prefix: str = "") -> None:
+        with os.scandir(directory) as entries:
+            for entry in sorted(entries, key=lambda value: value.name):
+                relative = f"{prefix}/{entry.name}" if prefix else entry.name
+                if entry.is_symlink():
+                    raise ValueError(f"Symlink is forbidden in extracted Choi tree: {relative!r}")
+                if entry.is_dir(follow_symlinks=False):
+                    if relative not in expected_directories:
+                        raise ValueError(
+                            f"Unexpected directory in extracted Choi tree: {relative!r}"
+                        )
+                    observed_directories.add(relative)
+                    visit(Path(entry.path), relative)
+                    continue
+                if not entry.is_file(follow_symlinks=False):
+                    raise ValueError(
+                        f"Non-regular entry is forbidden in extracted Choi tree: {relative!r}"
+                    )
+                match = pattern.fullmatch(relative)
+                if not match:
+                    raise ValueError(f"Unexpected file in extracted Choi tree: {relative!r}")
+                observed.append(
+                    (
+                        int(match.group(1)),
+                        int(match.group(2)),
+                        match.group(3),
+                        match.group(4),
+                        int(match.group(5)),
+                    )
+                )
+                size, digest = _hash_regular_file_no_follow(Path(entry.path))
+                content_records.append((relative, size, digest))
+
+    visit(root)
+    if observed_directories != expected_directories:
+        raise ValueError(
+            "Extracted Choi directory inventory mismatch: "
+            f"missing={sorted(expected_directories - observed_directories)[:3]}, "
+            f"extra={sorted(observed_directories - expected_directories)[:3]}"
         )
     expected = _expected_archive_keys(cfg)
     if set(observed) != expected or len(observed) != len(expected):
         raise ValueError(
             "Extracted Choi inventory is incomplete or duplicated; preserved files were not changed."
         )
+    receipt = {
+        "regular_files": len(content_records),
+        "directories": len(observed_directories),
+        "uncompressed_regular_file_bytes": sum(record[1] for record in content_records),
+        "member_content_manifest_sha256": _member_manifest_sha256(content_records),
+    }
+    for field in ("regular_files", "directories", "uncompressed_regular_file_bytes"):
+        if receipt[field] != int(cfg["archive"][field]):
+            raise ValueError(
+                f"Extracted Choi {field} drift: expected={cfg['archive'][field]}, "
+                f"observed={receipt[field]}"
+            )
+    if receipt["member_content_manifest_sha256"] != str(
+        cfg["archive"]["member_content_manifest_sha256"]
+    ):
+        raise ValueError(
+            "Extracted Choi member-content manifest mismatch: "
+            f"expected={cfg['archive']['member_content_manifest_sha256']}, "
+            f"observed={receipt['member_content_manifest_sha256']}"
+        )
+    return receipt
 
 
 def discover_pairs(
@@ -430,7 +655,7 @@ def discover_pairs(
     pairs = []
     for subject in sorted(selected):
         for day in range(1, int(cfg["expected"]["n_days"]) + 1):
-            for band in cfg["stimulus_by_band"]:
+            for band in cfg["processing_band_order"]:
                 for session in range(1, int(cfg["expected"]["n_sessions_per_band_day"]) + 1):
                     stem = f"{band}({session}).mat"
                     pairs.append(

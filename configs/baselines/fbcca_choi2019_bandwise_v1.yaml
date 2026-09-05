@@ -14,7 +14,13 @@ evaluation_view:
   candidate_set_source: frequency_band
   pool_twelve_frequencies: false
   bands_required: [LOW, MID, HIGH]
+  processing_band_order: [LOW, MID, HIGH]
+  acquisition_band_order: unavailable_not_reported
+  processing_order_is_acquisition_metadata: false
   band_selection_from_outcomes: forbidden
+  evaluation_channel_names: [PO7, PO3, POz, PO4, PO8, O1, Oz, O2]
+  evaluation_canonical_channel_ids: [53, 55, 56, 57, 59, 61, 62, 63]
+  evaluation_channel_policy: exact_order_all_required_and_masked
   participant_unit: subject_id
   participant_summary: unweighted_mean_of_three_band_accuracies
   cohort_summary: paired_over_all_30_participants
@@ -42,8 +48,21 @@ nyquist_hz: 100.0
 common_parameters:
   order: 4
   regularization: 1.0e-8
+  # These decimal literals are the V2 c4 float64 values. Choi execution must
+  # pass this vector explicitly; recomputing m**(-1.25)+0.25 is forbidden
+  # because libm/NumPy implementations can differ by an ULP.
+  subband_weights:
+    - 1.25
+    - 0.6704482076268572
+    - 0.5032785618838642
+    - 0.42677669529663687
+    - 0.38374806099528436
+    - 0.35649051737437876
+    - 0.33782687899303776
+  subband_weight_resolution: explicit_vector_only_no_runtime_exponentiation
   weight_exponent: 1.25
   weight_offset: 0.25
+  weight_formula_role: historical_provenance_only
   filter_family: chebyshev1
   passband_ripple_db: 0.5
   score_fusion: sum_weighted_squared_canonical_correlations

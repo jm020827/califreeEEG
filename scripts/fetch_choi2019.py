@@ -64,14 +64,24 @@ def main() -> None:
         print(
             f"{status['status']} {destination}: {status['bytes']} bytes, sha256={status['sha256']}"
         )
+    complete_inventory = [str(spec["name"]) for spec in selected] == [
+        str(spec["name"]) for spec in cfg["files"]
+    ]
     receipt = {
-        "schema": "cfeg.choi2019-download-receipt.v1",
+        "schema": (
+            "cfeg.choi2019-download-receipt.v1"
+            if complete_inventory
+            else "cfeg.choi2019-partial-download-receipt.v1"
+        ),
         "dataset_revision": cfg["dataset_revision"],
         "dataset_doi": cfg["official_source"]["dataset_doi"],
         "license_spdx": cfg["official_source"]["license_spdx"],
         "files": receipts,
     }
-    _write_json_once(raw_dir / "download_receipt.json", receipt)
+    if not complete_inventory:
+        receipt["complete_frozen_inventory"] = False
+        receipt["selected_file_names"] = [str(spec["name"]) for spec in selected]
+    _write_json_once(_download_receipt_path(raw_dir, cfg, selected), receipt)
 
 
 def _load_config(path: Path) -> dict[str, Any]:
@@ -87,6 +97,8 @@ def _selected_files(cfg: dict[str, Any], raw: str | None) -> list[dict[str, Any]
     if not raw:
         return files
     names = {part.strip() for part in raw.split(",") if part.strip()}
+    if not names:
+        raise ValueError("Explicit --only selects no files")
     known = {str(spec["name"]) for spec in files}
     unknown = sorted(names - known)
     if unknown:
@@ -94,6 +106,20 @@ def _selected_files(cfg: dict[str, Any], raw: str | None) -> list[dict[str, Any]
             f"Unknown --only Choi file(s): {unknown}; frozen names are {sorted(known)}"
         )
     return [spec for spec in files if spec["name"] in names]
+
+
+def _download_receipt_path(
+    raw_dir: Path,
+    cfg: dict[str, Any],
+    selected: list[dict[str, Any]],
+) -> Path:
+    frozen_names = [str(spec["name"]) for spec in cfg["files"]]
+    selected_names = [str(spec["name"]) for spec in selected]
+    if selected_names == frozen_names:
+        return raw_dir / "download_receipt.json"
+    selection = json.dumps(selected_names, separators=(",", ":"), ensure_ascii=True)
+    digest = hashlib.sha256(selection.encode("utf-8")).hexdigest()[:16]
+    return raw_dir / f"download_receipt.partial-{digest}.json"
 
 
 def _fetch_json(
@@ -350,8 +376,11 @@ def _same_download_identity(existing: Any, proposed: Any) -> bool:
 
     if not isinstance(existing, dict) or not isinstance(proposed, dict):
         return False
-    schema = "cfeg.choi2019-download-receipt.v1"
-    if existing.get("schema") != schema or proposed.get("schema") != schema:
+    schemas = {
+        "cfeg.choi2019-download-receipt.v1",
+        "cfeg.choi2019-partial-download-receipt.v1",
+    }
+    if existing.get("schema") not in schemas or existing.get("schema") != proposed.get("schema"):
         return False
 
     def without_status(payload: dict[str, Any]) -> dict[str, Any]:

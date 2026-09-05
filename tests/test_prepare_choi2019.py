@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import io
+import os
 import tarfile
 from pathlib import Path
 
@@ -12,10 +14,14 @@ import yaml
 
 from cfeg.data.prepare_choi2019 import (
     PREPARED_FILENAMES,
+    _member_manifest_sha256,
+    _prepare_directory_atomically,
+    _validate_extracted_inventory,
     audit_archive,
     normalize_questionnaire,
     read_cnt,
     read_markers,
+    verify_raw_files,
 )
 
 
@@ -56,6 +62,33 @@ def _write_markers(path: Path, cfg: dict, *, wrong_class_count: bool = False) ->
         handle.create_dataset("mrk/y", data=y)
         handle.create_dataset("mrk/time", data=times.reshape(-1, 1))
         _write_cell_strings(handle, "mrk/className", cfg["marker_class_names"])
+
+
+def _fixture_member_records(cfg: dict, payload: bytes = b"x") -> list[tuple[str, int, str]]:
+    digest = hashlib.sha256(payload).hexdigest()
+    return [
+        (
+            f"S{subject}/Day{day}/{kind}_{band}({session}).mat",
+            len(payload),
+            digest,
+        )
+        for subject in range(1, 31)
+        for day in (1, 2)
+        for kind in ("cnt", "mrk")
+        for band in ("LOW", "MID", "HIGH")
+        for session in (1, 2)
+    ]
+
+
+def _write_exact_extracted_fixture(root: Path, cfg: dict) -> dict:
+    records = _fixture_member_records(cfg)
+    for relative, _, _ in records:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"x")
+    cfg["archive"]["uncompressed_regular_file_bytes"] = len(records)
+    cfg["archive"]["member_content_manifest_sha256"] = _member_manifest_sha256(records)
+    return cfg
 
 
 def test_cnt_and_marker_reader_freeze_v73_orientation_and_one_based_times(tmp_path: Path) -> None:
@@ -110,6 +143,9 @@ def test_questionnaire_is_normalized_but_not_eligible_for_trial_join(tmp_path: P
 def test_archive_audit_requires_exact_720_member_grid(tmp_path: Path) -> None:
     cfg = copy.deepcopy(_config())
     cfg["archive"]["uncompressed_regular_file_bytes"] = 720
+    cfg["archive"]["member_content_manifest_sha256"] = _member_manifest_sha256(
+        _fixture_member_records(cfg)
+    )
     archive_path = tmp_path / "fixture.tar.gz"
     with tarfile.open(archive_path, "w:gz") as archive:
         for subject in range(1, 31):
@@ -131,6 +167,7 @@ def test_archive_audit_requires_exact_720_member_grid(tmp_path: Path) -> None:
         "regular_files": 720,
         "directories": 90,
         "uncompressed_regular_file_bytes": 720,
+        "member_content_manifest_sha256": cfg["archive"]["member_content_manifest_sha256"],
     }
 
 
@@ -145,3 +182,107 @@ def test_prepared_output_contract_includes_partial_and_companion_files() -> None
         "questionnaire_normalized.csv",
         "asset_info.json",
     } <= set(PREPARED_FILENAMES)
+
+
+def test_reused_extracted_tree_hashes_every_member_and_rejects_tampering(tmp_path: Path) -> None:
+    cfg = _write_exact_extracted_fixture(tmp_path / "extracted", copy.deepcopy(_config()))
+    receipt = _validate_extracted_inventory(tmp_path / "extracted", cfg)
+    assert receipt["regular_files"] == 720
+
+    (tmp_path / "extracted/S1/Day1/cnt_LOW(1).mat").write_bytes(b"y")
+    with pytest.raises(ValueError, match="member-content manifest mismatch"):
+        _validate_extracted_inventory(tmp_path / "extracted", cfg)
+
+
+def test_reused_extracted_tree_rejects_symlink_extra_and_nonregular_entries(
+    tmp_path: Path,
+) -> None:
+    for case in ("symlink", "extra", "fifo"):
+        root = tmp_path / case / "extracted"
+        cfg = _write_exact_extracted_fixture(root, copy.deepcopy(_config()))
+        if case == "symlink":
+            target = root / "S1/Day1/cnt_LOW(1).mat"
+            target.unlink()
+            target.symlink_to(root / "S1/Day1/mrk_LOW(1).mat")
+            match = "Symlink is forbidden"
+        elif case == "extra":
+            (root / "unexpected.txt").write_text("unexpected", encoding="utf-8")
+            match = "Unexpected file"
+        else:
+            os.mkfifo(root / "S1/Day1/unexpected-pipe")
+            match = "Non-regular entry"
+        with pytest.raises(ValueError, match=match):
+            _validate_extracted_inventory(root, cfg)
+
+
+def test_all_three_raw_files_are_verified_before_use(tmp_path: Path) -> None:
+    cfg = copy.deepcopy(_config())
+    for index, spec in enumerate(cfg["files"]):
+        payload = f"raw-{index}".encode()
+        (tmp_path / spec["name"]).write_bytes(payload)
+        spec["object_size_bytes"] = len(payload)
+        spec["md5"] = hashlib.md5(payload).hexdigest()
+        spec["sha256"] = hashlib.sha256(payload).hexdigest()
+    assert set(verify_raw_files(tmp_path, cfg)) == {
+        "mrk-and-cnt_datasets.tar.gz",
+        "readme_100660.txt",
+        "questionnaires_answers.csv",
+    }
+
+    (tmp_path / "questionnaires_answers.csv").write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="questionnaires_answers.csv"):
+        verify_raw_files(tmp_path, cfg)
+
+
+def test_preparation_publishes_atomically_and_preserves_failed_staging(tmp_path: Path) -> None:
+    final = tmp_path / "choi2019_v1"
+
+    def fail(staging: Path) -> dict:
+        (staging / "partial.txt").write_text("preserve", encoding="utf-8")
+        raise RuntimeError("injected failure")
+
+    with pytest.raises(RuntimeError, match="injected failure"):
+        _prepare_directory_atomically(final, fail)
+    assert not final.exists()
+    failed = list(tmp_path.glob(".choi2019_v1.staging-*"))
+    assert len(failed) == 1
+    assert (failed[0] / "partial.txt").read_text(encoding="utf-8") == "preserve"
+
+    second_final = tmp_path / "choi2019_v1_complete"
+
+    def succeed(staging: Path) -> dict:
+        for name in PREPARED_FILENAMES:
+            if not name.endswith(".tmp"):
+                (staging / name).write_text(name, encoding="utf-8")
+        return {"status": "ok"}
+
+    assert _prepare_directory_atomically(second_final, succeed) == {"status": "ok"}
+    assert second_final.is_dir()
+    assert not list(tmp_path.glob(".choi2019_v1_complete.staging-*"))
+
+
+@pytest.mark.parametrize("unsafe_kind", ["extra", "symlink", "directory"])
+def test_preparation_rejects_unsafe_or_extra_staging_entries(
+    tmp_path: Path, unsafe_kind: str
+) -> None:
+    final = tmp_path / f"choi2019_{unsafe_kind}"
+
+    def build(staging: Path) -> dict:
+        for name in PREPARED_FILENAMES:
+            if not name.endswith(".tmp"):
+                (staging / name).write_text(name, encoding="utf-8")
+        unsafe = staging / "unexpected"
+        if unsafe_kind == "extra":
+            unsafe.write_text("extra", encoding="utf-8")
+        elif unsafe_kind == "symlink":
+            (staging / "signals.h5").unlink()
+            (staging / "signals.h5").symlink_to(staging / "manifest.jsonl")
+        else:
+            unsafe.mkdir()
+        return {"status": "must-not-publish"}
+
+    match = "unsafe" if unsafe_kind == "symlink" else "unexpected"
+    with pytest.raises(RuntimeError, match=match):
+        _prepare_directory_atomically(final, build)
+    assert not final.exists()
+    assert len(list(tmp_path.glob(f".{final.name}.staging-*"))) == 1

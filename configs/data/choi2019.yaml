@@ -61,6 +61,9 @@ archive:
   directories: 90
   uncompressed_regular_file_bytes: 11109841350
   allowed_member_regex: '^S([1-9]|[12][0-9]|30)/Day([12])/(cnt|mrk)_(LOW|MID|HIGH)\(([12])\)\.mat$'
+  member_content_manifest_sha256: 86db8a34b66b14b92c02b41334ea05f8a730be042750ab4950ca2d24933f5202
+  member_content_manifest_canonicalization: >-
+    sha256_of_utf8_jsonl_records_sorted_by_path_with_keys_path_sha256_size_bytes
 
 expected:
   n_subjects: 30
@@ -171,6 +174,12 @@ stimulus_by_band:
     frequencies_hz: [21.0, 21.5, 22.0, 22.5]
   HIGH:
     frequencies_hz: [40.0, 40.5, 41.0, 41.5]
+# The paper and distributed files do not establish the order in which a
+# participant encountered these three bands. This order exists only to make
+# file discovery and serialized outputs deterministic; it is not temporal
+# acquisition metadata and must never be supplied as such to a model.
+acquisition_band_order: unavailable_not_reported
+processing_band_order: [LOW, MID, HIGH]
 canonical_class_frequencies:
   - 5.0
   - 5.5

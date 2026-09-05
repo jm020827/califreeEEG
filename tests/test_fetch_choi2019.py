@@ -155,3 +155,26 @@ def test_download_receipt_is_idempotent_across_transport_status(tmp_path: Path) 
     changed["files"][0]["bytes"] = 4
     with pytest.raises(RuntimeError, match="Refusing to overwrite"):
         fetch._write_json_once(path, changed)
+
+
+def test_partial_fetch_can_never_claim_the_canonical_full_receipt(tmp_path: Path) -> None:
+    cfg = _config()
+    selected = fetch._selected_files(cfg, "questionnaires_answers.csv")
+    partial = fetch._download_receipt_path(tmp_path, cfg, selected)
+
+    assert partial.parent == tmp_path
+    assert partial.name.startswith("download_receipt.partial-")
+    assert partial.name.endswith(".json")
+    assert partial != tmp_path / "download_receipt.json"
+    assert fetch._download_receipt_path(tmp_path, cfg, list(cfg["files"])) == (
+        tmp_path / "download_receipt.json"
+    )
+    reordered = list(reversed(cfg["files"]))
+    assert fetch._download_receipt_path(tmp_path, cfg, reordered) != (
+        tmp_path / "download_receipt.json"
+    )
+
+
+def test_empty_explicit_file_selection_is_rejected() -> None:
+    with pytest.raises(ValueError, match="selects no files"):
+        fetch._selected_files(_config(), ", ,")
