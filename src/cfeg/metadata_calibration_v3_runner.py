@@ -10,14 +10,19 @@ next write-once phase may run.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
+import stat
+import subprocess
 import sys
+import sysconfig
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import ModuleType
 from typing import Any, Protocol, TextIO
 
@@ -25,6 +30,12 @@ V3_SOURCE_REPOSITORY = Path("/home/whwovy/califreeEEG")
 V3_PYTHON_EXECUTABLE = V3_SOURCE_REPOSITORY / ".venv/bin/python"
 V3_SITE_PACKAGES = V3_SOURCE_REPOSITORY / ".venv/lib/python3.10/site-packages"
 V3_REPOSITORY_SRC = V3_SOURCE_REPOSITORY / "src"
+V3_RUNNER_PATH = V3_REPOSITORY_SRC / "cfeg/metadata_calibration_v3_runner.py"
+V3_GIT_EXECUTABLE = Path("/usr/bin/git")
+V3_DEVELOPMENT_BUNDLE_PATH = Path(
+    "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+    "development-v1/development-bundle.json"
+)
 
 _EXPECTED_STANDARD_LIBRARY_PATH = (
     "/usr/lib/python310.zip",
@@ -32,14 +43,1260 @@ _EXPECTED_STANDARD_LIBRARY_PATH = (
     "/usr/lib/python3.10/lib-dynload",
 )
 EXPECTED_RUNNER_SYS_PATH = (
-    os.fspath(V3_REPOSITORY_SRC),
     *_EXPECTED_STANDARD_LIBRARY_PATH,
+    os.fspath(V3_REPOSITORY_SRC),
     os.fspath(V3_SITE_PACKAGES),
 )
+
+_DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+_PYTHON_SITE_INVENTORY_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.python-site-inventory.v1"
+_CANDIDATE_ID = "metadata-calibration-efficiency-v3"
+_SELECTED_METHOD_RELATIVE_PATH = (
+    "configs/governance/metadata_calibration_v3_selected_method_freeze.json"
+)
+_PROTECTED_SOURCE_ROOTS = ("scripts", "src", "tests")
+_ROOT_IMPORT_CONTROLS = frozenset(
+    {
+        ".pytest.ini",
+        ".pytest.toml",
+        ".pythonrc.py",
+        "conftest.py",
+        "pyproject.toml",
+        "pytest.ini",
+        "pytest.toml",
+        "setup.cfg",
+        "setup.py",
+        "sitecustomize.py",
+        "tox.ini",
+        "usercustomize.py",
+    }
+)
+_COMMANDS = ("status", "resume", "emit-selection")
+_SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
+_GIT_OBJECT_RE = re.compile(r"[0-9a-f]{40}\Z")
+_STRICT_GIT_ENVIRONMENT = {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "GIT_TERMINAL_PROMPT": "0",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+}
+_PREFLIGHT_ISSUER = object()
 
 
 class RunnerError(RuntimeError):
     """The fixed runner state or transition is invalid."""
+
+
+@dataclass(frozen=True, slots=True)
+class _PreflightConfig:
+    """Fixed production paths, with an explicit isolated-test construction seam."""
+
+    repository: Path
+    python_executable: Path
+    site_packages: Path
+    repository_src: Path
+    runner_path: Path
+    runner_repository_path: str
+    bundle_path: Path
+    standard_library_path: tuple[str, ...]
+    protected_source_roots: tuple[str, ...]
+    root_import_controls: frozenset[str]
+    selected_method_relative_path: str
+    require_direct_invocation: bool
+
+
+@dataclass(frozen=True, slots=True)
+class _TrackedFile:
+    path: str
+    kind: str
+    file_sha256: str
+
+    def record(self) -> dict[str, str]:
+        return {
+            "file_sha256": self.file_sha256,
+            "kind": self.kind,
+            "path": self.path,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class _SourceFacts:
+    commit: str
+    tree: str
+    tracked_files: tuple[_TrackedFile, ...]
+    source_bundle_sha256: str
+    git_executable_file_sha256: str
+    git_version: str
+    runner_file_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class _PreflightFacts:
+    config: _PreflightConfig
+    command: str | None
+    source: _SourceFacts
+    python: Mapping[str, Any]
+    python_site_inventory: Mapping[str, Any]
+    bundle_payload: Mapping[str, Any] | None
+    _issuer: object
+
+
+_PRODUCTION_PREFLIGHT_CONFIG = _PreflightConfig(
+    repository=V3_SOURCE_REPOSITORY,
+    python_executable=V3_PYTHON_EXECUTABLE,
+    site_packages=V3_SITE_PACKAGES,
+    repository_src=V3_REPOSITORY_SRC,
+    runner_path=V3_RUNNER_PATH,
+    runner_repository_path="src/cfeg/metadata_calibration_v3_runner.py",
+    bundle_path=V3_DEVELOPMENT_BUNDLE_PATH,
+    standard_library_path=_EXPECTED_STANDARD_LIBRARY_PATH,
+    protected_source_roots=_PROTECTED_SOURCE_ROOTS,
+    root_import_controls=_ROOT_IMPORT_CONTROLS,
+    selected_method_relative_path=_SELECTED_METHOD_RELATIVE_PATH,
+    require_direct_invocation=True,
+)
+
+
+def _plain_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        if any(not isinstance(key, str) for key in value):
+            raise RunnerError("JSON object keys must be strings")
+        return {key: _plain_json(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_plain_json(item) for item in value]
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    raise RunnerError(f"value is not JSON-compatible: {type(value).__name__}")
+
+
+def _canonical_json_bytes(value: Mapping[str, Any]) -> bytes:
+    try:
+        return json.dumps(
+            _plain_json(value),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise RunnerError("value is not canonical JSON") from exc
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _stat_identity(value: os.stat_result) -> tuple[int, ...]:
+    return (
+        value.st_dev,
+        value.st_ino,
+        value.st_mode,
+        value.st_uid,
+        value.st_nlink,
+        value.st_size,
+        value.st_mtime_ns,
+        value.st_ctime_ns,
+    )
+
+
+def _require_safe_directory_stat(value: os.stat_result, label: str) -> None:
+    mode = stat.S_IMODE(value.st_mode)
+    if (
+        not stat.S_ISDIR(value.st_mode)
+        or value.st_uid != os.geteuid()
+        or mode & stat.S_IWOTH
+        or mode & 0o7000
+    ):
+        raise RunnerError(f"{label} is not a safe owner-controlled directory")
+
+
+def _require_safe_regular_stat(
+    value: os.stat_result,
+    label: str,
+    *,
+    require_current_owner: bool,
+    require_single_link: bool,
+) -> None:
+    mode = stat.S_IMODE(value.st_mode)
+    if (
+        not stat.S_ISREG(value.st_mode)
+        or (require_current_owner and value.st_uid != os.geteuid())
+        or value.st_nlink < 1
+        or (require_single_link and value.st_nlink != 1)
+        or not mode & stat.S_IRUSR
+        or mode & stat.S_IWOTH
+        or mode & 0o7000
+    ):
+        raise RunnerError(f"{label} is not a safe owner-controlled regular file")
+
+
+def _path_parts(path: Path) -> tuple[str, ...]:
+    raw = os.fspath(path)
+    pure = PurePosixPath(raw)
+    if not pure.is_absolute() or raw != pure.as_posix():
+        raise RunnerError("preflight path is not exact canonical absolute POSIX text")
+    parts = pure.parts
+    if not parts or parts[0] != "/" or any(part in {"", ".", ".."} for part in parts[1:]):
+        raise RunnerError("preflight path contains an unsafe component")
+    return tuple(parts[1:])
+
+
+def _open_absolute_directory(path: Path) -> int:
+    if not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
+        raise RunnerError("directory-fd and no-follow primitives are required")
+    descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for part in _path_parts(path):
+            child = os.open(
+                part,
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                dir_fd=descriptor,
+            )
+            os.close(descriptor)
+            descriptor = child
+        return descriptor
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def _hash_open_regular_file(
+    descriptor: int,
+    *,
+    label: str,
+    require_current_owner: bool = True,
+    require_single_link: bool,
+) -> tuple[str, os.stat_result]:
+    before = os.fstat(descriptor)
+    _require_safe_regular_stat(
+        before,
+        label,
+        require_current_owner=require_current_owner,
+        require_single_link=require_single_link,
+    )
+    digest = hashlib.sha256()
+    while True:
+        chunk = os.read(descriptor, 1 << 20)
+        if not chunk:
+            break
+        digest.update(chunk)
+    after = os.fstat(descriptor)
+    if _stat_identity(before) != _stat_identity(after):
+        raise RunnerError(f"{label} changed while it was hashed")
+    return digest.hexdigest(), before
+
+
+def _hash_absolute_regular_file(
+    path: Path,
+    *,
+    label: str,
+    require_current_owner: bool = True,
+    require_single_link: bool,
+) -> str:
+    parts = _path_parts(path)
+    if not parts:
+        raise RunnerError(f"{label} cannot be filesystem root")
+    parent = Path("/", *parts[:-1])
+    directory = _open_absolute_directory(parent)
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(
+            parts[-1],
+            os.O_RDONLY | os.O_NOFOLLOW,
+            dir_fd=directory,
+        )
+        digest, _ = _hash_open_regular_file(
+            descriptor,
+            label=label,
+            require_current_owner=require_current_owner,
+            require_single_link=require_single_link,
+        )
+        return digest
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        os.close(directory)
+
+
+def _read_open_file(descriptor: int, *, maximum_bytes: int, label: str) -> bytes:
+    chunks: list[bytes] = []
+    size = 0
+    while True:
+        chunk = os.read(descriptor, min(1 << 20, maximum_bytes - size + 1))
+        if not chunk:
+            break
+        chunks.append(chunk)
+        size += len(chunk)
+        if size > maximum_bytes:
+            raise RunnerError(f"{label} exceeds its pre-import size limit")
+    return b"".join(chunks)
+
+
+def _read_optional_artifact(path: Path) -> bytes | None:
+    parts = _path_parts(path)
+    if not parts:
+        raise RunnerError("bundle path cannot be filesystem root")
+    try:
+        directory = _open_absolute_directory(Path("/", *parts[:-1]))
+    except FileNotFoundError:
+        return None
+    descriptor: int | None = None
+    try:
+        try:
+            descriptor = os.open(
+                parts[-1],
+                os.O_RDONLY | os.O_NOFOLLOW,
+                dir_fd=directory,
+            )
+        except FileNotFoundError:
+            return None
+        before = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(before.st_mode)
+            or before.st_uid != os.geteuid()
+            or before.st_nlink != 1
+            or stat.S_IMODE(before.st_mode) != 0o400
+        ):
+            raise RunnerError("development bundle is not the exact immutable artifact type")
+        data = _read_open_file(
+            descriptor,
+            maximum_bytes=64 * 1024 * 1024,
+            label="development bundle",
+        )
+        if _stat_identity(before) != _stat_identity(os.fstat(descriptor)):
+            raise RunnerError("development bundle changed while it was read")
+        return data
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        os.close(directory)
+
+
+def _run_git(config: _PreflightConfig, arguments: Sequence[str]) -> bytes:
+    completed = subprocess.run(
+        [
+            os.fspath(V3_GIT_EXECUTABLE),
+            "--no-optional-locks",
+            "-c",
+            "core.fsmonitor=false",
+            "-c",
+            "core.hooksPath=/dev/null",
+            "-C",
+            os.fspath(config.repository),
+            *arguments,
+        ],
+        check=False,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        env=dict(_STRICT_GIT_ENVIRONMENT),
+    )
+    if completed.returncode != 0 or completed.stderr:
+        detail = completed.stderr.decode("utf-8", errors="replace").strip()
+        raise RunnerError(f"strict Git preflight command failed: {detail}")
+    return completed.stdout
+
+
+def _require_git_object(value: str, label: str) -> str:
+    if not _GIT_OBJECT_RE.fullmatch(value):
+        raise RunnerError(f"{label} is not an exact SHA-1 Git object ID")
+    return value
+
+
+def _decode_git_path(raw: bytes) -> str:
+    try:
+        path = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise RunnerError("Git source path is not UTF-8") from exc
+    pure = PurePosixPath(path)
+    if (
+        not path
+        or "\x00" in path
+        or pure.is_absolute()
+        or pure.as_posix() != path
+        or any(part in {"", ".", ".."} for part in pure.parts)
+    ):
+        raise RunnerError("Git source path is not canonical repository-relative text")
+    return path
+
+
+def _git_repository_precheck(config: _PreflightConfig) -> None:
+    repository = config.repository
+    repository_descriptor = _open_absolute_directory(repository)
+    try:
+        _require_safe_directory_stat(os.fstat(repository_descriptor), "repository root")
+    finally:
+        os.close(repository_descriptor)
+    try:
+        top = _run_git(config, ("rev-parse", "--show-toplevel")).decode("utf-8").strip()
+        git_dir = _run_git(config, ("rev-parse", "--absolute-git-dir")).decode("utf-8").strip()
+    except UnicodeDecodeError as exc:
+        raise RunnerError("Git repository identity paths are not UTF-8") from exc
+    if top != os.fspath(repository) or git_dir != os.fspath(repository / ".git"):
+        raise RunnerError("repository is not the exact local non-worktree Git root")
+    git_descriptor = _open_absolute_directory(repository / ".git")
+    os.close(git_descriptor)
+    try:
+        os.lstat(repository / ".git/objects/info/alternates")
+    except FileNotFoundError:
+        pass
+    else:
+        raise RunnerError("Git alternate object stores are prohibited")
+    if _run_git(config, ("for-each-ref", "--format=%(refname)", "refs/replace")):
+        raise RunnerError("Git replacement objects are prohibited")
+    raw_config = _run_git(config, ("config", "--local", "--null", "--list"))
+    for raw_record in raw_config.split(b"\x00"):
+        if not raw_record:
+            continue
+        raw_key, separator, raw_value = raw_record.partition(b"\n")
+        try:
+            key = raw_key.decode("utf-8").casefold()
+            value = raw_value.decode("utf-8").casefold()
+        except UnicodeDecodeError as exc:
+            raise RunnerError("local Git configuration is not UTF-8") from exc
+        if key in {"core.sparsecheckout", "core.sparsecheckoutcone"}:
+            if not separator or value not in {
+                "true",
+                "false",
+                "yes",
+                "no",
+                "on",
+                "off",
+                "1",
+                "0",
+            }:
+                raise RunnerError("sparse-checkout setting is not canonical Boolean")
+            if value in {"true", "yes", "on", "1"}:
+                raise RunnerError("sparse checkout is prohibited")
+    try:
+        os.lstat(repository / ".git/info/sparse-checkout")
+    except FileNotFoundError:
+        pass
+    else:
+        raise RunnerError("sparse-checkout pattern state is prohibited")
+
+
+def _capture_committed_files(
+    config: _PreflightConfig,
+    commit: str,
+) -> tuple[str, tuple[_TrackedFile, ...], str]:
+    commit = _require_git_object(commit, "source commit")
+    try:
+        resolved = (
+            _run_git(config, ("rev-parse", "--verify", f"{commit}^{{commit}}"))
+            .decode("ascii")
+            .strip()
+        )
+        tree = (
+            _run_git(config, ("rev-parse", "--verify", f"{commit}^{{tree}}"))
+            .decode("ascii")
+            .strip()
+        )
+    except UnicodeDecodeError as exc:
+        raise RunnerError("Git object identity is not ASCII") from exc
+    if resolved != commit:
+        raise RunnerError("source commit does not resolve exactly")
+    _require_git_object(tree, "source tree")
+    raw_tree = _run_git(config, ("ls-tree", "-r", "-z", "--full-tree", commit))
+    records: list[_TrackedFile] = []
+    for raw_record in raw_tree.split(b"\x00"):
+        if not raw_record:
+            continue
+        try:
+            metadata, raw_path = raw_record.split(b"\t", 1)
+            raw_mode, raw_type, raw_object = metadata.split(b" ")
+            mode = raw_mode.decode("ascii")
+            object_type = raw_type.decode("ascii")
+            object_id = raw_object.decode("ascii")
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise RunnerError("Git tree contains a malformed record") from exc
+        if mode not in {"100644", "100755"} or object_type != "blob":
+            raise RunnerError("source tree permits regular tracked blobs only")
+        path = _decode_git_path(raw_path)
+        blob = _run_git(config, ("cat-file", "blob", object_id))
+        records.append(
+            _TrackedFile(
+                path=path,
+                kind="executable_file" if mode == "100755" else "regular_file",
+                file_sha256=_sha256_bytes(blob),
+            )
+        )
+    records.sort(key=lambda item: item.path)
+    paths = tuple(item.path for item in records)
+    if not records or len(paths) != len(set(paths)):
+        raise RunnerError("committed source inventory is empty or contains duplicate paths")
+    inventory = tuple(records)
+    digest = _sha256_bytes(_canonical_json_bytes({"files": [item.record() for item in inventory]}))
+    return tree, inventory, digest
+
+
+def _require_index_matches_commit(
+    config: _PreflightConfig,
+    tracked_files: tuple[_TrackedFile, ...],
+) -> None:
+    expected_paths = tuple(item.path for item in tracked_files)
+    visible_paths: list[str] = []
+    for raw_record in _run_git(config, ("ls-files", "-v", "-z")).split(b"\x00"):
+        if not raw_record:
+            continue
+        if len(raw_record) < 3 or raw_record[:2] != b"H ":
+            raise RunnerError("Git index contains hidden or special path state")
+        visible_paths.append(_decode_git_path(raw_record[2:]))
+    if tuple(visible_paths) != expected_paths:
+        raise RunnerError("Git index path inventory differs from HEAD")
+    staged_paths: list[str] = []
+    for raw_record in _run_git(config, ("ls-files", "--stage", "-z")).split(b"\x00"):
+        if not raw_record:
+            continue
+        try:
+            metadata, raw_path = raw_record.split(b"\t", 1)
+            mode, object_id, stage = metadata.decode("ascii").split(" ")
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise RunnerError("Git staged inventory contains a malformed record") from exc
+        if mode not in {"100644", "100755"} or stage != "0":
+            raise RunnerError("Git index contains a noncanonical stage or mode")
+        _require_git_object(object_id, "index blob")
+        staged_paths.append(_decode_git_path(raw_path))
+    if tuple(staged_paths) != expected_paths:
+        raise RunnerError("Git staged path inventory differs from HEAD")
+
+
+def _open_relative_directory(root_descriptor: int, parts: Sequence[str]) -> int:
+    descriptor = os.dup(root_descriptor)
+    try:
+        for part in parts:
+            child = os.open(
+                part,
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                dir_fd=descriptor,
+            )
+            _require_safe_directory_stat(os.fstat(child), "source directory")
+            os.close(descriptor)
+            descriptor = child
+        return descriptor
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def _hash_tracked_worktree_file(
+    root_descriptor: int,
+    item: _TrackedFile,
+) -> str:
+    pure = PurePosixPath(item.path)
+    directory = _open_relative_directory(root_descriptor, pure.parts[:-1])
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(
+            pure.parts[-1],
+            os.O_RDONLY | os.O_NOFOLLOW,
+            dir_fd=directory,
+        )
+        digest, observed = _hash_open_regular_file(
+            descriptor,
+            label=f"tracked source {item.path}",
+            require_single_link=True,
+        )
+        mode = stat.S_IMODE(observed.st_mode)
+        executable = mode & 0o111 == 0o111
+        if item.kind == "executable_file":
+            if not executable:
+                raise RunnerError(f"tracked executable mode differs for {item.path}")
+        elif executable or mode & 0o111:
+            raise RunnerError(f"tracked regular-file mode differs for {item.path}")
+        return digest
+    except OSError as exc:
+        raise RunnerError(f"tracked source cannot be opened safely: {item.path}") from exc
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        os.close(directory)
+
+
+def _require_exact_protected_tree(
+    root_descriptor: int,
+    root_name: str,
+    expected_files: Mapping[str, _TrackedFile],
+) -> None:
+    expected_directories = {root_name}
+    for path in expected_files:
+        parts = PurePosixPath(path).parts
+        for index in range(1, len(parts)):
+            expected_directories.add(PurePosixPath(*parts[:index]).as_posix())
+    root = _open_relative_directory(root_descriptor, (root_name,))
+    seen_files: set[str] = set()
+    seen_directories = {root_name}
+
+    def visit(directory: int, relative: str) -> None:
+        before = os.fstat(directory)
+        _require_safe_directory_stat(before, f"protected source directory {relative}")
+        with os.scandir(directory) as scanner:
+            entries = sorted(scanner, key=lambda entry: entry.name)
+        for entry in entries:
+            try:
+                entry.name.encode("utf-8", errors="strict")
+            except UnicodeEncodeError as exc:
+                raise RunnerError("protected source entry name is not UTF-8") from exc
+            if entry.name in {"", ".", ".."} or "/" in entry.name or "\x00" in entry.name:
+                raise RunnerError("protected source entry name is not canonical")
+            path = PurePosixPath(relative, entry.name).as_posix()
+            observed = entry.stat(follow_symlinks=False)
+            if stat.S_ISDIR(observed.st_mode):
+                if path not in expected_directories:
+                    raise RunnerError(f"uncommitted directory in protected source tree: {path}")
+                child = os.open(
+                    entry.name,
+                    os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                    dir_fd=directory,
+                )
+                try:
+                    if (observed.st_dev, observed.st_ino) != (
+                        os.fstat(child).st_dev,
+                        os.fstat(child).st_ino,
+                    ):
+                        raise RunnerError(f"protected source directory raced: {path}")
+                    seen_directories.add(path)
+                    visit(child, path)
+                finally:
+                    os.close(child)
+            elif stat.S_ISREG(observed.st_mode):
+                item = expected_files.get(path)
+                if item is None:
+                    raise RunnerError(f"uncommitted file in protected source tree: {path}")
+                descriptor = os.open(
+                    entry.name,
+                    os.O_RDONLY | os.O_NOFOLLOW,
+                    dir_fd=directory,
+                )
+                try:
+                    digest, opened = _hash_open_regular_file(
+                        descriptor,
+                        label=f"protected source {path}",
+                        require_single_link=True,
+                    )
+                    if (observed.st_dev, observed.st_ino) != (
+                        opened.st_dev,
+                        opened.st_ino,
+                    ):
+                        raise RunnerError(f"protected source file raced: {path}")
+                    if digest != item.file_sha256:
+                        raise RunnerError(f"protected source bytes differ from Git: {path}")
+                finally:
+                    os.close(descriptor)
+                seen_files.add(path)
+            else:
+                raise RunnerError(f"symlink or special entry in protected source tree: {path}")
+        if _stat_identity(before) != _stat_identity(os.fstat(directory)):
+            raise RunnerError(f"protected source directory changed during scan: {relative}")
+
+    try:
+        visit(root, root_name)
+    finally:
+        os.close(root)
+    if seen_files != set(expected_files) or seen_directories != expected_directories:
+        raise RunnerError(f"protected source tree is incomplete: {root_name}")
+
+
+def _require_root_import_controls(
+    config: _PreflightConfig,
+    root_descriptor: int,
+    tracked_by_path: Mapping[str, _TrackedFile],
+) -> None:
+    for name in sorted(config.root_import_controls):
+        if PurePosixPath(name).parts != (name,):
+            raise RunnerError("root import-control name is not canonical")
+        expected = tracked_by_path.get(name)
+        try:
+            observed = os.stat(name, dir_fd=root_descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            if expected is not None:
+                raise RunnerError(f"tracked root import control is missing: {name}")
+            continue
+        if expected is None:
+            raise RunnerError(f"uncommitted root import control is prohibited: {name}")
+        if not stat.S_ISREG(observed.st_mode):
+            raise RunnerError(f"root import control is not a regular file: {name}")
+        if _hash_tracked_worktree_file(root_descriptor, expected) != expected.file_sha256:
+            raise RunnerError(f"root import control differs from Git: {name}")
+
+
+def _capture_source_facts(
+    config: _PreflightConfig,
+    *,
+    executing_file: Path,
+) -> _SourceFacts:
+    git_hash = _hash_absolute_regular_file(
+        V3_GIT_EXECUTABLE,
+        label="pinned Git executable",
+        require_current_owner=False,
+        require_single_link=False,
+    )
+    _git_repository_precheck(config)
+    before_commit_raw = _run_git(config, ("rev-parse", "--verify", "HEAD^{commit}"))
+    try:
+        commit = before_commit_raw.decode("ascii").strip()
+    except UnicodeDecodeError as exc:
+        raise RunnerError("HEAD identity is not ASCII") from exc
+    _require_git_object(commit, "HEAD")
+    tree, tracked_files, source_digest = _capture_committed_files(config, commit)
+    _require_index_matches_commit(config, tracked_files)
+    if _run_git(config, ("status", "--porcelain=v1", "--untracked-files=all", "-z")):
+        raise RunnerError("runner requires an exactly clean Git worktree")
+    tracked_by_path = {item.path: item for item in tracked_files}
+    root = _open_absolute_directory(config.repository)
+    try:
+        for item in tracked_files:
+            if _hash_tracked_worktree_file(root, item) != item.file_sha256:
+                raise RunnerError(f"tracked working-tree bytes differ from Git: {item.path}")
+        for root_name in config.protected_source_roots:
+            prefix = root_name + "/"
+            expected = {
+                path: item for path, item in tracked_by_path.items() if path.startswith(prefix)
+            }
+            if not expected:
+                raise RunnerError(f"protected source root has no committed files: {root_name}")
+            _require_exact_protected_tree(root, root_name, expected)
+        _require_root_import_controls(config, root, tracked_by_path)
+    finally:
+        os.close(root)
+    runner = tracked_by_path.get(config.runner_repository_path)
+    if runner is None or runner.kind != "regular_file":
+        raise RunnerError("runner is not the exact committed regular source file")
+    executing_hash = _hash_absolute_regular_file(
+        executing_file,
+        label="executing runner source",
+        require_single_link=True,
+    )
+    canonical_runner_hash = _hash_absolute_regular_file(
+        config.runner_path,
+        label="canonical runner source",
+        require_single_link=True,
+    )
+    if executing_hash != runner.file_sha256 or canonical_runner_hash != runner.file_sha256:
+        raise RunnerError("executing runner bytes differ from committed canonical runner")
+    _require_index_matches_commit(config, tracked_files)
+    after_commit = _run_git(config, ("rev-parse", "--verify", "HEAD^{commit}"))
+    after_tree = _run_git(config, ("rev-parse", "--verify", "HEAD^{tree}"))
+    after_status = _run_git(
+        config,
+        ("status", "--porcelain=v1", "--untracked-files=all", "-z"),
+    )
+    if (
+        after_commit != before_commit_raw
+        or after_tree.decode("ascii").strip() != tree
+        or after_status
+    ):
+        raise RunnerError("Git source changed during pre-import capture")
+    git_hash_after = _hash_absolute_regular_file(
+        V3_GIT_EXECUTABLE,
+        label="pinned Git executable",
+        require_current_owner=False,
+        require_single_link=False,
+    )
+    if git_hash_after != git_hash:
+        raise RunnerError("pinned Git executable changed during source capture")
+    try:
+        git_version = _run_git(config, ("--version",)).decode("ascii").strip()
+    except UnicodeDecodeError as exc:
+        raise RunnerError("pinned Git version is not ASCII") from exc
+    if not git_version.startswith("git version ") or "\n" in git_version:
+        raise RunnerError("pinned Git version output is malformed")
+    return _SourceFacts(
+        commit=commit,
+        tree=tree,
+        tracked_files=tracked_files,
+        source_bundle_sha256=source_digest,
+        git_executable_file_sha256=git_hash,
+        git_version=git_version,
+        runner_file_sha256=runner.file_sha256,
+    )
+
+
+def _site_mode(value: int) -> str:
+    return f"0{stat.S_IMODE(value):03o}"
+
+
+def _capture_python_site_inventory(site_packages: Path) -> Mapping[str, Any]:
+    """Hash every installed site entry without importing or executing any of it."""
+
+    root = _open_absolute_directory(site_packages)
+    entries: list[dict[str, Any]] = []
+
+    def visit(directory: int, relative: str) -> None:
+        before = os.fstat(directory)
+        _require_safe_directory_stat(before, f"Python site directory {relative}")
+        entries.append(
+            {
+                "kind": "directory",
+                "mode": _site_mode(before.st_mode),
+                "path": relative,
+            }
+        )
+        with os.scandir(directory) as scanner:
+            children = sorted(scanner, key=lambda entry: entry.name)
+        for child in children:
+            try:
+                child.name.encode("utf-8", errors="strict")
+            except UnicodeEncodeError as exc:
+                raise RunnerError("Python site entry name is not UTF-8") from exc
+            if child.name in {"", ".", ".."} or "/" in child.name or "\x00" in child.name:
+                raise RunnerError("Python site entry name is not canonical")
+            path = child.name if relative == "." else f"{relative}/{child.name}"
+            observed = child.stat(follow_symlinks=False)
+            if stat.S_ISDIR(observed.st_mode):
+                descriptor = os.open(
+                    child.name,
+                    os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                    dir_fd=directory,
+                )
+                try:
+                    opened = os.fstat(descriptor)
+                    if (observed.st_dev, observed.st_ino) != (
+                        opened.st_dev,
+                        opened.st_ino,
+                    ):
+                        raise RunnerError(f"Python site directory raced: {path}")
+                    visit(descriptor, path)
+                finally:
+                    os.close(descriptor)
+            elif stat.S_ISREG(observed.st_mode):
+                descriptor = os.open(
+                    child.name,
+                    os.O_RDONLY | os.O_NOFOLLOW,
+                    dir_fd=directory,
+                )
+                try:
+                    digest, opened = _hash_open_regular_file(
+                        descriptor,
+                        label=f"Python site file {path}",
+                        require_single_link=False,
+                    )
+                    if (observed.st_dev, observed.st_ino) != (
+                        opened.st_dev,
+                        opened.st_ino,
+                    ):
+                        raise RunnerError(f"Python site file raced: {path}")
+                    entries.append(
+                        {
+                            "file_sha256": digest,
+                            "kind": "regular_file",
+                            "link_count": opened.st_nlink,
+                            "mode": _site_mode(opened.st_mode),
+                            "path": path,
+                            "size_bytes": opened.st_size,
+                        }
+                    )
+                finally:
+                    os.close(descriptor)
+            else:
+                raise RunnerError(f"Python site contains a symlink or special entry: {path}")
+        if _stat_identity(before) != _stat_identity(os.fstat(directory)):
+            raise RunnerError(f"Python site directory changed during scan: {relative}")
+
+    try:
+        visit(root, ".")
+    finally:
+        os.close(root)
+    entries.sort(key=lambda item: str(item["path"]))
+    directory_count = sum(item["kind"] == "directory" for item in entries)
+    regular_files = tuple(item for item in entries if item["kind"] == "regular_file")
+    preimage = {
+        "entries": entries,
+        "root_path": os.fspath(site_packages),
+        "schema": _PYTHON_SITE_INVENTORY_SCHEMA,
+    }
+    return {
+        "directory_count": directory_count,
+        "inventory_sha256": _sha256_bytes(_canonical_json_bytes(preimage)),
+        "regular_file_count": len(regular_files),
+        "root_path": os.fspath(site_packages),
+        "schema": _PYTHON_SITE_INVENTORY_SCHEMA,
+        "total_regular_file_bytes": sum(int(item["size_bytes"]) for item in regular_files),
+    }
+
+
+def _process_executable_path_and_hash() -> tuple[str, str]:
+    descriptor = os.open(f"/proc/{os.getpid()}/exe", os.O_RDONLY)
+    try:
+        digest, _ = _hash_open_regular_file(
+            descriptor,
+            label="current Python executable",
+            require_current_owner=False,
+            require_single_link=False,
+        )
+        target = os.readlink(f"/proc/{os.getpid()}/exe")
+    finally:
+        os.close(descriptor)
+    if target.endswith(" (deleted)"):
+        raise RunnerError("current Python executable was deleted")
+    resolved = Path(target).resolve(strict=True)
+    return os.fspath(resolved), digest
+
+
+def _capture_python_record(config: _PreflightConfig) -> Mapping[str, Any]:
+    executable_path, executable_hash = _process_executable_path_and_hash()
+    configured = config.python_executable.resolve(strict=True)
+    configured_hash = _hash_absolute_regular_file(
+        configured,
+        label="configured Python executable",
+        require_current_owner=False,
+        require_single_link=False,
+    )
+    if os.fspath(configured) != executable_path or configured_hash != executable_hash:
+        raise RunnerError("configured Python and the executing image differ")
+    return {
+        "configured_executable_file_sha256": configured_hash,
+        "configured_executable_path": os.fspath(configured),
+        "executable_file_sha256": executable_hash,
+        "executable_path": executable_path,
+        "implementation_cache_tag": sys.implementation.cache_tag,
+        "implementation_name": sys.implementation.name,
+        "multiarch": sysconfig.get_config_var("MULTIARCH"),
+        "soabi": sysconfig.get_config_var("SOABI"),
+        "version": sys.version,
+    }
+
+
+def _strict_json_object(data: bytes, *, label: str) -> Mapping[str, Any]:
+    if not data.endswith(b"\n") or data.endswith(b"\n\n"):
+        raise RunnerError(f"{label} is not canonical JSON plus one LF")
+
+    def exact_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in value:
+                raise RunnerError(f"{label} contains a duplicate JSON key")
+            value[key] = item
+        return value
+
+    def reject_constant(value: str) -> None:
+        raise RunnerError(f"{label} contains non-finite JSON: {value}")
+
+    try:
+        parsed = json.loads(
+            data[:-1].decode("utf-8"),
+            object_pairs_hook=exact_object,
+            parse_constant=reject_constant,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RunnerError(f"{label} is not strict UTF-8 JSON") from exc
+    if not isinstance(parsed, dict) or _canonical_json_bytes(parsed) + b"\n" != data:
+        raise RunnerError(f"{label} bytes are not canonical")
+    return parsed
+
+
+def _validate_payload_self_hash(payload: Mapping[str, Any], *, label: str) -> None:
+    claimed = payload.get("payload_sha256")
+    if not isinstance(claimed, str) or not _SHA256_RE.fullmatch(claimed):
+        raise RunnerError(f"{label} payload hash is malformed")
+    preimage = dict(payload)
+    preimage.pop("payload_sha256")
+    if _sha256_bytes(_canonical_json_bytes(preimage)) != claimed:
+        raise RunnerError(f"{label} payload self-hash differs")
+
+
+def _tracked_records(value: Any, *, label: str) -> tuple[_TrackedFile, ...]:
+    if not isinstance(value, list) or not value:
+        raise RunnerError(f"{label} is not a nonempty source inventory")
+    records: list[_TrackedFile] = []
+    for record in value:
+        if not isinstance(record, dict) or set(record) != {"file_sha256", "kind", "path"}:
+            raise RunnerError(f"{label} has a malformed record")
+        path = record["path"]
+        kind = record["kind"]
+        digest = record["file_sha256"]
+        if not isinstance(path, str):
+            raise RunnerError(f"{label} path is not text")
+        _decode_git_path(path.encode("utf-8"))
+        if kind not in {"regular_file", "executable_file"}:
+            raise RunnerError(f"{label} kind is invalid")
+        if not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest):
+            raise RunnerError(f"{label} file hash is invalid")
+        records.append(_TrackedFile(path=path, kind=kind, file_sha256=digest))
+    records_tuple = tuple(records)
+    paths = tuple(item.path for item in records_tuple)
+    if paths != tuple(sorted(paths)) or len(paths) != len(set(paths)):
+        raise RunnerError(f"{label} is not uniquely sorted")
+    return records_tuple
+
+
+def _require_current_source_compatible_with_bundle(
+    config: _PreflightConfig,
+    current: _SourceFacts,
+    bundle_source: _SourceFacts,
+) -> None:
+    if (
+        current.commit == bundle_source.commit
+        and current.tree == bundle_source.tree
+        and current.tracked_files == bundle_source.tracked_files
+        and current.source_bundle_sha256 == bundle_source.source_bundle_sha256
+    ):
+        return
+    before = {item.path: item for item in bundle_source.tracked_files}
+    after = {item.path: item for item in current.tracked_files}
+    added = set(after) - set(before)
+    if (
+        set(before) - set(after)
+        or added != {config.selected_method_relative_path}
+        or any(after[path] != item for path, item in before.items())
+        or after[config.selected_method_relative_path].kind != "regular_file"
+    ):
+        raise RunnerError("current source is neither bundle A nor exact selected-only B")
+    _run_git(
+        config,
+        ("merge-base", "--is-ancestor", bundle_source.commit, current.commit),
+    )
+
+
+def _validate_existing_bundle(
+    config: _PreflightConfig,
+    data: bytes,
+    *,
+    source: _SourceFacts,
+    python: Mapping[str, Any],
+    site_inventory: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    payload = _strict_json_object(data, label="development bundle")
+    _validate_payload_self_hash(payload, label="development bundle")
+    required = {
+        "candidate_id",
+        "canonical_path",
+        "clean_git_commit",
+        "clean_git_tree",
+        "human_EEG_outcome_authorized",
+        "numerical_runtime_fingerprint_sha256",
+        "numerical_runtime_inventory",
+        "payload_sha256",
+        "schema",
+        "scientific_lockbox_authorized",
+        "source_bundle_sha256",
+        "tracked_source_file_inventory",
+    }
+    if not required.issubset(payload):
+        raise RunnerError("development bundle lacks required pre-import bindings")
+    if (
+        payload["schema"] != _DEVELOPMENT_BUNDLE_SCHEMA
+        or payload["candidate_id"] != _CANDIDATE_ID
+        or payload["canonical_path"] != os.fspath(config.bundle_path)
+        or payload["scientific_lockbox_authorized"] is not False
+        or payload["human_EEG_outcome_authorized"] is not False
+    ):
+        raise RunnerError("development bundle has an invalid frozen identity")
+    commit = payload["clean_git_commit"]
+    tree = payload["clean_git_tree"]
+    source_digest = payload["source_bundle_sha256"]
+    if not isinstance(commit, str) or not isinstance(tree, str):
+        raise RunnerError("development bundle Git identity is malformed")
+    if not isinstance(source_digest, str) or not _SHA256_RE.fullmatch(source_digest):
+        raise RunnerError("development bundle source digest is malformed")
+    committed_tree, committed_files, committed_digest = _capture_committed_files(config, commit)
+    bundle_records = _tracked_records(
+        payload["tracked_source_file_inventory"],
+        label="development bundle source inventory",
+    )
+    if (
+        tree != committed_tree
+        or bundle_records != committed_files
+        or source_digest != committed_digest
+    ):
+        raise RunnerError("development bundle source binding differs from Git objects")
+    bundle_runner = next(
+        (
+            item
+            for item in committed_files
+            if item.path == config.runner_repository_path and item.kind == "regular_file"
+        ),
+        None,
+    )
+    if bundle_runner is None:
+        raise RunnerError("development bundle source lacks the exact runner file")
+    bundle_source = _SourceFacts(
+        commit=commit,
+        tree=committed_tree,
+        tracked_files=committed_files,
+        source_bundle_sha256=committed_digest,
+        git_executable_file_sha256=source.git_executable_file_sha256,
+        git_version=source.git_version,
+        runner_file_sha256=bundle_runner.file_sha256,
+    )
+    _require_current_source_compatible_with_bundle(config, source, bundle_source)
+    runtime = payload["numerical_runtime_inventory"]
+    fingerprint = payload["numerical_runtime_fingerprint_sha256"]
+    if not isinstance(runtime, dict):
+        raise RunnerError("development bundle numerical runtime is not an object")
+    if not isinstance(fingerprint, str) or not _SHA256_RE.fullmatch(fingerprint):
+        raise RunnerError("development bundle numerical runtime hash is malformed")
+    if _sha256_bytes(_canonical_json_bytes(runtime)) != fingerprint:
+        raise RunnerError("development bundle numerical runtime self-hash differs")
+    if runtime.get("python") != dict(python):
+        raise RunnerError("development bundle Python runtime differs before import")
+    if runtime.get("python_site_inventory") != dict(site_inventory):
+        raise RunnerError("development bundle Python site inventory differs before import")
+    git_record = runtime.get("git")
+    expected_git = {
+        "executable_file_sha256": source.git_executable_file_sha256,
+        "executable_path": os.fspath(V3_GIT_EXECUTABLE),
+        "version": source.git_version,
+    }
+    if git_record != expected_git:
+        raise RunnerError("development bundle Git runtime differs before import")
+    return payload
+
+
+def _require_process_bootstrap(
+    config: _PreflightConfig,
+    *,
+    executing_file: Path,
+) -> str | None:
+    flags = sys.flags
+    if (
+        flags.isolated != 1
+        or flags.ignore_environment != 1
+        or flags.dont_write_bytecode != 1
+        or flags.no_user_site != 1
+        or flags.no_site != 1
+    ):
+        raise RunnerError("V3 runner requires -I -B -S from interpreter startup")
+    if sys.executable != os.fspath(config.python_executable):
+        raise RunnerError("V3 runner executable is not the exact configured Python")
+    if tuple(sys.path) != config.standard_library_path:
+        raise RunnerError("V3 pre-import sys.path is not the pristine standard library")
+    if config.require_direct_invocation:
+        if (
+            Path(executing_file) != config.runner_path
+            or Path(__file__) != config.runner_path
+            or __name__ != "__main__"
+            or __spec__ is not None
+            or __package__ is not None
+        ):
+            raise RunnerError("V3 runner is not executing as the exact direct script")
+        if len(sys.argv) != 2 or sys.argv[0] != os.fspath(config.runner_path):
+            raise RunnerError("V3 runner argv is not the exact direct-script form")
+        command = sys.argv[1]
+        expected_orig = (
+            os.fspath(config.python_executable),
+            "-I",
+            "-B",
+            "-S",
+            os.fspath(config.runner_path),
+            command,
+        )
+        if command not in _COMMANDS or tuple(sys.orig_argv) != expected_orig:
+            raise RunnerError("V3 runner original argv is not an authorized command role")
+        return command
+    return None
+
+
+def _run_preimport_preflight(
+    config: _PreflightConfig,
+    *,
+    executing_file: Path,
+) -> _PreflightFacts:
+    command = _require_process_bootstrap(config, executing_file=executing_file)
+    source = _capture_source_facts(config, executing_file=executing_file)
+    python = _capture_python_record(config)
+    site_inventory = _capture_python_site_inventory(config.site_packages)
+    bundle_data = _read_optional_artifact(config.bundle_path)
+    bundle = None
+    if bundle_data is not None:
+        bundle = _validate_existing_bundle(
+            config,
+            bundle_data,
+            source=source,
+            python=python,
+            site_inventory=site_inventory,
+        )
+    source_after = _capture_source_facts(config, executing_file=executing_file)
+    if source_after != source:
+        raise RunnerError("source changed across complete pre-import validation")
+    if _capture_python_record(config) != python:
+        raise RunnerError("Python executable changed across pre-import validation")
+    if _capture_python_site_inventory(config.site_packages) != site_inventory:
+        raise RunnerError("Python site changed across complete pre-import validation")
+    return _PreflightFacts(
+        config=config,
+        command=command,
+        source=source,
+        python=python,
+        python_site_inventory=site_inventory,
+        bundle_payload=bundle,
+        _issuer=_PREFLIGHT_ISSUER,
+    )
+
+
+def _require_preflight_unchanged(
+    facts: _PreflightFacts,
+    *,
+    include_site: bool = True,
+) -> None:
+    if type(facts) is not _PreflightFacts or facts._issuer is not _PREFLIGHT_ISSUER:
+        raise RunnerError("exact internally-issued preflight facts are required")
+    expected_path = (
+        *facts.config.standard_library_path,
+        os.fspath(facts.config.repository_src),
+        os.fspath(facts.config.site_packages),
+    )
+    if tuple(sys.path) != expected_path:
+        raise RunnerError("active sys.path differs from the pre-import authority")
+    if facts.command is not None:
+        expected_orig = (
+            os.fspath(facts.config.python_executable),
+            "-I",
+            "-B",
+            "-S",
+            os.fspath(facts.config.runner_path),
+            facts.command,
+        )
+        if tuple(sys.orig_argv) != expected_orig or tuple(sys.argv) != (
+            os.fspath(facts.config.runner_path),
+            facts.command,
+        ):
+            raise RunnerError("active process argv differs from pre-import authority")
+    source = _capture_source_facts(facts.config, executing_file=facts.config.runner_path)
+    if source != facts.source:
+        raise RunnerError("source differs from the pre-import authority")
+    if _capture_python_record(facts.config) != facts.python:
+        raise RunnerError("Python executable differs from the pre-import authority")
+    if include_site:
+        current_site = _capture_python_site_inventory(facts.config.site_packages)
+        if current_site != facts.python_site_inventory:
+            raise RunnerError("Python site differs from the pre-import authority")
+    bundle_data = _read_optional_artifact(facts.config.bundle_path)
+    if facts.bundle_payload is None:
+        if bundle_data is not None:
+            raise RunnerError("development bundle appeared after pre-import validation")
+    else:
+        if bundle_data is None:
+            raise RunnerError("development bundle disappeared after pre-import validation")
+        current_bundle = _validate_existing_bundle(
+            facts.config,
+            bundle_data,
+            source=source,
+            python=facts.python,
+            site_inventory=facts.python_site_inventory,
+        )
+        if current_bundle != facts.bundle_payload:
+            raise RunnerError("development bundle differs from pre-import validation")
+
+
+def _activate_exact_import_path(facts: _PreflightFacts) -> None:
+    if tuple(sys.path) != facts.config.standard_library_path:
+        raise RunnerError("sys.path changed before exact import activation")
+    sys.path[:] = [
+        *facts.config.standard_library_path,
+        os.fspath(facts.config.repository_src),
+        os.fspath(facts.config.site_packages),
+    ]
+    expected = (
+        *facts.config.standard_library_path,
+        os.fspath(facts.config.repository_src),
+        os.fspath(facts.config.site_packages),
+    )
+    if tuple(sys.path) != expected:
+        raise RunnerError("failed to establish exact post-preflight sys.path")
 
 
 class RunStage(str, Enum):
@@ -77,9 +1334,7 @@ _RESUME_TRANSITIONS = {
     RunStage.DEVELOPMENT_PENDING: frozenset(
         {RunStage.DEVELOPMENT_NO_GO, RunStage.SELECTION_HANDOFF}
     ),
-    RunStage.TEST_EVIDENCE_PENDING: frozenset(
-        {RunStage.CANARY_AUTHORIZATION_PENDING}
-    ),
+    RunStage.TEST_EVIDENCE_PENDING: frozenset({RunStage.CANARY_AUTHORIZATION_PENDING}),
     RunStage.CANARY_AUTHORIZATION_PENDING: frozenset({RunStage.CANARY_CLAIM_PENDING}),
     RunStage.CANARY_CLAIM_PENDING: frozenset({RunStage.CANARY_BEACON_PENDING}),
     RunStage.CANARY_BEACON_PENDING: frozenset({RunStage.CANARY_RESULT_PENDING}),
@@ -160,25 +1415,38 @@ class _ValidatedGraph:
     fresh_canary_audit: Any | None = None
 
 
-def _assert_production_bootstrap() -> None:
-    """Reject every production entry that did not start from the tracked wrapper."""
-
-    flags = sys.flags
-    if (
-        flags.isolated != 1
-        or flags.ignore_environment != 1
-        or flags.dont_write_bytecode != 1
-        or flags.no_user_site != 1
-        or flags.no_site != 1
-    ):
-        raise RunnerError("V3 production runner requires -I -B -S from interpreter startup")
-    if sys.executable != os.fspath(V3_PYTHON_EXECUTABLE):
-        raise RunnerError("V3 production runner executable is not the canonical .venv Python")
+def _require_activated_production_path(facts: _PreflightFacts) -> None:
+    if type(facts) is not _PreflightFacts or facts._issuer is not _PREFLIGHT_ISSUER:
+        raise RunnerError("production facade requires exact pre-import authority")
+    if facts.config is not _PRODUCTION_PREFLIGHT_CONFIG:
+        raise RunnerError("production facade rejects test preflight configuration")
     if tuple(sys.path) != EXPECTED_RUNNER_SYS_PATH:
-        raise RunnerError("V3 production runner sys.path is not the exact site-free bootstrap")
-    expected_module = V3_REPOSITORY_SRC / "cfeg/metadata_calibration_v3_runner.py"
-    if Path(__file__).resolve() != expected_module:
-        raise RunnerError("V3 production runner module is not loaded from canonical source")
+        raise RunnerError("V3 post-preflight sys.path is not exact")
+
+
+def _require_loaded_module_at_source(
+    facts: _PreflightFacts,
+    module: ModuleType,
+    relative_path: str,
+) -> None:
+    expected = next(
+        (item for item in facts.source.tracked_files if item.path == relative_path),
+        None,
+    )
+    path = getattr(module, "__file__", None)
+    canonical = facts.config.repository / relative_path
+    if (
+        expected is None
+        or expected.kind != "regular_file"
+        or path != os.fspath(canonical)
+        or _hash_absolute_regular_file(
+            canonical,
+            label=f"loaded module {module.__name__}",
+            require_single_link=True,
+        )
+        != expected.file_sha256
+    ):
+        raise RunnerError(f"loaded module is not exact committed source: {module.__name__}")
 
 
 def _rfc3339_now_after(previous: str | None = None) -> str:
@@ -220,17 +1488,61 @@ class ProductionFacade:
         "fresh_canary_audit",
     )
 
-    def __init__(self) -> None:
-        _assert_production_bootstrap()
-        # These imports are intentionally delayed until after the site-free
-        # interpreter, executable, module path, and complete sys.path are checked.
+    def __init__(self, preflight: _PreflightFacts) -> None:
+        _require_activated_production_path(preflight)
+        # Governance is now a stdlib-only import.  It establishes the nominal
+        # direct-script role before either numerical workflow module may import
+        # anything from the frozen site-packages tree.
+        import cfeg
         from cfeg import metadata_calibration_v3_governance as governance
+
+        _require_loaded_module_at_source(preflight, cfeg, "src/cfeg/__init__.py")
+        _require_loaded_module_at_source(
+            preflight,
+            governance,
+            "src/cfeg/metadata_calibration_v3_governance.py",
+        )
+        if preflight.command is None:
+            raise RunnerError("production preflight lacks a governed command role")
+        expected_command = tuple(governance.governed_runner_command(preflight.command))
+        if tuple(sys.orig_argv) != expected_command:
+            raise RunnerError("governance and runner disagree on direct bootstrap argv")
+        governed_process = governance.establish_governed_process(
+            expected_python_site_inventory_sha256=str(
+                preflight.python_site_inventory["inventory_sha256"]
+            )
+        )
+        role_by_command = {
+            "emit-selection": "runner_emit_selection",
+            "resume": "runner_resume",
+            "status": "runner_status",
+        }
+        governance.require_governed_process_capability(
+            governed_process,
+            expected_role=role_by_command[preflight.command],
+        )
+        _require_preflight_unchanged(preflight, include_site=False)
+
         from cfeg.analysis import metadata_calibration_v3_synthetic as synthetic
         from cfeg.models import metadata_calibration_v3 as model
+
+        _require_loaded_module_at_source(
+            preflight,
+            synthetic,
+            "src/cfeg/analysis/metadata_calibration_v3_synthetic.py",
+        )
+        _require_loaded_module_at_source(
+            preflight,
+            model,
+            "src/cfeg/models/metadata_calibration_v3.py",
+        )
+        _require_preflight_unchanged(preflight)
 
         self._governance: ModuleType = governance
         self._model: ModuleType = model
         self._synthetic: ModuleType = synthetic
+        self._preflight = preflight
+        self._governed_process = governed_process
         self._inspection: WorkflowInspection | None = None
         self._graph: _ValidatedGraph | None = None
 
@@ -245,8 +1557,7 @@ class ProductionFacade:
                 / governance.SELECTED_METHOD_FREEZE_REPOSITORY_PATH
             ),
             "test_evidence": Path(governance.TEST_EVIDENCE_CANONICAL_PATH),
-            "canary_authorization": Path(governance.CANARY_CANONICAL_ROOT)
-            / "authorization.json",
+            "canary_authorization": Path(governance.CANARY_CANONICAL_ROOT) / "authorization.json",
             "canary_claim": Path(governance.CANARY_CANONICAL_ROOT) / "claim.json",
             "canary_beacon": Path(governance.CANARY_CANONICAL_ROOT) / "beacon.json",
             "canary_result": Path(governance.CANARY_RESULT_CANONICAL_PATH),
@@ -255,9 +1566,108 @@ class ProductionFacade:
 
     def _presence(self) -> Mapping[str, bool]:
         return {
-            name: os.path.lexists(os.fspath(path))
-            for name, path in self._artifact_paths().items()
+            name: os.path.lexists(os.fspath(path)) for name, path in self._artifact_paths().items()
         }
+
+    def _require_active_process(self) -> None:
+        self._governance.require_governed_process_capability(
+            self._governed_process,
+        )
+
+    def _require_bundle_matches_preflight(self, bundle: Any) -> None:
+        payload = _artifact_payload(bundle, "development bundle")
+        if self._preflight.bundle_payload is None:
+            raise RunnerError("governance reopened a bundle absent from pre-import authority")
+        if _canonical_json_bytes(payload) != _canonical_json_bytes(self._preflight.bundle_payload):
+            raise RunnerError("governance bundle differs from stdlib pre-import validation")
+        if _plain_json(getattr(bundle, "numerical_runtime_inventory", None)) != _plain_json(
+            payload["numerical_runtime_inventory"]
+        ) or payload["numerical_runtime_inventory"].get("python_site_inventory") != dict(
+            self._preflight.python_site_inventory
+        ):
+            raise RunnerError("governance bundle runtime differs from pre-import authority")
+
+    def _require_built_bundle_matches_preflight(
+        self,
+        value: Mapping[str, Any],
+    ) -> None:
+        facts = self._preflight
+        if facts.bundle_payload is not None:
+            raise RunnerError("cannot build a replacement for an existing development bundle")
+        required_source = [item.record() for item in facts.source.tracked_files]
+        runtime = value.get("numerical_runtime_inventory")
+        fingerprint = value.get("numerical_runtime_fingerprint_sha256")
+        if not isinstance(runtime, Mapping):
+            raise RunnerError("built bundle lacks a numerical runtime inventory")
+        if (
+            value.get("schema") != _DEVELOPMENT_BUNDLE_SCHEMA
+            or value.get("candidate_id") != _CANDIDATE_ID
+            or value.get("canonical_path") != os.fspath(facts.config.bundle_path)
+            or value.get("clean_git_commit") != facts.source.commit
+            or value.get("clean_git_tree") != facts.source.tree
+            or value.get("source_bundle_sha256") != facts.source.source_bundle_sha256
+            or _plain_json(value.get("tracked_source_file_inventory")) != required_source
+            or value.get("scientific_lockbox_authorized") is not False
+            or value.get("human_EEG_outcome_authorized") is not False
+            or _plain_json(runtime.get("python")) != dict(facts.python)
+            or _plain_json(runtime.get("python_site_inventory"))
+            != dict(facts.python_site_inventory)
+        ):
+            raise RunnerError("built bundle differs from stdlib pre-import facts")
+        expected_git = {
+            "executable_file_sha256": facts.source.git_executable_file_sha256,
+            "executable_path": os.fspath(V3_GIT_EXECUTABLE),
+            "version": facts.source.git_version,
+        }
+        if _plain_json(runtime.get("git")) != expected_git:
+            raise RunnerError("built bundle Git runtime differs from pre-import facts")
+        if (
+            not isinstance(fingerprint, str)
+            or not _SHA256_RE.fullmatch(fingerprint)
+            or _sha256_bytes(_canonical_json_bytes(runtime)) != fingerprint
+        ):
+            raise RunnerError("built bundle numerical runtime fingerprint is invalid")
+
+    def _require_snapshot_matches_preflight(self, snapshot: Any) -> None:
+        identity = getattr(snapshot, "identity", None)
+        tracked = getattr(snapshot, "tracked_files", None)
+        if identity is None or tracked is None:
+            raise RunnerError("governance source snapshot lacks exact bindings")
+        observed_records = [
+            {
+                "file_sha256": getattr(item, "file_sha256", None),
+                "kind": getattr(item, "kind", None),
+                "path": getattr(item, "path", None),
+            }
+            for item in tracked
+        ]
+        facts = self._preflight.source
+        if (
+            getattr(identity, "commit", None) != facts.commit
+            or getattr(identity, "tree", None) != facts.tree
+            or getattr(snapshot, "source_bundle_sha256", None) != facts.source_bundle_sha256
+            or observed_records != [item.record() for item in facts.tracked_files]
+        ):
+            raise RunnerError("governance source snapshot differs from stdlib preflight")
+
+    def _adopt_published_bundle(self, data: bytes) -> None:
+        facts = self._preflight
+        payload = _validate_existing_bundle(
+            facts.config,
+            data,
+            source=facts.source,
+            python=facts.python,
+            site_inventory=facts.python_site_inventory,
+        )
+        self._preflight = _PreflightFacts(
+            config=facts.config,
+            command=facts.command,
+            source=facts.source,
+            python=facts.python,
+            python_site_inventory=facts.python_site_inventory,
+            bundle_payload=payload,
+            _issuer=_PREFLIGHT_ISSUER,
+        )
 
     def _require_no_gap_before(self, presence: Mapping[str, bool], name: str) -> None:
         index = self._ARTIFACT_ORDER.index(name)
@@ -424,6 +1834,7 @@ class ProductionFacade:
             self._require_no_gap_before(presence, "bundle")
             return self._cache(RunStage.BUNDLE_PENDING, graph)
         graph.bundle = governance.reopen_development_bundle()
+        self._require_bundle_matches_preflight(graph.bundle)
 
         if not presence["context_reference"]:
             self._require_no_gap_before(presence, "context_reference")
@@ -475,9 +1886,9 @@ class ProductionFacade:
             )
 
         self._reopen_b_selection_graph(graph)
-        selected_id = _artifact_payload(
-            graph.development_result, "development result"
-        )["selected_grid_cell_id"]
+        selected_id = _artifact_payload(graph.development_result, "development result")[
+            "selected_grid_cell_id"
+        ]
 
         if not presence["test_evidence"]:
             self._require_no_gap_before(presence, "test_evidence")
@@ -553,9 +1964,7 @@ class ProductionFacade:
             )
         # The sole high-level fresh-exec API first reopens an existing exact
         # artifact; it cannot republish because the path is already consumed.
-        graph.fresh_canary_audit = (
-            governance.run_fresh_canary_audit_in_exec_subprocess()
-        )
+        graph.fresh_canary_audit = governance.run_fresh_canary_audit_in_exec_subprocess()
         self._bridge(graph)
         return self._cache(
             RunStage.CANARY_PASSED,
@@ -579,23 +1988,42 @@ class ProductionFacade:
     def _publish_bundle(self, graph: _ValidatedGraph) -> None:
         del graph
         governance = self._governance
+        self._require_active_process()
+        _require_preflight_unchanged(self._preflight)
         snapshot = governance.capture_clean_source_snapshot(governance.V3_SOURCE_REPOSITORY)
+        self._require_snapshot_matches_preflight(snapshot)
         focused = governance.run_observed_test("focused_v3", snapshot=snapshot)
         frozen = {
             path: (Path(governance.V3_SOURCE_REPOSITORY) / path).read_bytes()
             for path in governance.FROZEN_FILE_SHA256
         }
+        created_at = _rfc3339_now_after()
+        built = governance.build_development_bundle(
+            snapshot=snapshot,
+            frozen_file_bytes=frozen,
+            created_at_UTC=created_at,
+            focused_test_run=focused,
+        )
+        self._require_built_bundle_matches_preflight(built)
+        _require_preflight_unchanged(self._preflight)
         governance.publish_development_bundle(
             snapshot=snapshot,
             frozen_file_bytes=frozen,
-            created_at_UTC=_rfc3339_now_after(),
+            created_at_UTC=created_at,
             focused_test_run=focused,
         )
+        published = _read_optional_artifact(self._preflight.config.bundle_path)
+        if published is None:
+            raise RunnerError("development bundle publication returned without exact bytes")
+        if published != _canonical_json_bytes(built) + b"\n":
+            raise RunnerError("published development bundle differs from prevalidated bytes")
+        self._adopt_published_bundle(published)
         governance.validate_development_bundle(
             snapshot=snapshot,
             frozen_file_bytes=frozen,
             focused_test_run=focused,
         )
+        _require_preflight_unchanged(self._preflight)
 
     def _publish_context_reference(self, graph: _ValidatedGraph) -> None:
         if graph.bundle is None:
@@ -713,9 +2141,7 @@ class ProductionFacade:
         if graph.canary_authorization is None:
             raise RunnerError("canary claim phase lacks authorization")
         governance = self._governance
-        authorization = _artifact_payload(
-            graph.canary_authorization, "canary authorization"
-        )
+        authorization = _artifact_payload(graph.canary_authorization, "canary authorization")
         payload = governance.build_canary_claim(
             graph.canary_authorization,
             claimed_at_UTC=_rfc3339_now_after(str(authorization["authorized_at_UTC"])),
@@ -758,13 +2184,13 @@ class ProductionFacade:
         if graph.published_canary_result is None:
             raise RunnerError("fresh audit phase lacks published canary result")
         # Do not call, serialize, or reproduce any private child protocol here.
-        graph.fresh_canary_audit = (
-            self._governance.run_fresh_canary_audit_in_exec_subprocess()
-        )
+        graph.fresh_canary_audit = self._governance.run_fresh_canary_audit_in_exec_subprocess()
         self._bridge(graph)
 
     def advance(self, expected_stage: RunStage) -> WorkflowInspection:
         graph = self._require_cached_stage(expected_stage)
+        self._require_active_process()
+        _require_preflight_unchanged(self._preflight)
         dispatch = {
             RunStage.BUNDLE_PENDING: self._publish_bundle,
             RunStage.CONTEXT_REFERENCE_PENDING: self._publish_context_reference,
@@ -892,10 +2318,16 @@ def run_cli(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    _assert_production_bootstrap()
     arguments = tuple(sys.argv[1:] if argv is None else argv)
-    facade = ProductionFacade()
     try:
+        preflight = _run_preimport_preflight(
+            _PRODUCTION_PREFLIGHT_CONFIG,
+            executing_file=Path(__file__),
+        )
+        if argv is not None and arguments != tuple(sys.argv[1:]):
+            raise RunnerError("production main arguments must be the exact process argv")
+        _activate_exact_import_path(preflight)
+        facade = ProductionFacade(preflight)
         return run_cli(
             arguments,
             facade=facade,
@@ -911,6 +2343,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
         sys.stderr.write(_report_bytes(error).decode("ascii"))
         return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 
 
 __all__ = [
