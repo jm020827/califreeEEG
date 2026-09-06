@@ -354,3 +354,10 @@ bundle/artifact/seed는 만들어지지 않았다. Ordinary-process test가 proc
 명시적으로 비우고 fresh-child test가 non-fresh governed role의 거부도 확인하도록 고쳤다.
 이 correction을 포함한 새 clean A에서 focused test 전체를 다시 관측하기 전에는 retry하지
 않는다.
+
+그 새 A의 focused 144개는 통과했지만 두 번째 bundle 시도도 publication 전 timestamp
+validation에서 멈췄다. Runner의 `.000Z` 출력과 governance의 strict seconds-only `...SSZ`
+schema가 불일치했다. Timestamp 생성은 이제 하나의 helper에서 strict RFC3339 seconds UTC만
+입출력하고, prior보다 최소 1초 뒤를 보장하며 최대 연도 overflow를 fail-closed한다. Bundle,
+test evidence, authorization과 claim이 모두 이 helper만 쓰고 final governance parser 직접
+호환 시험을 포함한 runner 45개가 통과했다. 이때도 artifact와 seed는 생성되지 않았다.

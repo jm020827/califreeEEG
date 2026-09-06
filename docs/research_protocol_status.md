@@ -91,6 +91,13 @@ byte-identical하게 재확인했다.
 ordinary context를 명시적으로 격리하고 non-fresh role의 정확한 거부도 인정하도록 수정했으며,
 새 clean snapshot의 governed focused test가 통과해야만 bundle 생성을 다시 시도한다.
 
+Correction을 포함한 clean A에서 focused 144개는 모두 통과했지만 두 번째 `resume`도
+publication 전에 timestamp schema에서 중단됐다. Runner가 `.000Z`를 붙인 반면 bundle
+contract는 fractional second 없는 `YYYY-MM-DDTHH:MM:SSZ`만 허용했다. Artifact root와 seed는
+계속 없었다. Timestamp helper를 strict seconds-Z 출력·입력과 monotonic +1초, overflow
+fail-closed로 수정하고 governance parser와 직접 대조하는 45개 runner 회귀를 통과시켰다.
+이 correction을 포함한 새 clean A가 현재 bundle 후보이다.
+
 Canary는 별도 typed microstate와 exact historical-pulse seed/hash-probe oracle을 쓰며,
 selected freeze·commit/tree·tests·fixture·전체 canary artifact를 묶은 fresh-process audit
 capability가 있어야 main lifecycle의 `CANARY_PASSED`로 넘어간다. Future scientific
