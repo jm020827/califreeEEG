@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import marshal
 import math
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -24,6 +25,7 @@ import numpy as np
 import yaml
 from scipy import stats
 
+from cfeg.baselines import fbcca as _fbcca_module
 from cfeg.baselines.fbcca import (
     apply_filterbank,
     cca_score,
@@ -35,12 +37,21 @@ from cfeg.models import metadata_calibration_v3 as v3
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-_REPOSITORY = Path(__file__).resolve().parents[3]
+_SYNTHETIC_MODULE_IMPORT_PATH = Path(__file__).resolve()
+_REPOSITORY = _SYNTHETIC_MODULE_IMPORT_PATH.parents[3]
 SYNTHETIC_MODULE_REPOSITORY_PATH = (
     "src/cfeg/analysis/metadata_calibration_v3_synthetic.py"
 )
 _IMPORTED_SYNTHETIC_MODULE_SHA256 = hashlib.sha256(
-    Path(__file__).read_bytes()
+    _SYNTHETIC_MODULE_IMPORT_PATH.read_bytes()
+).hexdigest()
+FBCCA_MODULE_REPOSITORY_PATH = "src/cfeg/baselines/fbcca.py"
+FILTERBANK_REPOSITORY_PATH = (
+    "configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml"
+)
+_FBCCA_MODULE_IMPORT_PATH = Path(_fbcca_module.__file__).resolve()
+_IMPORTED_FBCCA_MODULE_SHA256 = hashlib.sha256(
+    _FBCCA_MODULE_IMPORT_PATH.read_bytes()
 ).hexdigest()
 DEFAULT_SYNTHETIC_PLAN_PATH = (
     _REPOSITORY / "configs/analysis/metadata_calibration_v3_synthetic.yaml"
@@ -48,6 +59,28 @@ DEFAULT_SYNTHETIC_PLAN_PATH = (
 DEFAULT_MASTER_PLAN_PATH = (
     _REPOSITORY / "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 )
+DEFAULT_FILTERBANK_PATH = _REPOSITORY / FILTERBANK_REPOSITORY_PATH
+
+
+def _callable_code_sha256(value: object) -> str:
+    code = getattr(value, "__code__", None)
+    if code is None:
+        raise TypeError("bound scientific callable must expose Python bytecode.")
+    payload = marshal.dumps(code)
+    payload += repr(getattr(value, "__defaults__", None)).encode("utf-8")
+    payload += repr(getattr(value, "__kwdefaults__", None)).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+_IMPORTED_FBCCA_CALLABLE_BINDINGS = tuple(
+    (name, value, _callable_code_sha256(value))
+    for name, value in vars(_fbcca_module).items()
+    if callable(value)
+    and getattr(value, "__module__", None) == _fbcca_module.__name__
+    and hasattr(value, "__code__")
+)
+_IMPORTED_FBCCA_NUMPY_MODULE = _fbcca_module.np
+_IMPORTED_FBCCA_SCIPY_SIGNAL_MODULE = _fbcca_module.signal
 
 EXPECTED_SYNTHETIC_PLAN_SHA256 = (
     "df676c0b38b65450a611ab652567531df8818aa83223d0aebd314ca3759a971f"
@@ -64,6 +97,10 @@ SELECTED_METHOD_FREEZE_SCHEMA = (
 VALIDATED_DEVELOPMENT_RESULT_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3."
     "validated-development-result-capability.v1"
+)
+AUDITED_DEVELOPMENT_RESULT_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3."
+    "audited-development-result-capability.v1"
 )
 SELECTED_METHOD_PROPOSAL_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.selected-method-proposal-capability.v1"
@@ -198,7 +235,10 @@ def _require_unit_test_rng_authority(value: object) -> _UnitTestRNGAuthority:
     return value
 
 
-@dataclass(frozen=True)
+_SYNTHETIC_CONTRACT_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class SyntheticV3Contract:
     plan_path: Path
     plan_sha256: str
@@ -208,6 +248,68 @@ class SyntheticV3Contract:
     filterbank_sha256: str
     plan: Mapping[str, Any]
     filterbank: Mapping[str, Any]
+    plan_content_sha256: str
+    filterbank_content_sha256: str
+    semantic_binding_sha256: str
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("SyntheticV3Contract is issued only by exact file validation.")
+
+
+def _deep_freeze_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        if any(type(key) not in {str, int} for key in value):
+            raise TypeError("contract mappings require exact string or integer keys.")
+        return MappingProxyType(
+            {key: _deep_freeze_json(item) for key, item in value.items()}
+        )
+    if isinstance(value, list):
+        return tuple(_deep_freeze_json(item) for item in value)
+    if value is None or type(value) in {bool, int, float, str}:
+        return value
+    raise TypeError("contract payload contains a non-JSON value.")
+
+
+def _deep_thaw_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _deep_thaw_json(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_deep_thaw_json(item) for item in value]
+    return value
+
+
+def _contract_semantic_binding(value: SyntheticV3Contract) -> dict[str, Any]:
+    return {
+        "schema": "cfeg.metadata-calibration-efficiency-v3.synthetic-contract.v1",
+        "plan_path": str(value.plan_path),
+        "plan_sha256": value.plan_sha256,
+        "master_plan_path": str(value.master_plan_path),
+        "master_plan_sha256": value.master_plan_sha256,
+        "filterbank_path": str(value.filterbank_path),
+        "filterbank_sha256": value.filterbank_sha256,
+        "plan_content_sha256": value.plan_content_sha256,
+        "filterbank_content_sha256": value.filterbank_content_sha256,
+    }
+
+
+def _issue_synthetic_contract(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> SyntheticV3Contract:
+    if _issuer is not _SYNTHETIC_CONTRACT_ISSUER:
+        raise TypeError("synthetic-contract issuer token is invalid.")
+    value = object.__new__(SyntheticV3Contract)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(
+        value,
+        "semantic_binding_sha256",
+        _canonical_sha256(_contract_semantic_binding(value)),
+    )
+    object.__setattr__(value, "_issuer", _SYNTHETIC_CONTRACT_ISSUER)
+    return _require_exact_contract(value)
 
 
 _SYNTHETIC_PARTICIPANT_ISSUER = object()
@@ -394,6 +496,7 @@ def _require_synthetic_participant_identity(value: object) -> SyntheticParticipa
 
 _STRICT_FBCCA_PRODUCT_ISSUER = object()
 _STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER = object()
+_STRICT_FBCCA_COMPUTATION_ISSUER = object()
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -601,7 +704,9 @@ class MethodSpec:
 
 
 _VALIDATED_DEVELOPMENT_RESULT_ISSUER = object()
+_AUDITED_DEVELOPMENT_RESULT_ISSUER = object()
 _SELECTED_METHOD_PROPOSAL_ISSUER = object()
+_SELECTED_FREEZE_ASSEMBLY_ISSUER = object()
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -640,6 +745,7 @@ class ValidatedDevelopmentResult:
     complete_grid_gate_report_sha256: str
     uniform_block_weight_sensitivity_sha256: str
     resampling_sensitivity_sha256: str
+    sensitivity_participant_vectors_sha256: str
     eligible_grid_cell_ids: tuple[str, ...]
     selection_status: Literal["SELECTED_METHOD_PROPOSED", "DEVELOPMENT_NO_GO"]
     selected_grid_cell_id: str | None
@@ -657,6 +763,42 @@ class ValidatedDevelopmentResult:
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
         raise TypeError(
             "ValidatedDevelopmentResult is issued only by exact semantic validation."
+        )
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class AuditedDevelopmentResult:
+    """Nominal clean-A recovery proof that grants no RNG or generation access."""
+
+    schema: str
+    candidate_id: str
+    payload_schema: str
+    payload_sha256: str
+    development_result_file_sha256: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    development_bundle_source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
+    context_reference_schema: str
+    context_reference_payload_sha256: str
+    context_reference_file_sha256: str
+    clean_commit: str
+    clean_tree: str
+    participant_metric_rows_sha256: str
+    invariant_rows_sha256: str
+    complete_grid_gate_report_sha256: str
+    uniform_block_weight_sensitivity_sha256: str
+    resampling_sensitivity_sha256: str
+    sensitivity_participant_vectors_sha256: str
+    selection_status: Literal["SELECTED_METHOD_PROPOSED", "DEVELOPMENT_NO_GO"]
+    selected_grid_cell_id: str | None
+    semantic_binding_sha256: str
+    _recovery_capability: object = dataclass_field(repr=False, compare=False)
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError(
+            "AuditedDevelopmentResult is issued only by exact clean-A recovery."
         )
 
 
@@ -750,32 +892,26 @@ def validate_synthetic_contract(
     filterbank = yaml.safe_load(filterbank_bytes.decode("utf-8"))
     if not isinstance(filterbank, Mapping):
         raise TypeError("filterbank config must decode to one mapping.")
-    resolved = resolve_filterbank_parameters(filterbank, sfreq=250.0)
-    if (
-        len(resolved["bands_hz"]) != 7
-        or resolved["n_harmonics"] != 5
-        or resolved["weights"]
-        != [
-            1.25,
-            0.6704482076268572,
-            0.5032785618838642,
-            0.42677669529663687,
-            0.38374806099528436,
-            0.35649051737437876,
-            0.33782687899303776,
-        ]
-    ):
-        raise ValueError("resolved strict-FBCCA parameters are not frozen V3 values.")
+    _validate_resolved_filterbank(filterbank)
     _validate_exact_plan_sections(plan)
-    return SyntheticV3Contract(
-        plan_path=path.resolve(),
-        plan_sha256=observed_sha,
-        master_plan_path=master_path.resolve(),
-        master_plan_sha256=master_sha,
-        filterbank_path=filterbank_path.resolve(),
-        filterbank_sha256=filterbank_sha,
-        plan=plan,
-        filterbank=dict(filterbank),
+    frozen_plan = _deep_freeze_json(plan)
+    frozen_filterbank = _deep_freeze_json(dict(filterbank))
+    return _issue_synthetic_contract(
+        {
+            "plan_path": path.resolve(),
+            "plan_sha256": observed_sha,
+            "master_plan_path": master_path.resolve(),
+            "master_plan_sha256": master_sha,
+            "filterbank_path": filterbank_path.resolve(),
+            "filterbank_sha256": filterbank_sha,
+            "plan": frozen_plan,
+            "filterbank": frozen_filterbank,
+            "plan_content_sha256": _canonical_sha256({"value": plan}),
+            "filterbank_content_sha256": _canonical_sha256(
+                {"value": dict(filterbank)}
+            ),
+        },
+        _issuer=_SYNTHETIC_CONTRACT_ISSUER,
     )
 
 
@@ -784,9 +920,11 @@ def validate_development_contract(
 ) -> dict[str, int]:
     """Validate the exact grid arithmetic without generating any outcome."""
 
-    resolved = validate_synthetic_contract() if contract is None else contract
-    if type(resolved) is not SyntheticV3Contract:
-        raise TypeError("contract must be an exact SyntheticV3Contract.")
+    resolved = (
+        validate_synthetic_contract()
+        if contract is None
+        else _require_current_contract_files(contract)
+    )
     counts = development_row_counts(DEVELOPMENT_PARTICIPANTS, grid_cells=9)
     expected = {
         "condition_level_cells_per_parameter_pair": 172,
@@ -799,7 +937,7 @@ def validate_development_contract(
     }
     if counts != expected:
         raise RuntimeError(f"development row arithmetic drifted: {counts!r}.")
-    plan_counts = _mapping(resolved.plan, "complete_grid")
+    plan_counts = _mapping(_deep_thaw_json(resolved.plan), "complete_grid")
     for name, value in expected.items():
         if plan_counts.get(name) != value:
             raise ValueError(f"synthetic plan count {name} is not exact.")
@@ -1035,7 +1173,7 @@ def generate_synthetic_participant(
 ) -> SyntheticParticipant:
     """Generate one participant under exact canonical development authority."""
 
-    _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     return _generate_synthetic_participant_with_rng_factory(
@@ -1350,7 +1488,7 @@ def apply_source_range_stress(
 ) -> SyntheticParticipant:
     """Set every B4 query valid-channel source z coordinate to exactly +10."""
 
-    _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     proof = v3.require_validated_context_reference(
@@ -1470,6 +1608,28 @@ def produce_strict_fbcca(
 ) -> StrictFBCCAProduct:
     """Produce query-only anchors without reading any support waveform or label."""
 
+    contract = _require_current_contract_files(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
+    if participant.generation_scope == "development":
+        authority = v3.require_development_rng_authority(
+            participant._rng_authority
+        )
+        _require_loaded_synthetic_source(authority)
+    return _produce_strict_fbcca_after_authorized_boundary(
+        contract,
+        participant,
+        _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+    )
+
+
+def _produce_strict_fbcca_after_authorized_boundary(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    _issuer: object,
+) -> StrictFBCCAProduct:
+    if _issuer is not _STRICT_FBCCA_COMPUTATION_ISSUER:
+        raise TypeError("strict-FBCCA computation issuer token is invalid.")
     contract = _require_exact_contract(contract)
     participant = _require_synthetic_participant(participant, contract=contract)
     scores = _score_strict_fbcca_blocks(
@@ -1513,6 +1673,30 @@ def produce_strict_fbcca_support(
 ) -> StrictFBCCASupportProduct:
     """Read and score a support prefix only when a caller invokes its loader."""
 
+    contract = _require_current_contract_files(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
+    if participant.generation_scope == "development":
+        authority = v3.require_development_rng_authority(
+            participant._rng_authority
+        )
+        _require_loaded_synthetic_source(authority)
+    return _produce_strict_fbcca_support_after_authorized_boundary(
+        contract,
+        participant,
+        budget=budget,
+        _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+    )
+
+
+def _produce_strict_fbcca_support_after_authorized_boundary(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    budget: int,
+    _issuer: object,
+) -> StrictFBCCASupportProduct:
+    if _issuer is not _STRICT_FBCCA_COMPUTATION_ISSUER:
+        raise TypeError("strict-FBCCA computation issuer token is invalid.")
     contract = _require_exact_contract(contract)
     participant = _require_synthetic_participant(participant, contract=contract)
     if type(budget) is not int or budget not in (1, 3, 5):
@@ -1541,6 +1725,28 @@ def produce_strict_fbcca_support_prefixes(
     on a rejecting preflight.
     """
 
+    contract = _require_current_contract_files(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
+    if participant.generation_scope == "development":
+        authority = v3.require_development_rng_authority(
+            participant._rng_authority
+        )
+        _require_loaded_synthetic_source(authority)
+    return _produce_strict_fbcca_support_prefixes_after_authorized_boundary(
+        contract,
+        participant,
+        _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+    )
+
+
+def _produce_strict_fbcca_support_prefixes_after_authorized_boundary(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    _issuer: object,
+) -> tuple[StrictFBCCASupportProduct, StrictFBCCASupportProduct, StrictFBCCASupportProduct]:
+    if _issuer is not _STRICT_FBCCA_COMPUTATION_ISSUER:
+        raise TypeError("strict-FBCCA computation issuer token is invalid.")
     contract = _require_exact_contract(contract)
     participant = _require_synthetic_participant(participant, contract=contract)
     all_scores = _score_strict_fbcca_blocks(contract, participant.signals[:5])
@@ -1554,6 +1760,48 @@ def produce_strict_fbcca_support_prefixes(
         )
         for budget in (1, 3, 5)
     )  # type: ignore[return-value]
+
+
+def _incremental_strict_fbcca_support_loader_after_authorized_boundary(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    _issuer: object,
+) -> Callable[[int], StrictFBCCASupportProduct]:
+    """Cache only support blocks already requested by an accepting arm."""
+
+    if _issuer is not _STRICT_FBCCA_COMPUTATION_ISSUER:
+        raise TypeError("incremental support-loader issuer token is invalid.")
+    contract = _require_exact_contract(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
+    maximum_scored = 0
+    cached_scores = np.empty((0, 12, 12), dtype=np.float64)
+    products: dict[int, StrictFBCCASupportProduct] = {}
+
+    def load(budget: int) -> StrictFBCCASupportProduct:
+        nonlocal maximum_scored, cached_scores
+        if type(budget) is not int or budget not in (1, 3, 5):
+            raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
+        if budget not in products:
+            if budget > maximum_scored:
+                new_scores = _score_strict_fbcca_blocks(
+                    contract,
+                    participant.signals[maximum_scored:budget],
+                )
+                cached_scores = _readonly(
+                    np.concatenate((cached_scores, new_scores), axis=0)
+                )
+                maximum_scored = budget
+            products[budget] = _strict_fbcca_support_product_from_scores(
+                contract,
+                participant,
+                budget=budget,
+                scores=_readonly(cached_scores[:budget]),
+                _issuer=_STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER,
+            )
+        return products[budget]
+
+    return load
 
 
 def _strict_fbcca_support_product_from_scores(
@@ -1779,7 +2027,7 @@ def evaluate_synthetic_participant(
 ) -> list[dict[str, Any]]:
     """Evaluate one primary grid cell under exact bundle-bound authority."""
 
-    _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     proof = v3.require_validated_context_reference(
@@ -1813,7 +2061,7 @@ def evaluate_uniform_block_weight_sensitivity(
 ) -> list[dict[str, Any]]:
     """Evaluate the report-only common-uniform-block-weight sensitivity."""
 
-    _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     proof = v3.require_validated_context_reference(
@@ -2666,7 +2914,7 @@ def build_invariant_rows(
 ) -> list[dict[str, Any]]:
     """Execute the six N5 and four N6 deterministic implementation guards."""
 
-    _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     proof = v3.require_validated_context_reference(
@@ -3618,118 +3866,36 @@ def _summarize_grid_cell(
         "eligible": eligible,
     }
     if uniform_rows is not None and sensitivity_rng_factory is not None:
-        uniform_index = {_metric_lookup_key(row): row for row in uniform_rows}
-        if len(uniform_index) != len(uniform_rows):
-            raise ValueError("duplicate uniform-sensitivity rows reached reduction.")
-
-        def uniform_vector(
-            family: str,
-            condition: str,
-            left: tuple[str, str, str],
-            right: tuple[str, str, str],
-            *,
-            budget: int | None = None,
-            eauc: bool,
-        ) -> np.ndarray:
-            values = []
-            for participant_index in range(DEVELOPMENT_PARTICIPANTS):
-                if eauc:
-                    left_value = _participant_eauc(
-                        uniform_index,
-                        family,
-                        participant_index,
-                        condition,
-                        *left,
-                        metric="balanced_accuracy",
-                    )
-                    right_value = _participant_eauc(
-                        uniform_index,
-                        family,
-                        participant_index,
-                        condition,
-                        *right,
-                        metric="balanced_accuracy",
-                    )
-                else:
-                    if budget is None:
-                        raise ValueError("uniform point contrast requires a budget.")
-                    left_value = float(
-                        uniform_index[
-                            (family, participant_index, condition, *left, budget)
-                        ]["balanced_accuracy"]
-                    )
-                    right_value = float(
-                        uniform_index[
-                            (family, participant_index, condition, *right, budget)
-                        ]["balanced_accuracy"]
-                    )
-                values.append(left_value - right_value)
-            return np.asarray(values, dtype=np.float64)
-
-        primary_sensitivity_vectors = {
-            "B1_A_Q_minus_A0_eAUC": aq_vectors[
-                "B1_participant_class_confusion"
-            ],
-            "B2_A_Q_minus_A0_eAUC": aq_vectors[
-                "B2_participant_phase_spatial_shift"
-            ],
-            "B3_A_QM_minus_A_Q_eAUC": metadata_vectors[
-                "B3_impedance_linked_transfer_shift"
-            ],
-            "B4_A_QM_minus_A_Q_eAUC": metadata_vectors[
-                "B4_interface_calibrated_impedance_shift"
-            ],
-            "B3_k3_correct_minus_shuffle": mechanism_vectors[
-                "B3_impedance_linked_transfer_shift"
-            ],
-            "B4_k3_correct_minus_shuffle": mechanism_vectors[
-                "B4_interface_calibrated_impedance_shift"
-            ],
+        primary_sensitivity_vectors = _sensitivity_vectors_from_metric_rows(
+            rows,
+            grid_cell_index=cell.index,
+        )
+        uniform_sensitivity_vectors = _sensitivity_vectors_from_metric_rows(
+            uniform_rows,
+            grid_cell_index=cell.index,
+        )
+        primary_values_by_endpoint = {
+            endpoint: primary_sensitivity_vectors[endpoint].tolist()
+            for endpoint in SENSITIVITY_ENDPOINT_IDS
         }
-        uniform_sensitivity_vectors = {
-            "B1_A_Q_minus_A0_eAUC": uniform_vector(
-                "B1_participant_class_confusion",
-                "neutral",
-                ("A_Q", "none", "deployed"),
-                ("A0", "none", "none"),
-                eauc=True,
+        uniform_values_by_endpoint = {
+            endpoint: uniform_sensitivity_vectors[endpoint].tolist()
+            for endpoint in SENSITIVITY_ENDPOINT_IDS
+        }
+        report["sensitivity_participant_vectors"] = {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "sensitivity-participant-vectors.v1"
             ),
-            "B2_A_Q_minus_A0_eAUC": uniform_vector(
-                "B2_participant_phase_spatial_shift",
-                "neutral",
-                ("A_Q", "none", "deployed"),
-                ("A0", "none", "none"),
-                eauc=True,
+            "participant_count": DEVELOPMENT_PARTICIPANTS,
+            "endpoint_order": list(SENSITIVITY_ENDPOINT_IDS),
+            "primary_values_by_endpoint": primary_values_by_endpoint,
+            "uniform_values_by_endpoint": uniform_values_by_endpoint,
+            "primary_values_sha256": _sensitivity_vector_values_sha256(
+                "primary", primary_values_by_endpoint
             ),
-            "B3_A_QM_minus_A_Q_eAUC": uniform_vector(
-                "B3_impedance_linked_transfer_shift",
-                "neutral",
-                ("A_QM", "correct", "deployed"),
-                ("A_Q", "none", "deployed"),
-                eauc=True,
-            ),
-            "B4_A_QM_minus_A_Q_eAUC": uniform_vector(
-                "B4_interface_calibrated_impedance_shift",
-                "equal_condition_composite",
-                ("A_QM", "correct", "deployed"),
-                ("A_Q", "none", "deployed"),
-                eauc=True,
-            ),
-            "B3_k3_correct_minus_shuffle": uniform_vector(
-                "B3_impedance_linked_transfer_shift",
-                "neutral",
-                ("A_QM", "correct", "deployed"),
-                ("A_QM", "within_prefix_packet_shuffle", "deployed"),
-                budget=3,
-                eauc=False,
-            ),
-            "B4_k3_correct_minus_shuffle": uniform_vector(
-                "B4_interface_calibrated_impedance_shift",
-                "equal_condition_composite",
-                ("A_QM", "correct", "deployed"),
-                ("A_QM", "within_prefix_packet_shuffle", "deployed"),
-                budget=3,
-                eauc=False,
+            "uniform_values_sha256": _sensitivity_vector_values_sha256(
+                "uniform", uniform_values_by_endpoint
             ),
         }
         report["uniform_block_weight_sensitivity"] = {
@@ -3789,7 +3955,7 @@ def execute_complete_development(
 ) -> tuple[dict[str, Any], ValidatedDevelopmentResult]:
     """Execute the sole authoritative 48x8x9 development pipeline in memory."""
 
-    contract = _require_exact_contract(contract)
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(rng_authority)
     _require_loaded_synthetic_source(authority)
     reference = v3._require_context_reference(reference)
@@ -3832,26 +3998,18 @@ def execute_complete_development(
                     reference,
                     _issuer=_SOURCE_RANGE_STRESS_ISSUER,
                 )
-            query_product = produce_strict_fbcca(contract, participant)
-            prefix_cache: dict[int, StrictFBCCASupportProduct] = {}
-
-            def support_loader(
-                budget: int,
-                *,
-                _cache: dict[int, StrictFBCCASupportProduct] = prefix_cache,
-                _participant: SyntheticParticipant = participant,
-            ) -> StrictFBCCASupportProduct:
-                if not _cache:
-                    _cache.update(
-                        {
-                            product.budget: product
-                            for product in produce_strict_fbcca_support_prefixes(
-                                contract,
-                                _participant,
-                            )
-                        }
-                    )
-                return _cache[budget]
+            query_product = _produce_strict_fbcca_after_authorized_boundary(
+                contract,
+                participant,
+                _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+            )
+            support_loader = (
+                _incremental_strict_fbcca_support_loader_after_authorized_boundary(
+                    contract,
+                    participant,
+                    _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+                )
+            )
 
             for cell in v3.canonical_operator_grid():
                 primary_rows.extend(
@@ -3921,6 +4079,7 @@ def execute_complete_development(
     # A long execution may outlive a source/runtime checkout.  Revalidate the
     # exact current-A governance authority and both loaded module byte images
     # immediately before assembling or issuing the authoritative proof.
+    contract = _require_current_contract_files(contract)
     authority = v3.require_development_rng_authority(authority)
     _require_loaded_synthetic_source(authority)
     proof = v3.require_validated_context_reference(
@@ -4004,26 +4163,18 @@ def _execute_development_smoke_for_test(
                 generation_scope="unit_test",
                 _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
             )
-            query_product = produce_strict_fbcca(contract, participant)
-            prefix_cache: dict[int, StrictFBCCASupportProduct] = {}
-
-            def support_loader(
-                budget: int,
-                *,
-                _cache: dict[int, StrictFBCCASupportProduct] = prefix_cache,
-                _participant: SyntheticParticipant = participant,
-            ) -> StrictFBCCASupportProduct:
-                if not _cache:
-                    _cache.update(
-                        {
-                            product.budget: product
-                            for product in produce_strict_fbcca_support_prefixes(
-                                contract,
-                                _participant,
-                            )
-                        }
-                    )
-                return _cache[budget]
+            query_product = _produce_strict_fbcca_after_authorized_boundary(
+                contract,
+                participant,
+                _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+            )
+            support_loader = (
+                _incremental_strict_fbcca_support_loader_after_authorized_boundary(
+                    contract,
+                    participant,
+                    _issuer=_STRICT_FBCCA_COMPUTATION_ISSUER,
+                )
+            )
 
             for index in indices:
                 cell = v3.canonical_operator_grid()[index - 1]
@@ -4201,7 +4352,7 @@ def _assemble_development_result_payload(
         ),
     }
     payload["payload_sha256"] = _payload_sha256(payload)
-    validate_development_result_payload(payload)
+    validate_development_result_payload(payload, require_enriched=True)
     return payload
 
 
@@ -4231,9 +4382,15 @@ _DEVELOPMENT_RESULT_KEYS = {
 }
 
 
-def validate_development_result_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+def validate_development_result_payload(
+    payload: Mapping[str, Any],
+    *,
+    require_enriched: bool = False,
+) -> dict[str, Any]:
     """Pure complete-case validation before a governance layer opens an output path."""
 
+    if type(require_enriched) is not bool:
+        raise TypeError("require_enriched must be an exact bool.")
     _require_exact_keys(payload, _DEVELOPMENT_RESULT_KEYS, "development result payload")
     if (
         payload["schema"] != DEVELOPMENT_RESULT_SCHEMA
@@ -4284,9 +4441,27 @@ def validate_development_result_payload(payload: Mapping[str, Any]) -> dict[str,
         _validate_gate_report(stored)
         if {name: stored[name] for name in _GATE_REPORT_KEYS} != expected:
             raise ValueError("stored primary gate report differs from exact recomputation.")
-        enriched_flags.append(set(stored) == _ENRICHED_GATE_REPORT_KEYS)
+        enriched = set(stored) == _ENRICHED_GATE_REPORT_KEYS
+        enriched_flags.append(enriched)
+        if enriched:
+            stored_primary, _ = _validated_sensitivity_participant_vectors(
+                stored["sensitivity_participant_vectors"]
+            )
+            expected_primary = _sensitivity_vectors_from_metric_rows(
+                metrics,
+                grid_cell_index=int(stored["grid_cell_index"]),
+            )
+            for endpoint in SENSITIVITY_ENDPOINT_IDS:
+                if not np.array_equal(
+                    stored_primary[endpoint], expected_primary[endpoint]
+                ):
+                    raise ValueError(
+                        "stored primary sensitivity vector differs from metric rows."
+                    )
     if any(enriched_flags) and not all(enriched_flags):
         raise ValueError("gate-report sensitivities must be present for all or no cells.")
+    if require_enriched and not all(enriched_flags):
+        raise ValueError("canonical development results require all frozen sensitivities.")
     selected = select_grid_cell(stored_reports)
     expected_status = "SELECTED_METHOD_PROPOSED" if selected is not None else "DEVELOPMENT_NO_GO"
     expected_id = selected["grid_cell_id"] if selected is not None else None
@@ -4345,6 +4520,9 @@ def _validated_development_result_binding(
             value.uniform_block_weight_sensitivity_sha256
         ),
         "resampling_sensitivity_sha256": value.resampling_sensitivity_sha256,
+        "sensitivity_participant_vectors_sha256": (
+            value.sensitivity_participant_vectors_sha256
+        ),
         "eligible_grid_cell_ids": list(value.eligible_grid_cell_ids),
         "selection_status": value.selection_status,
         "selected_grid_cell_id": value.selected_grid_cell_id,
@@ -4360,7 +4538,7 @@ def _issue_validated_development_result(
 ) -> ValidatedDevelopmentResult:
     if _issuer is not _VALIDATED_DEVELOPMENT_RESULT_ISSUER:
         raise TypeError("validated-development-result issuer token is invalid.")
-    result = validate_development_result_payload(result)
+    result = validate_development_result_payload(result, require_enriched=True)
     if any(
         set(report) != _ENRICHED_GATE_REPORT_KEYS
         for report in result["complete_grid_gate_report"]
@@ -4479,6 +4657,9 @@ def _issue_validated_development_result(
                 "reports": [report["resampling_sensitivity"] for report in reports],
             }
         ),
+        "sensitivity_participant_vectors_sha256": (
+            _complete_sensitivity_participant_vectors_sha256(reports)
+        ),
         "eligible_grid_cell_ids": tuple(
             report["grid_cell_id"] for report in reports if report["eligible"]
         ),
@@ -4509,11 +4690,13 @@ def validate_development_result_for_publication(
 ) -> ValidatedDevelopmentResult:
     """Match a payload to the proof issued only by the full executor."""
 
-    result = validate_development_result_payload(payload)
     proof = require_validated_development_result(
         validated_result,
-        expected_payload_sha256=result["payload_sha256"],
+        expected_payload_sha256=None,
     )
+    result = validate_development_result_payload(payload, require_enriched=True)
+    if proof.payload_sha256 != result["payload_sha256"]:
+        raise ValueError("ValidatedDevelopmentResult binds a different payload.")
     if (
         proof.participant_metric_rows_sha256
         != _canonical_sha256(
@@ -4534,8 +4717,48 @@ def validate_development_result_for_publication(
                 "rows": result["invariant_rows"],
             }
         )
+        or proof.complete_grid_gate_report_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-grid-gate-report.v1"
+                ),
+                "reports": result["complete_grid_gate_report"],
+            }
+        )
+        or proof.uniform_block_weight_sensitivity_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-uniform-block-weight-sensitivity.v1"
+                ),
+                "reports": [
+                    report["uniform_block_weight_sensitivity"]
+                    for report in result["complete_grid_gate_report"]
+                ],
+            }
+        )
+        or proof.resampling_sensitivity_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-resampling-sensitivity.v1"
+                ),
+                "reports": [
+                    report["resampling_sensitivity"]
+                    for report in result["complete_grid_gate_report"]
+                ],
+            }
+        )
+        or proof.sensitivity_participant_vectors_sha256
+        != _complete_sensitivity_participant_vectors_sha256(
+            result["complete_grid_gate_report"]
+        )
     ):
-        raise ValueError("development proof differs from payload row bytes.")
+        raise ValueError("development proof differs from payload evidence bytes.")
     return proof
 
 
@@ -4603,6 +4826,7 @@ def _require_validated_development_result(
         "complete_grid_gate_report_sha256",
         "uniform_block_weight_sensitivity_sha256",
         "resampling_sensitivity_sha256",
+        "sensitivity_participant_vectors_sha256",
         "semantic_binding_sha256",
     ):
         _sha256(getattr(value, name), name)
@@ -4693,11 +4917,33 @@ def build_selected_method_freeze_payload(
 ) -> dict[str, Any]:
     """Build the deterministic selected-method freeze after a development PASS."""
 
-    result = validate_development_result_payload(development_result)
     validate_development_result_for_publication(
-        result,
+        development_result,
         validated_result=validated_development_result,
     )
+    result = validate_development_result_payload(
+        development_result,
+        require_enriched=True,
+    )
+    return _assemble_selected_method_freeze_payload(
+        result,
+        development_result_file_sha256=development_result_file_sha256,
+        clean_commit=clean_commit,
+        clean_tree=clean_tree,
+        _issuer=_SELECTED_FREEZE_ASSEMBLY_ISSUER,
+    )
+
+
+def _assemble_selected_method_freeze_payload(
+    result: Mapping[str, Any],
+    *,
+    development_result_file_sha256: str,
+    clean_commit: str,
+    clean_tree: str,
+    _issuer: object,
+) -> dict[str, Any]:
+    if _issuer is not _SELECTED_FREEZE_ASSEMBLY_ISSUER:
+        raise TypeError("selected-freeze assembly issuer token is invalid.")
     _sha256(development_result_file_sha256, "development_result_file_sha256")
     _git_object_id(clean_commit, "clean_commit")
     _git_object_id(clean_tree, "clean_tree")
@@ -4822,7 +5068,10 @@ def validate_selected_method_freeze_payload(
     for value in rank.values():
         _finite_float(value, "selection rank component")
     if development_result is not None:
-        result = validate_development_result_payload(development_result)
+        result = validate_development_result_payload(
+            development_result,
+            require_enriched=True,
+        )
         if (
             result["selection_status"] != "SELECTED_METHOD_PROPOSED"
             or result["selected_grid_cell_id"] != cell.grid_cell_id
@@ -4864,6 +5113,119 @@ def _require_bundle_selected_delta_recovery(value: object) -> object:
     return require_bundle_selected_delta_recovery_capability(value)
 
 
+def _require_loaded_sources_for_recovery(recovery_capability: object) -> object:
+    """Bind audit execution to the exact loaded and current bundle-A sources."""
+
+    recovery = _require_bundle_selected_delta_recovery(recovery_capability)
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            recovery_bundle_source_file_sha256,
+        )
+    except ImportError as error:  # pragma: no cover - integration install failure
+        raise RuntimeError("V3 recovery source validator is unavailable.") from error
+
+    inventory = {
+        path: recovery_bundle_source_file_sha256(
+            recovery,
+            repository_relative_path=path,
+        )
+        for path in (
+            v3.MODEL_MODULE_REPOSITORY_PATH,
+            SYNTHETIC_MODULE_REPOSITORY_PATH,
+            FBCCA_MODULE_REPOSITORY_PATH,
+            v3.MASTER_PLAN_REPOSITORY_PATH,
+            v3.SYNTHETIC_PLAN_REPOSITORY_PATH,
+            FILTERBANK_REPOSITORY_PATH,
+        )
+    }
+    _require_loaded_bundle_a_source_inventory(inventory)
+    return recovery
+
+
+def _require_loaded_bundle_a_source_inventory(
+    inventory: Mapping[str, str],
+) -> None:
+    """Compare loaded callables and current dependency bytes to bundle A."""
+
+    model_path = Path(v3.__file__).resolve()
+    synthetic_path = Path(__file__).resolve()
+    if (
+        model_path != (_REPOSITORY / v3.MODEL_MODULE_REPOSITORY_PATH).resolve()
+        or model_path != v3._MODEL_MODULE_IMPORT_PATH
+        or hashlib.sha256(model_path.read_bytes()).hexdigest()
+        != v3._IMPORTED_MODEL_MODULE_SHA256
+        or inventory[v3.MODEL_MODULE_REPOSITORY_PATH]
+        != v3._IMPORTED_MODEL_MODULE_SHA256
+        or synthetic_path
+        != (_REPOSITORY / SYNTHETIC_MODULE_REPOSITORY_PATH).resolve()
+        or synthetic_path != _SYNTHETIC_MODULE_IMPORT_PATH
+        or hashlib.sha256(synthetic_path.read_bytes()).hexdigest()
+        != _IMPORTED_SYNTHETIC_MODULE_SHA256
+        or inventory[SYNTHETIC_MODULE_REPOSITORY_PATH]
+        != _IMPORTED_SYNTHETIC_MODULE_SHA256
+    ):
+        raise RuntimeError(
+            "loaded V3 audit modules differ from bundle-A source bytes."
+        )
+    for path, expected_sha256 in (
+        (v3.MASTER_PLAN_REPOSITORY_PATH, EXPECTED_MASTER_PLAN_SHA256),
+        (v3.SYNTHETIC_PLAN_REPOSITORY_PATH, EXPECTED_SYNTHETIC_PLAN_SHA256),
+        (FILTERBANK_REPOSITORY_PATH, EXPECTED_FILTERBANK_SHA256),
+    ):
+        current_path = (_REPOSITORY / path).resolve()
+        if (
+            not current_path.is_file()
+            or current_path.is_symlink()
+            or hashlib.sha256(current_path.read_bytes()).hexdigest()
+            != expected_sha256
+            or inventory[path] != expected_sha256
+        ):
+            raise RuntimeError(f"audit dependency {path!r} differs from bundle A.")
+    _require_fbcca_runtime_identity(inventory)
+
+
+def _require_canonical_development_result_recovery(value: object) -> object:
+    """Lazily validate governance's exact clean-A canonical-result receipt."""
+
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            require_canonical_development_result_recovery_capability,
+        )
+    except ImportError as error:  # pragma: no cover - integration install failure
+        raise RuntimeError(
+            "V3 canonical development-result recovery validator is unavailable."
+        ) from error
+    return require_canonical_development_result_recovery_capability(value)
+
+
+def _require_loaded_sources_for_a_recovery(recovery_capability: object) -> object:
+    """Bind clean-A recovery to current runtime and loaded bundle-A sources."""
+
+    recovery = _require_canonical_development_result_recovery(recovery_capability)
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            development_result_recovery_source_file_sha256,
+        )
+    except ImportError as error:  # pragma: no cover - integration install failure
+        raise RuntimeError("V3 clean-A recovery source validator is unavailable.") from error
+    inventory = {
+        path: development_result_recovery_source_file_sha256(
+            recovery,
+            repository_relative_path=path,
+        )
+        for path in (
+            v3.MODEL_MODULE_REPOSITORY_PATH,
+            SYNTHETIC_MODULE_REPOSITORY_PATH,
+            FBCCA_MODULE_REPOSITORY_PATH,
+            v3.MASTER_PLAN_REPOSITORY_PATH,
+            v3.SYNTHETIC_PLAN_REPOSITORY_PATH,
+            FILTERBANK_REPOSITORY_PATH,
+        )
+    }
+    _require_loaded_bundle_a_source_inventory(inventory)
+    return recovery
+
+
 def _crosscheck_recovery_selected_and_result(
     development_result: Mapping[str, Any],
     *,
@@ -4873,12 +5235,15 @@ def _crosscheck_recovery_selected_and_result(
 ) -> tuple[dict[str, Any], dict[str, Any], object]:
     """Pure B-audit cross-check; deliberately issues no scientific authority."""
 
-    recovery = _require_bundle_selected_delta_recovery(recovery_capability)
+    recovery = _require_loaded_sources_for_recovery(recovery_capability)
     result_file_sha256 = _sha256(
         development_result_file_sha256,
         "development_result_file_sha256",
     )
-    result = validate_development_result_payload(development_result)
+    result = validate_development_result_payload(
+        development_result,
+        require_enriched=True,
+    )
     selected = validate_selected_method_freeze_payload(
         selected_method_freeze,
         development_result=result,
@@ -4904,7 +5269,456 @@ def _crosscheck_recovery_selected_and_result(
         raise ValueError(
             "B-audit recovery, development result, and selected freeze differ."
         )
+    _validate_frozen_sensitivity_replay_for_audit(result)
+    _require_loaded_sources_for_recovery(recovery)
     return result, selected, recovery
+
+
+def _frozen_sensitivity_audit_rng_factory(
+    family: str,
+    participant_index: int,
+    block: int,
+    class_index: int,
+    component: str,
+) -> np.random.Generator:
+    """Private fixed-key replay used only after a governance recovery check."""
+
+    family_codes = dict(v3.RNG_FAMILY_CODES)
+    component_codes = dict(v3.RNG_COMPONENT_CODES)
+    entropy = [
+        v3.DEVELOPMENT_ROOT_SEED,
+        family_codes[family],
+        participant_index,
+        block,
+        class_index,
+        component_codes[component],
+    ]
+    return np.random.Generator(
+        np.random.PCG64DXSM(np.random.SeedSequence(entropy))
+    )
+
+
+def _validate_frozen_sensitivity_replay_for_audit(
+    development_result: Mapping[str, Any],
+) -> None:
+    """Replay only the frozen component-11 report; expose no RNG or draws."""
+
+    reports = development_result["complete_grid_gate_report"]
+    for report in reports:
+        primary, _ = _validated_sensitivity_participant_vectors(
+            report["sensitivity_participant_vectors"]
+        )
+        expected = _sensitivity_resampling_with_rng_factory(
+            primary,
+            grid_cell_index=int(report["grid_cell_index"]),
+            rng_factory=_frozen_sensitivity_audit_rng_factory,
+            sign_flip_draws=SENSITIVITY_SIGN_FLIP_DRAWS,
+            participant_bootstrap_draws=SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS,
+            require_complete=True,
+            _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+        )
+        if report["resampling_sensitivity"] != expected:
+            raise ValueError(
+                "stored resampling sensitivity differs from exact component-11 replay."
+            )
+
+
+def _audited_development_result_binding(
+    value: AuditedDevelopmentResult,
+) -> dict[str, Any]:
+    return {
+        "schema": value.schema,
+        "candidate_id": value.candidate_id,
+        "payload_schema": value.payload_schema,
+        "payload_sha256": value.payload_sha256,
+        "development_result_file_sha256": value.development_result_file_sha256,
+        "development_bundle_payload_sha256": (
+            value.development_bundle_payload_sha256
+        ),
+        "development_bundle_file_sha256": value.development_bundle_file_sha256,
+        "development_bundle_source_bundle_sha256": (
+            value.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            value.numerical_runtime_fingerprint_sha256
+        ),
+        "context_reference_schema": value.context_reference_schema,
+        "context_reference_payload_sha256": value.context_reference_payload_sha256,
+        "context_reference_file_sha256": value.context_reference_file_sha256,
+        "clean_commit": value.clean_commit,
+        "clean_tree": value.clean_tree,
+        "participant_metric_rows_sha256": value.participant_metric_rows_sha256,
+        "invariant_rows_sha256": value.invariant_rows_sha256,
+        "complete_grid_gate_report_sha256": (
+            value.complete_grid_gate_report_sha256
+        ),
+        "uniform_block_weight_sensitivity_sha256": (
+            value.uniform_block_weight_sensitivity_sha256
+        ),
+        "resampling_sensitivity_sha256": value.resampling_sensitivity_sha256,
+        "sensitivity_participant_vectors_sha256": (
+            value.sensitivity_participant_vectors_sha256
+        ),
+        "selection_status": value.selection_status,
+        "selected_grid_cell_id": value.selected_grid_cell_id,
+    }
+
+
+def _issue_audited_development_result(
+    result: Mapping[str, Any],
+    recovery: object,
+    *,
+    _issuer: object,
+) -> AuditedDevelopmentResult:
+    if _issuer is not _AUDITED_DEVELOPMENT_RESULT_ISSUER:
+        raise TypeError("audited-development-result issuer token is invalid.")
+    reports = result["complete_grid_gate_report"]
+    value = object.__new__(AuditedDevelopmentResult)
+    fields: dict[str, Any] = {
+        "schema": AUDITED_DEVELOPMENT_RESULT_SCHEMA,
+        "candidate_id": v3.CANDIDATE_ID,
+        "payload_schema": DEVELOPMENT_RESULT_SCHEMA,
+        "payload_sha256": result["payload_sha256"],
+        "development_result_file_sha256": (
+            recovery.development_result_file_sha256
+        ),
+        "development_bundle_payload_sha256": (
+            recovery.development_bundle_payload_sha256
+        ),
+        "development_bundle_file_sha256": (
+            recovery.development_bundle_file_sha256
+        ),
+        "development_bundle_source_bundle_sha256": (
+            recovery.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            recovery.numerical_runtime_fingerprint_sha256
+        ),
+        "context_reference_schema": recovery.context_reference_schema,
+        "context_reference_payload_sha256": (
+            recovery.context_reference_payload_sha256
+        ),
+        "context_reference_file_sha256": recovery.context_reference_file_sha256,
+        "clean_commit": recovery.clean_commit,
+        "clean_tree": recovery.clean_tree,
+        "participant_metric_rows_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "participant-metric-row-set.v1"
+                ),
+                "rows": result["participant_metric_rows"],
+            }
+        ),
+        "invariant_rows_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"
+                ),
+                "rows": result["invariant_rows"],
+            }
+        ),
+        "complete_grid_gate_report_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-grid-gate-report.v1"
+                ),
+                "reports": reports,
+            }
+        ),
+        "uniform_block_weight_sensitivity_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-uniform-block-weight-sensitivity.v1"
+                ),
+                "reports": [
+                    report["uniform_block_weight_sensitivity"]
+                    for report in reports
+                ],
+            }
+        ),
+        "resampling_sensitivity_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-resampling-sensitivity.v1"
+                ),
+                "reports": [report["resampling_sensitivity"] for report in reports],
+            }
+        ),
+        "sensitivity_participant_vectors_sha256": (
+            _complete_sensitivity_participant_vectors_sha256(reports)
+        ),
+        "selection_status": result["selection_status"],
+        "selected_grid_cell_id": result["selected_grid_cell_id"],
+        "_recovery_capability": recovery,
+    }
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(
+        value,
+        "semantic_binding_sha256",
+        _canonical_sha256(_audited_development_result_binding(value)),
+    )
+    object.__setattr__(value, "_issuer", _AUDITED_DEVELOPMENT_RESULT_ISSUER)
+    return _require_audited_development_result(
+        value,
+        expected_payload_sha256=result["payload_sha256"],
+    )
+
+
+def require_audited_development_result(
+    value: object,
+    *,
+    expected_payload_sha256: str | None = None,
+) -> AuditedDevelopmentResult:
+    """Require an exact audit-only proof and recheck its clean-A receipt."""
+
+    return _require_audited_development_result(
+        value,
+        expected_payload_sha256=expected_payload_sha256,
+    )
+
+
+def _require_audited_development_result(
+    value: object,
+    *,
+    expected_payload_sha256: str | None,
+) -> AuditedDevelopmentResult:
+    if type(value) is not AuditedDevelopmentResult:
+        raise TypeError("value must be an exact AuditedDevelopmentResult.")
+    try:
+        issuer = value._issuer
+    except AttributeError as error:
+        raise TypeError("AuditedDevelopmentResult was not issued by this module.") from error
+    if issuer is not _AUDITED_DEVELOPMENT_RESULT_ISSUER:
+        raise TypeError("AuditedDevelopmentResult issuer marker is invalid.")
+    if (
+        value.schema != AUDITED_DEVELOPMENT_RESULT_SCHEMA
+        or value.candidate_id != v3.CANDIDATE_ID
+        or value.payload_schema != DEVELOPMENT_RESULT_SCHEMA
+        or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
+        or value.selection_status
+        not in {"SELECTED_METHOD_PROPOSED", "DEVELOPMENT_NO_GO"}
+        or (
+            value.selection_status == "DEVELOPMENT_NO_GO"
+            and value.selected_grid_cell_id is not None
+        )
+        or (
+            value.selection_status == "SELECTED_METHOD_PROPOSED"
+            and value.selected_grid_cell_id
+            not in {cell.grid_cell_id for cell in v3.canonical_operator_grid()}
+        )
+    ):
+        raise ValueError("AuditedDevelopmentResult identity/selection is invalid.")
+    for name in (
+        "payload_sha256",
+        "development_result_file_sha256",
+        "development_bundle_payload_sha256",
+        "development_bundle_file_sha256",
+        "development_bundle_source_bundle_sha256",
+        "numerical_runtime_fingerprint_sha256",
+        "context_reference_payload_sha256",
+        "context_reference_file_sha256",
+        "participant_metric_rows_sha256",
+        "invariant_rows_sha256",
+        "complete_grid_gate_report_sha256",
+        "uniform_block_weight_sensitivity_sha256",
+        "resampling_sensitivity_sha256",
+        "sensitivity_participant_vectors_sha256",
+        "semantic_binding_sha256",
+    ):
+        _sha256(getattr(value, name), name)
+    _git_object_id(value.clean_commit, "clean_commit")
+    _git_object_id(value.clean_tree, "clean_tree")
+    if value.semantic_binding_sha256 != _canonical_sha256(
+        _audited_development_result_binding(value)
+    ):
+        raise ValueError("AuditedDevelopmentResult semantic binding is invalid.")
+    recovery = _require_loaded_sources_for_a_recovery(value._recovery_capability)
+    if (
+        value.development_result_file_sha256
+        != recovery.development_result_file_sha256
+        or value.development_bundle_payload_sha256
+        != recovery.development_bundle_payload_sha256
+        or value.development_bundle_file_sha256
+        != recovery.development_bundle_file_sha256
+        or value.development_bundle_source_bundle_sha256
+        != recovery.development_bundle_source_bundle_sha256
+        or value.numerical_runtime_fingerprint_sha256
+        != recovery.numerical_runtime_fingerprint_sha256
+        or value.context_reference_schema != recovery.context_reference_schema
+        or value.context_reference_payload_sha256
+        != recovery.context_reference_payload_sha256
+        or value.context_reference_file_sha256
+        != recovery.context_reference_file_sha256
+        or value.payload_sha256 != recovery.development_result_payload_sha256
+        or value.clean_commit != recovery.clean_commit
+        or value.clean_tree != recovery.clean_tree
+    ):
+        raise ValueError("AuditedDevelopmentResult differs from its recovery receipt.")
+    if expected_payload_sha256 is not None:
+        _sha256(expected_payload_sha256, "expected_payload_sha256")
+        if value.payload_sha256 != expected_payload_sha256:
+            raise ValueError("AuditedDevelopmentResult binds a different payload.")
+    return value
+
+
+def _require_result_evidence_matches_audited_proof(
+    result: Mapping[str, Any],
+    proof: AuditedDevelopmentResult,
+) -> None:
+    reports = result["complete_grid_gate_report"]
+    if (
+        proof.development_bundle_payload_sha256
+        != result["development_bundle_payload_sha256"]
+        or proof.development_bundle_file_sha256
+        != result["development_bundle_file_sha256"]
+        or proof.context_reference_schema != result["context_reference_schema"]
+        or proof.context_reference_payload_sha256
+        != result["context_reference_payload_sha256"]
+        or proof.context_reference_file_sha256
+        != result["context_reference_file_sha256"]
+        or proof.participant_metric_rows_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "participant-metric-row-set.v1"
+                ),
+                "rows": result["participant_metric_rows"],
+            }
+        )
+        or proof.invariant_rows_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"
+                ),
+                "rows": result["invariant_rows"],
+            }
+        )
+        or proof.complete_grid_gate_report_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-grid-gate-report.v1"
+                ),
+                "reports": reports,
+            }
+        )
+        or proof.uniform_block_weight_sensitivity_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-uniform-block-weight-sensitivity.v1"
+                ),
+                "reports": [
+                    report["uniform_block_weight_sensitivity"]
+                    for report in reports
+                ],
+            }
+        )
+        or proof.resampling_sensitivity_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-resampling-sensitivity.v1"
+                ),
+                "reports": [report["resampling_sensitivity"] for report in reports],
+            }
+        )
+        or proof.sensitivity_participant_vectors_sha256
+        != _complete_sensitivity_participant_vectors_sha256(reports)
+        or proof.selection_status != result["selection_status"]
+        or proof.selected_grid_cell_id != result["selected_grid_cell_id"]
+    ):
+        raise ValueError("audited proof differs from development-result evidence.")
+
+
+def _validate_exact_synthetic_context_reference(
+    payload: Mapping[str, Any],
+) -> v3.ContextReference:
+    reference = v3.validate_context_reference_payload(payload)
+    if (
+        reference.domain != "synthetic_development_and_future_synthetic"
+        or tuple(
+            table.interface_lookup_key for table in reference.interface_tables
+        )
+        != CONTEXT_REFERENCE_INTERFACES
+        or reference.canonical_channels != v3.CANONICAL_CHANNELS
+    ):
+        raise ValueError("synthetic context-reference identity/order is invalid.")
+    return reference
+
+
+def validate_development_result_for_a_recovery(
+    payload: Mapping[str, Any],
+    *,
+    context_reference: Mapping[str, Any],
+    recovery_capability: object,
+) -> AuditedDevelopmentResult:
+    """Audit a proof-gated canonical result at clean A without minting authority."""
+
+    recovery = _require_loaded_sources_for_a_recovery(recovery_capability)
+    result = validate_development_result_payload(payload, require_enriched=True)
+    reference = _validate_exact_synthetic_context_reference(context_reference)
+    if (
+        recovery.candidate_id != v3.CANDIDATE_ID
+        or recovery.development_bundle_payload_sha256
+        != result["development_bundle_payload_sha256"]
+        or recovery.development_bundle_file_sha256
+        != result["development_bundle_file_sha256"]
+        or recovery.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
+        or recovery.context_reference_payload_sha256 != reference.payload_sha256
+        or recovery.context_reference_payload_sha256
+        != result["context_reference_payload_sha256"]
+        or recovery.context_reference_file_sha256
+        != result["context_reference_file_sha256"]
+        or recovery.development_result_schema != DEVELOPMENT_RESULT_SCHEMA
+        or recovery.development_result_payload_sha256 != result["payload_sha256"]
+    ):
+        raise ValueError(
+            "clean-A recovery differs from canonical context/development bytes."
+        )
+    _validate_frozen_sensitivity_replay_for_audit(result)
+    return _issue_audited_development_result(
+        result,
+        recovery,
+        _issuer=_AUDITED_DEVELOPMENT_RESULT_ISSUER,
+    )
+
+
+def build_selected_method_freeze_payload_for_a_recovery(
+    development_result: Mapping[str, Any],
+    *,
+    audited_development_result: AuditedDevelopmentResult,
+) -> dict[str, Any]:
+    """Recover the selected payload from proof-gated bytes at exact clean A."""
+
+    proof = require_audited_development_result(
+        audited_development_result,
+        expected_payload_sha256=None,
+    )
+    result = validate_development_result_payload(
+        development_result,
+        require_enriched=True,
+    )
+    if proof.payload_sha256 != result["payload_sha256"]:
+        raise ValueError("AuditedDevelopmentResult binds a different payload.")
+    _require_result_evidence_matches_audited_proof(result, proof)
+    return _assemble_selected_method_freeze_payload(
+        result,
+        development_result_file_sha256=proof.development_result_file_sha256,
+        clean_commit=proof.clean_commit,
+        clean_tree=proof.clean_tree,
+        _issuer=_SELECTED_FREEZE_ASSEMBLY_ISSUER,
+    )
 
 
 def validate_development_result_for_audit(
@@ -4946,15 +5760,9 @@ def validate_context_reference_for_audit(
         context_reference_file_sha256,
         "context_reference_file_sha256",
     )
-    reference = v3.validate_context_reference_payload(payload)
+    reference = _validate_exact_synthetic_context_reference(payload)
     if (
-        reference.domain != "synthetic_development_and_future_synthetic"
-        or tuple(
-            table.interface_lookup_key for table in reference.interface_tables
-        )
-        != CONTEXT_REFERENCE_INTERFACES
-        or reference.canonical_channels != v3.CANONICAL_CHANNELS
-        or reference.payload_sha256 != result["context_reference_payload_sha256"]
+        reference.payload_sha256 != result["context_reference_payload_sha256"]
         or reference_file_sha256 != result["context_reference_file_sha256"]
     ):
         raise ValueError(
@@ -5373,6 +6181,218 @@ def _participant_eauc(
     return values[0] / 6.0 + values[1] / 2.0 + values[3] / 3.0
 
 
+def _sensitivity_vectors_from_metric_rows(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    grid_cell_index: int,
+) -> dict[str, np.ndarray]:
+    """Derive the six ordered 48-participant sensitivity vectors from rows."""
+
+    cell_index = _positive_exact_int(grid_cell_index, "grid_cell_index")
+    if cell_index not in range(1, 10):
+        raise ValueError("grid_cell_index must be in the canonical range 1..9.")
+    selected_rows = [
+        row for row in rows if row["grid_cell_index"] == cell_index
+    ]
+    index = {_metric_lookup_key(row): row for row in selected_rows}
+    if len(index) != len(selected_rows):
+        raise ValueError("duplicate metric rows reached sensitivity reduction.")
+
+    def vector(
+        family: str,
+        condition: str,
+        left: tuple[str, str, str],
+        right: tuple[str, str, str],
+        *,
+        budget: int | None = None,
+        eauc: bool,
+    ) -> np.ndarray:
+        values: list[float] = []
+        for participant_index in range(DEVELOPMENT_PARTICIPANTS):
+            if eauc:
+                left_value = _participant_eauc(
+                    index,
+                    family,
+                    participant_index,
+                    condition,
+                    *left,
+                    metric="balanced_accuracy",
+                )
+                right_value = _participant_eauc(
+                    index,
+                    family,
+                    participant_index,
+                    condition,
+                    *right,
+                    metric="balanced_accuracy",
+                )
+            else:
+                if budget is None:
+                    raise ValueError("point sensitivity contrast requires a budget.")
+                left_value = float(
+                    index[
+                        (family, participant_index, condition, *left, budget)
+                    ]["balanced_accuracy"]
+                )
+                right_value = float(
+                    index[
+                        (family, participant_index, condition, *right, budget)
+                    ]["balanced_accuracy"]
+                )
+            values.append(left_value - right_value)
+        result = np.asarray(values, dtype=np.float64)
+        result.setflags(write=False)
+        return result
+
+    vectors = {
+        "B1_A_Q_minus_A0_eAUC": vector(
+            "B1_participant_class_confusion",
+            "neutral",
+            ("A_Q", "none", "deployed"),
+            ("A0", "none", "none"),
+            eauc=True,
+        ),
+        "B2_A_Q_minus_A0_eAUC": vector(
+            "B2_participant_phase_spatial_shift",
+            "neutral",
+            ("A_Q", "none", "deployed"),
+            ("A0", "none", "none"),
+            eauc=True,
+        ),
+        "B3_A_QM_minus_A_Q_eAUC": vector(
+            "B3_impedance_linked_transfer_shift",
+            "neutral",
+            ("A_QM", "correct", "deployed"),
+            ("A_Q", "none", "deployed"),
+            eauc=True,
+        ),
+        "B4_A_QM_minus_A_Q_eAUC": vector(
+            "B4_interface_calibrated_impedance_shift",
+            "equal_condition_composite",
+            ("A_QM", "correct", "deployed"),
+            ("A_Q", "none", "deployed"),
+            eauc=True,
+        ),
+        "B3_k3_correct_minus_shuffle": vector(
+            "B3_impedance_linked_transfer_shift",
+            "neutral",
+            ("A_QM", "correct", "deployed"),
+            ("A_QM", "within_prefix_packet_shuffle", "deployed"),
+            budget=3,
+            eauc=False,
+        ),
+        "B4_k3_correct_minus_shuffle": vector(
+            "B4_interface_calibrated_impedance_shift",
+            "equal_condition_composite",
+            ("A_QM", "correct", "deployed"),
+            ("A_QM", "within_prefix_packet_shuffle", "deployed"),
+            budget=3,
+            eauc=False,
+        ),
+    }
+    if tuple(vectors) != SENSITIVITY_ENDPOINT_IDS:
+        raise RuntimeError("sensitivity vector order drifted.")
+    return vectors
+
+
+def _sensitivity_vector_values_sha256(
+    kind: str,
+    values_by_endpoint: Mapping[str, Sequence[float]],
+) -> str:
+    if kind not in {"primary", "uniform"}:
+        raise ValueError("sensitivity vector kind must be primary or uniform.")
+    return _canonical_sha256(
+        {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                f"{kind}-sensitivity-participant-vector-set.v1"
+            ),
+            "participant_count": DEVELOPMENT_PARTICIPANTS,
+            "endpoint_order": list(SENSITIVITY_ENDPOINT_IDS),
+            "values_by_endpoint": dict(values_by_endpoint),
+        }
+    )
+
+
+def _complete_sensitivity_participant_vectors_sha256(
+    reports: Sequence[Mapping[str, Any]],
+) -> str:
+    return _canonical_sha256(
+        {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "complete-sensitivity-participant-vectors.v1"
+            ),
+            "reports": [
+                report["sensitivity_participant_vectors"] for report in reports
+            ],
+        }
+    )
+
+
+def _validated_sensitivity_participant_vectors(
+    value: Mapping[str, Any],
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    """Validate and materialize the exact report-only participant evidence."""
+
+    if type(value) is not dict:
+        raise TypeError("sensitivity participant vectors must be an exact dictionary.")
+    _require_exact_keys(
+        value,
+        {
+            "schema",
+            "participant_count",
+            "endpoint_order",
+            "primary_values_by_endpoint",
+            "uniform_values_by_endpoint",
+            "primary_values_sha256",
+            "uniform_values_sha256",
+        },
+        "sensitivity participant vectors",
+    )
+    if (
+        value["schema"]
+        != (
+            "cfeg.metadata-calibration-efficiency-v3."
+            "sensitivity-participant-vectors.v1"
+        )
+        or value["participant_count"] != DEVELOPMENT_PARTICIPANTS
+        or type(value["endpoint_order"]) is not list
+        or tuple(value["endpoint_order"]) != SENSITIVITY_ENDPOINT_IDS
+    ):
+        raise ValueError("sensitivity participant-vector identity/order is invalid.")
+
+    resolved: dict[str, dict[str, np.ndarray]] = {}
+    for kind in ("primary", "uniform"):
+        field = f"{kind}_values_by_endpoint"
+        raw_mapping = value[field]
+        if type(raw_mapping) is not dict or tuple(raw_mapping) != SENSITIVITY_ENDPOINT_IDS:
+            raise TypeError(
+                f"{field} must be an exact endpoint-ordered dictionary."
+            )
+        raw_for_hash: dict[str, list[float]] = {}
+        arrays: dict[str, np.ndarray] = {}
+        for endpoint in SENSITIVITY_ENDPOINT_IDS:
+            raw_vector = raw_mapping[endpoint]
+            if type(raw_vector) is not list or len(raw_vector) != DEVELOPMENT_PARTICIPANTS:
+                raise ValueError(
+                    f"{field}[{endpoint!r}] must contain exactly 48 values."
+                )
+            if any(type(item) is not float or not math.isfinite(item) for item in raw_vector):
+                raise TypeError(
+                    f"{field}[{endpoint!r}] must contain exact finite floats."
+                )
+            raw_for_hash[endpoint] = list(raw_vector)
+            array = np.asarray(raw_vector, dtype=np.float64)
+            array.setflags(write=False)
+            arrays[endpoint] = array
+        expected_hash = _sensitivity_vector_values_sha256(kind, raw_for_hash)
+        if value[f"{kind}_values_sha256"] != expected_hash:
+            raise ValueError(f"{kind} sensitivity participant-vector hash is invalid.")
+        resolved[kind] = arrays
+    return resolved["primary"], resolved["uniform"]
+
+
 def _one_sided_summary(values: np.ndarray) -> dict[str, Any]:
     array = _finite_vector(values, "paired contrast")
     return {
@@ -5684,6 +6704,7 @@ _GATE_REPORT_KEYS = {
 }
 _ENRICHED_GATE_REPORT_KEYS = {
     *_GATE_REPORT_KEYS,
+    "sensitivity_participant_vectors",
     "uniform_block_weight_sensitivity",
     "resampling_sensitivity",
 }
@@ -5739,8 +6760,15 @@ def _validate_gate_report(report: Mapping[str, Any]) -> None:
         _validate_gate_report_sensitivities(report)
 
 
-def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
+def _validate_gate_report_sensitivities(
+    report: Mapping[str, Any],
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    primary_vectors, uniform_vectors = _validated_sensitivity_participant_vectors(
+        report["sensitivity_participant_vectors"]
+    )
     uniform = report["uniform_block_weight_sensitivity"]
+    if type(uniform) is not dict:
+        raise TypeError("uniform block-weight sensitivity must be a dictionary.")
     _require_exact_keys(
         uniform,
         {"schema", "promotion_or_selection_use", "common_weight_rule", "endpoints"},
@@ -5752,10 +6780,13 @@ def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
         or uniform["promotion_or_selection_use"] is not False
         or uniform["common_weight_rule"]
         != "both_p_support_and_g_M_use_exact_one_over_k"
+        or type(uniform["endpoints"]) is not dict
         or tuple(uniform["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
     ):
         raise ValueError("uniform block-weight sensitivity identity/order is invalid.")
     for endpoint, summary in uniform["endpoints"].items():
+        if type(summary) is not dict:
+            raise TypeError("uniform sensitivity endpoint summaries must be dictionaries.")
         _require_exact_keys(
             summary,
             {
@@ -5779,9 +6810,27 @@ def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
             "uniform_weight_observed_mean",
             "paired_weighted_minus_uniform_mean",
         ):
+            if type(summary[name]) is not float:
+                raise TypeError(f"{endpoint}.{name} must be an exact float.")
             _finite_float(summary[name], f"{endpoint}.{name}")
+        primary = primary_vectors[endpoint]
+        uniform_values = uniform_vectors[endpoint]
+        paired = primary - uniform_values
+        if (
+            summary["reliability_weighted_observed_mean"]
+            != float(np.mean(primary))
+            or summary["uniform_weight_observed_mean"]
+            != float(np.mean(uniform_values))
+            or summary["paired_weighted_minus_uniform_mean"]
+            != float(np.mean(paired))
+        ):
+            raise ValueError(
+                "uniform sensitivity summaries differ from participant vectors."
+            )
 
     resampling = report["resampling_sensitivity"]
+    if type(resampling) is not dict:
+        raise TypeError("resampling sensitivity must be a dictionary.")
     _require_exact_keys(
         resampling,
         {"schema", "component", "promotion_or_selection_use", "endpoints"},
@@ -5792,10 +6841,13 @@ def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
         != "cfeg.metadata-calibration-efficiency-v3.sensitivity-resampling-report.v1"
         or resampling["component"] != "sensitivity_resampling"
         or resampling["promotion_or_selection_use"] is not False
+        or type(resampling["endpoints"]) is not dict
         or tuple(resampling["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
     ):
         raise ValueError("resampling sensitivity identity/order is invalid.")
     for endpoint, summary in resampling["endpoints"].items():
+        if type(summary) is not dict:
+            raise TypeError("resampling endpoint summaries must be dictionaries.")
         _require_exact_keys(
             summary,
             {
@@ -5831,7 +6883,22 @@ def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
             "participant_bootstrap_95_CI_lower",
             "participant_bootstrap_95_CI_upper",
         ):
+            if type(summary[name]) is not float:
+                raise TypeError(f"{endpoint}.{name} must be an exact float.")
             _finite_float(summary[name], f"{endpoint}.{name}")
+        expected_sign_p = (extreme + 1.0) / (
+            SENSITIVITY_SIGN_FLIP_DRAWS + 1.0
+        )
+        if (
+            summary["observed_mean"] != float(np.mean(primary_vectors[endpoint]))
+            or summary["sign_flip_one_sided_p_value"] != expected_sign_p
+            or not 0.0 <= summary["sign_flip_one_sided_p_value"] <= 1.0
+            or summary["participant_bootstrap_95_CI_lower"]
+            > summary["participant_bootstrap_95_CI_upper"]
+        ):
+            raise ValueError(
+                "resampling sensitivity statistics differ from exact formulas."
+            )
         family = _sensitivity_family(endpoint)
         code = _SENSITIVITY_ENDPOINT_CODES[endpoint]
         if summary["sign_flip_rng_key"] != _sensitivity_rng_key(
@@ -5840,6 +6907,7 @@ def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
             family, int(report["grid_cell_index"]), code, 1
         ):
             raise ValueError("sensitivity RNG key binding is invalid.")
+    return primary_vectors, uniform_vectors
 
 
 def _artifact_reference(
@@ -6317,19 +7385,57 @@ def _require_loaded_synthetic_source(
         current = v3._require_development_rng_authority_semantics(authority)
     else:
         raise TypeError("an exact production RNG authority is required.")
-    current_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    current_path = Path(__file__).resolve()
+    current_sha256 = hashlib.sha256(current_path.read_bytes()).hexdigest()
     inventory = {
         entry.path: entry.file_sha256
         for entry in current._bundle_capability.tracked_source_files
     }
     if (
-        current_sha256 != _IMPORTED_SYNTHETIC_MODULE_SHA256
+        current_path
+        != (_REPOSITORY / SYNTHETIC_MODULE_REPOSITORY_PATH).resolve()
+        or current_sha256 != _IMPORTED_SYNTHETIC_MODULE_SHA256
         or inventory.get(SYNTHETIC_MODULE_REPOSITORY_PATH)
         != _IMPORTED_SYNTHETIC_MODULE_SHA256
     ):
         raise RuntimeError(
             "loaded V3 synthetic code does not equal current bundle-bound source bytes."
         )
+    _require_fbcca_runtime_identity(inventory)
+
+
+def _require_fbcca_runtime_identity(inventory: Mapping[str, str]) -> None:
+    current_path = Path(_fbcca_module.__file__).resolve()
+    current_sha256 = hashlib.sha256(current_path.read_bytes()).hexdigest()
+    if (
+        current_path != (_REPOSITORY / FBCCA_MODULE_REPOSITORY_PATH).resolve()
+        or _FBCCA_MODULE_IMPORT_PATH != current_path
+        or current_sha256 != _IMPORTED_FBCCA_MODULE_SHA256
+        or inventory.get(FBCCA_MODULE_REPOSITORY_PATH)
+        != _IMPORTED_FBCCA_MODULE_SHA256
+        or inventory.get(FILTERBANK_REPOSITORY_PATH) != EXPECTED_FILTERBANK_SHA256
+        or _fbcca_module.np is not _IMPORTED_FBCCA_NUMPY_MODULE
+        or _fbcca_module.signal is not _IMPORTED_FBCCA_SCIPY_SIGNAL_MODULE
+        or apply_filterbank is not _fbcca_module.apply_filterbank
+        or cca_score is not _fbcca_module.cca_score
+        or make_reference_signals is not _fbcca_module.make_reference_signals
+        or resolve_filterbank_parameters
+        is not _fbcca_module.resolve_filterbank_parameters
+    ):
+        raise RuntimeError(
+            "loaded strict-FBCCA code differs from the bundle-bound module."
+        )
+    for name, imported_callable, imported_code_sha256 in (
+        _IMPORTED_FBCCA_CALLABLE_BINDINGS
+    ):
+        current_callable = getattr(_fbcca_module, name, None)
+        if (
+            current_callable is not imported_callable
+            or _callable_code_sha256(current_callable) != imported_code_sha256
+        ):
+            raise RuntimeError(
+                f"loaded strict-FBCCA callable {name!r} changed after import."
+            )
 
 
 def _unit_test_rng_factory(authority: _UnitTestRNGAuthority) -> RngFactory:
@@ -6365,18 +7471,104 @@ def _unit_test_rng_factory(authority: _UnitTestRNGAuthority) -> RngFactory:
 def _require_exact_contract(value: object) -> SyntheticV3Contract:
     if type(value) is not SyntheticV3Contract:
         raise TypeError("contract must be an exact SyntheticV3Contract.")
+    try:
+        issuer = value._issuer
+    except AttributeError as error:
+        raise TypeError("SyntheticV3Contract was not issued by this module.") from error
+    if issuer is not _SYNTHETIC_CONTRACT_ISSUER:
+        raise TypeError("synthetic contract issuer is invalid.")
     if (
         value.plan_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.master_plan_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.filterbank_sha256 != EXPECTED_FILTERBANK_SHA256
         or value.plan_path != DEFAULT_SYNTHETIC_PLAN_PATH.resolve()
         or value.master_plan_path != DEFAULT_MASTER_PLAN_PATH.resolve()
+        or value.filterbank_path != DEFAULT_FILTERBANK_PATH.resolve()
     ):
         raise ValueError("synthetic contract identity or plan binding is invalid.")
-    if not isinstance(value.plan, Mapping) or not isinstance(value.filterbank, Mapping):
-        raise TypeError("synthetic contract payloads must remain mappings.")
-    _validate_exact_plan_sections(value.plan)
+    _require_deep_frozen_json(value.plan, "contract.plan")
+    _require_deep_frozen_json(value.filterbank, "contract.filterbank")
+    thawed_plan = _deep_thaw_json(value.plan)
+    thawed_filterbank = _deep_thaw_json(value.filterbank)
+    if (
+        value.plan_content_sha256
+        != _canonical_sha256({"value": thawed_plan})
+        or value.filterbank_content_sha256
+        != _canonical_sha256({"value": thawed_filterbank})
+        or value.semantic_binding_sha256
+        != _canonical_sha256(_contract_semantic_binding(value))
+    ):
+        raise ValueError("synthetic contract in-memory content binding is invalid.")
+    _validate_exact_plan_sections(thawed_plan)
+    _validate_resolved_filterbank(thawed_filterbank)
     return value
+
+
+def _require_deep_frozen_json(value: Any, name: str) -> None:
+    if type(value) is MappingProxyType:
+        if any(type(key) not in {str, int} for key in value):
+            raise TypeError(f"{name} contains an invalid mapping key.")
+        for key, item in value.items():
+            _require_deep_frozen_json(item, f"{name}[{key!r}]")
+        return
+    if type(value) is tuple:
+        for index, item in enumerate(value):
+            _require_deep_frozen_json(item, f"{name}[{index}]")
+        return
+    if value is None or type(value) in {bool, int, float, str}:
+        return
+    raise TypeError(f"{name} is not deeply immutable JSON data.")
+
+
+def _validate_resolved_filterbank(filterbank: Mapping[str, Any]) -> None:
+    resolved = resolve_filterbank_parameters(filterbank, sfreq=250.0)
+    if (
+        len(resolved["bands_hz"]) != 7
+        or resolved["n_harmonics"] != 5
+        or resolved["weights"]
+        != [
+            1.25,
+            0.6704482076268572,
+            0.5032785618838642,
+            0.42677669529663687,
+            0.38374806099528436,
+            0.35649051737437876,
+            0.33782687899303776,
+        ]
+    ):
+        raise ValueError("resolved strict-FBCCA parameters are not frozen V3 values.")
+
+
+def _require_current_contract_files(value: object) -> SyntheticV3Contract:
+    """Expensive public-boundary validation of all three frozen input files."""
+
+    contract = _require_exact_contract(value)
+    paths_and_hashes = (
+        (contract.plan_path, EXPECTED_SYNTHETIC_PLAN_SHA256, "synthetic plan"),
+        (contract.master_plan_path, EXPECTED_MASTER_PLAN_SHA256, "master plan"),
+        (contract.filterbank_path, EXPECTED_FILTERBANK_SHA256, "filterbank"),
+    )
+    for path, expected_sha256, name in paths_and_hashes:
+        if not path.is_file() or path.is_symlink():
+            raise ValueError(f"{name} must remain one canonical regular file.")
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected_sha256:
+            raise ValueError(f"{name} bytes differ from the frozen contract.")
+    decoded_plan = yaml.safe_load(contract.plan_path.read_text(encoding="utf-8"))
+    decoded_filterbank = yaml.safe_load(
+        contract.filterbank_path.read_text(encoding="utf-8")
+    )
+    if not isinstance(decoded_plan, Mapping) or not isinstance(
+        decoded_filterbank, Mapping
+    ):
+        raise TypeError("frozen contract files must decode to mappings.")
+    if (
+        decoded_plan != _deep_thaw_json(contract.plan)
+        or dict(decoded_filterbank) != _deep_thaw_json(contract.filterbank)
+    ):
+        raise ValueError("in-memory contract differs from canonical file content.")
+    _validate_exact_plan_sections(decoded_plan)
+    _validate_resolved_filterbank(decoded_filterbank)
+    return contract
 
 
 def _require_shared_bundle_provenance(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import sys
+from copy import deepcopy
 from types import ModuleType, SimpleNamespace
 
 import numpy as np
@@ -62,6 +63,14 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
                 path=synthetic.SYNTHETIC_MODULE_REPOSITORY_PATH,
                 file_sha256=synthetic._IMPORTED_SYNTHETIC_MODULE_SHA256,
             ),
+            SimpleNamespace(
+                path=synthetic.FBCCA_MODULE_REPOSITORY_PATH,
+                file_sha256=synthetic._IMPORTED_FBCCA_MODULE_SHA256,
+            ),
+            SimpleNamespace(
+                path=synthetic.FILTERBANK_REPOSITORY_PATH,
+                file_sha256=synthetic.EXPECTED_FILTERBANK_SHA256,
+            ),
         ),
     )
     governance = ModuleType("cfeg.metadata_calibration_v3_governance")
@@ -105,6 +114,43 @@ def test_contract_hashes_counts_and_no_public_raw_seed_runner(
     assert "root_seed" not in inspect.signature(
         synthetic.generate_synthetic_participant
     ).parameters
+
+
+def test_contract_is_nominal_deeply_immutable_and_revalidated_before_scoring(
+    monkeypatch: pytest.MonkeyPatch,
+    unit_rng,
+) -> None:
+    contract = synthetic.validate_synthetic_contract()
+    with pytest.raises(TypeError, match="issued only"):
+        synthetic.SyntheticV3Contract()
+    with pytest.raises(TypeError):
+        contract.plan["waveform"] = {}
+    with pytest.raises(TypeError):
+        contract.filterbank["weights"] = ()
+    with pytest.raises(TypeError):
+        contract.filterbank["weights"][0] = 99.0
+
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="N1_clean_anchor",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    mutated_filterbank = synthetic._deep_thaw_json(contract.filterbank)
+    mutated_filterbank["weights"][0] = 99.0
+    object.__setattr__(contract, "filterbank", mutated_filterbank)
+    scorer_calls = 0
+
+    def forbidden_scorer(*args, **kwargs):
+        nonlocal scorer_calls
+        del args, kwargs
+        scorer_calls += 1
+        raise AssertionError("scorer ran before contract mutation rejection")
+
+    monkeypatch.setattr(synthetic, "_score_strict_fbcca_blocks", forbidden_scorer)
+    with pytest.raises(TypeError, match="deeply immutable"):
+        synthetic.produce_strict_fbcca(contract, participant)
+    assert scorer_calls == 0
 
 
 @pytest.mark.parametrize(
@@ -215,6 +261,15 @@ def test_loaded_source_and_runtime_drift_fail_before_production_rng_use(
             if entry.path == synthetic.SYNTHETIC_MODULE_REPOSITORY_PATH
         ),
     )
+    original_apply_filterbank = synthetic.apply_filterbank
+    monkeypatch.setattr(synthetic, "apply_filterbank", lambda *args, **kwargs: None)
+    with pytest.raises(RuntimeError, match="strict-FBCCA"):
+        synthetic.generate_covariate_reference_packets(
+            rng_authority=reference_authority
+        )
+    assert calls == 0
+    monkeypatch.setattr(synthetic, "apply_filterbank", original_apply_filterbank)
+
     bundle.numerical_runtime_fingerprint_sha256 = "f" * 64
     with pytest.raises(ValueError, match="revalidated development bundle"):
         v3.require_development_rng_authority(development_authority)
@@ -678,6 +733,49 @@ def test_strict_fbcca_producer_binds_frozen_shape_without_persisting_subbands(
     assert not support.recorded_support_labels.flags.writeable
 
 
+def test_incremental_support_cache_never_reads_beyond_requested_budget(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+    unit_rng,
+) -> None:
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="N1_clean_anchor",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    seen: list[np.ndarray] = []
+
+    def fake_score(_contract, signals):
+        seen.append(signals)
+        scores = np.broadcast_to(
+            np.eye(12, dtype=np.float64),
+            (signals.shape[0], 12, 12),
+        ).copy()
+        scores.setflags(write=False)
+        return scores
+
+    monkeypatch.setattr(synthetic, "_score_strict_fbcca_blocks", fake_score)
+    loader = (
+        synthetic._incremental_strict_fbcca_support_loader_after_authorized_boundary(
+            contract,
+            participant,
+            _issuer=synthetic._STRICT_FBCCA_COMPUTATION_ISSUER,
+        )
+    )
+    assert loader(1).budget == 1
+    assert len(seen) == 1
+    assert np.shares_memory(seen[0], participant.signals)
+    assert np.array_equal(seen[0], participant.signals[:1])
+    assert loader(1).budget == 1
+    assert len(seen) == 1
+    assert loader(3).budget == 3
+    assert np.array_equal(seen[1], participant.signals[1:3])
+    assert loader(5).budget == 5
+    assert np.array_equal(seen[2], participant.signals[3:5])
+    assert [values.shape[0] for values in seen] == [1, 2, 2]
+
+
 def test_strict_products_are_nominal_and_query_mutation_fails_before_support(
     monkeypatch: pytest.MonkeyPatch,
     contract: synthetic.SyntheticV3Contract,
@@ -721,6 +819,10 @@ def test_strict_products_are_nominal_and_query_mutation_fails_before_support(
 
 
 def test_low_level_synthetic_issuers_require_private_tokens() -> None:
+    with pytest.raises(TypeError, match="clean-A recovery"):
+        synthetic.AuditedDevelopmentResult()
+    with pytest.raises(TypeError, match="exact AuditedDevelopmentResult"):
+        synthetic.require_audited_development_result({})
     with pytest.raises(TypeError, match="issuer token"):
         synthetic._issue_synthetic_participant({}, _issuer=object())
     with pytest.raises(TypeError, match="issuer token"):
@@ -740,8 +842,185 @@ def test_low_level_synthetic_issuers_require_private_tokens() -> None:
             validated_development_result=object(),
             _issuer=object(),
         )
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_audited_development_result({}, object(), _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._assemble_selected_method_freeze_payload(
+            {},
+            development_result_file_sha256="a" * 64,
+            clean_commit="b" * 40,
+            clean_tree="c" * 40,
+            _issuer=object(),
+        )
     with pytest.raises(TypeError):
         synthetic._issue_strict_fbcca_product({})
+
+
+def _sensitivity_report_fixture() -> dict:
+    primary = {
+        endpoint: [float(index) / 1000.0 for index in range(48)]
+        for endpoint in synthetic.SENSITIVITY_ENDPOINT_IDS
+    }
+    uniform = {
+        endpoint: [float(index - 1) / 1000.0 for index in range(48)]
+        for endpoint in synthetic.SENSITIVITY_ENDPOINT_IDS
+    }
+    vectors = {
+        "schema": (
+            "cfeg.metadata-calibration-efficiency-v3."
+            "sensitivity-participant-vectors.v1"
+        ),
+        "participant_count": 48,
+        "endpoint_order": list(synthetic.SENSITIVITY_ENDPOINT_IDS),
+        "primary_values_by_endpoint": primary,
+        "uniform_values_by_endpoint": uniform,
+        "primary_values_sha256": synthetic._sensitivity_vector_values_sha256(
+            "primary", primary
+        ),
+        "uniform_values_sha256": synthetic._sensitivity_vector_values_sha256(
+            "uniform", uniform
+        ),
+    }
+    uniform_summaries = {}
+    resampling_summaries = {}
+    for endpoint in synthetic.SENSITIVITY_ENDPOINT_IDS:
+        primary_array = np.asarray(primary[endpoint], dtype=np.float64)
+        uniform_array = np.asarray(uniform[endpoint], dtype=np.float64)
+        uniform_summaries[endpoint] = {
+            "metric": (
+                "participant_eAUC"
+                if endpoint.endswith("eAUC")
+                else "participant_k3_balanced_accuracy"
+            ),
+            "n": 48,
+            "reliability_weighted_observed_mean": float(np.mean(primary_array)),
+            "uniform_weight_observed_mean": float(np.mean(uniform_array)),
+            "paired_weighted_minus_uniform_mean": float(
+                np.mean(primary_array - uniform_array)
+            ),
+        }
+        extreme = 17
+        family = synthetic._sensitivity_family(endpoint)
+        code = synthetic._SENSITIVITY_ENDPOINT_CODES[endpoint]
+        resampling_summaries[endpoint] = {
+            "n": 48,
+            "observed_mean": float(np.mean(primary_array)),
+            "sign_flip_draws": synthetic.SENSITIVITY_SIGN_FLIP_DRAWS,
+            "sign_flip_extreme_count": extreme,
+            "sign_flip_one_sided_p_value": (extreme + 1.0)
+            / (synthetic.SENSITIVITY_SIGN_FLIP_DRAWS + 1.0),
+            "participant_bootstrap_draws": (
+                synthetic.SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS
+            ),
+            "participant_bootstrap_95_CI_lower": 0.0,
+            "participant_bootstrap_95_CI_upper": 1.0,
+            "sign_flip_rng_key": synthetic._sensitivity_rng_key(
+                family, 1, code, 0
+            ),
+            "participant_bootstrap_rng_key": synthetic._sensitivity_rng_key(
+                family, 1, code, 1
+            ),
+        }
+    return {
+        "grid_cell_index": 1,
+        "sensitivity_participant_vectors": vectors,
+        "uniform_block_weight_sensitivity": {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "uniform-block-weight-sensitivity.v1"
+            ),
+            "promotion_or_selection_use": False,
+            "common_weight_rule": "both_p_support_and_g_M_use_exact_one_over_k",
+            "endpoints": uniform_summaries,
+        },
+        "resampling_sensitivity": {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "sensitivity-resampling-report.v1"
+            ),
+            "component": "sensitivity_resampling",
+            "promotion_or_selection_use": False,
+            "endpoints": resampling_summaries,
+        },
+    }
+
+
+def test_sensitivity_vectors_hashes_means_and_p_formula_are_exact() -> None:
+    report = _sensitivity_report_fixture()
+    primary, uniform = synthetic._validate_gate_report_sensitivities(report)
+    assert tuple(primary) == synthetic.SENSITIVITY_ENDPOINT_IDS
+    assert tuple(uniform) == synthetic.SENSITIVITY_ENDPOINT_IDS
+
+    bad_mean = deepcopy(report)
+    bad_mean["uniform_block_weight_sensitivity"]["endpoints"][
+        synthetic.SENSITIVITY_ENDPOINT_IDS[0]
+    ]["uniform_weight_observed_mean"] += 1e-12
+    with pytest.raises(ValueError, match="participant vectors"):
+        synthetic._validate_gate_report_sensitivities(bad_mean)
+
+    bad_p = deepcopy(report)
+    bad_p["resampling_sensitivity"]["endpoints"][
+        synthetic.SENSITIVITY_ENDPOINT_IDS[0]
+    ]["sign_flip_one_sided_p_value"] += 1e-12
+    with pytest.raises(ValueError, match="exact formulas"):
+        synthetic._validate_gate_report_sensitivities(bad_p)
+
+    bad_type = deepcopy(report)
+    bad_type["sensitivity_participant_vectors"][
+        "primary_values_by_endpoint"
+    ][synthetic.SENSITIVITY_ENDPOINT_IDS[0]][0] = 0
+    with pytest.raises(TypeError, match="exact finite floats"):
+        synthetic._validate_gate_report_sensitivities(bad_type)
+
+
+def test_audit_sensitivity_replay_compares_whole_report_without_exposing_rng(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = _sensitivity_report_fixture()
+    expected_resampling = deepcopy(report["resampling_sensitivity"])
+    calls: list[tuple[int, int, int]] = []
+
+    def fake_replay(
+        paired_vectors,
+        *,
+        grid_cell_index,
+        rng_factory,
+        sign_flip_draws,
+        participant_bootstrap_draws,
+        require_complete,
+        _issuer,
+    ):
+        assert tuple(paired_vectors) == synthetic.SENSITIVITY_ENDPOINT_IDS
+        assert rng_factory is synthetic._frozen_sensitivity_audit_rng_factory
+        assert require_complete is True
+        assert _issuer is synthetic._SYNTHETIC_RNG_PRODUCER_ISSUER
+        calls.append(
+            (grid_cell_index, sign_flip_draws, participant_bootstrap_draws)
+        )
+        return deepcopy(expected_resampling)
+
+    monkeypatch.setattr(
+        synthetic,
+        "_sensitivity_resampling_with_rng_factory",
+        fake_replay,
+    )
+    synthetic._validate_frozen_sensitivity_replay_for_audit(
+        {"complete_grid_gate_report": [report]}
+    )
+    assert calls == [
+        (
+            1,
+            synthetic.SENSITIVITY_SIGN_FLIP_DRAWS,
+            synthetic.SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS,
+        )
+    ]
+    report["resampling_sensitivity"]["endpoints"][
+        synthetic.SENSITIVITY_ENDPOINT_IDS[0]
+    ]["sign_flip_extreme_count"] += 1
+    with pytest.raises(ValueError, match="component-11 replay"):
+        synthetic._validate_frozen_sensitivity_replay_for_audit(
+            {"complete_grid_gate_report": [report]}
+        )
 
 
 def _gate_report(cell: v3.V3GridCell, *, eligible: bool, mean: float, lcb: float):

@@ -103,7 +103,11 @@ RNG_COMPONENT_CODES = (
     ("sensitivity_resampling", 11),
 )
 
-_IMPORTED_MODEL_MODULE_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+_MODEL_MODULE_IMPORT_PATH = Path(__file__).resolve()
+_MODEL_REPOSITORY_ROOT = _MODEL_MODULE_IMPORT_PATH.parents[3]
+_IMPORTED_MODEL_MODULE_SHA256 = hashlib.sha256(
+    _MODEL_MODULE_IMPORT_PATH.read_bytes()
+).hexdigest()
 
 FINAL_BUDGETS = (0, 1, 3, 5)
 PREQUENTIAL_BUDGETS = (3, 5)
@@ -479,9 +483,12 @@ def _require_rng_authority(
     inventory = {
         entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
     }
-    current_module_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    current_module_path = Path(__file__).resolve()
+    current_module_sha256 = hashlib.sha256(current_module_path.read_bytes()).hexdigest()
     if (
-        current_module_sha256 != _IMPORTED_MODEL_MODULE_SHA256
+        current_module_path
+        != (_MODEL_REPOSITORY_ROOT / MODEL_MODULE_REPOSITORY_PATH).resolve()
+        or current_module_sha256 != _IMPORTED_MODEL_MODULE_SHA256
         or inventory.get(MODEL_MODULE_REPOSITORY_PATH)
         != _IMPORTED_MODEL_MODULE_SHA256
     ):
@@ -823,7 +830,11 @@ class V3SupportProduct:
             raise ValueError("unknown block weight mode.")
         if not np.array_equal(weights, expected_weights):
             raise ValueError("normalized block weights are not the exact relative reliabilities.")
-        expected_support = np.sum(weights[:, None, None] * per_block, axis=0)
+        expected_support = (
+            np.mean(per_block, axis=0)
+            if self.block_weight_mode == "uniform"
+            else np.sum(weights[:, None, None] * per_block, axis=0)
+        )
         if not np.array_equal(support, expected_support):
             raise ValueError("support probability is not the exact blockwise P3 mixture.")
         for array in (
@@ -1002,7 +1013,11 @@ def _blockwise_p3_support(
         weights = np.full(blocks, 1.0 / blocks, dtype=np.float64)
     else:  # pragma: no cover - callers pass one literal
         raise ValueError("unknown block weight mode.")
-    mixture = np.sum(weights[:, None, None] * per_block, axis=0)
+    mixture = (
+        np.mean(per_block, axis=0)
+        if block_weight_mode == "uniform"
+        else np.sum(weights[:, None, None] * per_block, axis=0)
+    )
     readonly_reliabilities = _readonly(reliabilities)
     readonly_weights = _readonly(weights)
     readonly_per_block = _readonly(per_block)
@@ -2297,6 +2312,7 @@ def finalize_context_trust(
         preflight,
         support_reliability,
         weights,
+        aggregation_mode="weighted_sum",
         _issuer=_CONTEXT_TRUST_ISSUER,
     )
 
@@ -2315,6 +2331,7 @@ def finalize_context_trust_uniform_sensitivity(
         preflight,
         product.reliability_capability,
         product.normalized_block_weights,
+        aggregation_mode="uniform_mean",
         _issuer=_CONTEXT_TRUST_ISSUER,
     )
 
@@ -2324,6 +2341,7 @@ def _finalize_context_trust_with_weights(
     support_reliability: MFreeSupportReliabilityCapability,
     block_weights: np.ndarray,
     *,
+    aggregation_mode: Literal["weighted_sum", "uniform_mean"],
     _issuer: object,
 ) -> ContextTrustCapability:
     if _issuer is not _CONTEXT_TRUST_ISSUER:
@@ -2346,7 +2364,15 @@ def _finalize_context_trust_with_weights(
         len(preflight.ordered_support_block_keys),
         "block_weights",
     )
-    trust = float(np.sum(weights * affinity))
+    if aggregation_mode == "uniform_mean":
+        expected_uniform = np.full(len(weights), 1.0 / len(weights), dtype=np.float64)
+        if not np.array_equal(weights, expected_uniform):
+            raise ValueError("uniform context aggregation requires exact one-over-k weights.")
+        trust = float(np.mean(affinity))
+    elif aggregation_mode == "weighted_sum":
+        trust = float(np.sum(weights * affinity))
+    else:  # pragma: no cover - internal callers pass one exact literal
+        raise ValueError("unknown context aggregation mode.")
     if np.array_equal(affinity, np.ones_like(affinity)) or trust == 1.0:
         trust = 1.0
         reason = "exact_neutral_A_Q"

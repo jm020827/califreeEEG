@@ -291,13 +291,11 @@ def test_uniform_sensitivity_uses_one_over_k_for_both_p3_and_context() -> None:
         uniform.normalized_block_weights,
         np.full(3, 1.0 / 3.0),
     )
-    assert np.allclose(
+    assert np.array_equal(
         uniform.support_probabilities,
         np.mean(uniform.per_block_support_probabilities, axis=0),
-        rtol=0.0,
-        atol=1.0e-16,
     )
-    assert uniform_trust.g_M_by_query == pytest.approx(
+    assert uniform_trust.g_M_by_query == float(
         np.mean(preflight.affinity_by_support_block)
     )
     assert weighted_trust.g_M_by_query == pytest.approx(
