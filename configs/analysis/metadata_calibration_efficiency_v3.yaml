@@ -1,0 +1,810 @@
+schema: cfeg.metadata-calibration-efficiency-plan.v3
+candidate_id: metadata-calibration-efficiency-v3
+decision_id: DEC-20260906-024
+status: declared_development_contract_not_yet_bundle_frozen
+contract_stage: development_selection_only
+scientific_candidate_id: null
+scientific_candidate_id_template: metadata-calibration-efficiency-v3-p3-nu_{nu_token}-lambda_{lambda_token}
+
+preoutcome_amendment:
+  path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
+  file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
+  v2_is_retired_ancestor_not_execution_parent: true
+
+objective: >-
+  Test whether pre-query acquisition context reduces labeled target-user
+  calibration burden for unseen-participant closed-set SSVEP beyond an
+  otherwise identical EEG-derived-Q support path, while preserving a strict
+  FBCCA no-calibration anchor and exact metadata-off fallback.
+
+research_question: >-
+  At the same participant, query, labeled complete-block support, and common
+  signal-only estimator, does knowing query-support electrode interface and
+  pre-query channel impedance improve the k=0/1/3 early calibration curve?
+
+claim_order:
+  - id: Q_support_increment
+    contrast: participant_eAUC_A_Q_minus_A0
+    meaning: labeled calibration EEG itself has value beyond strict FBCCA
+  - id: M_increment
+    contrast: participant_eAUC_A_QM_minus_A_Q
+    meaning: external acquisition context adds value beyond EEG-derived Q
+  - id: pairing_mechanism
+    contrasts:
+      - k3_A_QM_correct_minus_within_prefix_pair_shuffle
+    meaning: at_k3_any_gain_depends_on_the_correct_query_support_block_context_relation
+  - id: Q_calibration_value
+    contrast: participant_A_Q_k3_minus_A_Q_k1
+    meaning: three calibration blocks improve on one block so there is burden to save
+  - id: calibration_saving
+    contrast: A_QM_k1_noninferior_to_A_Q_k3
+    opens_only_after: [Q_support_increment, M_increment, pairing_mechanism, Q_calibration_value]
+
+interpretation_boundary:
+  allowed:
+    - same_study_unseen_participant_predictive_utility
+    - population_average_reduction_in_labeled_complete_block_burden
+    - exact_software_fallback_when_metadata_is_disabled_or_all_missing
+  forbidden:
+    - first_few_shot_or_one_shot_SSVEP_claim
+    - causal_effect_of_impedance_or_electrode_interface
+    - broad_device_site_or_open_set_OOD_claim
+    - k1_individual_no_harm_guarantee
+    - synthetic_efficacy_as_human_EEG_evidence
+    - equating_LLM_pass_at_K_with_EEG_calibration_k
+
+information_rights:
+  common_allowed:
+    - current_query_EEG
+    - frozen_complete_candidate_frequency_codebook_applied_identically_to_every_query
+    - labeled_target_support_EEG_from_exact_complete_blocks
+    - support_labels
+    - signal_derived_query_and_support_Q
+  metadata_adapter_only:
+    - pre_query_electrode_interface
+    - pre_query_block_channel_impedance_kohm
+    - explicit_missing_unknown_and_measurement_validity_flags
+    - source_frozen_context_reference_receipt
+  scientific_operator_allowed:
+    - anchor_probability
+    - M_free_support_probability
+    - M_free_support_reliability
+    - lambda_Q
+    - typed_ContextTrustCapability_with_g_M_and_receipt_hashes
+  forbidden:
+    - target_query_labels_or_outcomes_during_fit_selection_or_gating
+    - query_batch_transduction
+    - correct_class_frequency_as_a_row_specific_feature
+    - participant_file_row_or_dataset_identity_as_a_model_feature
+    - post_query_metadata
+    - v1_or_v2_outcomes_as_independent_v3_evidence
+    - raw_interface_or_impedance_at_the_scientific_operator_boundary
+
+roles:
+  A0:
+    name: repeated_strict_FBCCA
+    labeled_support: false
+    signal_Q: false
+    acquisition_M: false
+  A_Q:
+    name: bounded_score_prototype_support_residual
+    labeled_support: true
+    signal_Q: true
+    acquisition_M: false
+  A_QM:
+    name: single_insertion_context_trust_support_residual
+    labeled_support: true
+    signal_Q: true
+    acquisition_M: typed_adapter_capability_only
+
+anchor:
+  implementation: src/cfeg/baselines/fbcca.py::predict_fbcca
+  filterbank_config: configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml
+  filterbank_config_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
+  score_schema: strict_fbcca_bound_filterbank_raw_scores_v1
+  codebook_rule: every_candidate_frequency_and_phase_in_the_same_frozen_order_for_every_query
+  direct_return_without_arithmetic_when_support_is_disabled: true
+
+score_normalization:
+  formula: overflow_safe_row_scale_center_root_mean_square
+  epsilon: 1.0e-12
+  base_probability: softmax_temperature_one
+  base_prediction: raw_FBCCA_argmax
+  Jensen_Shannon_divergence: half_KL_p_to_midpoint_plus_half_KL_q_to_midpoint_with_natural_log_and_1e_minus_12_clamp
+
+support_residual:
+  operator_id: P3_blockwise_score_prototype_reliability_mixture
+  M_may_enter_prototype: false
+  ideal_prototype_smoothing: 0.05
+  ideal_prototype_formula: smoothing_divided_by_C_plus_one_minus_smoothing_on_true_class
+  per_block_class_prototype_formula: >-
+    For each complete block b and class c, r_bc equals
+    (prior times ideal_c plus that block's one support probability with
+    observed label c) divided by (prior plus one).
+  query_class_score: negative_Jensen_Shannon_between_query_probability_and_class_prototype
+  per_block_support_probability: softmax_over_query_class_scores_from_r_bc
+  block_reliability: >-
+    w_b equals clip to [1e-12,1] of the arithmetic mean over the complete
+    block's C trials of immutable strict-FBCCA temperature-one probability on
+    each observed support label.
+  normalized_block_weight: pi_b_equals_w_b_divided_by_sum_over_available_blocks_w_b
+  support_probability: p_support_q_equals_sum_over_available_blocks_pi_b_times_p_support_qb
+  A_Q_and_A_QM_support_probability_and_weights_must_be_bitwise_identical: true
+  uniform_block_weight_sensitivity_required: true
+  development_grid:
+    prototype_prior_pseudocount: [1.0, 4.0, 16.0]
+    lambda_max: [0.10, 0.20, 0.30]
+    canonical_cells:
+      - {index: 1, id: p3-nu_1-lambda_0p10, nu_token: '1', lambda_token: 0p10, prototype_prior_pseudocount: 1.0, lambda_max: 0.10, operator_instance_sha256: 63ad5a68d79dbad9cfe4443a207eefd96a15d643bf6bbb4914c7a487bb59e5f9}
+      - {index: 2, id: p3-nu_1-lambda_0p20, nu_token: '1', lambda_token: 0p20, prototype_prior_pseudocount: 1.0, lambda_max: 0.20, operator_instance_sha256: 60b4fdb0f0039ac4e0a08c2ebb7e11e36e0aa43b0578362ada8e0bed81e8a43f}
+      - {index: 3, id: p3-nu_1-lambda_0p30, nu_token: '1', lambda_token: 0p30, prototype_prior_pseudocount: 1.0, lambda_max: 0.30, operator_instance_sha256: 16c9d0b71e855df9190bc961b78b0fdc1fd9123628ace1d856ddd7b0faad2786}
+      - {index: 4, id: p3-nu_4-lambda_0p10, nu_token: '4', lambda_token: 0p10, prototype_prior_pseudocount: 4.0, lambda_max: 0.10, operator_instance_sha256: 38c8ffbcc9746bfcfb0a8157012111412f1eecb9c9ed590135763fd548c29613}
+      - {index: 5, id: p3-nu_4-lambda_0p20, nu_token: '4', lambda_token: 0p20, prototype_prior_pseudocount: 4.0, lambda_max: 0.20, operator_instance_sha256: 5723702a4df184cc70dc6195a8031904eb57d0300e555dbf8cfa6345dc9b8347}
+      - {index: 6, id: p3-nu_4-lambda_0p30, nu_token: '4', lambda_token: 0p30, prototype_prior_pseudocount: 4.0, lambda_max: 0.30, operator_instance_sha256: 73668e3f34272a69d8a0ba7265acb3b53b40aeb0c4ea5889bc910d7d878d3558}
+      - {index: 7, id: p3-nu_16-lambda_0p10, nu_token: '16', lambda_token: 0p10, prototype_prior_pseudocount: 16.0, lambda_max: 0.10, operator_instance_sha256: a0a46034f0d857410c9a70661cce5c73e25a31bd7b51515d0b8adf8ebd2c3201}
+      - {index: 8, id: p3-nu_16-lambda_0p20, nu_token: '16', lambda_token: 0p20, prototype_prior_pseudocount: 16.0, lambda_max: 0.20, operator_instance_sha256: 035c524182fc1c4fca0ae5ccb273d09b4499955784e89b948861312511620d08}
+      - {index: 9, id: p3-nu_16-lambda_0p30, nu_token: '16', lambda_token: 0p30, prototype_prior_pseudocount: 16.0, lambda_max: 0.30, operator_instance_sha256: d0db62d57756ea1513b910d6c7e2b85b82d0a0b8aa1b76a4a7f9a03ea32e3bfa}
+    token_encoding_is_exact_ASCII: true
+    exact_operator_instance_digest: >-
+      SHA256 of UTF-8 JSON serialized with sorted keys, compact separators,
+      ensure_ascii=true and allow_nan=false over a string-valued object binding
+      schema cfeg.metadata-calibration-efficiency-v3.operator-instance.v1,
+      candidate_id, canonical grid cell ID, nu_token, lambda_token, operator_id,
+      filterbank SHA-256, score-normalization ID, common-P3 weighting ID,
+      fusion ID, and context-trust ID.
+    exact_digest_payload_constant_values:
+      schema: cfeg.metadata-calibration-efficiency-v3.operator-instance.v1
+      candidate_id: metadata-calibration-efficiency-v3
+      operator_id: P3_blockwise_score_prototype_reliability_mixture
+      filterbank_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
+      score_normalization_id: overflow_safe_row_RMS_softmax_T1_v1
+      support_weighting_id: strict_FBCCA_observed_label_relative_block_mixture_v1
+      fusion_id: bounded_entropy_budget_support_residual_v1
+      context_trust_id: interface_scaled_impedance_affinity_single_insertion_v1
+    exact_digest_payload_variable_mapping:
+      grid_cell_id: canonical_cells_item_id_exact_ASCII
+      nu_token: canonical_cells_item_nu_token_exact_ASCII
+      lambda_token: canonical_cells_item_lambda_token_exact_ASCII
+    exact_digest_payload_key_set:
+      - schema
+      - candidate_id
+      - operator_id
+      - filterbank_sha256
+      - score_normalization_id
+      - support_weighting_id
+      - fusion_id
+      - context_trust_id
+      - grid_cell_id
+      - nu_token
+      - lambda_token
+    numeric_float_fields_enter_digest_payload: false
+    missing_duplicate_or_extra_digest_payload_key: reject
+  selection_tie_order:
+    - satisfy_all_synthetic_development_requirements
+    - maximize_exact_minimum_mandatory_observed_gain_tuple_component
+    - maximize_exact_minimum_corresponding_one_sided_LCB_tuple_component
+    - minimize_lambda_max
+    - maximize_prototype_prior_pseudocount
+    - ascending_canonical_grid_cell_index_from_the_explicit_nine_cell_table
+  exact_rank_tuple_definition: >-
+    First component is min(max(B1_AQ_minus_A0_mean,B2_AQ_minus_A0_mean),
+    B3_AQM_minus_AQ_mean,B4_AQM_minus_AQ_mean,
+    B3_k3_mechanism_mean,B4_k3_mechanism_mean).
+    Second uses the corresponding one-sided LCBs in the same expression.
+    Both are maximized without rounding before smaller lambda, larger
+    pseudocount, and ascending explicit canonical cell index break remaining ties.
+  selected_parameters: null
+  selected_parameters_must_be_frozen_before_any_scientific_lockbox: true
+
+fusion:
+  query_quality: normalized_entropy_of_anchor_probability
+  budget_factor: k_divided_by_k_plus_one
+  A_Q_lambda: lambda_max_times_budget_factor_times_query_quality
+  A_Q_probability: one_minus_lambda_Q_times_anchor_plus_lambda_Q_times_support
+  probability_displacement_l1_upper_bound: two_times_lambda_Q
+  direct_return_without_arithmetic_when_disabled: true
+
+metadata_trust:
+  scientific_role: detect_when_a_labeled_support_block_is_not_transferable_to_the_current_query
+  metadata_adapter:
+    preflight_stage:
+      accepted_raw_fields: [interface_lookup_key, impedance_kohm_by_channel, channel_availability, query_and_ordered_support_packet_keys, pairing_sha256]
+      forbidden_inputs: [raw_EEG, support_labels, query_labels, class_scores, probabilities, MFreeSupportReliabilityCapability]
+      runs_before_any_support_EEG_or_label_access: true
+      output_type: ContextPreflightCapability
+      output_fields: [candidate_id, query_key, ordered_support_block_keys, affinity_by_support_block, comparable_channel_counts, decision_reason, context_reference_receipt_sha256, pairing_sha256, payload_sha256]
+      malformed_or_query_OOD_decision: exact_A0_without_support_access
+    finalization_stage:
+      accepted_typed_inputs: [ContextPreflightCapability, MFreeSupportReliabilityCapability]
+      forbidden_direct_inputs: [raw_EEG, support_labels, query_labels, class_scores, probabilities, raw_interface, raw_impedance]
+      runs_only_after_nonrejecting_preflight: true
+    output_type: ContextTrustCapability
+    output_fields:
+      - candidate_id
+      - active_grid_cell_id
+      - exact_operator_instance_digest
+      - query_key
+      - ordered_support_block_keys
+      - g_M_by_query
+      - comparable_block_count_by_query
+      - decision_reason
+      - context_reference_receipt_sha256
+      - context_preflight_capability_sha256
+      - support_reliability_capability_sha256
+      - pairing_sha256
+    may_emit_class_scores_logits_or_probabilities: false
+  scientific_operator_boundary:
+    accepted_context_type: ContextTrustCapability_only
+    forbidden_raw_inputs: [electrode_interface, interface_lookup_key, impedance_kohm_by_channel, channel_availability]
+    p_support_must_be_bitwise_identical_between_A_Q_and_A_QM: true
+    must_match_current_signal_state: [candidate_id, active_grid_cell_id, exact_operator_instance_digest, query_key, ordered_support_block_keys, context_preflight_capability_sha256, support_reliability_capability_sha256]
+  single_insertion_point: final_support_residual_coefficient_only
+  A_QM_lambda: lambda_Q_times_g_M
+  A_QM_probability: one_minus_open_lambda_Q_times_g_M_close_times_anchor_plus_open_lambda_Q_times_g_M_close_times_support
+  prohibited_second_insertion_points:
+    - class_prototype_weight
+    - score_or_logit_offset
+    - query_precision
+    - decoder_wide_FiLM_or_prompt
+    - waveform_or_channel_transform
+  g_M_range: [0.0, 1.0]
+  context_distance_field: standardized_impedance_only
+  primary_support_and_query_interface_relation: same_interface_by_contract
+  absolute_interface_may_directly_change_logits: false
+  interface_role: select_a_source_covariate_only_frozen_impedance_scale
+  context_reference_estimator:
+    inputs: [electrode_interface, impedance_kohm_by_channel, channel_availability]
+    forbidden_inputs: [EEG, support_labels, query_labels, predictions, performance]
+    center: per_interface_per_channel_median_of_log1p_impedance
+    robust_scale: per_interface_per_channel_1p4826_times_MAD_of_log1p_impedance
+    pooled_center: per_channel_median_over_all_available_raw_log1p_impedance_values_from_all_interfaces
+    pooled_robust_scale: per_channel_1p4826_times_MAD_about_the_pooled_center_over_the_same_raw_values
+    scale_floor: 0.05
+    minimum_per_interface_channel_count: 128
+    pooled_per_channel_fallback_minimum_count: 256
+    lookup_fallback_order: [interface_channel_center_and_scale_pair, pooled_channel_center_and_scale_pair, channel_unavailable]
+    unknown_interface_OOD_standardization: pooled_channel_center_and_scale_pair
+    held_metadata_recentring_or_rescaling: forbidden
+    receipt_required: true
+    reference_receipts_are_domain_scoped_and_noninterchangeable: true
+    domain_references:
+      synthetic_development_and_future_synthetic:
+        source: separately_keyed_covariate_only_generator_in_synthetic_plan
+        root_seed: 20260910
+        shares_no_participant_or_outcome_key_with_evaluation: true
+        human_metadata_access: false
+      future_wearable_human:
+        source: exact_exposed_v1_source39_metadata_only_never_held_metadata
+        current_authority: false
+        requires_separate_explicit_human_metadata_input_authority: true
+        allocation_sha256: 0c5b7cd1ca8eedafbe9290833a283160f7bfe89897be8923b21568f70bb18898
+        subject_ids: [sub004, sub006, sub008, sub011, sub014, sub021, sub022, sub025, sub028, sub029, sub030, sub031, sub032, sub033, sub037, sub041, sub042, sub043, sub044, sub046, sub054, sub055, sub056, sub061, sub063, sub065, sub067, sub073, sub074, sub077, sub080, sub082, sub083, sub084, sub089, sub092, sub097, sub100, sub102]
+        source_development_evaluation: fit_reference_foldwise_without_validation_participant_metadata
+        held_evaluation: fit_once_on_the_frozen_allowed_source_metadata_only
+  per_query_support_block_distance: >-
+    d_qb equals the median over canonical channels observed in both packets of
+    abs((log1p(Z_qc)-center_Ic)/scale_Ic -
+    (log1p(Z_bc)-center_Ic)/scale_Ic).
+  per_query_support_block_affinity: >-
+    If at least one channel is comparable, a_qb equals two to the power
+    negative clip(d_qb,0,16); if none is comparable, a_qb is exactly one so
+    missing context is neutral rather than evidence of mismatch.
+  M_free_support_block_reliability: >-
+    Reuse the immutable strict-FBCCA block reliability w_b and normalized
+    relative weight pi_b defined in support_residual.
+    This value uses the already-authorized support labels but no fitted P3,
+    M, query EEG, query label, query batch, or row identity.
+  M_free_support_block_reliability_type: >-
+    MFreeSupportReliabilityCapability binds candidate ID, active grid cell and
+    exact operator-instance digest,
+    anchor-normalizer digests, ordered support-block keys, w_b values, support
+    EEG-plus-label manifest digest, and its own canonical payload SHA-256. The
+    metadata adapter receives only this typed capability, never raw EEG,
+    labels, class scores, or probabilities.
+  multi_support_aggregation: >-
+    Over every available support block, g_M_q=sum_b w_b*a_qb divided by
+    sum_b w_b, with a_qb exactly one for a block lacking comparable context.
+    Context packet b remains paired to the M-free reliability from support EEG block b, so a
+    nonidentity packet shuffle can change g_M without changing the packet multiset.
+  standardized_distance_clip: [0.0, 16.0]
+  exact_neutral: all_valid_d_qb_exact_zero_or_computed_g_M_exact_one_direct_returns_A_Q
+  context_OOD_guard: >-
+    For the current query packet only, if more than half of its valid channels
+    have abs((log1p(Z_qc)-center_Ic)/scale_Ic)>8, return A0 before support access.
+  cross_interface_support_in_primary: forbidden
+  partial_missing_channels: compute_only_over_channels_observed_in_both_packets_and_use_exact_neutral_affinity_if_none
+  interface_without_impedance: no_effect_and_bitwise_exact_A_Q
+  all_missing: bitwise_exact_A_Q_direct_return
+  unknown_interface: use_pooled_channel_center_and_scale_pair_then_exact_A_Q_if_no_valid_channel
+  malformed_packet_or_pairing_digest: reject_before_support_access_and_return_A0
+  invalid_impedance: treat_nonfinite_or_negative_channel_as_unavailable_and_return_A_Q_if_none_remain
+  k0: bitwise_exact_A0_without_context_or_support_access
+  pairing_receipt: exact_query_and_support_packet_keys_and_sha256_required
+  claim_boundary: >-
+    g_M is a fixed bounded operational trust rule, not a causal impedance model
+    and not an unseen-person no-harm certificate.
+
+target_local_gate:
+  k0: exact_A0
+  gate_is_fit_and_evaluated_on: A_Q_vs_A0_only_without_any_M
+  gate_decision_is_bitwise_shared_by_A_Q_and_A_QM: true
+  metadata_may_not_change_the_gate_decision: true
+  k1: globally_enabled_by_this_development_contract_plus_observable_context_validity_guard_only
+  k1_global_enable_value: true
+  k3:
+    chronological_folds:
+      - {evaluation_block: 2, fit_blocks: [1]}
+      - {evaluation_block: 3, fit_blocks: [1, 2]}
+  k5_descriptive:
+    chronological_folds:
+      - {evaluation_block: 2, fit_blocks: [1]}
+      - {evaluation_block: 3, fit_blocks: [1, 2]}
+      - {evaluation_block: 4, fit_blocks: [1, 2, 3]}
+      - {evaluation_block: 5, fit_blocks: [1, 2, 3, 4]}
+  enable_rule:
+    - every_prequential_balanced_accuracy_delta_ge_0
+    - every_prequential_correct_log_probability_delta_gt_0
+    - at_least_one_prequential_balanced_accuracy_delta_gt_0
+  otherwise: exact_A0_for_both_A_Q_and_A_QM
+  prequential_reliability_rule: >-
+    When predicting an evaluation calibration block, w_b and p_support are
+    computed only from earlier fit-prefix blocks; the evaluation block label
+    never contributes to its own prediction. Final immutable query prediction
+    may use all currently authorized support blocks.
+  final_query_labels_available_to_gate: false
+  claim_boundary: empirical_operational_fallback_not_finite_sample_safety_guarantee
+
+calibration_contract:
+  unit: one_complete_labeled_block_per_participant_per_interface
+  classes_per_wearable_block: 12
+  primary_budgets: [0, 1, 3]
+  descriptive_budget: 5
+  labeled_trials_per_interface: {0: 0, 1: 12, 3: 36, 5: 60}
+  nested_support:
+    0: []
+    1: [block01]
+    3: [block01, block02, block03]
+    5: [block01, block02, block03, block04, block05]
+  immutable_wearable_query: [block06, block07, block08, block09, block10]
+  support_query_disjoint: true
+  classwise_mixed_block_sampling: forbidden
+
+factor_ablation:
+  primary: interface_calibrated_impedance_distance
+  required_supportive:
+    - all_missing_exact_A_Q
+    - impedance_with_pooled_not_interface_specific_scale
+    - interface_only_structural_exact_A_Q
+    - wrong_interface_scale
+    - k1_support_impedance_channel_rotation_structural_diagnostic_only
+    - k3_within_available_prefix_pair_shuffle
+  interface_only_expected_efficacy: false
+  pooled_and_interface_specific_tables_fit_separately_from_the_same_source_covariates: true
+  k1_pair_shuffle_is_not_a_mechanism_endpoint: true
+  k1_channel_rotation_is_not_a_positive_pairing_or_efficacy_endpoint: true
+  k1_channel_rotation_only_mandatory_role: N4_null_equivalence_structural_safety_guard
+  reason: one_support_block_has_no_observed_prefix_peer_for_a_valid_block_pairing_control
+  k3_and_k5_shuffle_reduction: exhaustive_derangement_metric_mean_within_participant
+  exact_derangement_counts: {3: 2, 5: 44}
+  derangements_are_never_independent_inference_units: true
+
+development_contract_bundle:
+  current_status: not_created
+  required_schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
+  planned_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
+  storage: external_write_once_receipt_not_part_of_the_bound_git_tree
+  must_bind:
+    - master_plan_file_sha256
+    - synthetic_plan_file_sha256
+    - preoutcome_amendment_file_sha256
+    - clean_git_commit_and_tree
+    - source_bundle_sha256
+    - artifact_schema_inventory_sha256
+    - owner_authority_public_key_file_sha256_and_fingerprint
+    - V2_terminal_audit_and_deny_overlay_sha256
+  creation_preconditions: [V3_implementation_complete, focused_tests_pass, clean_commit]
+  source_identity_rule: bundle_binds_the_already_clean_commit_and_tree_and_is_never_a_source_cleanliness_exception
+  nonreserved_development_before_valid_bundle: forbidden
+
+selected_method_transition:
+  input: complete_hash_bound_nonreserved_3_by_3_grid_result
+  deterministic_selector: exact_rank_tuple_in_support_residual_section
+  output_schema: cfeg.metadata-calibration-efficiency-v3.selected-method-freeze.v1
+  canonical_path_template: configs/governance/metadata_calibration_v3_selected_method_freeze.json
+  output_must_bind:
+    - development_bundle_schema
+    - development_bundle_payload_sha256
+    - development_bundle_file_sha256
+    - development_result_schema
+    - development_result_payload_sha256
+    - development_result_file_sha256
+    - selected_grid_cell_and_exact_parameters
+    - complete_grid_and_gate_report_embedded_in_development_result_payload_sha256
+    - derived_scientific_candidate_id
+  anticipated_deterministic_fill_is_not_V4: true
+  requires_V4:
+    - operator_equation_change
+    - DGP_or_threshold_change
+    - grid_or_rank_rule_change
+    - evidence_or_cohort_change
+  after_selection: regenerate_full_test_evidence_and_canary_on_the_selected_clean_freeze
+
+development_sequence:
+  - phase: unit_and_invariant
+    outcome_scope: generated_fixtures_only
+  - phase: development_bundle_freeze
+    current_status: not_created
+  - phase: nonreserved_synthetic_development
+    current_authority: false_until_valid_development_bundle
+    purpose: select_one_exact_parameter_pair_or_stop
+  - phase: selected_method_freeze
+    current_status: absent_until_development_PASS
+  - phase: governance_canary
+    current_authority: false_until_selected_method_and_state_engine_are_frozen
+    purpose: exercise_the_production_state_engine_with_public_historical_beacon_and_non_EEG_hash_probe
+  - phase: synthetic_scientific_lockbox
+    current_authority: false
+    prerequisite: new_clean_freeze_authorization_and_unseen_future_beacon
+  - phase: signal_only_external_A_Q_replication
+    current_authority: false
+    data: [BETA, Dong2023, Choi2019]
+  - phase: metadata_bearing_human_evaluation
+    current_authority: false
+    data_priority: [independent_Liu2022_if_authorized, prospective_randomized_crossover, unopened_wearable60_last]
+
+data_roles:
+  v1_source39:
+    status: exposed
+    allowed: engineering_only_after_a_separate_explicit_human_input_authority
+    independent_promotion: false
+  beta_and_dong:
+    role: signal_only_A_Q_validation
+    can_test_M_beyond_Q: false
+  choi2019:
+    role: signal_only_cross_session_A_Q_replication
+    can_test_M_beyond_Q: false
+  liu2022_request_candidate:
+    role: preferred_independent_wet_dry_impedance_replication_if_rights_and_nonoverlap_confirmed
+    current_access: not_obtained
+  prospective_randomized_crossover:
+    role: direct_interface_and_dynamic_impedance_replication
+    prerequisites: [IRB_or_equivalent_ethics, consent, governance, preregistration]
+  wearable60:
+    status: unopened
+    role: one_time_same_study_unseen_participant_evaluation_only_after_all_prior_gates
+
+estimands:
+  eAUC:
+    budgets: [0, 1, 3]
+    formula: Y0_div_6_plus_Y1_div_2_plus_Y3_div_3
+    participant_is_independent_unit: true
+  primary_M:
+    contrast: participant_eAUC_A_QM_minus_A_Q
+    dry_and_wet_aggregation: equal_mean_within_participant_before_inference
+    alternative: greater_than_zero
+    inference: one_sided_participant_paired_t_alpha_0p05_with_sign_flip_and_bootstrap_sensitivity
+    observed_mean_screen: 0.020
+  Q_support_increment:
+    contrast: participant_eAUC_A_Q_minus_A0
+    role: prerequisite_that_labeled_support_is_useful
+    lower_bound_gt: 0.0
+    observed_mean_screen: 0.020
+  Q_calibration_value:
+    contrast: participant_A_Q_k3_minus_A_Q_k1
+    lower_bound_gt: 0.0
+    observed_mean_screen: 0.020
+  calibration_saving:
+    contrast: participant_A_QM_k1_minus_A_Q_k3
+    noninferiority_margin: -0.016666666666666666
+    both_balanced_accuracy_floor: 0.50
+  mechanism:
+    k3_observed_mean_screen: 0.010
+    k1_pairing_claim: forbidden_because_one_support_block_has_no_prefix_peer
+    multiplicity: Holm_alpha_0p05_after_primary_core
+  conditionwise_reporting:
+    required: true
+    fields: [dry_contrast, wet_contrast, participant_transition, harm_tail]
+    status: descriptive_unless_a_separate_multiplicity_controlled_claim_is_pre_registered
+  burden_supportive:
+    - labeled_trial_count
+    - elapsed_calibration_time
+    - impedance_measurement_and_setup_time
+    - failed_or_repeated_measurements
+
+promotion_logic:
+  type: intersection_not_two_of_three
+  requires:
+    - invariant_suite_pass
+    - A_Q_viability_B1_or_B2_pass
+    - B3_impedance_metadata_efficacy_pass
+    - B4_interface_calibrated_impedance_efficacy_pass
+    - B4_in_reference_subset_efficacy_pass_so_OOD_fallback_cannot_create_the_only_gain
+    - B4_correct_scale_beats_pooled_and_wrong_scale_diagnostics
+    - k3_correct_vs_shuffle_mechanism_pass
+    - B3_and_B4_A_QM_vs_A0_deployment_viability_pass
+    - context_null_equivalence_pass
+    - harm_and_abstention_pass
+    - helpful_use_rate_anti_triviality_pass
+  any_failure: retire_exact_v3_candidate_without_scientific_or_human_outcome_progression
+
+governance:
+  validation_graph: acyclic_typed_capability_DAG
+  state_engine_domains:
+    shared_transition_kernel_with_distinct_typed_enums: true
+    scientific_lifecycle_enum: state_enum_below
+    governance_canary:
+      state_enum:
+        - CANARY_DECLARED
+        - CANARY_AUTHORIZED
+        - CANARY_CLAIMED
+        - CANARY_BEACON_BOUND
+        - CANARY_PAYLOAD_VALIDATED
+        - CANARY_RESULT_PUBLISHED
+        - CANARY_FRESH_AUDITED
+      allowed_forward_transitions:
+        - CANARY_DECLARED_to_CANARY_AUTHORIZED
+        - CANARY_AUTHORIZED_to_CANARY_CLAIMED
+        - CANARY_CLAIMED_to_CANARY_BEACON_BOUND
+        - CANARY_BEACON_BOUND_to_CANARY_PAYLOAD_VALIDATED
+        - CANARY_PAYLOAD_VALIDATED_to_CANARY_RESULT_PUBLISHED
+        - CANARY_RESULT_PUBLISHED_to_CANARY_FRESH_AUDITED
+      bridge_to_scientific_lifecycle:
+        prerequisite_scientific_state: VERIFIED
+        from_canary_state: CANARY_FRESH_AUDITED
+        to_scientific_state: CANARY_PASSED
+        accepted_capability_type: FreshCanaryAuditCapability
+        requires_fresh_audit_artifact_payload_and_file_sha256: true
+        requires_exact_selected_freeze_commit_tree_test_fixture_trace_seed_and_probe_bindings: true
+        direct_reverse_or_duplicate_bridge: forbidden
+  required_order:
+    - plan_and_live_snapshot
+    - clean_implementation_commit_and_development_bundle
+    - source_covariate_only_context_reference
+    - nonreserved_development
+    - selected_method_freeze
+    - full_repository_test_evidence
+    - historical_fixture_canary
+    - future_beacon_attempt_manifest_with_exact_target_endpoint_and_statement
+    - target_bound_signed_execution_authorization_before_target
+    - wait_until_target
+    - global_O_EXCL_claim
+    - intrinsic_future_beacon_validation
+    - claim_authorization_beacon_binding
+    - scientific_seed_capability
+    - in_memory_scientific_result_validation
+    - write_once_result_or_terminal_publication
+    - read_only_audit
+  state_enum:
+    - DECLARED
+    - BUNDLE_FROZEN
+    - DEVELOPMENT_COMPLETE
+    - SELECTED_METHOD_FROZEN
+    - VERIFIED
+    - CANARY_PASSED
+    - ATTEMPT_MANIFESTED
+    - AUTHORIZED
+    - CLAIMED
+    - BEACON_BOUND
+    - SCIENTIFIC_VALIDATED
+    - RESULT_PUBLISHED
+    - DEVELOPMENT_NO_GO
+    - ERROR_TERMINAL_PUBLISHED
+    - CONSUMED_MISSING_TERMINAL
+  allowed_forward_transitions:
+    - DECLARED_to_BUNDLE_FROZEN
+    - BUNDLE_FROZEN_to_DEVELOPMENT_COMPLETE
+    - DEVELOPMENT_COMPLETE_to_SELECTED_METHOD_FROZEN_or_DEVELOPMENT_NO_GO
+    - SELECTED_METHOD_FROZEN_to_VERIFIED
+    - VERIFIED_to_CANARY_PASSED_only_through_validated_CANARY_FRESH_AUDITED_bridge
+    - CANARY_PASSED_to_ATTEMPT_MANIFESTED
+    - ATTEMPT_MANIFESTED_to_AUTHORIZED
+    - AUTHORIZED_to_CLAIMED
+    - CLAIMED_to_BEACON_BOUND
+    - BEACON_BOUND_to_SCIENTIFIC_VALIDATED
+    - SCIENTIFIC_VALIDATED_to_RESULT_PUBLISHED
+    - any_post_claim_failure_to_ERROR_TERMINAL_PUBLISHED
+    - read_only_audit_of_claim_without_terminal_to_CONSUMED_MISSING_TERMINAL
+  skipped_reversed_or_duplicate_transition: reject_before_downstream_artifact_access
+  terminal_retry: forbidden
+  artifact_schemas:
+    development_bundle: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
+    context_reference: cfeg.metadata-calibration-efficiency-v3.context-reference.v1
+    development_result: cfeg.metadata-calibration-efficiency-v3.development-result.v1
+    selected_method_freeze: cfeg.metadata-calibration-efficiency-v3.selected-method-freeze.v1
+    test_evidence: cfeg.metadata-calibration-efficiency-v3.test-evidence.v1
+    canary_authorization: cfeg.metadata-calibration-efficiency-v3.canary-authorization.v1
+    canary_claim: cfeg.metadata-calibration-efficiency-v3.canary-claim.v1
+    canary_beacon: cfeg.metadata-calibration-efficiency-v3.canary-beacon.v1
+    canary_result: cfeg.metadata-calibration-efficiency-v3.canary-result.v1
+    canary_fresh_audit: cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1
+    scientific_attempt_manifest: cfeg.metadata-calibration-efficiency-v3.attempt-manifest.v1
+    scientific_execution_authorization: cfeg.metadata-calibration-efficiency-v3.execution-authorization.v1
+    scientific_claim: cfeg.metadata-calibration-efficiency-v3.claim.v1
+    scientific_beacon: cfeg.metadata-calibration-efficiency-v3.beacon.v1
+    scientific_result: cfeg.metadata-calibration-efficiency-v3.synthetic-result.v1
+    scientific_terminal: cfeg.metadata-calibration-efficiency-v3.terminal.v1
+    support_reliability_capability: cfeg.metadata-calibration-efficiency-v3.support-reliability-capability.v1
+    context_trust_capability: cfeg.metadata-calibration-efficiency-v3.context-trust-capability.v1
+    context_preflight_capability: cfeg.metadata-calibration-efficiency-v3.context-preflight-capability.v1
+    canary_seed_capability: cfeg.metadata-calibration-efficiency-v3.canary-seed-capability.v1
+    scientific_seed_capability: cfeg.metadata-calibration-efficiency-v3.scientific-seed-capability.v1
+    fresh_canary_audit_capability: cfeg.metadata-calibration-efficiency-v3.fresh-canary-audit-capability.v1
+  canonical_hashing:
+    JSON_payload: UTF8_sorted_keys_compact_separators_ensure_ascii_true_allow_nan_false
+    payload_sha256_rule: SHA256_of_canonical_payload_after_removing_only_the_top_level_payload_sha256_field
+    file_sha256_rule: SHA256_of_exact_published_file_bytes
+    payload_and_file_sha256_are_distinct_fields: true
+    typed_capabilities_are_immutable_in_memory_and_validate_their_payload_sha256_before_use: true
+    every_artifact_reference_binds_schema_payload_sha256_and_file_sha256_when_file_backed: true
+  canonical_paths:
+    root: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3
+    development: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1
+    development_bundle: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
+    development_context_reference: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json
+    development_result: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-result.json
+    selected_method_freeze: /home/whwovy/califreeEEG/configs/governance/metadata_calibration_v3_selected_method_freeze.json
+    canary: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1
+    canary_test_evidence: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/test-evidence.json
+    canary_authorization: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/authorization.json
+    canary_claim: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/claim.json
+    canary_beacon: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/beacon.json
+    canary_result: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/result.json
+    canary_fresh_audit: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/fresh-audit.json
+    scientific: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific
+    scientific_global_claim: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/global-claim.json
+    scientific_attempt_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}
+    scientific_attempt_manifest_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}/attempt-manifest.json
+    scientific_execution_authorization_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}/execution-authorization.json
+    scientific_beacon_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}/beacon.json
+    scientific_result_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}/result.json
+    scientific_terminal_template: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/{attempt_id}/terminal.json
+    prohibited_V2_root: /home/whwovy/v2-artifacts
+    realpath_and_every_existing_parent_checked_before_write: true
+    symlink_alias_to_prohibited_root: reject
+  artifact_publication:
+    canonical_directories_mode: '0700'
+    exact_canonical_filename_required: true
+    glob_directory_scan_or_implicit_artifact_discovery: forbidden
+    create_flags: O_CREAT_O_EXCL_O_WRONLY_with_O_NOFOLLOW_when_available
+    published_regular_file_mode: '0400'
+    existing_path_symlink_nonregular_or_replacement: reject
+    validate_complete_payload_in_memory_before_opening_output: true
+    partial_write_or_fsync_failure: fail_closed_without_replacement_or_retry_at_the_same_path
+    race_safe_path_resolution:
+      realpath_precheck_alone_is_authority: false
+      traversal: open_each_component_from_trusted_root_directory_fd_with_O_DIRECTORY_and_O_NOFOLLOW
+      missing_canonical_directory_creation: mkdir_with_parent_directory_fd_then_open_and_fstat_before_continuing
+      final_creation: open_exact_basename_relative_to_validated_parent_directory_fd_with_O_CREAT_O_EXCL_O_WRONLY_O_NOFOLLOW
+      post_open_validation: fstat_must_be_regular_file_with_link_count_one_and_expected_owner_and_mode
+      absolute_path_reresolution_between_validation_and_write: forbidden
+      unavailable_directory_fd_O_NOFOLLOW_or_fstat_guarantee: fail_closed
+  scientific_attempt_identity:
+    input: exact_scientific_attempt_manifest_payload_sha256
+    format: sha256-{64_lowercase_hex_characters}
+    regex: '^sha256-[0-9a-f]{64}$'
+    caller_supplied_attempt_id: forbidden
+    manifest_hash_preimage_contains_attempt_id_derived_directory_or_payload_sha256_self_field: false
+    manifest_file_must_include_top_level_payload_sha256_equal_to_the_derived_digest: true
+    derive_attempt_directory_only_after_complete_manifest_in_memory_validation: true
+    every_post_manifest_artifact_must_bind: [attempt_id, attempt_manifest_schema, attempt_manifest_payload_sha256, attempt_manifest_file_sha256]
+  future_attempt_manifest:
+    selected: false
+    must_bind:
+      - schema
+      - candidate_id
+      - scientific_candidate_id
+      - manifest_created_at_UTC
+      - selected_method_freeze_schema
+      - selected_method_freeze_payload_sha256
+      - selected_method_freeze_file_sha256
+      - clean_commit
+      - clean_tree
+      - development_bundle_schema
+      - development_bundle_payload_sha256
+      - development_bundle_file_sha256
+      - test_evidence_schema
+      - test_evidence_payload_sha256
+      - test_evidence_file_sha256
+      - canary_result_schema
+      - canary_result_payload_sha256
+      - canary_result_file_sha256
+      - canary_fresh_audit_schema
+      - canary_fresh_audit_payload_sha256
+      - canary_fresh_audit_file_sha256
+      - exact_target_timestamp_UTC
+      - exact_HTTPS_endpoint
+      - beacon_seed_derivation_primitive_schema
+      - exact_seed_statement_base64
+    manifest_created_at_UTC_rule: strict_RFC3339_UTC_with_seconds_and_Z_strictly_before_exact_target_timestamp_UTC
+    owner_authorization_must_bind_exact_manifest_payload_and_file_sha256_before_target: true
+    exact_seed_statement_construction:
+      schema: cfeg.metadata-calibration-efficiency-v3.seed-statement.v1
+      domain_separator_ASCII: cfeg.metadata-calibration-efficiency-v3.seed-statement.v1
+      line_order:
+        - domain_separator_ASCII
+        - candidate_id
+        - scientific_candidate_id
+        - selected_method_freeze_payload_sha256
+        - exact_target_timestamp_UTC
+        - exact_HTTPS_endpoint
+        - beacon_seed_derivation_primitive_schema
+      encoding: strict_ASCII_each_field_followed_by_one_LF_including_final_field
+      manifest_field: exact_seed_statement_base64
+      manifest_field_encoding: RFC4648_standard_base64_with_padding
+      decoded_manifest_field_must_equal_reconstructed_bytes: true
+      statement_must_not_include_attempt_manifest_hash: true
+      missing_extra_reordered_or_non_ASCII_component: reject
+  scientific_global_claim:
+    canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/global-claim.json
+    path_is_candidate_wide_and_attempt_independent: true
+    create_exactly_once_before_any_live_network_access: true
+    must_bind:
+      - schema
+      - candidate_id
+      - scientific_candidate_id
+      - attempt_id
+      - attempt_manifest_schema
+      - attempt_manifest_payload_sha256
+      - attempt_manifest_file_sha256
+      - execution_authorization_schema
+      - execution_authorization_payload_sha256
+      - execution_authorization_file_sha256
+      - exact_target_timestamp_UTC
+      - exact_HTTPS_endpoint
+      - claimed_at_UTC
+    any_existing_path_or_failed_partial_publication_consumes_the_entire_V3_scientific_attempt: true
+    a_new_attempt_id_target_endpoint_or_manifest_cannot_create_another_claim: true
+  owner_execution_authorization_trust_root:
+    signer_role: active_workspace_owner
+    public_key_path: configs/governance/metadata_calibration_v3_owner_authority.pub
+    public_key_file_sha256: ce868830f9c47948a6abe2068863c8f39b12cba470e5493ff32a7c3c7178374b
+    SSH_public_key_fingerprint: SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g
+    key_type_and_bits: ssh-rsa-4096
+    signature_algorithm: RSA_PSS_SHA256_with_MGF1_SHA256_and_salt_length_equal_to_SHA256_digest_length
+    detached_signature_encoding: RFC4648_standard_base64_with_padding
+    signature_domain: cfeg-metadata-calibration-v3-execution-authorization
+    signed_payload_schema: cfeg.metadata-calibration-efficiency-v3.execution-authorization-payload.v1
+    signed_payload_canonicalization: UTF8_JSON_sorted_keys_compact_separators_ensure_ascii_true_allow_nan_false_without_trailing_LF
+    signed_payload_must_bind: [schema, signature_domain, signer_role, candidate_id, scientific_candidate_id, attempt_id, attempt_manifest_schema, attempt_manifest_payload_sha256, attempt_manifest_file_sha256, exact_target_timestamp_UTC, exact_HTTPS_endpoint, signed_at_UTC, one_time_execution_true]
+    signed_at_UTC_rule: strict_RFC3339_UTC_with_seconds_and_Z_strictly_after_manifest_created_at_UTC_and_strictly_before_exact_target_timestamp_UTC
+    arbitrary_embedded_or_runtime_supplied_public_key: reject
+    verification_implementation: cryptography_load_ssh_public_key_and_RSA_PSS_verify_without_subprocess_or_network
+    private_key_location_or_access: outside_repository_and_not_granted_by_this_contract
+    prior_conversation_approval_is_not_the_target_bound_signature: true
+  beacon_seed_derivation:
+    primitive_schema: cfeg.metadata-calibration-efficiency-v3.beacon-seed-derivation.v1
+    accepted_output_value: exactly_128_uppercase_hex_characters_decoding_to_64_bytes
+    scientific_domain_separator_ASCII: cfeg.metadata-calibration-efficiency-v3.scientific-seed.v1
+    scientific_line_order:
+      - scientific_domain_separator_ASCII
+      - attempt_manifest_payload_sha256_lowercase_hex
+      - target_timestamp_UTC_exact_manifest_string
+      - chain_index_base10_without_leading_zero
+      - pulse_index_base10_without_leading_zero
+      - output_value_uppercase_hex
+    encoding: strict_ASCII_each_field_followed_by_one_LF_including_final_field
+    digest: SHA256_of_exact_encoded_bytes
+    root_seed_conversion: int_from_bytes_32_digest_bytes_byteorder_big_signed_false
+    numpy_root: SeedSequence_entropy_equals_the_full_unsigned_256_bit_integer_then_PCG64DXSM
+    float_or_platform_native_integer_encoding: forbidden
+  global_seed_or_artifact_discovery_cache: forbidden
+  artifact_parser_may_access_git_environment_network_rng_or_store: false
+  canary_capability_accepted_by_scientific_core: false
+  V2_runtime_global_or_artifact_path_import: forbidden
+  V2_artifact_root_or_symlink_alias: forbidden
+  V2_public_NIST_fixture_exception: canary_only_never_scientific_seed_outcome_or_authority
+  result_write_before_complete_in_memory_validation: forbidden
+  future_beacon_selected: false
+  scientific_lockbox_authorized: false
+  human_EEG_outcome_authorized: false
+
+stopping_rules:
+  invariant_or_pairing_potency_failure: kill_candidate
+  no_development_grid_cell_passes: kill_candidate
+  deterministic_selected_manifest_fill_under_frozen_rank_rule: allowed_once
+  post_selection_semantic_or_threshold_change: V4_and_new_unseen_evidence_required
+  post_claim_error: consumed_terminal_without_retry
+  synthetic_PASS: necessary_not_sufficient_for_human_metadata_efficacy
+  partial_role_budget_or_control_grid: invalid_not_complete_case_rescue
+  negative_or_null_result: preserve_report_and_do_not_retune_on_same_evidence
+  synthetic_B4_claim_boundary: specified_monotone_interface_mapping_mechanism_only_not_transport_robustness

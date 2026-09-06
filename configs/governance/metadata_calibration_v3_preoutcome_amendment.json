@@ -1,0 +1,94 @@
+{
+  "schema": "cfeg.metadata-calibration-efficiency-v3.preoutcome-amendment.v1",
+  "candidate_id": "metadata-calibration-efficiency-v3",
+  "decision_id": "DEC-20260906-024",
+  "recorded_at_utc": "2026-09-06T09:42:43Z",
+  "status": "outcome_free_development_contract_only",
+  "scientific_objective_changed": false,
+  "scientific_objective": "Test whether pre-query acquisition context reduces unseen-participant labeled SSVEP calibration burden beyond an otherwise identical EEG-derived-Q support path.",
+  "primary_estimand": "participant_eAUC_A_QM_minus_A_Q_over_k_0_1_3",
+  "why_a_new_candidate_is_required": [
+    "The V2 synthetic V11 one-time attempt is terminally consumed after a post-claim infrastructure error and produced no scientific result.",
+    "V2 engineering-only evidence did not establish useful A_Q viability, metadata efficacy, pairing sensitivity, or sufficient adversarial abstention.",
+    "V3 changes the scientific operator by placing acquisition context at one bounded support-trust insertion point and changes the mandatory synthetic assay intersection. It is not a V2 retry."
+  ],
+  "disclosed_design_inputs": {
+    "v1_source39_outcome": "development_no_go; may inform requirements but is never independent V3 evidence",
+    "v2_development_rows": "engineering_only; 5888 rows and 19 contrasts; may inform requirements but is never V3 promotion evidence",
+    "local_nonreserved_diagnostics": [
+      "root seed 20260908 was used only for small in-memory operator diagnostics",
+      "increasing lambda alone did not produce a credible metadata effect and approached or exceeded the null harm margin",
+      "removing the second attenuation while retaining metadata-weighted prototypes did not rescue metadata efficacy",
+      "a conservative prequential rule often abstained on adversarial families but requires an anti-triviality use-rate gate"
+    ],
+    "literature_boundary": "Few/one-shot SSVEP and transfer learning already exist; V3 novelty is conditional evidence that external acquisition context adds value beyond EEG-derived Q under exact fallback and negative-transfer controls."
+  },
+  "retired_ancestor": {
+    "candidate_id": "metadata-calibration-efficiency-v2",
+    "freeze_commit": "832e579c0dec8774ffe8c3ac99abf110a74aa9e3",
+    "freeze_tree": "d26656acd69c88e62cc5dd336103ddd76f33022f",
+    "freeze_tag": "metadata-calibration-efficiency-v2-synthetic-freeze-20260906-r11",
+    "frozen_synthetic_plan_sha256": "9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c",
+    "terminal_audit_path": "configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json",
+    "terminal_audit_file_sha256": "46db1fceb67b98157d25c06afb4aae15c2436c3b57cc5fbf691c290a637aa4a0",
+    "terminal_file_sha256": "6a2c2d21de7c796d5a96c4fef4a23f08ffdd81684ed12e9defce7fcffc796b14",
+    "terminal_receipt_sha256": "e2382761a3171fd08451221bdcf59a64ed977dadc5d6f987c425b22fdbd8c857",
+    "deny_overlay_path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+    "deny_overlay_file_sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0",
+    "automatic_retry": "forbidden"
+  },
+  "v3_method_change": {
+    "anchor": "frozen strict FBCCA",
+    "A_Q": "bounded score-prototype support residual with no acquisition-context input",
+    "A_QM": "the identical A_Q residual with acquisition compatibility applied exactly once to the final support-residual coefficient",
+    "all_missing_context": "bitwise exact A_Q",
+    "k0": "bitwise exact A0 for A_Q and A_QM",
+    "claim_boundary": "empirical population-level negative-transfer control; no k=1 individual no-harm guarantee"
+  },
+  "required_before_any_v3_scientific_lockbox": [
+    "a hash-pinned development bundle binding the declared master plan, synthetic plan, amendment, clean git identity, schema inventory, and V2 retirement evidence",
+    "a completed nonreserved development result and immutable selected-method freeze with one exact operator parameter pair",
+    "acyclic typed-capability governance implementation",
+    "fresh-process historical-pulse canary using a canary-only capability",
+    "complete focused and repository-wide tests on a clean commit",
+    "clean annotated V3 freeze tag",
+    "an exact future-beacon attempt manifest selected only after method/code/test/canary freeze",
+    "a new signed execution authorization binding that exact attempt manifest before the target timestamp"
+  ],
+  "current_authority": {
+    "read_only_v2_audit": true,
+    "v3_unit_tests": true,
+    "v3_contract_and_implementation_work": true,
+    "v3_development_bundle_creation_after_clean_implementation_commit": true,
+    "v3_nonreserved_synthetic_development_before_bundle_validation": false,
+    "v3_governance_canary_before_bundle_and_state_engine_validation": false,
+    "v3_scientific_lockbox": false,
+    "beta_or_dong_outcome": false,
+    "choi2019_outcome": false,
+    "wearable_source_or_held_outcome": false,
+    "external_message_or_data_request_sent": false
+  },
+  "future_beacon": {
+    "selected": false,
+    "selection_order": "selected_method_and_clean_code_freeze_then_attempt_manifest_then_target_bound_execution_authorization_then_target",
+    "target_timestamp_utc": null,
+    "endpoint": null,
+    "seed_material_known": false
+  },
+  "owner_execution_authorization_trust_root": {
+    "signer_role": "active_workspace_owner",
+    "public_key_path": "configs/governance/metadata_calibration_v3_owner_authority.pub",
+    "public_key_file_sha256": "ce868830f9c47948a6abe2068863c8f39b12cba470e5493ff32a7c3c7178374b",
+    "ssh_public_key_fingerprint": "SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g",
+    "signature_algorithm": "RSA_PSS_SHA256_with_MGF1_SHA256_and_salt_length_equal_to_SHA256_digest_length",
+    "detached_signature_encoding": "RFC4648_standard_base64_with_padding",
+    "signature_domain": "cfeg-metadata-calibration-v3-execution-authorization",
+    "status": "trust_root_frozen_but_no_target_bound_authorization_exists"
+  },
+  "immutability": {
+    "v2_deny_overlay_must_remain_byte_identical": true,
+    "v2_execution_artifacts_may_not_be_reused_as_v3_authority_or_scientific_outcome": true,
+    "public_historical_NIST_test_vector_may_be_used_only_by_the_canary_and_never_as_scientific_seed_outcome_or_authority": true,
+    "post_v3_lockbox_change_requires_new_candidate_and_unseen_evidence": true
+  }
+}

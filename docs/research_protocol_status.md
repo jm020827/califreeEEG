@@ -1,10 +1,18 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-06
-현재 상태: **V2 synthetic V11 단회 소비 / infrastructure inconclusive / scientific result 없음 / external·held 금지**
-현재 방법의 불변 pre-outcome 기준원은 `configs/analysis/metadata_calibration_efficiency_v2.yaml`과 frozen V11 plan SHA-256 `9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c`이고, 실행·종료 상태 기준원은 [V2 terminal audit](../configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json)과 [V2 terminal 결과](metadata_calibration_efficiency_v2_results.md)다. V1 source no-go, held 60명 미개봉, `DEC-20260903-005`의 physical 후보 retirement와 terminal `reliability-spatial-v1` Stage-0도 그대로 유효하다.
+현재 상태: **V3 outcome-free 개발 계약 활성 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
+`configs/analysis/metadata_calibration_efficiency_v3.yaml`과
+`configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
+`configs/analysis/metadata_calibration_efficiency_v2.yaml`과 frozen V11 plan SHA-256
+`9a9683141ccd3d1fe9cf094aad955c6e317d112a73e35fbcfcdd2ef7d06e1f8c`이고, 실행·종료
+상태 기준원은 [V2 terminal audit](../configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json)과
+[V2 terminal 결과](metadata_calibration_efficiency_v2_results.md)다. V1 source no-go, held 60명
+미개봉, `DEC-20260903-005`의 physical 후보 retirement와 terminal
+`reliability-spatial-v1` Stage-0도 그대로 유효하다.
 
-이 문서는 현재 방향의 요약본이다. V1의 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), V1 수치·해석은 [source 결과](metadata_calibration_efficiency_results.md), V2 방법은 [V2 설계](metadata_calibration_efficiency_v2_design.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. V2 terminal은 scientific negative result가 아니다. 과거 physical, synthetic, query-only plan과 결과도 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
+이 문서는 현재 방향의 요약본이다. V1의 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), V1 수치·해석은 [source 결과](metadata_calibration_efficiency_results.md), V2 방법은 [V2 설계](metadata_calibration_efficiency_v2_design.md), 현재 후속은 [V3 설계](metadata_calibration_efficiency_v3_design.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. V2 terminal은 scientific negative result가 아니다. 과거 physical, synthetic, query-only plan과 결과도 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
 
 ## 연구목표
 
@@ -13,6 +21,63 @@
 > deployment interface당 동일한 완전 calibration block과 동일한 고정 query에서, query 전에 관측한 wet/dry interface와 block별 채널 impedance가 EEG·구조·signal-derived QC만 쓰는 강한 기준보다 `k=0/1/3` early-budget curve를 개선하는가?
 
 Metadata 자체가 목적이 아니다. 현재 처리 가능한 과학적 treatment는 pre-query acquisition context뿐이다. Dataset/subject ID와 query-derived QC를 metadata 이득으로 세지 않는다. 새 class discovery, open-set/OOD 탐지, 손상 EEG 복원과 LLM test-time scaling은 primary endpoint가 아니다.
+
+## V3 outcome-free 개발 계약
+
+V3는 같은 목표와 primary `eAUC(A_QM)-eAUC(A_Q)`를 유지한다. 변경점은 acquisition
+context를 support prototype과 fusion에 중복 적용하지 않고, AQ의 최종 support residual을
+얼마나 신뢰할지 정하는 계수 한 곳에만 넣는 것이다. Metadata가 전부 없으면 AQM은 AQ를,
+k=0이면 AQ와 AQM 모두 strict FBCCA A0를 bitwise exact하게 반환한다.
+
+Raw interface/impedance는 metadata adapter만 읽고 scientific operator에는 `g_M`과
+reference/pairing digest가 든 typed capability만 전달한다. Complete support block의
+strict-FBCCA observed-label 평균확률을 상대 신뢰도 `w_b`로 두고, AQ와 AQM이 같은 blockwise
+P3 mixture를 쓴다. 이 값을 절대 support-off gate로 쓰지는 않는다. k>1의 `g_M`은 동일한
+`w_b`와 block별 impedance affinity의 가중평균이어서 whole-packet shuffle이 다시
+multiset-average no-op이 되지 않는다. k=1 control은 존재하지 않는 다른 prefix packet을
+가져오지 않고 같은 support packet의 impedance/availability를 canonical channel에서 한 칸
+순환하지만 이는 wiring 구조 진단일 뿐 positive pairing/efficacy endpoint가 아니다. N4에서
+가짜 효과가 없다는 null-equivalence 안전조건으로만 필수다.
+필수 pairing evidence는 k=3이며, k=3/5는 prefix 안의 2/44개 derangement를 전수 평가하고
+metric을 participant 내부에서 평균한다.
+
+k3/5 prequential gate는 M-free AQ 대 A0만으로 계산하고 AQ와 AQM이 같은 결정을 쓴다.
+k1 global enable은 이 개발계약에서 `true`로 고정했으며, metadata는 최종 residual 계수와
+동치인 fallback 외의 별도 gate 경로를 가질 수 없다.
+
+Synthetic promotion은 더 이상 B1/B2/B3 중 일부 성공으로 열리지 않는다. AQ viability,
+impedance-linked B3, interface-calibrated impedance B4, k3 correct-vs-shuffle, AQM 대 A0
+배치 가능성, null equivalence, harm/abstention과 helpful-use anti-triviality를 모두 통과해야
+한다. k=1 target-person 무손상은 보장하지 않으며 observable context guard와 source-locked
+operational fallback만 허용한다.
+
+Synthetic reference는 EEG/outcome key와 독립인 covariate-only seed `20260910`으로 만들고,
+향후 human reference는 별도 권한 뒤 source39 metadata만 쓴다. 두 receipt는 교환할 수 없다.
+Wearable primary는 support/query를 dry와 wet 안에서 각각 평가하므로 단순 interface
+same/different는 상수다. V3에서 interface category는 source-metadata-only로 동결한 채널별
+robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰지 않는다. Impedance가
+없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
+**해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
+
+현재는 코드·unit test와 clean hash-pinned development bundle을 만드는 단계다. Bundle은
+git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
+implementation commit/tree를 묶는다. Root seed
+`20260909`의 nonreserved synthetic development는 bundle validator 뒤에만 가능하고 public
+historical-pulse governance canary는 selected-method freeze와 state engine 뒤에만 가능하다.
+V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
+external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
+유지한다.
+
+Canary는 별도 typed microstate와 exact historical-pulse seed/hash-probe oracle을 쓰며,
+selected freeze·commit/tree·tests·fixture·전체 canary artifact를 묶은 fresh-process audit
+capability가 있어야 main lifecycle의 `CANARY_PASSED`로 넘어간다. Future scientific
+authorization은 repository에 pin한 workspace-owner RSA-4096 공개키로 RSA-PSS/SHA-256
+서명을 검증하며, 현재 일반 대화 승인은 아직 선택되지 않은 target의 서명을 대신하지 않는다.
+향후 scientific attempt ID는 완전한 manifest payload SHA-256에서만 파생되며 caller가 정하지
+않는다. Claim은 attempt별 경로가 아니라 V3 전체의 고정 `scientific/global-claim.json` 하나를
+live network access 전에 `O_EXCL`로 생성하므로 새 ID나 target으로 재시도할 수 없다. 모든
+file-backed authority reference는 schema·payload SHA·file SHA를 함께 묶고, exact path write는
+directory-FD·`O_NOFOLLOW`·`fstat` 경계에서 수행한다.
 
 ## V2 synthetic gate 현재 상태
 

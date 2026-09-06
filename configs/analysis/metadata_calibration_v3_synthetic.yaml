@@ -1,0 +1,754 @@
+schema: cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1
+candidate_id: metadata-calibration-efficiency-v3
+generator_revision: v1_single_insertion_context_trust
+status: declared_development_contract_not_yet_bundle_frozen_or_executable
+
+master_plan:
+  path: configs/analysis/metadata_calibration_efficiency_v3.yaml
+  file_sha256: 29de9a4772da34769806ee4f1633f0cbe50d088945a1205507f43c2befa143db
+preoutcome_amendment:
+  path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
+  file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
+
+development_bundle:
+  required_before_any_seed_20260909_generation: true
+  current_status: absent
+  schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
+  canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
+  context_reference_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json
+  development_result_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-result.json
+  storage: external_write_once_receipt_not_part_of_the_bound_git_tree
+
+purpose: >-
+  Validate implementation, support utility, context-pairing mechanism,
+  negative-transfer fallback, and governance before any human or scientific
+  lockbox outcome. Synthetic PASS is necessary but cannot establish human EEG
+  efficacy or acquisition-context validity.
+
+disclosed_prior_seed_exposure:
+  V2_development_seed: 20260906
+  V2_abandoned_plaintext_seed_never_executed: 20260907
+  local_small_diagnostic_seed: 20260908
+  rule: none_of_these_values_may_be_a_V3_scientific_seed
+
+rng:
+  bit_generator: numpy.random.PCG64DXSM
+  construction: numpy.random.SeedSequence
+  development_root_seed: 20260909
+  development_outputs_may_be_inspected: true
+  scientific_lockbox:
+    authorized: false
+    root_seed: null
+    source: newly_selected_future_NIST_randomness_beacon_only_after_clean_freeze_and_authorization
+    target_timestamp_utc: null
+    exact_endpoint: null
+  key_order: [root_seed, family_code, participant_index, block, class_index, component_code]
+  family_codes:
+    B1_participant_class_confusion: 3101
+    B2_participant_phase_spatial_shift: 3102
+    B3_impedance_linked_transfer_shift: 3103
+    B4_interface_calibrated_impedance_shift: 3104
+    N1_clean_anchor: 3201
+    N2_random_support_labels: 3202
+    N3_nonstationary_calibration: 3203
+    N4_context_null: 3204
+    N5_invalid_context: 3205
+  component_codes:
+    spatial_signature: 1
+    class_phase: 2
+    block_phase_drift: 3
+    channel_gain: 4
+    innovation_noise: 5
+    confuser_state: 6
+    support_label_permutation: 7
+    impedance_measurement_noise: 8
+    interface_assignment: 9
+    context_control: 10
+    sensitivity_resampling: 11
+  order_invariance: each_random_component_has_a_complete_independent_key
+
+population:
+  development_participants_per_family: 48
+  future_scientific_lockbox_participants_per_family: 96
+  participant_is_the_inference_unit: true
+  default_conditions: [neutral]
+  B4_conditions: [wet, dry]
+  B4_condition_aggregation: equal_mean_within_participant_before_inference
+  classes: 12
+  complete_blocks: 10
+  trials_per_class_per_block: 1
+  primary_support_budgets: [0, 1, 3]
+  descriptive_support_budget: 5
+  nested_support:
+    0: []
+    1: [1]
+    3: [1, 2, 3]
+    5: [1, 2, 3, 4, 5]
+  immutable_query_blocks: [6, 7, 8, 9, 10]
+
+waveform:
+  dtype: float64
+  sampling_rate_hz: 250
+  duration_seconds: 2.0
+  channels: 8
+  class_frequency_hz: 8.0_plus_0.4_times_zero_based_class
+  harmonic_amplitudes: {1: 1.0, 2: 0.35}
+  spatial_signature: normalized_participant_by_class_standard_normal_vector
+  class_phase: participant_by_class_uniform_minus_pi_to_pi
+  block_phase_drift_radians_sd: 0.08
+  channel_gain_distribution: lognormal_meanlog_0_sdlog_0.12
+  noise:
+    process: stationary_AR1_per_channel
+    rho: 0.55
+    initialization: epsilon_0_equals_sigma_times_z_0_div_sqrt_1_minus_rho_squared
+    recurrence: epsilon_t_equals_rho_times_epsilon_t_minus_1_plus_sigma_times_z_t
+  exact_signal_composition: >-
+    block_channel_gain times target_harmonics plus state_specific_confuser_harmonics
+    plus stationary_AR1_noise; every class in a block shares one acquisition packet
+  filterbank_config: configs/baselines/fbcca_chen2015_m3_v2_explicit_weights.yaml
+  filterbank_config_sha256: b8c1ce4477d980b40f359bc3dc97f3125313191d24401f29a7e2dc473d0d1380
+  execution: stream_one_participant_at_a_time_without_persisting_full_family_tensors
+
+operator_grid:
+  operator: P3_blockwise_score_prototype_reliability_mixture_with_context_trust_at_fusion_only
+  ideal_prototype_smoothing: 0.05
+  prototype_prior_pseudocount: [1.0, 4.0, 16.0]
+  lambda_max: [0.10, 0.20, 0.30]
+  entropy_scaling: true
+  target_local_gate:
+    evaluator: M_free_A_Q_vs_A0_only
+    decision_bitwise_shared_by: [A_Q, A_QM]
+    metadata_may_change_gate_decision: false
+    k1_global_enable: true
+    k3_and_k5_rule: chronological_prequential_BA_and_correct_log_probability_contract_in_master
+    failure: exact_A0_for_both_A_Q_and_A_QM
+  support_reliability:
+    block_score: mean_temperature_one_strict_FBCCA_probability_on_the_observed_label_over_the_12_class_balanced_support_trials
+    forbidden_inputs: [fitted_P3, metadata, query_EEG, query_label, query_batch, row_identity]
+    clipped_range: [1.0e-12, 1.0]
+    relative_weight: pi_b_equals_w_b_divided_by_sum_available_w_b
+    common_support_probability: sum_pi_b_times_blockwise_P3_probability
+    used_bitwise_identically_by: [A_Q, A_QM]
+    no_absolute_anchor_correctness_gate: true
+    lambda_Q: lambda_max_times_k_over_k_plus_one_times_query_entropy_quality
+    prequential_evaluation_uses_only_prior_fit_prefix_blocks: true
+    uniform_block_weight_sensitivity_required: true
+  metadata:
+    primary_support_and_query_interface_relation: same_interface
+    interface_role: select_source_covariate_only_frozen_per_channel_impedance_scale
+    interface_alone_may_change_output: false
+    raw_context_consumer: metadata_adapter_preflight_only
+    metadata_adapter_preflight:
+      input: raw_context_reference_and_pairing_keys_without_any_support_signal
+      output: typed_ContextPreflightCapability
+      malformed_or_query_OOD: exact_A0_before_support_EEG_or_label_access
+    metadata_adapter_finalization:
+      inputs: [typed_ContextPreflightCapability, MFreeSupportReliabilityCapability]
+      output: typed_ContextTrustCapability
+      forbidden_direct_inputs: [raw_EEG, support_labels, query_labels, class_scores, probabilities, raw_context]
+    scientific_operator_input: typed_ContextTrustCapability_only
+    scientific_operator_forbidden_raw_inputs: [interface, impedance, availability]
+    per_query_support_block_distance: >-
+      median over channels valid in both packets of absolute difference between
+      source-reference-standardized query and support log1p impedance
+    per_query_support_block_affinity: two_to_negative_clip_distance_0_16
+    M_free_support_block_reliability: >-
+      immutable strict-FBCCA mean observed-support-label probability w_b from
+      the class-balanced complete support block; its normalized pi_b is also
+      the common P3 mixture weight in A_Q and A_QM
+    multi_support_g_M: >-
+      reliability-weighted mean affinity over every support block, assigning
+      exact affinity one to any block with no comparable channel so missing
+      context is neutral; if all are missing return A_Q directly
+    output_capability_must_bind:
+      - candidate_id
+      - active_grid_cell_id
+      - exact_operator_instance_digest
+      - current_query_key
+      - ordered_support_block_keys
+      - context_preflight_capability_sha256
+      - support_reliability_capability_sha256
+      - context_reference_receipt_sha256
+      - raw_packet_pairing_sha256
+    exact_neutral: zero_standardized_distance_direct_return_A_Q
+    OOD_guard: >-
+      current query only; more than half its valid channels with absolute
+      source-standardized log1p impedance above 8 returns A0 before support access
+    insertion_point: multiply_A_Q_final_support_residual_coefficient_exactly_once
+    all_missing: direct_return_A_Q
+    unknown_interface: pooled_channel_center_and_scale_pair_then_A_Q_if_no_valid_channel
+    negative_or_nonfinite_impedance: mark_channel_missing_then_A_Q_if_none_valid
+    malformed_schema_channel_count_or_pairing_digest: direct_return_A0_before_support_access
+  forced_on_mode:
+    allowed: [unit_tests, nonreserved_synthetic_development]
+    forbidden: [future_scientific_lockbox_deployment, human_deployment]
+
+context_reference:
+  source: separately_keyed_covariate_only_packets
+  root_seed: 20260910
+  interface_categories: [neutral, wet, dry]
+  packets_per_interface: 256
+  channels: 8
+  state_assignment: exact_128_minus_one_and_128_plus_one_then_keyed_permutation_per_interface
+  canonical_channel_offset_log1p: 0p04_times_channel_index_minus_3p5
+  packet_formulas:
+    neutral: numpy_log1p_6_plus_0p65_times_state_plus_channel_offset_plus_normal_0_0p05
+    wet: numpy_log1p_20_plus_0p20_times_state_plus_channel_offset_plus_normal_0_0p03
+    dry: numpy_log1p_262_plus_0p80_times_state_plus_channel_offset_plus_normal_0_0p08
+  positive_impedance_conversion: numpy_expm1_of_generated_log1p_value
+  channel_missingness:
+    probability: 0.05
+    axis: interface_by_packet_by_channel
+    keyed_component: impedance_measurement_noise
+  independence: reference_packets_share_no_EEG_state_noise_or_outcome_key_with_evaluation_participants
+  allowed_fields: [interface, impedance_kohm_by_channel, channel_availability]
+  forbidden_fields: [EEG, class, support_label, query_label, prediction, performance]
+  center: per_interface_per_channel_median_of_log1p_impedance
+  scale: per_interface_per_channel_1p4826_times_MAD_of_log1p_impedance
+  pooled_center: per_channel_median_over_all_available_raw_log1p_values_from_all_three_interfaces
+  pooled_scale: per_channel_1p4826_times_MAD_about_pooled_center_over_the_same_raw_values
+  minimum_observed_packets_per_interface_channel: 128
+  robust_scale_floor: 0.05
+  pooled_per_channel_fallback_minimum_count: 256
+  fallback_order: [interface_channel_center_and_scale_pair, pooled_channel_center_and_scale_pair, channel_unavailable]
+  unknown_interface_OOD_standardization: pooled_channel_center_and_scale_pair
+  receipt_must_be_frozen_before_any_grid_metric: true
+
+families:
+  B1_participant_class_confusion:
+    role: beneficial_A_Q
+    target_amplitude: 1.0
+    confuser_amplitude: 0.90
+    confuser_class: class_plus_1_plus_participant_mod_3_mod_12
+    noise_innovation_sd: 0.85
+    stationarity: support_and_query_share_participant_specific_confusion
+    primary_contrast: A_Q_minus_A0_eAUC
+
+  B2_participant_phase_spatial_shift:
+    role: beneficial_A_Q
+    target_amplitude: 0.65
+    confuser_amplitude: 0.0
+    noise_innovation_sd: 1.10
+    stationarity: support_and_query_share_participant_class_spatial_and_phase_signature
+    primary_contrast: A_Q_minus_A0_eAUC
+
+  B3_impedance_linked_transfer_shift:
+    role: mandatory_beneficial_metadata
+    latent_contact_state: keyed_block_state_minus_one_or_plus_one_balanced_within_participant
+    state_minus_one:
+      confuser_class: class_plus_1_plus_participant_mod_3_mod_12
+      confuser_amplitude: 0.75
+      extra_phase_radians: 0.0
+      noise_innovation_sd: 0.85
+    state_plus_one:
+      confuser_class: class_plus_4_plus_participant_mod_3_mod_12
+      confuser_amplitude: 0.75
+      extra_phase_radians: 1.5707963267948966
+      noise_innovation_sd: 1.30
+    impedance_kohm: >-
+      numpy.expm1(numpy.log1p(6.0) plus 0p65 times state plus 0p04 times
+      channel_index_minus_3p5 plus keyed_normal_0_0p05)
+    interface: neutral_constant
+    reason_M_can_help: impedance_is_a_noisy_pre_query_proxy_for_support_query_regime_match
+    primary_contrast: A_QM_correct_minus_A_Q_eAUC
+    k1_structural_diagnostic: A_QM_correct_minus_A_QM_support_impedance_channel_rotation_not_a_positive_pairing_or_efficacy_endpoint
+    k3_mechanism: A_QM_correct_minus_A_QM_within_prefix_impedance_packet_shuffle
+
+  B4_interface_calibrated_impedance_shift:
+    role: mandatory_beneficial_metadata
+    interface_categories: [wet, dry]
+    condition_contract: support_and_query_are_scored_separately_within_the_same_interface
+    latent_contact_state: keyed_block_state_minus_one_or_plus_one_balanced_within_each_interface
+    shared_state_minus_one_waveform_regime:
+      confuser_class: class_plus_1_plus_participant_mod_3_mod_12
+      confuser_amplitude: 0.70
+      extra_phase_radians: 0.0
+      noise_innovation_sd: 0.85
+    shared_state_plus_one_waveform_regime:
+      confuser_class: class_plus_4_plus_participant_mod_3_mod_12
+      confuser_amplitude: 0.70
+      extra_phase_radians: 1.5707963267948966
+      noise_innovation_sd: 1.20
+    wet_log1p_impedance: numpy_log1p_20_plus_0p20_times_state_plus_0p04_times_channel_index_minus_3p5_plus_normal_0_0p03
+    dry_log1p_impedance: numpy_log1p_262_plus_0p80_times_state_plus_0p04_times_channel_index_minus_3p5_plus_normal_0_0p08
+    participant_mapping_variation:
+      offset_jitter_sd_log1p: 0.15
+      positive_slope_multiplier: lognormal_meanlog_0_sdlog_0p20
+      measurement_noise_multiplier: lognormal_meanlog_0_sdlog_0p15
+    source_range_stress:
+      assignment: participant_level_for_both_interfaces_by_smallest_keyed_uniform_rank
+      development_participant_count: 5
+      future_scientific_participant_count: 10
+      development_in_reference_count: 43
+      future_scientific_in_reference_count: 86
+      query_context_override: >-
+        For query blocks 6 through 10, set every available channel's
+        source-reference standardized log1p impedance coordinate to exactly
+        plus 10.0 after reference fitting; support context and all EEG remain
+        generated normally.
+      OOD_guard_trigger_is_structurally_guaranteed_for_every_stress_query_with_any_valid_channel: true
+      role: test_predeclared_OOD_fallback_without_allowing_fallback_to_create_the_only_efficacy_signal
+      mandatory_efficacy_reanalysis: in_reference_participants_must_independently_pass_the_same_B4_metadata_thresholds
+      stress_subset_role: safety_and_coverage_only
+      OOD_fallback_never_counts_as_helpful_metadata_use: true
+    interface_only_control: remove_impedance_and_return_exact_A_Q
+    pooled_scale_control: use_the_frozen_pooled_center_and_scale_pair_for_wet_and_dry
+    wrong_interface_scale_control: swap_wet_and_dry_center_and_scale_tables_without_changing_EEG_or_impedance
+    reason_M_can_help: >-
+      interface selects how an impedance change is normalized; the interface
+      category alone is constant within each calibration-query condition and
+      must not directly affect the prediction
+    primary_contrast: A_QM_correct_minus_A_Q_eAUC
+    supportive_factor_contrasts:
+      - A_QM_interface_scaled_minus_A_QM_pooled_scale_eAUC
+      - A_QM_interface_scaled_minus_A_QM_wrong_interface_scale_eAUC
+    k1_structural_diagnostic: A_QM_correct_minus_A_QM_support_impedance_channel_rotation_same_interface_not_a_positive_pairing_or_efficacy_endpoint
+    k3_mechanism: A_QM_correct_minus_A_QM_within_prefix_impedance_packet_shuffle_same_interface
+
+  N1_clean_anchor:
+    role: null_support_and_metadata
+    target_amplitude: 2.0
+    confuser_amplitude: 0.0
+    noise_innovation_sd: 0.05
+    contrasts: [A_Q_minus_A0_by_budget, A_QM_minus_A_Q_by_budget]
+
+  N2_random_support_labels:
+    role: adversarial_prequential_gate
+    waveform: same_as_B1
+    fit_label_rule: keyed_nonidentity_cyclic_permutation_per_support_block
+    evaluation_and_query_labels: immutable_true_labels_unavailable_to_operator
+    contrast: deployed_support_update_abstention_at_k3_and_k5
+
+  N3_nonstationary_calibration:
+    role: adversarial_prequential_gate
+    calibration_blocks: replace_dominant_class_c_component_by_class_c_plus_block_mod_12
+    query_blocks: clean_target_amplitude_1_noise_sd_0p85
+    contrast: deployed_support_update_abstention_at_k3_and_k5
+
+  N4_context_null:
+    role: null_metadata
+    waveform: B3_marginal_signal_mixture_with_independent_signal_state
+    context: impedance_packet_with_independent_context_state_and_valid_interface_scale
+    exchangeability: correct_and_pair_shuffled_context_are_exchangeable
+    contrasts: [A_QM_minus_A_Q_by_budget, correct_minus_control_by_budget]
+
+  N5_invalid_context:
+    role: observable_context_guard
+    cases:
+      - unknown_interface_category
+      - negative_impedance
+      - nonfinite_impedance
+      - wrong_channel_count
+      - packet_key_or_pairing_digest_mismatch
+      - query_source_standardized_OOD
+    expected: >-
+      malformed_schema_or_pairing_returns_exact_A0_before_support_access;
+      unknown_interface_uses_pooled_scale;
+      invalid_channels_are_missing_and_all_missing_returns_exact_A_Q
+
+  N6_support_reliability_invariants:
+    role: deterministic_signal_Q_weighting_guard
+    cases:
+      - uniform_chance_probabilities
+      - all_observed_label_probabilities_below_chance
+      - one_corrupt_block_among_three
+      - confident_wrong_anchor_probabilities
+    expected: >-
+      reliability weights are finite, positive, normalized, use immutable
+      strict-FBCCA support probabilities only, are bitwise identical in A_Q
+      and A_QM, reduce to weight one at k1, and no evaluation block label
+      contributes to its own prequential prediction; low anchor correctness
+      never creates an absolute support-disable gate
+
+context_controls:
+  correct: exact_query_and_support_acquisition_packets
+  all_missing: remove_every_comparable_field_and_return_exact_A_Q
+  k1_support_impedance_channel_rotation:
+    rule: >-
+      Keep the only support packet, interface, EEG, labels, availability count,
+      and impedance multiset fixed; rotate support impedance and availability
+      together by one position over the eight canonical channels.
+    eligible: at_least_two_query_support_comparable_channels
+    no_future_query_or_other_participant_packet: true
+    mandatory_use: N4_null_equivalence_structural_safety_guard_only
+    positive_mechanism_or_efficacy_gate: false
+  k3_pair_shuffle:
+    rule: exhaustive_lexicographically_ordered_derangements_of_whole_support_packets_within_current_fit_prefix
+    exact_derangement_counts: {3: 2, 5: 44}
+    EEG_labels_and_packet_multiset_fixed: true
+    support_reliability_w_b_stays_with_its_EEG_and_label_block: true
+    evaluation_query_and_future_packets_forbidden: true
+    mechanism_metric_reduction: >-
+      Compute balanced accuracy and correct-label log score separately under
+      every derangement, then average those metric values within participant;
+      never count derangements as independent observations.
+    averaged_probability_vector: diagnostic_artifact_only_not_the_mechanism_estimand
+  potency:
+    unit: participant_by_condition_by_query_block
+    packet_binding_changed_fraction_under_derangements_must_equal: 1.0
+    k1_channel_rotation_role: report_structural_changed_affinity_only_not_mandatory_pairing_potency
+    diagnostic_k3_per_unit_nonzero_affinity_fraction: >-
+      number of exhaustive derangements with abs(g_M_correct-g_M_deranged)
+      greater than 1e-12 divided by the exact derangement count
+    denominator: eligible_units_with_required_comparable_channels_and_nonidentity_control
+    potential_units_B3_k3: 240
+    potential_units_B4_k3: 480
+    context_packet_coverage_fraction_each_family_at_least: 0.90
+    scientifically_changed_g_M_absolute_threshold: 0.05
+    scientifically_changed_k3_unit_definition: mean_over_derangements_abs_g_M_change_ge_0p05
+    k3_fraction_of_potential_units_meeting_change_threshold_each_family_at_least: 0.50
+    k3_median_over_potential_units_of_mean_derangement_abs_g_M_change_ge: 0.05
+    report_g_M_and_affinity_range_and_standard_deviation_by_family_budget: true
+
+invariants:
+  - no_query_label_or_row_identity_reaches_operator
+  - support_and_query_are_disjoint
+  - A_Q_rejects_every_M_field
+  - scientific_operator_rejects_raw_interface_impedance_and_availability
+  - k0_A_Q_and_A_QM_are_bitwise_A0_without_support_or_context_access
+  - all_missing_A_QM_is_bitwise_A_Q
+  - malformed_schema_channel_count_or_pairing_returns_bitwise_A0_before_support_access
+  - query_context_OOD_returns_bitwise_A0_before_support_access
+  - unknown_interface_uses_pooled_scale_or_bitwise_A_Q
+  - invalid_impedance_channels_are_missing_and_zero_comparable_channels_return_bitwise_A_Q
+  - M_changes_only_the_final_support_residual_coefficient
+  - interface_only_without_impedance_is_bitwise_A_Q
+  - context_reference_fit_reads_no_EEG_label_prediction_or_performance
+  - swapping_wet_and_dry_names_with_the_same_standardized_mismatch_leaves_output_identical
+  - probabilities_are_finite_nonnegative_and_sum_to_one
+  - l1_displacement_from_A0_is_at_most_two_times_lambda_Q
+  - context_control_permutation_is_nonidentity_and_prefix_local
+  - exhaustive_derangement_counts_are_exactly_two_at_k3_and_44_at_k5
+  - M_free_support_block_reliability_is_bitwise_unchanged_across_context_controls
+  - ContextTrustCapability_binds_current_signal_and_support_reliability_capability
+  - context_preflight_reads_no_support_EEG_label_score_or_probability
+  - participant_order_and_generation_order_do_not_change_results
+
+complete_grid:
+  budgets: [0, 1, 3, 5]
+  deployed_is_claim_relevant_for_every_primary_metric: true
+  forced_on_is_diagnostic_only_and_excludes_k0: true
+  cells_per_parameter_pair:
+    B1_participant_class_confusion:
+      condition: neutral
+      cells:
+        - {role: A0, control: none, gate: none, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: forced_on, budgets: [1, 3, 5], count: 3}
+      condition_cell_count: 11
+    B2_participant_phase_spatial_shift:
+      condition: neutral
+      same_cells_as: B1_participant_class_confusion
+      condition_cell_count: 11
+    B3_impedance_linked_transfer_shift:
+      condition: neutral
+      cells:
+        - {role: A0, control: none, gate: none, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: forced_on, budgets: [1, 3, 5], count: 3}
+        - {role: A_QM, control: correct, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: correct, gate: forced_on, budgets: [1, 3, 5], count: 3}
+        - {role: A_QM, control: all_missing, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: support_impedance_channel_rotation, gate: deployed, budgets: [1], count: 1}
+        - {role: A_QM, control: within_prefix_packet_shuffle, gate: deployed, budgets: [3, 5], count: 2}
+      condition_cell_count: 25
+    B4_interface_calibrated_impedance_shift:
+      conditions: [wet, dry]
+      base_cells_same_as: B3_impedance_linked_transfer_shift
+      additional_cells_per_condition:
+        - {role: A_QM, control: pooled_scale, gate: deployed, budgets: [1, 3, 5], count: 3}
+        - {role: A_QM, control: wrong_interface_scale, gate: deployed, budgets: [1, 3, 5], count: 3}
+        - {role: A_QM, control: interface_only, gate: deployed, budgets: [1, 3, 5], count: 3}
+      condition_cell_count_each: 34
+      condition_cell_count_total: 68
+      equal_condition_participant_composite_cell_count: 34
+    N1_clean_anchor:
+      condition: neutral
+      cells:
+        - {role: A0, control: none, gate: none, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: correct, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: all_missing, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+      condition_cell_count: 16
+    N2_random_support_labels:
+      condition: neutral
+      cells:
+        - {role: A0, control: none, gate: none, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: forced_on, budgets: [1, 3, 5], count: 3}
+      condition_cell_count: 11
+    N3_nonstationary_calibration:
+      condition: neutral
+      same_cells_as: N2_random_support_labels
+      condition_cell_count: 11
+    N4_context_null:
+      condition: neutral
+      cells:
+        - {role: A0, control: none, gate: none, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_Q, control: none, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: correct, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: all_missing, gate: deployed, budgets: [0, 1, 3, 5], count: 4}
+        - {role: A_QM, control: support_impedance_channel_rotation, gate: deployed, budgets: [1], count: 1}
+        - {role: A_QM, control: within_prefix_packet_shuffle, gate: deployed, budgets: [3, 5], count: 2}
+      condition_cell_count: 19
+  condition_level_cells_per_parameter_pair: 172
+  B4_composite_cells_per_parameter_pair: 34
+  participant_summary_cells_per_parameter_pair: 206
+  development_participant_rows_per_parameter_pair: 9888
+  development_parameter_pairs: 9
+  development_participant_metric_rows: 88992
+  N5_context_invariant_cases_per_parameter_pair: 6
+  N6_support_reliability_invariant_cases_per_parameter_pair: 4
+  development_invariant_rows: 90
+  total_development_rows: 89082
+  future_selected_lockbox_participant_metric_rows: 19776
+  future_selected_lockbox_invariant_rows: 10
+  future_selected_lockbox_total_rows: 19786
+
+metrics:
+  eAUC_formula: Y0_div_6_plus_Y1_div_2_plus_Y3_div_3
+  k0_for_every_support_or_context_control: reuse_the_same_exact_A0_participant_condition_row
+  inference_unit: participant
+  lower_bound: one_sided_paired_t_95_percent
+  observed_gain_screen: 0.01
+  noninferiority_margin: -0.016666666666666666
+  severe_harm: participant_eAUC_delta_less_than_-0.10
+  severe_harm_upper_rate:
+    interval: one_sided_exact_Clopper_Pearson_95_percent
+    threshold: 0.10
+  sensitivity_only:
+    sign_flip_draws: 100000
+    participant_bootstrap_draws: 10000
+
+promotion_requirements:
+  rule: all_named_components_must_pass
+  invariant_and_potency:
+    require_every_invariant: true
+    require_k3_derangement_packet_binding_and_scientific_g_M_potency_thresholds: true
+  A_Q_viability:
+    family_rule: at_least_one_of_B1_or_B2
+    each_candidate_family_pass:
+      paired_LCB_gt: 0.0
+      observed_mean_ge: 0.01
+      k1_observed_mean_ge: 0.0
+  metadata_efficacy:
+    required_families: [B3_impedance_linked_transfer_shift, B4_interface_calibrated_impedance_shift]
+    each_family_pass:
+      A_QM_minus_A_Q_eAUC_paired_LCB_gt: 0.0
+      A_QM_minus_A_Q_eAUC_observed_mean_ge: 0.01
+    B4_in_reference_subset_must_also_pass:
+      development_participants: 43
+      future_scientific_participants: 86
+      A_QM_minus_A_Q_eAUC_paired_LCB_gt: 0.0
+      A_QM_minus_A_Q_eAUC_observed_mean_ge: 0.01
+    B4_interface_scale_value_supportive:
+      evaluation_subset: in_reference_participants
+      correct_minus_pooled_scale_paired_LCB_gt: 0.0
+      correct_minus_pooled_scale_observed_mean_gt: 0.0
+      correct_minus_wrong_interface_scale_paired_LCB_gt: 0.0
+      correct_minus_wrong_interface_scale_observed_mean_gt: 0.0
+  pairing_mechanism:
+    k3_correct_minus_within_prefix_shuffle_each_B3_B4:
+      paired_LCB_gt: 0.0
+      observed_mean_ge: 0.01
+  deployment_viability:
+    required_families: [B3_impedance_linked_transfer_shift, B4_interface_calibrated_impedance_shift]
+    each_family_A_QM_correct_minus_A0_eAUC:
+      paired_LCB_gt: -0.016666666666666666
+      observed_mean_ge: 0.0
+  null_noninferiority:
+    N1_clean_anchor:
+      contrasts: [A_Q_minus_A0, A_QM_correct_minus_A_Q]
+      budgets: [1, 3]
+      each_lower_bound_gt: -0.016666666666666666
+    N4_context_null:
+      contrasts:
+        - {id: A_QM_correct_minus_A_Q, budgets: [1, 3]}
+        - {id: correct_minus_support_channel_rotation, budgets: [1]}
+        - {id: correct_minus_within_prefix_shuffle, budgets: [3]}
+      equivalence_interval: two_one_sided_tests_alpha_0p05_equivalently_paired_90_percent_CI
+      each_CI_entirely_inside: [-0.016666666666666666, 0.016666666666666666]
+  harm_and_abstention:
+    severe_harm_contrasts:
+      - {family: B1_participant_class_confusion, id: A_Q_minus_A0_eAUC}
+      - {family: B2_participant_phase_spatial_shift, id: A_Q_minus_A0_eAUC}
+      - {family: B3_impedance_linked_transfer_shift, id: A_QM_correct_minus_A_Q_eAUC}
+      - {family: B3_impedance_linked_transfer_shift, id: A_QM_correct_minus_A0_eAUC}
+      - {family: B4_interface_calibrated_impedance_shift, id: A_QM_correct_minus_A_Q_equal_condition_eAUC}
+      - {family: B4_interface_calibrated_impedance_shift, id: A_QM_correct_minus_A0_equal_condition_eAUC}
+      - {family: B4_interface_calibrated_impedance_shift, id: A_QM_pooled_scale_minus_A_Q_equal_condition_eAUC}
+      - {family: B4_interface_calibrated_impedance_shift, id: A_QM_wrong_interface_scale_minus_A_Q_equal_condition_eAUC}
+    severe_harm_denominator: 48_participants_per_contrast_after_equal_condition_aggregation_for_B4
+    each_one_sided_exact_95_percent_upper_rate_lt: 0.10
+    adversarial_abstention:
+      families: [N2_random_support_labels, N3_nonstationary_calibration]
+      budgets: [3, 5]
+      unit: participant_by_budget
+      development_denominator_each_family: 96
+      future_selected_lockbox_denominator_each_family: 192
+      numerator: deployed_gate_returns_exact_A0_before_final_query_support_update
+      observed_rate_each_family_ge: 0.95
+      one_sided_exact_binomial_95_percent_interval_report_required: true
+    N5_invalid_context_fallback_contract_rate: 1.0
+    no_claim_that_k1_plausible_wrong_labels_are_detectable: true
+  anti_triviality:
+    helpful_family_metadata_use_definition: support_enabled_and_abs_g_M_minus_1_gt_1e_minus_12
+    unit: participant_by_condition_by_query_block_by_budget
+    budgets: [1, 3]
+    query_blocks: [6, 7, 8, 9, 10]
+    denominator_B3: 480
+    denominator_B4: 960
+    observed_rate_each_of_B3_and_B4_ge: 0.20
+    purpose: an_always_A_Q_or_always_abstain_rule_cannot_pass
+
+development_selection:
+  evaluate_complete_3_by_3_grid: true
+  grid_cells: 9
+  no_partial_grid_selection: true
+  eligible: passes_every_promotion_requirement_on_development
+  if_multiple_eligible:
+    - maximize_minimum_raw_gain_rank_component_defined_in_master_plan
+    - maximize_minimum_corresponding_LCB_rank_component_defined_in_master_plan
+    - minimize_lambda_max
+    - maximize_prototype_prior_pseudocount
+    - ascending_canonical_grid_cell_index_from_master
+  if_none_eligible: retire_V3_without_scientific_lockbox
+  after_selection:
+    - write_cfeg_metadata_calibration_efficiency_v3_selected_method_freeze_v1
+    - derive_scientific_candidate_id_from_the_frozen_template_and_exact_parameters
+    - bind_development_bundle_result_full_grid_gate_report_and_selected_cell_hashes
+    - commit_selected_freeze_and_rerun_full_tests_and_canary
+  deterministic_selected_manifest_fill_under_this_rule_is_not_V4: true
+  any_operator_DGP_threshold_grid_rank_or_evidence_change_after_selection: requires_V4_and_new_unseen_evidence
+
+governance_canary:
+  candidate_id: metadata-calibration-efficiency-v3-governance-canary
+  public_fixture: tests/fixtures/nist_beacon_v2_20260905T180000Z.json
+  public_fixture_sha256: bccc6bb11467ecb13b535966a9e22de219294a586a41c3bd716ddc64b2bc6646
+  expected_pulse:
+    timestamp_utc: '2026-09-05T18:00:00.000Z'
+    chain_index: 2
+    pulse_index: 1928426
+    output_value: BADC50F6F9E38477950DA01DBF00C0F637FEB4A2F5A1BC9232B0CCF084DE26125539608A6138566AB5B904B816229D3D9B322B7F0B894C35EDAD1C4A057BEB03
+  scientific_seed_use: forbidden
+  payload: deterministic_non_EEG_hash_probe
+  must_use_same_state_engine_as_future_scientific_run: true
+  state_engine_domain: governance_canary_typed_enum_on_shared_transition_kernel
+  clock_type: HistoricalCanaryClock
+  authorization_type: CanaryAuthorization
+  capability_type: CanarySeedCapability
+  scientific_binder_requires_clock_type: LiveFutureBeaconClock
+  scientific_executor_requires_capability_type: ScientificSeedCapability
+  historical_clock_or_canary_capability_rejected_before_scientific_core: true
+  network_access: forbidden
+  seed_derivation:
+    domain_separator_ASCII: cfeg.metadata-calibration-efficiency-v3.canary-seed.v1
+    line_order: [domain_separator_ASCII, public_fixture_sha256_lowercase_hex, timestamp_UTC, chain_index_base10, pulse_index_base10, output_value_uppercase_hex]
+    encoding: strict_ASCII_each_field_followed_by_one_LF_including_final_field
+    expected_seed_digest_sha256: 137bf8d1430e12af656bc01bb9a27f8223d24822394632ec432bc287db42b4bf
+    expected_full_unsigned_256_bit_root_seed: 8812983586834372979543294859684702645563544465387352627235733726918051280063
+  probe_oracle:
+    domain_separator_ASCII: cfeg.metadata-calibration-efficiency-v3.canary-probe.v1
+    exact_pre_validation_trace_ASCII: CANARY_DECLARED,CANARY_AUTHORIZED,CANARY_CLAIMED,CANARY_BEACON_BOUND
+    line_order: [domain_separator_ASCII, expected_seed_digest_sha256_lowercase_hex, exact_pre_validation_trace_ASCII]
+    encoding: strict_ASCII_each_field_followed_by_one_LF_including_final_field
+    operation: SHA256_of_exact_encoded_bytes
+    expected_digest_sha256: 9b1d33abdf86747e7e384a1b656e62f017d6fb094b9e0127634c54eed77dc4d2
+  expected_trace:
+    - CANARY_DECLARED
+    - CANARY_AUTHORIZED
+    - CANARY_CLAIMED
+    - CANARY_BEACON_BOUND
+    - CANARY_PAYLOAD_VALIDATED
+    - CANARY_RESULT_PUBLISHED
+    - CANARY_FRESH_AUDITED
+  fresh_subprocess_full_audit: required
+  test_evidence_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/test-evidence.json
+  fresh_audit_artifact:
+    schema: cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1
+    canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/fresh-audit.json
+    must_bind:
+      - candidate_id
+      - selected_method_freeze_schema
+      - selected_method_freeze_payload_sha256
+      - selected_method_freeze_file_sha256
+      - clean_commit
+      - clean_tree
+      - test_evidence_schema
+      - test_evidence_payload_sha256
+      - test_evidence_file_sha256
+      - canary_authorization_schema
+      - canary_authorization_payload_sha256
+      - canary_authorization_file_sha256
+      - canary_claim_schema
+      - canary_claim_payload_sha256
+      - canary_claim_file_sha256
+      - canary_beacon_schema
+      - canary_beacon_payload_sha256
+      - canary_beacon_file_sha256
+      - canary_result_schema
+      - canary_result_payload_sha256
+      - canary_result_file_sha256
+      - public_fixture_file_sha256
+      - exact_CANARY_state_trace
+      - expected_and_observed_seed_digest
+      - expected_and_observed_probe_digest
+      - publisher_process_id
+      - distinct_auditor_process_id
+      - auditor_executable_file_sha256
+    auditor_process_id_must_differ_from_publisher_process_id: true
+    explicit_path_loader:
+      reads_only_exact_declared_canonical_paths: true
+      glob_directory_scan_or_implicit_artifact_discovery: forbidden
+      rejects_symlink_nonregular_or_realpath_mismatch: true
+      output: immutable_exact_path_to_bytes_mapping
+      may_access_git_environment_network_RNG_or_global_store: false
+    pure_parser:
+      input: immutable_exact_path_to_bytes_mapping_only
+      filesystem_git_environment_network_RNG_or_global_store_IO: forbidden
+      undeclared_missing_or_extra_path: reject
+    successful_validation_issues: FreshCanaryAuditCapability
+    capability_binds_fresh_audit_payload_and_file_sha256: true
+    publication:
+      create_flags: O_CREAT_O_EXCL_O_WRONLY_with_O_NOFOLLOW_when_available
+      published_regular_file_mode: '0400'
+      parent_directory_mode: '0700'
+      existing_path_or_replacement: reject
+  bridge_to_main_lifecycle: VERIFIED_plus_CANARY_FRESH_AUDITED_to_CANARY_PASSED_only
+  canary_capability_must_be_rejected_by_scientific_executor: true
+  canonical_root: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1
+
+scientific_lockbox:
+  current_authority: false
+  future_beacon_selected: false
+  global_claim_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/scientific/global-claim.json
+  global_claim_is_candidate_wide_attempt_independent_and_O_EXCL: true
+  attempt_id_derivation: sha256_dash_exact_attempt_manifest_payload_sha256_lowercase_hex
+  caller_supplied_attempt_id: forbidden
+  prerequisites:
+    - valid_development_bundle_and_complete_nonreserved_result
+    - one_exact_selected_method_freeze_and_derived_scientific_candidate_id
+    - selected_method_and_all_V3_code_on_clean_commit
+    - selected_freeze_full_repository_tests_pass
+    - selected_freeze_governance_canary_passes_in_fresh_process
+    - selected_freeze_annotated_tag
+    - exact_future_beacon_attempt_manifest_with_target_endpoint_and_statement
+    - new_signed_execution_authorization_binds_exact_attempt_manifest_before_target
+  transaction_order:
+    - validate_target_bound_authorization_and_all_preclaim_evidence
+    - wait_until_exact_future_target
+    - create_global_O_EXCL_claim_before_network_access
+    - fetch_and_intrinsically_validate_exact_live_future_pulse
+    - bind_claim_authorization_and_beacon
+    - issue_ScientificSeedCapability
+    - execute_and_fully_validate_result_in_memory
+    - publish_exactly_one_result_or_error_terminal
+  any_post_claim_failure: consumed_terminal_retry_forbidden
+
+stopping_rules:
+  invariant_or_potency_failure: immediate_stop
+  any_mandatory_promotion_component_failure: retire_exact_candidate
+  deterministic_selected_manifest_fill_under_frozen_rule: allowed_once
+  semantic_change_after_development_selection: requires_V4_and_new_unseen_evidence
+  synthetic_PASS: does_not_authorize_human_EEG
+  human_or_external_outcome_access_under_this_plan: forbidden
