@@ -323,3 +323,26 @@ Scientific execution authorization의 trust root는 repository에 고정한 work
 RSA-4096 공개키(fingerprint `SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g`)다.
 임의 runtime key는 거부한다. 향후 exact attempt manifest가 생긴 뒤 target 전에 대응 개인키로
 RSA-PSS/SHA-256 detached 서명을 받아야 하며, 현재 대화의 일반 승인은 그 target-bound 서명을 대신하지 않는다.
+
+## 구현 준비 상태 (2026-09-07 implementation A 직전)
+
+V3 scientific core, governance와 3-command restartable runner를 구현하고 독립 exact-commit
+감사를 통과했다. Core 기준 commit은 `a3573876eae97b6aaabcd959d08bec541438e773`, 최종
+governance 감사본은 `b98d6398349561fed0d1dadc32f61a3b875b61dc`, 최종 runner 감사본은
+`df8fbfc64488e4533fed44d65de7286f4042dfaf`다. Cherry-pick된 메인의 마지막 code commit은
+`b2e86a8`이며, 이 문서·상태·연구일지를 포함하는 다음 clean commit이 development bundle이
+묶는 implementation A가 된다.
+
+최종 메인에서 V3 집중 6-suite `144 passed`, 전체 repository suite `850 passed`를 재현했다.
+Canonical `status`는 1,668 directories·22,247 files의 site-packages 전체 inventory를 import
+전에 검사한 뒤 `BUNDLE_PENDING`을 반환했다. Dependency inventory SHA-256은
+`5e33f20babd3457f3a5ede1727d1ed04a3fc5ba927dc51e81b0491f4699e00f9`다. V3 변경 파일의
+Ruff lint, in-memory compile, shell syntax와 `git diff --check`는 통과했고 governance/runner
+subset의 Ruff format도 통과했다. Repository-wide lint는 기존 비-V3 11건, format은 총
+112파일을 지적했으며 그중 exact-audited V3 core/synthetic 5파일도 포함된다. 기능 변경과
+무관한 대규모 재포맷으로 감사 snapshot을 바꾸지 않기 위해 자동 수정하지 않았다.
+
+이 시점의 권한은 clean implementation A와 그 외부 write-once bundle까지다. Valid bundle
+뒤에만 covariate-only reference seed `20260910`과 nonreserved development seed `20260909`를
+각각 한 단계씩 실행한다. Future beacon/scientific seed, external·human EEG outcome과 외부
+메시지는 여전히 실행할 수 없다.

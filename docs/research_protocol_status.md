@@ -1,7 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
-기준일: 2026-09-06
-현재 상태: **V3 outcome-free 개발 계약 활성 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+기준일: 2026-09-07
+현재 상태: **V3 clean implementation CODE-GO·development bundle 생성 직전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
 현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
@@ -67,6 +67,22 @@ historical-pulse governance canary는 selected-method freeze와 state engine 뒤
 V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
 external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
+
+### 2026-09-07 implementation A 직전 상태
+
+Scientific core, pure-DAG governance와 restartable runner를 분리 구현·감사한 뒤 메인에
+통합했다. 최종 메인 V3 6-suite는 `144 passed`, 전체 repository suite는 `850 passed`와
+기존 Transformer warning 68개로 통과했다. 실제 canonical wrapper의 읽기 전용 `status`도
+전체 source·Python·site-packages 검증 뒤 `BUNDLE_PENDING`을 반환했다. 첫 통합 smoke에서
+wrapper가 부모 환경을 상속해 governance의 exact environment와 충돌하는 P0를 발견했으며,
+14-key `env -i` bootstrap과 missing/extra-key 회귀시험으로 결과 생성 전에 수정·독립 재감사했다.
+
+이 tracked 문서는 bundle이 묶을 implementation A snapshot의 상태를 기록한다. Bundle 뒤에는
+허용된 A→B selected-freeze 한 파일 외의 repository 변경이 금지되므로, 실제 durable 진행
+상태는 `scripts/run_metadata_calibration_v3 status`와 외부 write-once artifact가 기준원이다.
+이 시점에는 V3 artifact root, context/development result와 selection이 모두 없고 seed도
+실행하지 않았다. Frozen plan/amendment/owner-key/V2 terminal·deny-overlay hash는 모두
+byte-identical하게 재확인했다.
 
 Canary는 별도 typed microstate와 exact historical-pulse seed/hash-probe oracle을 쓰며,
 selected freeze·commit/tree·tests·fixture·전체 canary artifact를 묶은 fresh-process audit
