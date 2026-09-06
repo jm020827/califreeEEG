@@ -72,6 +72,22 @@ _ROOT_IMPORT_CONTROLS = frozenset(
     }
 )
 _COMMANDS = ("status", "resume", "emit-selection")
+_EXPECTED_GOVERNED_ENVIRONMENT = {
+    "BLIS_NUM_THREADS": "1",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "MKL_DYNAMIC": "FALSE",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_DYNAMIC": "FALSE",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+}
 _SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
 _GIT_OBJECT_RE = re.compile(r"[0-9a-f]{40}\Z")
 _STRICT_GIT_ENVIRONMENT = {
@@ -1158,8 +1174,11 @@ def _require_process_bootstrap(
         or flags.dont_write_bytecode != 1
         or flags.no_user_site != 1
         or flags.no_site != 1
+        or flags.hash_randomization != 1
     ):
         raise RunnerError("V3 runner requires -I -B -S from interpreter startup")
+    if dict(os.environ) != _EXPECTED_GOVERNED_ENVIRONMENT:
+        raise RunnerError("V3 runner environment is not the exact governed environment")
     if sys.executable != os.fspath(config.python_executable):
         raise RunnerError("V3 runner executable is not the exact configured Python")
     if tuple(sys.path) != config.standard_library_path:

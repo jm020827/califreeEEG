@@ -1,5 +1,20 @@
 #!/bin/sh
 set -eu
 
-exec /home/whwovy/califreeEEG/.venv/bin/python -I -B -S \
+exec /usr/bin/env -i \
+    BLIS_NUM_THREADS=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    MKL_DYNAMIC=FALSE \
+    MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    OMP_DYNAMIC=FALSE \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    PATH=/usr/bin:/bin \
+    PYTHONNOUSERSITE=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+    VECLIB_MAXIMUM_THREADS=1 \
+    /home/whwovy/califreeEEG/.venv/bin/python -I -B -S \
     /home/whwovy/califreeEEG/src/cfeg/metadata_calibration_v3_runner.py "$@"

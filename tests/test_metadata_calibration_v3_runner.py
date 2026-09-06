@@ -6,6 +6,7 @@ import importlib.util
 import io
 import os
 import py_compile
+import shlex
 import shutil
 import stat
 import subprocess
@@ -17,6 +18,7 @@ import pytest
 from cfeg.metadata_calibration_v3_runner import (
     _CANDIDATE_ID,
     _DEVELOPMENT_BUNDLE_SCHEMA,
+    _EXPECTED_GOVERNED_ENVIRONMENT,
     _PYTHON_SITE_INVENTORY_SCHEMA,
     RunnerError,
     RunStage,
@@ -35,6 +37,7 @@ from cfeg.metadata_calibration_v3_runner import (
 
 _REPOSITORY = Path(__file__).resolve().parents[1]
 _RUNNER = _REPOSITORY / "src/cfeg/metadata_calibration_v3_runner.py"
+_GOVERNANCE = _REPOSITORY / "src/cfeg/metadata_calibration_v3_governance.py"
 _WRAPPER = _REPOSITORY / "scripts/run_metadata_calibration_v3"
 _SELECTED_BYTES = (
     b'{"payload_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",'
@@ -48,6 +51,22 @@ _STANDARD_LIBRARY = (
     "/usr/lib/python3.10/lib-dynload",
 )
 _RUNNER_REPOSITORY_PATH = "src/cfeg/metadata_calibration_v3_runner.py"
+_GOVERNANCE_ENVIRONMENT = {
+    "BLIS_NUM_THREADS": "1",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "MKL_DYNAMIC": "FALSE",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_DYNAMIC": "FALSE",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PATH": "/usr/bin:/bin",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+}
 
 _PREFLIGHT_HARNESS = r"""
 import importlib
@@ -222,11 +241,7 @@ def _run_hostile_preflight(
         check=False,
         capture_output=True,
         text=True,
-        env={
-            "LANG": "C.UTF-8",
-            "LC_ALL": "C.UTF-8",
-            "PATH": "/usr/bin:/bin",
-        },
+        env=dict(_GOVERNANCE_ENVIRONMENT),
     )
 
 
@@ -366,13 +381,179 @@ def test_cli_surface_is_only_the_three_fixed_commands() -> None:
 def test_wrapper_starts_exact_site_free_python_before_importing_cfeg() -> None:
     wrapper = _WRAPPER.read_text(encoding="utf-8")
     assert wrapper.startswith("#!/bin/sh\nset -eu\n")
-    assert (
-        "exec /home/whwovy/califreeEEG/.venv/bin/python -I -B -S \\\n"
-        "    /home/whwovy/califreeEEG/src/cfeg/metadata_calibration_v3_runner.py" in wrapper
-    )
+    tokens = shlex.split(wrapper.replace("\\\n", " "), comments=True, posix=True)
+    command = tokens[tokens.index("exec") + 1 :]
+    assert command[:2] == ["/usr/bin/env", "-i"]
+    python_index = command.index(os.fspath(_PYTHON))
+    assignments = command[2:python_index]
+    assert len(assignments) == len(_GOVERNANCE_ENVIRONMENT)
+    assert dict(item.split("=", 1) for item in assignments) == _GOVERNANCE_ENVIRONMENT
+    assert command[python_index:] == [
+        os.fspath(_PYTHON),
+        "-I",
+        "-B",
+        "-S",
+        "/home/whwovy/califreeEEG/src/cfeg/metadata_calibration_v3_runner.py",
+        "$@",
+    ]
+    assert _EXPECTED_GOVERNED_ENVIRONMENT == _GOVERNANCE_ENVIRONMENT
     assert " -c " not in wrapper
     assert "import " not in wrapper
     assert os.stat(_WRAPPER).st_mode & 0o111
+
+
+def test_runner_and_wrapper_environment_match_governance_source_exactly() -> None:
+    governance_source = _GOVERNANCE.read_text(encoding="utf-8")
+    tree = ast.parse(governance_source)
+    assignment = next(
+        statement
+        for statement in tree.body
+        if isinstance(statement, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "_OBSERVED_TEST_ENVIRONMENT"
+            for target in statement.targets
+        )
+    )
+    assert isinstance(assignment.value, ast.Call)
+    assert len(assignment.value.args) == 1
+    governance_environment = ast.literal_eval(assignment.value.args[0])
+    has_final_governance = any(
+        isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and statement.name == "establish_governed_process"
+        for statement in tree.body
+    )
+    if not has_final_governance:
+        # This runner worktree intentionally retains the pre-overlay governance
+        # parent.  The integrated tree takes the exact branch below; here we
+        # also bind the sole known legacy difference instead of silently
+        # weakening the comparison.
+        assert governance_environment == {
+            **_GOVERNANCE_ENVIRONMENT,
+            "PYTHONHASHSEED": "0",
+        }
+        return
+    assert governance_environment == _GOVERNANCE_ENVIRONMENT
+    assert _EXPECTED_GOVERNED_ENVIRONMENT == governance_environment
+
+
+def test_tracked_wrapper_clears_a_polluted_parent_before_python_start(
+    tmp_path: Path,
+) -> None:
+    probe = tmp_path / "bootstrap_probe.py"
+    copied_wrapper = tmp_path / "run_metadata_calibration_v3"
+    expected_orig_argv = (
+        os.fspath(_PYTHON),
+        "-I",
+        "-B",
+        "-S",
+        os.fspath(probe),
+        "status",
+    )
+    probe.write_text(
+        "import os\n"
+        "import pathlib\n"
+        "import runpy\n"
+        "import sys\n"
+        "import types\n"
+        f"expected_environment = {_GOVERNANCE_ENVIRONMENT!r}\n"
+        f"expected_orig_argv = {expected_orig_argv!r}\n"
+        f"expected_stdlib = {_STANDARD_LIBRARY!r}\n"
+        "assert dict(os.environ) == expected_environment\n"
+        "assert tuple(sys.path) == expected_stdlib\n"
+        "assert tuple(sys.orig_argv) == expected_orig_argv\n"
+        f"assert tuple(sys.argv) == ({os.fspath(probe)!r}, 'status')\n"
+        f"assert sys.executable == {os.fspath(_PYTHON)!r}\n"
+        "assert sys.flags.isolated == 1\n"
+        "assert sys.flags.ignore_environment == 1\n"
+        "assert sys.flags.dont_write_bytecode == 1\n"
+        "assert sys.flags.no_user_site == 1\n"
+        "assert sys.flags.no_site == 1\n"
+        "assert sys.flags.hash_randomization == 1\n"
+        f"runner = pathlib.Path({os.fspath(_RUNNER)!r})\n"
+        "namespace = runpy.run_path(str(runner), run_name='wrapper_bootstrap_probe')\n"
+        "config = types.SimpleNamespace(\n"
+        "    python_executable=pathlib.Path(sys.executable),\n"
+        "    standard_library_path=expected_stdlib,\n"
+        "    require_direct_invocation=False,\n"
+        ")\n"
+        "assert namespace['_require_process_bootstrap'](\n"
+        "    config, executing_file=runner\n"
+        ") is None\n"
+        "print('EXACT_BOOTSTRAP_OK')\n",
+        encoding="utf-8",
+    )
+    wrapper = _WRAPPER.read_text(encoding="utf-8")
+    canonical_runner = "/home/whwovy/califreeEEG/src/cfeg/metadata_calibration_v3_runner.py"
+    assert wrapper.count(canonical_runner) == 1
+    copied_wrapper.write_text(
+        wrapper.replace(canonical_runner, os.fspath(probe)),
+        encoding="utf-8",
+    )
+    copied_wrapper.chmod(0o700)
+    polluted = dict(os.environ)
+    polluted.update(
+        {
+            "HOME": "/polluted-home",
+            "INJECTED_EXTRA": "must-not-survive",
+            "OMP_NUM_THREADS": "999",
+            "PATH": "/polluted-path",
+            "PYTHONINSPECT": "1",
+            "PYTHONPATH": "/polluted-python-path",
+        }
+    )
+
+    completed = subprocess.run(
+        [copied_wrapper, "status"],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        env=polluted,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout == "EXACT_BOOTSTRAP_OK\n"
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        lambda value: {key: item for key, item in value.items() if key != "VECLIB_MAXIMUM_THREADS"},
+        lambda value: {**value, "UNEXPECTED_EXTRA": "1"},
+    ),
+)
+def test_preflight_environment_requires_the_exact_key_set(
+    tmp_path: Path,
+    mutation: object,
+) -> None:
+    repository, site, bundle = _make_test_repository(
+        tmp_path,
+        module_source="VALUE = 1\n",
+    )
+    environment = mutation(dict(_GOVERNANCE_ENVIRONMENT))
+    completed = subprocess.run(
+        [
+            _PYTHON,
+            "-I",
+            "-B",
+            "-S",
+            "-c",
+            _PREFLIGHT_HARNESS,
+            os.fspath(_RUNNER),
+            os.fspath(repository),
+            os.fspath(site),
+            os.fspath(bundle),
+            os.fspath(repository / _RUNNER_REPOSITORY_PATH),
+            "victim",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.startswith("REJECTED:RunnerError:")
+    assert "exact governed environment" in completed.stdout
 
 
 def test_runner_top_level_is_stdlib_only_and_activates_stdlib_first() -> None:
