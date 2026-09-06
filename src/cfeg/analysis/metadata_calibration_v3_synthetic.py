@@ -5738,6 +5738,11 @@ def validate_development_result_for_a_recovery(
         != result["context_reference_payload_sha256"]
         or recovery.context_reference_file_sha256
         != result["context_reference_file_sha256"]
+        or recovery.development_start_schema != result["development_start_schema"]
+        or recovery.development_start_payload_sha256
+        != result["development_start_payload_sha256"]
+        or recovery.development_start_file_sha256
+        != result["development_start_file_sha256"]
         or recovery.development_result_schema != DEVELOPMENT_RESULT_SCHEMA
         or recovery.development_result_payload_sha256 != result["payload_sha256"]
     ):

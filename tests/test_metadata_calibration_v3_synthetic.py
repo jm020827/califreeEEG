@@ -919,6 +919,72 @@ def test_low_level_synthetic_issuers_require_private_tokens() -> None:
         synthetic._issue_strict_fbcca_product({})
 
 
+@pytest.mark.parametrize(
+    "field",
+    (
+        "development_start_schema",
+        "development_start_payload_sha256",
+        "development_start_file_sha256",
+    ),
+)
+def test_clean_a_recovery_rejects_each_development_start_binding(
+    field: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = {
+        "development_bundle_payload_sha256": "1" * 64,
+        "development_bundle_file_sha256": "2" * 64,
+        "context_reference_payload_sha256": "3" * 64,
+        "context_reference_file_sha256": "4" * 64,
+        "development_start_schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
+        "development_start_payload_sha256": "5" * 64,
+        "development_start_file_sha256": "6" * 64,
+        "payload_sha256": "7" * 64,
+    }
+    recovery_fields = {
+        "candidate_id": v3.CANDIDATE_ID,
+        "development_bundle_payload_sha256": result["development_bundle_payload_sha256"],
+        "development_bundle_file_sha256": result["development_bundle_file_sha256"],
+        "context_reference_schema": v3.CONTEXT_REFERENCE_SCHEMA,
+        "context_reference_payload_sha256": result["context_reference_payload_sha256"],
+        "context_reference_file_sha256": result["context_reference_file_sha256"],
+        "development_start_schema": result["development_start_schema"],
+        "development_start_payload_sha256": result["development_start_payload_sha256"],
+        "development_start_file_sha256": result["development_start_file_sha256"],
+        "development_result_schema": synthetic.DEVELOPMENT_RESULT_SCHEMA,
+        "development_result_payload_sha256": result["payload_sha256"],
+    }
+    recovery_fields[field] = (
+        "cfeg.metadata-calibration-efficiency-v3.development-start.v0"
+        if field == "development_start_schema"
+        else "0" * 64
+    )
+    recovery = SimpleNamespace(**recovery_fields)
+    reference = SimpleNamespace(payload_sha256=result["context_reference_payload_sha256"])
+    monkeypatch.setattr(
+        synthetic,
+        "_require_loaded_sources_for_a_recovery",
+        lambda _value: recovery,
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "validate_development_result_payload",
+        lambda _value, *, require_enriched: result,
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "_validate_exact_synthetic_context_reference",
+        lambda _value: reference,
+    )
+
+    with pytest.raises(ValueError, match="clean-A recovery differs"):
+        synthetic.validate_development_result_for_a_recovery(
+            result,
+            context_reference={},
+            recovery_capability=object(),
+        )
+
+
 def _sensitivity_report_fixture() -> dict:
     primary = {
         endpoint: [float(index) / 1000.0 for index in range(48)]

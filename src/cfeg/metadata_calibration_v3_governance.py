@@ -5738,6 +5738,10 @@ def reopen_development_start_receipt(
         context_reference,
         expected_schema=ARTIFACT_SCHEMAS["context_reference"],
     )
+    names = {"development-bundle.json", "context-reference.json", "development-start.json"}
+    if os.path.lexists(DEVELOPMENT_RESULT_CANONICAL_PATH):
+        names.add("development-result.json")
+    _require_exact_development_attempt_inventory(frozenset(names))
     data = load_exact_artifact_bytes(
         [DEVELOPMENT_START_CANONICAL_PATH],
         declared_paths=[DEVELOPMENT_START_CANONICAL_PATH],

@@ -1848,6 +1848,92 @@ def test_tokenless_internal_issuers_cannot_mint_production_authority() -> None:
         )
 
 
+def _stub_start_receipt_reopen(
+    root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[SimpleNamespace, object, object]:
+    start_path = root / "development-start.json"
+    result_path = root / "development-result.json"
+    bundle = SimpleNamespace(clean_commit="1" * 40, clean_tree="2" * 40)
+    context = object()
+    receipt = object()
+    monkeypatch.setattr(gov, "DEVELOPMENT_ROOT", root)
+    monkeypatch.setattr(gov, "DEVELOPMENT_START_CANONICAL_PATH", start_path)
+    monkeypatch.setattr(gov, "DEVELOPMENT_RESULT_CANONICAL_PATH", result_path)
+    monkeypatch.setattr(gov, "_require_active_governed_process", lambda **_kwargs: object())
+    monkeypatch.setattr(
+        gov,
+        "require_development_recovery_bundle_capability",
+        lambda value, **_kwargs: value,
+    )
+    monkeypatch.setattr(
+        gov,
+        "require_validated_artifact_capability",
+        lambda value, **_kwargs: value,
+    )
+    monkeypatch.setattr(
+        gov,
+        "load_exact_artifact_bytes",
+        lambda *_args, **_kwargs: {os.fspath(start_path): b"receipt\n"},
+    )
+    monkeypatch.setattr(
+        gov,
+        "_validate_development_start_bytes",
+        lambda data, **bindings: (
+            receipt
+            if data == b"receipt\n" and bindings == {"bundle": bundle, "context": context}
+            else (_ for _ in ()).throw(AssertionError("unexpected receipt bindings"))
+        ),
+    )
+    return bundle, context, receipt
+
+
+def test_start_receipt_reopen_rejects_unknown_active_root_entry(
+    private_test_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = private_test_path / "development-v3"
+    root.mkdir(mode=0o700)
+    for name in (
+        "development-bundle.json",
+        "context-reference.json",
+        "development-start.json",
+        "unexpected.json",
+    ):
+        (root / name).touch()
+    bundle, context, _receipt = _stub_start_receipt_reopen(root, monkeypatch)
+
+    with pytest.raises(gov.AuthorityError, match="inventory is not exact"):
+        gov.reopen_development_start_receipt(
+            development_bundle=bundle,  # type: ignore[arg-type]
+            context_reference=context,  # type: ignore[arg-type]
+        )
+
+
+def test_start_receipt_reopen_accepts_exact_post_result_inventory(
+    private_test_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = private_test_path / "development-v3"
+    root.mkdir(mode=0o700)
+    for name in (
+        "development-bundle.json",
+        "context-reference.json",
+        "development-start.json",
+        "development-result.json",
+    ):
+        (root / name).touch()
+    bundle, context, receipt = _stub_start_receipt_reopen(root, monkeypatch)
+
+    assert (
+        gov.reopen_development_start_receipt(
+            development_bundle=bundle,  # type: ignore[arg-type]
+            context_reference=context,  # type: ignore[arg-type]
+        )
+        is receipt
+    )
+
+
 def test_fresh_audit_requires_pinned_isolated_exec_and_parent_observation() -> None:
     assert not hasattr(gov, "publish_fresh_canary_audit")
     assert not hasattr(gov, "_publish_fresh_canary_audit_from_exec_child")

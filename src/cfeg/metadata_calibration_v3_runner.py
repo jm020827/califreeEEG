@@ -1714,7 +1714,10 @@ class WorkflowFacade(Protocol):
         """Validate and reopen the complete existing durable prefix."""
 
     def advance(self, expected_stage: RunStage) -> WorkflowInspection:
-        """Create at most the one durable artifact implied by ``expected_stage``."""
+        """Advance one logical durable phase.
+
+        ``DEVELOPMENT_PENDING`` may create its start receipt and result in one call.
+        """
 
     def selection_bytes(self) -> bytes:
         """Return exact selected-method artifact bytes without writing them."""
