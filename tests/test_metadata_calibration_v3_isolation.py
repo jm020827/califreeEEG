@@ -119,13 +119,16 @@ def test_write_once_publication_uses_private_modes_and_candidate_wide_path(
         declared_paths=[published.path],
     )
     assert reopened[os.fspath(published.path)] == first_bytes
-    assert gov.parse_artifact_bytes(
-        reopened[os.fspath(published.path)],
-        gov.ArtifactSpec(
-            schema=gov.GLOBAL_CLAIM_SCHEMA,
-            exact_fields=frozenset(first),
-        ),
-    ) == first
+    assert (
+        gov.parse_artifact_bytes(
+            reopened[os.fspath(published.path)],
+            gov.ArtifactSpec(
+                schema=gov.GLOBAL_CLAIM_SCHEMA,
+                exact_fields=frozenset(first),
+            ),
+        )
+        == first
+    )
 
     second = gov.seal_payload(
         {
@@ -152,9 +155,7 @@ def test_symlinked_parent_and_nonprivate_root_fail_closed(
     root.mkdir(mode=0o700)
     (root / "scientific").symlink_to(outside, target_is_directory=True)
     with pytest.raises(OSError):
-        gov._publish_write_once_under_test_root(
-            root, "scientific/global-claim.json", b"payload"
-        )
+        gov._publish_write_once_under_test_root(root, "scientific/global-claim.json", b"payload")
     assert not (outside / "global-claim.json").exists()
 
     weak_root = private_test_path / "weak-root"
@@ -184,9 +185,7 @@ def test_partial_write_consumes_path_and_cannot_be_retried(
 
     monkeypatch.setattr(os, "write", no_progress)
     with pytest.raises(gov.PublicationError, match="short write"):
-        gov._publish_write_once_under_test_root(
-            root, "result.json", b"complete-payload"
-        )
+        gov._publish_write_once_under_test_root(root, "result.json", b"complete-payload")
     monkeypatch.setattr(os, "write", real_write)
 
     consumed = root / "result.json"
@@ -215,6 +214,16 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
             create_root=True,
             _publisher=object(),
         )
+    guarded = private_test_path / "guarded"
+    with pytest.raises(gov.AuthorityError, match="GovernedProcessCapability"):
+        gov._publish_write_once(
+            guarded,
+            "artifact.json",
+            b"hostile",
+            create_root=True,
+            _publisher=gov._PUBLICATION_ISSUER,
+        )
+    assert not guarded.exists()
     for alias in ("a//b.json", "a/./b.json", "a/b.json/"):
         with pytest.raises(gov.ValidationError, match="canonical nonempty relative"):
             gov._publish_write_once_under_test_root(
@@ -242,6 +251,69 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
         )
 
 
+def test_ordinary_python_cannot_enter_production_authority_gateways() -> None:
+    probe = object()
+    calls = (
+        lambda: gov.build_development_bundle(
+            snapshot=probe,  # type: ignore[arg-type]
+            frozen_file_bytes={},
+            created_at_UTC="2026-09-06T12:00:00Z",
+            focused_test_run=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.publish_development_bundle(
+            snapshot=probe,  # type: ignore[arg-type]
+            frozen_file_bytes={},
+            created_at_UTC="2026-09-06T12:00:00Z",
+            focused_test_run=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.validate_development_bundle(
+            snapshot=probe,  # type: ignore[arg-type]
+            frozen_file_bytes={},
+            focused_test_run=probe,  # type: ignore[arg-type]
+        ),
+        gov.reopen_development_bundle,
+        lambda: gov.validate_context_reference(
+            development_bundle=probe,  # type: ignore[arg-type]
+            rng_authority=probe,
+            core_capability=probe,
+        ),
+        lambda: gov.validate_development_result(
+            development_bundle=probe,  # type: ignore[arg-type]
+            context_reference=probe,  # type: ignore[arg-type]
+            development_rng_authority=probe,
+            validated_context_reference=probe,
+            core_capability=probe,
+        ),
+        lambda: gov.observe_canonical_development_result_for_a_recovery(
+            development_bundle=probe,  # type: ignore[arg-type]
+            context_reference=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.validate_bundle_selected_delta_recovery(
+            development_bundle=probe,  # type: ignore[arg-type]
+            snapshot=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.run_observed_test(
+            "focused_v3",
+            snapshot=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.publish_test_evidence(
+            {},
+            selected_method_freeze=probe,  # type: ignore[arg-type]
+            observed_runs=(),
+            snapshot=probe,  # type: ignore[arg-type]
+        ),
+        lambda: gov.publish_canary_authorization(
+            {},
+            selected_method_freeze=probe,  # type: ignore[arg-type]
+            test_evidence=probe,  # type: ignore[arg-type]
+        ),
+        gov.run_fresh_canary_audit_in_exec_subprocess,
+    )
+    for call in calls:
+        with pytest.raises(gov.AuthorityError, match="GovernedProcessCapability"):
+            call()
+
+
 def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production(
     private_test_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -256,10 +328,7 @@ def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production
     attacks = (
         (
             Path("/home/whwovy"),
-            (
-                "v3-artifacts/metadata-calibration-efficiency-v3/"
-                "governance-canary-v1/result.json"
-            ),
+            ("v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/result.json"),
         ),
         (
             Path("/home/whwovy"),

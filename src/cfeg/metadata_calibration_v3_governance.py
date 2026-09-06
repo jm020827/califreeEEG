@@ -14,6 +14,7 @@ import contextlib
 import hashlib
 import importlib
 import importlib.metadata
+import importlib.util
 import io
 import json
 import math
@@ -21,6 +22,7 @@ import os
 import platform
 import re
 import select
+import shutil
 import stat
 import subprocess
 import sys
@@ -34,13 +36,11 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
-import numpy as np
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+if TYPE_CHECKING:
+    import numpy as np
 
 _GOVERNANCE_IMPORT_SOURCE_PATH = Path(__file__).resolve(strict=True)
 _GOVERNANCE_IMPORT_SOURCE_FILE_SHA256 = hashlib.sha256(
@@ -50,15 +50,9 @@ _GOVERNANCE_IMPORT_SOURCE_FILE_SHA256 = hashlib.sha256(
 CANDIDATE_ID = "metadata-calibration-efficiency-v3"
 CANARY_CANDIDATE_ID = "metadata-calibration-efficiency-v3-governance-canary"
 
-DEVELOPMENT_BUNDLE_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
-)
-CANARY_SEED_CAPABILITY_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.canary-seed-capability.v1"
-)
-FRESH_CANARY_AUDIT_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1"
-)
+DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+CANARY_SEED_CAPABILITY_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-seed-capability.v1"
+FRESH_CANARY_AUDIT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1"
 FRESH_CANARY_AUDIT_CAPABILITY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.fresh-canary-audit-capability.v1"
 )
@@ -74,15 +68,11 @@ SCIENTIFIC_SEED_CAPABILITY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.scientific-seed-capability.v1"
 )
 SEED_STATEMENT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.seed-statement.v1"
-BEACON_SEED_DERIVATION_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.beacon-seed-derivation.v1"
-)
+BEACON_SEED_DERIVATION_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.beacon-seed-derivation.v1"
 
 ARTIFACT_SCHEMAS = MappingProxyType(
     {
-        "canary_authorization": (
-            "cfeg.metadata-calibration-efficiency-v3.canary-authorization.v1"
-        ),
+        "canary_authorization": ("cfeg.metadata-calibration-efficiency-v3.canary-authorization.v1"),
         "canary_beacon": "cfeg.metadata-calibration-efficiency-v3.canary-beacon.v1",
         "canary_claim": "cfeg.metadata-calibration-efficiency-v3.canary-claim.v1",
         "canary_fresh_audit": FRESH_CANARY_AUDIT_SCHEMA,
@@ -102,9 +92,7 @@ ARTIFACT_SCHEMAS = MappingProxyType(
         "scientific_beacon": "cfeg.metadata-calibration-efficiency-v3.beacon.v1",
         "scientific_claim": GLOBAL_CLAIM_SCHEMA,
         "scientific_execution_authorization": EXECUTION_AUTHORIZATION_SCHEMA,
-        "scientific_result": (
-            "cfeg.metadata-calibration-efficiency-v3.synthetic-result.v1"
-        ),
+        "scientific_result": ("cfeg.metadata-calibration-efficiency-v3.synthetic-result.v1"),
         "scientific_seed_capability": SCIENTIFIC_SEED_CAPABILITY_SCHEMA,
         "scientific_terminal": "cfeg.metadata-calibration-efficiency-v3.terminal.v1",
         "selected_method_freeze": (
@@ -119,18 +107,12 @@ ARTIFACT_SCHEMAS = MappingProxyType(
 
 MASTER_PLAN_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
-PREOUTCOME_AMENDMENT_PATH = (
-    "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
-)
-OWNER_AUTHORITY_PUBLIC_KEY_PATH = (
-    "configs/governance/metadata_calibration_v3_owner_authority.pub"
-)
+PREOUTCOME_AMENDMENT_PATH = "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
+OWNER_AUTHORITY_PUBLIC_KEY_PATH = "configs/governance/metadata_calibration_v3_owner_authority.pub"
 V2_TERMINAL_AUDIT_PATH = (
     "configs/governance/metadata_calibration_v2_synthetic_v11_terminal_audit.json"
 )
-V2_DENY_OVERLAY_PATH = (
-    "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json"
-)
+V2_DENY_OVERLAY_PATH = "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json"
 
 FROZEN_FILE_SHA256 = MappingProxyType(
     {
@@ -145,9 +127,7 @@ FROZEN_FILE_SHA256 = MappingProxyType(
         V2_TERMINAL_AUDIT_PATH: (
             "46db1fceb67b98157d25c06afb4aae15c2436c3b57cc5fbf691c290a637aa4a0"
         ),
-        V2_DENY_OVERLAY_PATH: (
-            "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
-        ),
+        V2_DENY_OVERLAY_PATH: ("dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"),
     }
 )
 OWNER_AUTHORITY_FINGERPRINT = "SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g"
@@ -179,10 +159,9 @@ FUTURE_BEACON_SELECTED = False
 V3_CANONICAL_ROOT = Path("/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3")
 V3_SOURCE_REPOSITORY = Path("/home/whwovy/califreeEEG")
 V3_PYTHON_EXECUTABLE = Path("/home/whwovy/califreeEEG/.venv/bin/python")
+V3_SITE_PACKAGES = Path("/home/whwovy/califreeEEG/.venv/lib/python3.10/site-packages")
 V3_GIT_EXECUTABLE = Path("/usr/bin/git")
-_GIT_IMPORT_EXECUTABLE_FILE_SHA256 = hashlib.sha256(
-    V3_GIT_EXECUTABLE.read_bytes()
-).hexdigest()
+_GIT_IMPORT_EXECUTABLE_FILE_SHA256 = hashlib.sha256(V3_GIT_EXECUTABLE.read_bytes()).hexdigest()
 CANARY_CANONICAL_ROOT = V3_CANONICAL_ROOT / "governance-canary-v1"
 CANARY_RESULT_CANONICAL_PATH = CANARY_CANONICAL_ROOT / "result.json"
 CANARY_FRESH_AUDIT_CANONICAL_PATH = CANARY_CANONICAL_ROOT / "fresh-audit.json"
@@ -194,6 +173,23 @@ SELECTED_METHOD_FREEZE_REPOSITORY_PATH = PurePosixPath(
     "configs/governance/metadata_calibration_v3_selected_method_freeze.json"
 )
 DEVELOPMENT_RESULT_MAXIMUM_BYTES = 512 * 1024 * 1024
+_CANONICAL_PYTHON_EXECUTION_ROOTS = ("src", "tests", "scripts")
+_ROOT_PYTEST_IMPORT_CONTROL_NAMES = frozenset(
+    {
+        ".python-version",
+        ".pytest.ini",
+        ".pytest.toml",
+        "conftest.py",
+        "pyproject.toml",
+        "pytest.ini",
+        "pytest.toml",
+        "setup.cfg",
+        "setup.py",
+        "sitecustomize.py",
+        "tox.ini",
+        "usercustomize.py",
+    }
+)
 
 _OBSERVED_TEST_ENVIRONMENT = MappingProxyType(
     {
@@ -207,7 +203,6 @@ _OBSERVED_TEST_ENVIRONMENT = MappingProxyType(
         "OMP_NUM_THREADS": "1",
         "OPENBLAS_NUM_THREADS": "1",
         "PATH": "/usr/bin:/bin",
-        "PYTHONHASHSEED": "0",
         "PYTHONNOUSERSITE": "1",
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
@@ -239,19 +234,51 @@ FRESH_CANARY_EXEC_RECEIPT_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.fresh-canary-exec-receipt.v1"
 )
 _FRESH_CANARY_EXEC_PHASE = "_fresh-canary-audit-internal"
-_FRESH_CANARY_EXEC_BOOTSTRAP = (
-    "import pathlib,sys;"
-    "p=pathlib.Path('/home/whwovy/califreeEEG/src');"
-    "sys.path.insert(0,str(p));"
-    "import cfeg.metadata_calibration_v3_governance as g;"
-    "f=pathlib.Path(g.__file__).resolve();"
-    "assert f==p.resolve()/'cfeg/metadata_calibration_v3_governance.py';"
-    "raise SystemExit(g._fresh_canary_audit_exec_child_main())"
+_ISOLATED_STDLIB_SYS_PATH = (
+    "/usr/lib/python310.zip",
+    "/usr/lib/python3.10",
+    "/usr/lib/python3.10/lib-dynload",
 )
-_FRESH_CANARY_EXEC_COMMAND = (
+_GOVERNED_PYTHON_SUBPROCESS_PREFIX = (
     os.fspath(V3_PYTHON_EXECUTABLE),
     "-I",
     "-B",
+    "-S",
+)
+V3_RUNNER_PATH = V3_SOURCE_REPOSITORY / "src/cfeg/metadata_calibration_v3_runner.py"
+_GOVERNED_RUNNER_COMMANDS = frozenset({"status", "resume", "emit-selection"})
+_GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE = (
+    "import os,pathlib,sys\n"
+    f"_expected_stdlib_path={_ISOLATED_STDLIB_SYS_PATH!r}\n"
+    f"_expected_python=pathlib.Path({os.fspath(V3_PYTHON_EXECUTABLE)!r})\n"
+    f"_source=pathlib.Path({os.fspath(V3_SOURCE_REPOSITORY / 'src')!r})\n"
+    f"_site=pathlib.Path({os.fspath(V3_SITE_PACKAGES)!r})\n"
+    f"_expected_environment={dict(_OBSERVED_TEST_ENVIRONMENT)!r}\n"
+    "if tuple(sys.path)!=_expected_stdlib_path:\n"
+    " raise RuntimeError('governed Python did not start with pristine stdlib sys.path')\n"
+    "if not (sys.flags.isolated==1 and sys.flags.dont_write_bytecode==1 "
+    "and sys.flags.no_site==1 and sys.flags.ignore_environment==1 "
+    "and sys.flags.no_user_site==1 and sys.flags.hash_randomization==1):\n"
+    " raise RuntimeError('governed Python requires exact -I -B -S flags')\n"
+    "if pathlib.Path(sys.executable)!=_expected_python:\n"
+    " raise RuntimeError('governed Python executable path mismatch')\n"
+    "if dict(os.environ)!=_expected_environment:\n"
+    " raise RuntimeError('governed Python environment mismatch')\n"
+    "if _source.resolve(strict=True)!=_source or _site.resolve(strict=True)!=_site:\n"
+    " raise RuntimeError('governed Python import roots are not exact nonsymlink paths')\n"
+    "sys.path.append(str(_source))\n"
+    "sys.path.append(str(_site))\n"
+    "if tuple(sys.path)!=(*_expected_stdlib_path,str(_source),str(_site)):\n"
+    " raise RuntimeError('governed Python explicit import path construction failed')\n"
+)
+_FRESH_CANARY_EXEC_BOOTSTRAP = (
+    _GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE
+    + "import cfeg\n"
+    + "import cfeg.metadata_calibration_v3_governance as g\n"
+    + "raise SystemExit(g._fresh_canary_audit_exec_child_main())\n"
+)
+_FRESH_CANARY_EXEC_COMMAND = (
+    *_GOVERNED_PYTHON_SUBPROCESS_PREFIX,
     "-c",
     _FRESH_CANARY_EXEC_BOOTSTRAP,
     _FRESH_CANARY_EXEC_PHASE,
@@ -516,12 +543,8 @@ class DevelopmentBundleCapability:
             "clean_commit": clean_commit,
             "clean_tree": clean_tree,
             "source_bundle_sha256": source_bundle_sha256,
-            "tracked_source_file_inventory": [
-                item.as_record() for item in tracked_source_files
-            ],
-            "numerical_runtime_fingerprint_sha256": (
-                numerical_runtime_fingerprint_sha256
-            ),
+            "tracked_source_file_inventory": [item.as_record() for item in tracked_source_files],
+            "numerical_runtime_fingerprint_sha256": (numerical_runtime_fingerprint_sha256),
             "numerical_runtime_inventory": numerical_runtime_inventory,
             "canonical_path": os.fspath(canonical_path),
             "scope": scope,
@@ -548,9 +571,8 @@ def require_development_bundle_capability(
         raise AuthorityError("development-bundle capability marker is invalid")
     if capability.schema != DEVELOPMENT_BUNDLE_SCHEMA or capability.candidate_id != CANDIDATE_ID:
         raise AuthorityError("development-bundle capability identity mismatch")
-    if (
-        capability.scope != "canonical"
-        or capability.canonical_path != Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH)
+    if capability.scope != "canonical" or capability.canonical_path != Path(
+        DEVELOPMENT_BUNDLE_CANONICAL_PATH
     ):
         raise AuthorityError("test-only or noncanonical development bundle has no authority")
     _require_sha256(capability.payload_sha256, "bundle capability payload_sha256")
@@ -573,9 +595,7 @@ def require_development_bundle_capability(
         "tracked_source_file_inventory": [
             item.as_record() for item in capability.tracked_source_files
         ],
-        "numerical_runtime_fingerprint_sha256": (
-            capability.numerical_runtime_fingerprint_sha256
-        ),
+        "numerical_runtime_fingerprint_sha256": (capability.numerical_runtime_fingerprint_sha256),
         "numerical_runtime_inventory": capability.numerical_runtime_inventory,
         "canonical_path": os.fspath(capability.canonical_path),
         "scope": capability.scope,
@@ -629,12 +649,14 @@ def require_development_rng_bundle_capability(
 ) -> DevelopmentBundleCapability:
     """Require bundle A and prove the current executable source is still exactly A."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     _require_frozen_numerical_executor_environment()
     capability = require_current_numerical_runtime_fingerprint(value)
-    if (
-        capability.clean_commit != expected_commit
-        or capability.clean_tree != expected_tree
-    ):
+    if capability.clean_commit != expected_commit or capability.clean_tree != expected_tree:
         raise AuthorityError("development RNG bundle source identity mismatch")
     current = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
     if (
@@ -643,7 +665,9 @@ def require_development_rng_bundle_capability(
         or current.source_bundle_sha256 != capability.source_bundle_sha256
         or current.tracked_files != capability.tracked_source_files
     ):
-        raise AuthorityError("development RNG authority requires current source exactly at bundle A")
+        raise AuthorityError(
+            "development RNG authority requires current source exactly at bundle A"
+        )
     _require_loaded_governance_source_identity(capability)
     return capability
 
@@ -750,7 +774,9 @@ class ScientificLifecycle:
         )
         object.__setattr__(self, "_validation_marker", _CAPABILITY_ISSUER)
 
-    def advance(self, target: ScientificState, *, authority: object | None = None) -> ScientificLifecycle:
+    def advance(
+        self, target: ScientificState, *, authority: object | None = None
+    ) -> ScientificLifecycle:
         advanced = _transition_kernel(
             self,
             target,
@@ -839,9 +865,7 @@ def _require_exact_lifecycle_chain(
         clean_commit=lifecycle.clean_commit,
         clean_tree=lifecycle.clean_tree,
     )
-    if canonical_json_bytes(observed_chain) != canonical_json_bytes(
-        lifecycle._sealed_chain
-    ):
+    if canonical_json_bytes(observed_chain) != canonical_json_bytes(lifecycle._sealed_chain):
         raise AuthorityError("sealed lifecycle chain binding is invalid")
     return lifecycle
 
@@ -862,18 +886,16 @@ def _transition_kernel(
         allowed_edges = _SCIENTIFIC_TRANSITIONS | {
             (ScientificState.VERIFIED, ScientificState.CANARY_PASSED)
         }
-        if (
-            lifecycle.trace[0] is not ScientificState.DECLARED
-            or any(
-                edge not in allowed_edges
-                for edge in zip(lifecycle.trace, lifecycle.trace[1:])
-            )
+        if lifecycle.trace[0] is not ScientificState.DECLARED or any(
+            edge not in allowed_edges for edge in zip(lifecycle.trace, lifecycle.trace[1:])
         ):
             raise AuthorityError("scientific lifecycle trace is not a valid frozen path")
     current = lifecycle.state
     if type(current) is not type(target):
         raise TransitionError("cross-domain lifecycle transition rejected")
-    transitions = _SCIENTIFIC_TRANSITIONS if type(current) is ScientificState else _CANARY_TRANSITIONS
+    transitions = (
+        _SCIENTIFIC_TRANSITIONS if type(current) is ScientificState else _CANARY_TRANSITIONS
+    )
     if (current, target) not in transitions:
         raise TransitionError(f"invalid lifecycle transition: {current.value}->{target.value}")
 
@@ -1322,11 +1344,7 @@ def _current_executable_file_sha256() -> str:
 
 
 def _process_executable_file_sha256(process_id: int) -> str:
-    if (
-        not isinstance(process_id, int)
-        or isinstance(process_id, bool)
-        or process_id <= 0
-    ):
+    if not isinstance(process_id, int) or isinstance(process_id, bool) or process_id <= 0:
         raise ValidationError("process ID must be a positive integer")
     descriptor = os.open(f"/proc/{process_id}/exe", os.O_RDONLY)
     try:
@@ -1339,11 +1357,7 @@ def _process_executable_file_sha256(process_id: int) -> str:
 
 
 def _process_command_line(process_id: int) -> tuple[str, ...]:
-    if (
-        not isinstance(process_id, int)
-        or isinstance(process_id, bool)
-        or process_id <= 0
-    ):
+    if not isinstance(process_id, int) or isinstance(process_id, bool) or process_id <= 0:
         raise ValidationError("process ID must be a positive integer")
     descriptor = os.open(f"/proc/{process_id}/cmdline", os.O_RDONLY | os.O_NOFOLLOW)
     try:
@@ -1368,6 +1382,18 @@ _NUMERICAL_DISTRIBUTIONS = (
     ("PyYAML", "yaml"),
     ("cryptography", "cryptography"),
     ("pytest", "pytest"),
+    # Active Python 3.10 dependency closure of pytest and cryptography.  These
+    # are security/runtime inputs even when the top-level distributions do not
+    # expose their versions in a scientific artifact field of their own.
+    ("exceptiongroup", "exceptiongroup"),
+    ("iniconfig", "iniconfig"),
+    ("packaging", "packaging"),
+    ("pluggy", "pluggy"),
+    ("Pygments", "pygments"),
+    ("tomli", "tomli"),
+    ("typing_extensions", "typing_extensions"),
+    ("cffi", "cffi"),
+    ("pycparser", "pycparser"),
 )
 _NUMERICAL_ENVIRONMENT_KEYS = (
     "BLIS_NUM_THREADS",
@@ -1381,6 +1407,258 @@ _NUMERICAL_ENVIRONMENT_KEYS = (
     "OPENBLAS_NUM_THREADS",
     "VECLIB_MAXIMUM_THREADS",
 )
+_COMPLETE_SITE_PACKAGES_INVENTORY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.python-site-inventory.v1"
+)
+_PYTHON_SITE_INVENTORY_FIELDS = frozenset(
+    {
+        "schema",
+        "root_path",
+        "directory_count",
+        "regular_file_count",
+        "total_regular_file_bytes",
+        "inventory_sha256",
+    }
+)
+_PYTHON_SITE_INVENTORY_ARG_PREFIX = "--cfeg-site-inventory-sha256="
+
+
+def _require_python_site_inventory(value: object) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise AuthorityError("exact Python site inventory summary is required")
+    _require_exact_keys(value, _PYTHON_SITE_INVENTORY_FIELDS, "Python site inventory")
+    if value.get("schema") != _COMPLETE_SITE_PACKAGES_INVENTORY_SCHEMA or value.get(
+        "root_path"
+    ) != os.fspath(V3_SITE_PACKAGES):
+        raise AuthorityError("Python site inventory identity is invalid")
+    for field_name in (
+        "directory_count",
+        "regular_file_count",
+        "total_regular_file_bytes",
+    ):
+        observed = value.get(field_name)
+        if not isinstance(observed, int) or isinstance(observed, bool) or observed <= 0:
+            raise AuthorityError(f"Python site inventory {field_name} is invalid")
+    _require_sha256(value.get("inventory_sha256"), "Python site inventory digest")
+    return value
+
+
+def _python_site_inventory_sha256(runtime_inventory: Mapping[str, Any]) -> str:
+    summary = _require_python_site_inventory(runtime_inventory.get("python_site_inventory"))
+    return str(summary["inventory_sha256"])
+
+
+def _hash_runtime_file_descriptor(descriptor: int) -> tuple[int, str]:
+    """Stream-hash one unbounded runtime file while detecting in-place races."""
+
+    before = os.fstat(descriptor)
+    if not stat.S_ISREG(before.st_mode):
+        raise AuthorityError("site-packages inventory encountered a non-regular file")
+    digest = hashlib.sha256()
+    size = 0
+    while True:
+        block = os.read(descriptor, 8 * 1024 * 1024)
+        if not block:
+            break
+        digest.update(block)
+        size += len(block)
+    after = os.fstat(descriptor)
+    before_identity = (
+        before.st_dev,
+        before.st_ino,
+        before.st_size,
+        before.st_mtime_ns,
+        before.st_ctime_ns,
+        before.st_mode,
+        before.st_uid,
+    )
+    after_identity = (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+        after.st_mtime_ns,
+        after.st_ctime_ns,
+        after.st_mode,
+        after.st_uid,
+    )
+    if before_identity != after_identity or size != before.st_size:
+        raise AuthorityError("site-packages file changed while it was hashed")
+    return size, digest.hexdigest()
+
+
+def _require_safe_runtime_entry(
+    observed: os.stat_result,
+    *,
+    expect_directory: bool,
+) -> None:
+    mode = stat.S_IMODE(observed.st_mode)
+    expected_type = stat.S_ISDIR if expect_directory else stat.S_ISREG
+    if (
+        not expected_type(observed.st_mode)
+        or observed.st_uid != os.geteuid()
+        or mode & 0o7000
+        or mode & stat.S_IWOTH
+    ):
+        raise AuthorityError("site-packages contains an unsafe type, owner, or permission mode")
+
+
+def _capture_complete_site_packages_inventory() -> Mapping[str, Any]:
+    """Hash every site-packages entry without Git/RECORD/ignore semantics."""
+
+    root = V3_SITE_PACKAGES
+    if root.resolve(strict=True) != root:
+        raise AuthorityError("site-packages must be an exact nonsymlink directory")
+    root_descriptor = _open_absolute_directory(
+        root,
+        create=False,
+        require_private_final=False,
+    )
+    entries: list[dict[str, Any]] = []
+    directory_count = 0
+    regular_file_count = 0
+    total_regular_file_bytes = 0
+
+    def visit(descriptor: int, relative: PurePosixPath) -> None:
+        nonlocal directory_count, regular_file_count, total_regular_file_bytes
+        before = os.fstat(descriptor)
+        _require_safe_runtime_entry(before, expect_directory=True)
+        directory_count += 1
+        entries.append(
+            {
+                "kind": "directory",
+                "mode": f"{stat.S_IMODE(before.st_mode):04o}",
+                "path": relative.as_posix(),
+            }
+        )
+        try:
+            names = tuple(sorted(os.listdir(descriptor)))
+        except OSError as exc:
+            raise AuthorityError("site-packages directory could not be enumerated") from exc
+        for name in names:
+            if (
+                not isinstance(name, str)
+                or not name
+                or name in {".", ".."}
+                or "/" in name
+                or "\x00" in name
+            ):
+                raise AuthorityError("site-packages contains noncanonical path syntax")
+            child_relative = relative / name
+            try:
+                listed = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            except OSError as exc:
+                raise AuthorityError("site-packages entry could not be inspected") from exc
+            if stat.S_ISDIR(listed.st_mode):
+                _require_safe_runtime_entry(listed, expect_directory=True)
+                try:
+                    child_descriptor = os.open(
+                        name,
+                        os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                        dir_fd=descriptor,
+                    )
+                except OSError as exc:
+                    raise AuthorityError(
+                        "site-packages directory could not be opened without following links"
+                    ) from exc
+                try:
+                    opened = os.fstat(child_descriptor)
+                    if (listed.st_dev, listed.st_ino) != (opened.st_dev, opened.st_ino):
+                        raise AuthorityError("site-packages directory changed during traversal")
+                    visit(child_descriptor, child_relative)
+                finally:
+                    os.close(child_descriptor)
+                continue
+            _require_safe_runtime_entry(listed, expect_directory=False)
+            try:
+                file_descriptor = os.open(
+                    name,
+                    os.O_RDONLY | os.O_NOFOLLOW,
+                    dir_fd=descriptor,
+                )
+            except OSError as exc:
+                raise AuthorityError(
+                    "site-packages file could not be opened without following links"
+                ) from exc
+            try:
+                opened = os.fstat(file_descriptor)
+                _require_safe_runtime_entry(opened, expect_directory=False)
+                if (
+                    listed.st_dev,
+                    listed.st_ino,
+                    listed.st_mode,
+                    listed.st_uid,
+                    listed.st_nlink,
+                    listed.st_size,
+                    listed.st_mtime_ns,
+                    listed.st_ctime_ns,
+                ) != (
+                    opened.st_dev,
+                    opened.st_ino,
+                    opened.st_mode,
+                    opened.st_uid,
+                    opened.st_nlink,
+                    opened.st_size,
+                    opened.st_mtime_ns,
+                    opened.st_ctime_ns,
+                ):
+                    raise AuthorityError("site-packages file changed before hashing")
+                size, digest = _hash_runtime_file_descriptor(file_descriptor)
+                entries.append(
+                    {
+                        "file_sha256": digest,
+                        "kind": "regular_file",
+                        "link_count": opened.st_nlink,
+                        "mode": f"{stat.S_IMODE(opened.st_mode):04o}",
+                        "path": child_relative.as_posix(),
+                        "size_bytes": size,
+                    }
+                )
+                regular_file_count += 1
+                total_regular_file_bytes += size
+            finally:
+                os.close(file_descriptor)
+        after = os.fstat(descriptor)
+        if (
+            before.st_dev,
+            before.st_ino,
+            before.st_mtime_ns,
+            before.st_ctime_ns,
+            before.st_mode,
+            before.st_uid,
+        ) != (
+            after.st_dev,
+            after.st_ino,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+            after.st_mode,
+            after.st_uid,
+        ):
+            raise AuthorityError("site-packages directory changed during traversal")
+
+    try:
+        visit(root_descriptor, PurePosixPath("."))
+    finally:
+        os.close(root_descriptor)
+    entries.sort(key=lambda value: str(value["path"]))
+    inventory_sha256 = hashlib.sha256(
+        canonical_json_bytes(
+            {
+                "schema": _COMPLETE_SITE_PACKAGES_INVENTORY_SCHEMA,
+                "root_path": os.fspath(root),
+                "entries": entries,
+            }
+        )
+    ).hexdigest()
+    return MappingProxyType(
+        {
+            "schema": _COMPLETE_SITE_PACKAGES_INVENTORY_SCHEMA,
+            "root_path": os.fspath(root),
+            "directory_count": directory_count,
+            "regular_file_count": regular_file_count,
+            "total_regular_file_bytes": total_regular_file_bytes,
+            "inventory_sha256": inventory_sha256,
+        }
+    )
 
 
 def _hash_installed_regular_file(path: Path) -> str:
@@ -1424,11 +1702,13 @@ def _distribution_runtime_record(
 ) -> Mapping[str, Any]:
     try:
         distribution = importlib.metadata.distribution(distribution_name)
-        module = importlib.import_module(module_name)
+        module_spec = importlib.util.find_spec(module_name)
     except (ImportError, importlib.metadata.PackageNotFoundError) as exc:
         raise AuthorityError(
             f"required numerical distribution is unavailable: {distribution_name}"
         ) from exc
+    if module_spec is None or not isinstance(module_spec.origin, str):
+        raise AuthorityError(f"required module has no import origin: {module_name}")
     files = tuple(distribution.files or ())
     record_files = tuple(
         entry for entry in files if entry.name == "RECORD" and ".dist-info" in entry.as_posix()
@@ -1439,32 +1719,72 @@ def _distribution_runtime_record(
         )
     record_path = Path(distribution.locate_file(record_files[0]))
     sorted_entries = tuple(sorted(files, key=lambda item: item.as_posix()))
-    installed_file_inventory = [
-        {
-            "path": entry.as_posix(),
-            "size_bytes": Path(distribution.locate_file(entry)).stat().st_size,
-            "file_sha256": _hash_installed_regular_file(
-                Path(distribution.locate_file(entry))
-            ),
-        }
-        for entry in sorted_entries
-    ]
+    installed_file_inventory = []
+    allowed_roots = (
+        V3_SITE_PACKAGES,
+        V3_PYTHON_EXECUTABLE.parent,
+    )
+    for entry in sorted_entries:
+        located = Path(distribution.locate_file(entry)).resolve(strict=True)
+        if not any(_is_same_or_descendant(located, root) for root in allowed_roots):
+            raise AuthorityError(
+                f"required distribution file is outside the frozen venv: {distribution_name}"
+            )
+        descriptor = os.open(located, os.O_RDONLY | os.O_NOFOLLOW)
+        try:
+            observed = os.fstat(descriptor)
+            if not stat.S_ISREG(observed.st_mode):
+                raise AuthorityError(
+                    f"required distribution contains a non-regular file: {distribution_name}"
+                )
+            data = _read_all(descriptor, maximum_bytes=256 * 1024 * 1024)
+            after = os.fstat(descriptor)
+            if (
+                observed.st_dev,
+                observed.st_ino,
+                observed.st_size,
+                observed.st_mtime_ns,
+                observed.st_ctime_ns,
+                observed.st_mode,
+            ) != (
+                after.st_dev,
+                after.st_ino,
+                after.st_size,
+                after.st_mtime_ns,
+                after.st_ctime_ns,
+                after.st_mode,
+            ):
+                raise AuthorityError(
+                    f"required distribution file changed during hashing: {distribution_name}"
+                )
+            installed_file_inventory.append(
+                {
+                    "path": entry.as_posix(),
+                    "size_bytes": observed.st_size,
+                    "mode": f"{stat.S_IMODE(observed.st_mode):04o}",
+                    "file_sha256": file_sha256(data),
+                }
+            )
+        finally:
+            os.close(descriptor)
     native_inventory = [
         entry
         for entry in installed_file_inventory
         if entry["path"].endswith((".so", ".dylib", ".dll", ".pyd"))
     ]
-    module_file = getattr(module, "__file__", None)
-    if not isinstance(module_file, str) or not module_file:
-        raise AuthorityError(f"required module has no source identity: {module_name}")
-    module_path = Path(module_file).resolve(strict=True)
-    module_version = getattr(module, "__version__", distribution.version)
+    raw_module_path = Path(module_spec.origin)
+    module_path = raw_module_path.resolve(strict=True)
+    if module_path != raw_module_path or not _is_same_or_descendant(module_path, V3_SITE_PACKAGES):
+        raise AuthorityError(
+            f"required module resolved outside the exact frozen site-packages: {module_name}"
+        )
     return MappingProxyType(
         {
             "distribution": distribution_name,
             "module": module_name,
             "version": str(distribution.version),
-            "module_version": str(module_version),
+            "module_version": str(distribution.version),
+            "module_file_path": os.fspath(module_path),
             "record_file_sha256": _hash_installed_regular_file(record_path),
             "module_file_sha256": _hash_installed_regular_file(module_path),
             "installed_file_inventory": installed_file_inventory,
@@ -1498,6 +1818,7 @@ def _capture_numerical_runtime_inventory() -> Mapping[str, Any]:
 
     executable = Path(sys.executable).resolve(strict=True)
     configured_executable = V3_PYTHON_EXECUTABLE.resolve(strict=True)
+    complete_site_packages_inventory = _capture_complete_site_packages_inventory()
     distributions = [
         dict(_distribution_runtime_record(distribution, module))
         for distribution, module in _NUMERICAL_DISTRIBUTIONS
@@ -1507,14 +1828,10 @@ def _capture_numerical_runtime_inventory() -> Mapping[str, Any]:
     scipy_config = _capture_module_report("scipy", "show_config")
     return MappingProxyType(
         {
-            "schema": (
-                "cfeg.metadata-calibration-efficiency-v3."
-                "numerical-runtime-inventory.v1"
-            ),
+            "schema": ("cfeg.metadata-calibration-efficiency-v3.numerical-runtime-inventory.v1"),
             "fixed_subprocess_environment": dict(_OBSERVED_TEST_ENVIRONMENT),
             "effective_numerical_environment": {
-                key: _OBSERVED_TEST_ENVIRONMENT.get(key)
-                for key in _NUMERICAL_ENVIRONMENT_KEYS
+                key: _OBSERVED_TEST_ENVIRONMENT.get(key) for key in _NUMERICAL_ENVIRONMENT_KEYS
             },
             "platform": {
                 "platform": platform.platform(),
@@ -1538,24 +1855,17 @@ def _capture_numerical_runtime_inventory() -> Mapping[str, Any]:
             },
             "git": {
                 "executable_path": os.fspath(V3_GIT_EXECUTABLE),
-                "executable_file_sha256": _hash_installed_regular_file(
-                    V3_GIT_EXECUTABLE
-                ),
+                "executable_file_sha256": _hash_installed_regular_file(V3_GIT_EXECUTABLE),
                 "version": _run_git_version(),
             },
+            "python_site_inventory": complete_site_packages_inventory,
             "distributions": distributions,
             "numpy_build_configuration": numpy_config,
-            "numpy_build_configuration_sha256": file_sha256(
-                numpy_config.encode("utf-8")
-            ),
+            "numpy_build_configuration_sha256": file_sha256(numpy_config.encode("utf-8")),
             "numpy_runtime_configuration": numpy_runtime,
-            "numpy_runtime_configuration_sha256": file_sha256(
-                numpy_runtime.encode("utf-8")
-            ),
+            "numpy_runtime_configuration_sha256": file_sha256(numpy_runtime.encode("utf-8")),
             "scipy_build_configuration": scipy_config,
-            "scipy_build_configuration_sha256": file_sha256(
-                scipy_config.encode("utf-8")
-            ),
+            "scipy_build_configuration_sha256": file_sha256(scipy_config.encode("utf-8")),
         }
     )
 
@@ -1576,10 +1886,17 @@ def _require_current_numerical_runtime_binding(
     _require_sha256(expected_fingerprint, "numerical runtime fingerprint")
     if numerical_runtime_fingerprint_sha256(expected_inventory) != expected_fingerprint:
         raise AuthorityError("stored numerical runtime inventory hash is invalid")
+    expected_site_packages = _require_python_site_inventory(
+        expected_inventory.get("python_site_inventory")
+    )
+    current_site_packages = _capture_complete_site_packages_inventory()
+    if _plain_json(current_site_packages) != _plain_json(expected_site_packages):
+        raise AuthorityError(
+            "complete site-packages changed before external runtime code was trusted"
+        )
     current_inventory, current_fingerprint = _current_numerical_runtime()
-    if (
-        current_fingerprint != expected_fingerprint
-        or _plain_json(current_inventory) != _plain_json(expected_inventory)
+    if current_fingerprint != expected_fingerprint or _plain_json(current_inventory) != _plain_json(
+        expected_inventory
     ):
         raise AuthorityError("current numerical runtime differs from frozen inventory")
 
@@ -1587,15 +1904,19 @@ def _require_current_numerical_runtime_binding(
 def _require_frozen_numerical_executor_environment() -> None:
     for key in _NUMERICAL_ENVIRONMENT_KEYS:
         if os.environ.get(key) != _OBSERVED_TEST_ENVIRONMENT.get(key):
-            raise AuthorityError(
-                f"numerical executor environment differs at frozen key {key}"
-            )
+            raise AuthorityError(f"numerical executor environment differs at frozen key {key}")
 
 
 def frozen_numerical_executor_environment() -> Mapping[str, str]:
     """Return the immutable environment for fresh production phase execs."""
 
     return MappingProxyType(dict(_OBSERVED_TEST_ENVIRONMENT))
+
+
+def governed_python_subprocess_prefix() -> tuple[str, ...]:
+    """Return the only Python executable/isolation prefix allowed by V3."""
+
+    return _GOVERNED_PYTHON_SUBPROCESS_PREFIX
 
 
 def _load_one_exact_file(path: Path, *, maximum_bytes: int) -> bytes:
@@ -1670,6 +1991,7 @@ def _publish_write_once(
     data: bytes,
     *,
     create_root: bool = False,
+    require_governed_process: bool = True,
     _publisher: object,
 ) -> PublishedArtifact:
     """Publish bytes once using a single validated parent directory descriptor.
@@ -1680,6 +2002,12 @@ def _publish_write_once(
 
     if _publisher is not _PUBLICATION_ISSUER:
         raise AuthorityError("write-once publication requires an internal validated publisher")
+    if require_governed_process:
+        _require_active_governed_process(
+            recheck_site_packages=True,
+            recheck_source=True,
+            require_mutation_role=True,
+        )
     if not isinstance(data, bytes) or not data:
         raise ValidationError("write-once publication requires nonempty immutable bytes")
     root = _canonical_absolute_path(trusted_root)
@@ -1764,9 +2092,7 @@ def _publish_write_once_under_test_root(
             for candidate in (root, destination, resolved_root, resolved_destination)
             for boundary in (protected, resolved_protected)
         ):
-            raise AuthorityError(
-                "test-only publisher cannot target a production namespace"
-            )
+            raise AuthorityError("test-only publisher cannot target a production namespace")
     temporary_root = Path("/tmp").resolve(strict=True)
     if resolved_root == temporary_root or not _is_same_or_descendant(
         resolved_root,
@@ -1780,6 +2106,7 @@ def _publish_write_once_under_test_root(
         PurePosixPath(*parts),
         data,
         create_root=create_root,
+        require_governed_process=False,
         _publisher=_PUBLICATION_ISSUER,
     )
 
@@ -2066,21 +2393,211 @@ def _require_worktree_matches_committed_inventory(
         os.close(root_descriptor)
 
 
+def _require_safe_source_directory(
+    observed: os.stat_result,
+    *,
+    description: str,
+) -> None:
+    mode = stat.S_IMODE(observed.st_mode)
+    if (
+        not stat.S_ISDIR(observed.st_mode)
+        or observed.st_uid != os.geteuid()
+        or mode & 0o7000
+        or mode & stat.S_IWOTH
+    ):
+        raise AuthorityError(f"{description} is not an owner-controlled source directory")
+
+
+def _execution_inventory_trees(
+    entries: Sequence[TrackedSourceFile],
+) -> Mapping[str, Mapping[str, Any]]:
+    trees: dict[str, dict[str, Any]] = {
+        root_name: {} for root_name in _CANONICAL_PYTHON_EXECUTION_ROOTS
+    }
+    for entry in entries:
+        parts = PurePosixPath(entry.path).parts
+        if parts[0] not in trees:
+            continue
+        if len(parts) == 1:
+            raise AuthorityError("canonical Python execution roots must be directories")
+        node = trees[parts[0]]
+        for component in parts[1:-1]:
+            existing = node.get(component)
+            if isinstance(existing, TrackedSourceFile):
+                raise AuthorityError("tracked source inventory has a file/directory collision")
+            if existing is None:
+                existing = {}
+                node[component] = existing
+            node = existing
+        leaf = parts[-1]
+        if leaf in node:
+            raise AuthorityError("tracked source inventory has a duplicate tree entry")
+        node[leaf] = entry
+    return MappingProxyType(trees)
+
+
+def _scan_exact_execution_directory(
+    descriptor: int,
+    expected: Mapping[str, Any],
+    *,
+    relative_path: PurePosixPath,
+) -> None:
+    try:
+        actual_names = tuple(sorted(os.listdir(descriptor)))
+    except OSError as exc:
+        raise AuthorityError("canonical execution directory could not be enumerated") from exc
+    if actual_names != tuple(sorted(expected)):
+        raise AuthorityError(
+            f"canonical execution tree contains untracked or missing entries: {relative_path}"
+        )
+    directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    for name in actual_names:
+        child_path = relative_path / name
+        expected_child = expected[name]
+        try:
+            listed = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise AuthorityError(
+                f"canonical execution entry could not be inspected safely: {child_path}"
+            ) from exc
+        if isinstance(expected_child, Mapping):
+            _require_safe_source_directory(
+                listed,
+                description=f"canonical execution directory {child_path}",
+            )
+            try:
+                child_descriptor = os.open(name, directory_flags, dir_fd=descriptor)
+            except OSError as exc:
+                raise AuthorityError(
+                    f"canonical execution directory could not be opened safely: {child_path}"
+                ) from exc
+            try:
+                opened = os.fstat(child_descriptor)
+                if (opened.st_dev, opened.st_ino) != (listed.st_dev, listed.st_ino):
+                    raise AuthorityError(
+                        f"canonical execution directory changed during traversal: {child_path}"
+                    )
+                _require_safe_source_directory(
+                    opened,
+                    description=f"canonical execution directory {child_path}",
+                )
+                _scan_exact_execution_directory(
+                    child_descriptor,
+                    expected_child,
+                    relative_path=child_path,
+                )
+            finally:
+                os.close(child_descriptor)
+        elif isinstance(expected_child, TrackedSourceFile):
+            if not stat.S_ISREG(listed.st_mode):
+                raise AuthorityError(
+                    f"canonical execution file is not a no-follow regular file: {child_path}"
+                )
+        else:  # pragma: no cover - constructed only by _execution_inventory_trees.
+            raise AuthorityError("tracked execution inventory node has an invalid type")
+
+
+def _require_exact_python_execution_filesystem(
+    repository: Path,
+    entries: Sequence[TrackedSourceFile],
+) -> None:
+    """Reject ignored or untracked code and import controls without asking Git."""
+
+    root_descriptor = _open_absolute_directory(
+        repository,
+        create=False,
+        require_private_final=False,
+    )
+    try:
+        root_stat = os.fstat(root_descriptor)
+        _require_safe_source_directory(root_stat, description="source repository root")
+        trees = _execution_inventory_trees(entries)
+        tracked_by_path = {entry.path: entry for entry in entries}
+        directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        for root_name in _CANONICAL_PYTHON_EXECUTION_ROOTS:
+            expected_tree = trees[root_name]
+            try:
+                listed = os.stat(
+                    root_name,
+                    dir_fd=root_descriptor,
+                    follow_symlinks=False,
+                )
+            except FileNotFoundError:
+                if expected_tree:
+                    raise AuthorityError(
+                        f"tracked canonical execution root is absent: {root_name}"
+                    ) from None
+                continue
+            if not expected_tree:
+                raise AuthorityError(
+                    f"canonical execution root is external to tracked inventory: {root_name}"
+                )
+            _require_safe_source_directory(
+                listed,
+                description=f"canonical execution root {root_name}",
+            )
+            try:
+                child_descriptor = os.open(
+                    root_name,
+                    directory_flags,
+                    dir_fd=root_descriptor,
+                )
+            except OSError as exc:
+                raise AuthorityError(
+                    f"canonical execution root could not be opened safely: {root_name}"
+                ) from exc
+            try:
+                opened = os.fstat(child_descriptor)
+                if (opened.st_dev, opened.st_ino) != (listed.st_dev, listed.st_ino):
+                    raise AuthorityError(
+                        f"canonical execution root changed during traversal: {root_name}"
+                    )
+                _scan_exact_execution_directory(
+                    child_descriptor,
+                    expected_tree,
+                    relative_path=PurePosixPath(root_name),
+                )
+            finally:
+                os.close(child_descriptor)
+
+        try:
+            root_names = tuple(os.listdir(root_descriptor))
+        except OSError as exc:
+            raise AuthorityError("source repository root could not be enumerated") from exc
+        controls = _ROOT_PYTEST_IMPORT_CONTROL_NAMES | {
+            name for name in root_names if name.endswith(".pth")
+        }
+        for name in controls:
+            record = tracked_by_path.get(name)
+            try:
+                observed = os.stat(
+                    name,
+                    dir_fd=root_descriptor,
+                    follow_symlinks=False,
+                )
+            except FileNotFoundError:
+                if record is not None:
+                    raise AuthorityError(f"tracked root Python control is absent: {name}") from None
+                continue
+            if record is None or record.kind != "regular_file":
+                raise AuthorityError(
+                    f"root Python/pytest control is external to tracked inventory: {name}"
+                )
+            if not stat.S_ISREG(observed.st_mode):
+                raise AuthorityError(f"root Python/pytest control is not regular: {name}")
+    finally:
+        os.close(root_descriptor)
+
+
 def _validate_git_repository_root(repository: Path) -> Path:
     _require_pinned_git_executable()
     root = _canonical_absolute_path(repository)
     if root.resolve(strict=True) != root:
         raise ValidationError("git repository root must be an exact nonsymlink path")
     try:
-        top = Path(
-            _run_git(root, ("rev-parse", "--show-toplevel"))
-            .decode("utf-8")
-            .strip()
-        )
+        top = Path(_run_git(root, ("rev-parse", "--show-toplevel")).decode("utf-8").strip())
         git_directory = Path(
-            _run_git(root, ("rev-parse", "--absolute-git-dir"))
-            .decode("utf-8")
-            .strip()
+            _run_git(root, ("rev-parse", "--absolute-git-dir")).decode("utf-8").strip()
         )
     except UnicodeDecodeError as exc:
         raise ValidationError("git repository paths were not UTF-8") from exc
@@ -2146,6 +2663,7 @@ def capture_clean_source_snapshot(repository: str | Path) -> CleanSourceSnapshot
     if tuple(entry.path for entry in entries) != index_paths:
         raise AuthorityError("Git index path set differs from the committed source tree")
     _require_worktree_matches_committed_inventory(root, entries)
+    _require_exact_python_execution_filesystem(root, entries)
     post_index_paths = _require_nonsparse_unmodified_index(root)
     post_commit = _run_git(root, ("rev-parse", "--verify", "HEAD^{commit}"))
     post_tree = _run_git(root, ("rev-parse", "--verify", "HEAD^{tree}"))
@@ -2153,13 +2671,9 @@ def capture_clean_source_snapshot(repository: str | Path) -> CleanSourceSnapshot
         root,
         ("status", "--porcelain=v1", "--untracked-files=all", "-z"),
     )
-    if (
-        post_commit != commit
-        or post_tree != tree
-        or post_status
-        or post_index_paths != index_paths
-    ):
+    if post_commit != commit or post_tree != tree or post_status or post_index_paths != index_paths:
         raise ValidationError("git identity or worktree changed during source capture")
+    _require_exact_python_execution_filesystem(root, entries)
     return CleanSourceSnapshot(
         identity=identity,
         tracked_files=tuple(entries),
@@ -2283,19 +2797,50 @@ def _ssh_public_key_fingerprint(public_key_bytes: bytes) -> str:
     return "SHA256:" + base64.b64encode(hashlib.sha256(wire).digest()).decode("ascii").rstrip("=")
 
 
-def _validate_owner_public_key_bytes(public_key_bytes: bytes) -> rsa.RSAPublicKey:
+def _validate_owner_public_key_bytes(public_key_bytes: bytes) -> tuple[int, int]:
     expected_sha = FROZEN_FILE_SHA256[OWNER_AUTHORITY_PUBLIC_KEY_PATH]
     if file_sha256(public_key_bytes) != expected_sha:
         raise ValidationError("owner authority public-key file hash mismatch")
     if _ssh_public_key_fingerprint(public_key_bytes) != OWNER_AUTHORITY_FINGERPRINT:
         raise ValidationError("owner authority SSH fingerprint mismatch")
     try:
-        key = serialization.load_ssh_public_key(public_key_bytes)
-    except (TypeError, ValueError) as exc:
+        fields = public_key_bytes.strip().split()
+        wire = base64.b64decode(fields[1], validate=True)
+        offset = 0
+
+        def read_field() -> bytes:
+            nonlocal offset
+            if offset + 4 > len(wire):
+                raise ValueError
+            length = int.from_bytes(wire[offset : offset + 4], "big")
+            offset += 4
+            if length <= 0 or offset + length > len(wire):
+                raise ValueError
+            value = wire[offset : offset + length]
+            offset += length
+            return value
+
+        algorithm = read_field()
+        exponent_bytes = read_field()
+        modulus_bytes = read_field()
+        if offset != len(wire) or algorithm != b"ssh-rsa":
+            raise ValueError
+        for encoded_integer in (exponent_bytes, modulus_bytes):
+            if encoded_integer[0] & 0x80:
+                raise ValueError
+            if (
+                len(encoded_integer) > 1
+                and encoded_integer[0] == 0
+                and not encoded_integer[1] & 0x80
+            ):
+                raise ValueError
+        exponent = int.from_bytes(exponent_bytes, "big", signed=False)
+        modulus = int.from_bytes(modulus_bytes, "big", signed=False)
+    except (binascii.Error, IndexError, TypeError, ValueError) as exc:
         raise ValidationError("owner authority public key could not be parsed") from exc
-    if not isinstance(key, rsa.RSAPublicKey) or key.key_size != 4096:
+    if exponent != 65_537 or modulus.bit_length() != 4096:
         raise ValidationError("owner authority must be the pinned RSA-4096 key")
-    return key
+    return exponent, modulus
 
 
 def _validate_frozen_bundle_files(files: Mapping[str, bytes]) -> None:
@@ -2428,6 +2973,7 @@ def _build_development_bundle(
         snapshot=snapshot,
         expected_scope=expected_test_scope,
         expected_environment_sha256=runtime_fingerprint,
+        expected_python_site_inventory_sha256=_python_site_inventory_sha256(runtime_inventory),
     )
     _require_frozen_files_in_source_snapshot(snapshot, frozen_file_bytes)
     records = [entry.as_record() for entry in snapshot.tracked_files]
@@ -2474,9 +3020,9 @@ def _build_development_bundle(
         "focused_test_stderr_sha256": focused.stderr_sha256,
         "focused_test_junit_report_file_sha256": focused.junit_report_file_sha256,
         "focused_test_junit_report_path": focused.junit_report_path,
-        "focused_test_junit_report_base64": base64.b64encode(
-            focused.junit_report_bytes
-        ).decode("ascii"),
+        "focused_test_junit_report_base64": base64.b64encode(focused.junit_report_bytes).decode(
+            "ascii"
+        ),
         "focused_test_working_directory": focused.working_directory,
         "focused_test_environment_sha256": focused.environment_sha256,
         "focused_test_scope": focused.scope,
@@ -2495,6 +3041,11 @@ def build_development_bundle(
 ) -> Mapping[str, Any]:
     """Build the production bundle from a canonical observed test receipt."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     value = _build_development_bundle(
         snapshot=snapshot,
         frozen_file_bytes=frozen_file_bytes,
@@ -2577,22 +3128,17 @@ def _validate_recorded_development_bundle(
         "v2_deny_overlay_file_sha256": FROZEN_FILE_SHA256[V2_DENY_OVERLAY_PATH],
         "focused_tests_passed": True,
         "focused_test_working_directory": os.fspath(V3_SOURCE_REPOSITORY),
-        "focused_test_environment_sha256": parsed[
-            "numerical_runtime_fingerprint_sha256"
-        ],
+        "focused_test_environment_sha256": parsed["numerical_runtime_fingerprint_sha256"],
         "focused_test_scope": "canonical",
         "scientific_lockbox_authorized": False,
         "human_EEG_outcome_authorized": False,
     }
     if any(_plain_json(parsed[key]) != _plain_json(expected) for key, expected in fixed.items()):
         raise AuthorityError("recorded development bundle has a frozen binding mismatch")
-    runtime_inventory, runtime_fingerprint = _current_numerical_runtime()
-    if (
-        _plain_json(parsed["numerical_runtime_inventory"])
-        != _plain_json(runtime_inventory)
-        or parsed["numerical_runtime_fingerprint_sha256"] != runtime_fingerprint
-    ):
-        raise AuthorityError("recorded bundle numerical runtime differs from current runtime")
+    _require_current_numerical_runtime_binding(
+        parsed["numerical_runtime_inventory"],
+        str(parsed["numerical_runtime_fingerprint_sha256"]),
+    )
     if tuple(parsed["tracked_source_file_inventory"]) != expected_inventory:
         raise AuthorityError("recorded development bundle inventory differs from Git objects")
     _parse_rfc3339_seconds(parsed["created_at_UTC"], "development bundle created_at_UTC")
@@ -2600,6 +3146,9 @@ def _validate_recorded_development_bundle(
         "focused_v3",
         parsed["focused_test_argv"],
         str(parsed["focused_test_junit_report_path"]),
+        expected_python_site_inventory_sha256=_python_site_inventory_sha256(
+            parsed["numerical_runtime_inventory"]
+        ),
     )
     try:
         junit_data = base64.b64decode(
@@ -2610,8 +3159,7 @@ def _validate_recorded_development_bundle(
         raise ValidationError("bundle JUnit evidence is not strict base64") from exc
     summary = _parse_pytest_junit_report(junit_data)
     if (
-        base64.b64encode(junit_data).decode("ascii")
-        != parsed["focused_test_junit_report_base64"]
+        base64.b64encode(junit_data).decode("ascii") != parsed["focused_test_junit_report_base64"]
         or file_sha256(junit_data) != parsed["focused_test_junit_report_file_sha256"]
         or parsed["focused_test_collected_tests"] != summary["collected"]
         or parsed["focused_test_passed_tests"] != summary["passed"]
@@ -2654,6 +3202,10 @@ def _issue_development_bundle_capability(
 ) -> DevelopmentBundleCapability:
     if _observer is not _CAPABILITY_ISSUER:
         raise AuthorityError("development-bundle issuance requires canonical observation")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     return DevelopmentBundleCapability(
         schema=DEVELOPMENT_BUNDLE_SCHEMA,
         candidate_id=CANDIDATE_ID,
@@ -2663,9 +3215,7 @@ def _issue_development_bundle_capability(
         clean_tree=snapshot.identity.tree,
         source_bundle_sha256=snapshot.source_bundle_sha256,
         tracked_source_files=snapshot.tracked_files,
-        numerical_runtime_fingerprint_sha256=str(
-            parsed["numerical_runtime_fingerprint_sha256"]
-        ),
+        numerical_runtime_fingerprint_sha256=str(parsed["numerical_runtime_fingerprint_sha256"]),
         numerical_runtime_inventory=parsed["numerical_runtime_inventory"],
         canonical_path=Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH),
         scope="canonical",
@@ -2707,6 +3257,11 @@ def publish_development_bundle(
     created_at_UTC: str,
     focused_test_run: ObservedTestRunCapability,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     value = build_development_bundle(
         snapshot=snapshot,
         frozen_file_bytes=frozen_file_bytes,
@@ -2763,6 +3318,11 @@ def _validate_development_bundle_at_path(
             "canonical development-bundle authority requires the exact canonical path"
         )
     if scope == "canonical":
+        _require_active_governed_process(
+            recheck_site_packages=True,
+            recheck_source=True,
+        )
+    if scope == "canonical":
         current = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
         if not _same_source_snapshot(current, snapshot):
             raise AuthorityError("canonical repository differs from bundle source snapshot")
@@ -2809,6 +3369,10 @@ def validate_development_bundle(
 ) -> DevelopmentBundleCapability:
     """Issue authority only after observing exact canonical published bytes."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     capability = _validate_development_bundle_at_path(
         Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH),
         snapshot=snapshot,
@@ -2824,6 +3388,10 @@ def validate_development_bundle(
 def reopen_development_bundle() -> DevelopmentBundleCapability:
     """Reconstruct durable bundle authority after restart from path plus Git objects."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH)
     file_bytes = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -2988,10 +3556,8 @@ def require_validated_artifact_capability(
     }
     if (
         validate_payload_hash(capability._validated_payload) != capability.payload_sha256
-        or file_sha256(artifact_bytes(capability._validated_payload))
-        != capability.file_sha256
-        or capability.binding_sha256
-        != _artifact_binding_sha256(capability._validated_bindings)
+        or file_sha256(artifact_bytes(capability._validated_payload)) != capability.file_sha256
+        or capability.binding_sha256 != _artifact_binding_sha256(capability._validated_bindings)
         or capability.capability_seal_sha256 != _artifact_binding_sha256(seal)
         or any(
             key not in capability._validated_payload
@@ -3029,7 +3595,14 @@ def _validate_schema_artifact(
 ) -> ValidatedArtifactCapability:
     if _observer is not _CAPABILITY_ISSUER:
         raise AuthorityError("artifact issuance requires exact canonical observation")
-    parsed = parse_artifact_bytes(file_bytes, ArtifactSpec(schema=schema, exact_fields=exact_fields))
+    if scope != "test-only":
+        _require_active_governed_process(
+            recheck_site_packages=True,
+            recheck_source=True,
+        )
+    parsed = parse_artifact_bytes(
+        file_bytes, ArtifactSpec(schema=schema, exact_fields=exact_fields)
+    )
     if canonical_json_bytes(parsed) != canonical_json_bytes(value):
         raise ValidationError("artifact value differs from exact supplied bytes")
     if parsed["candidate_id"] != CANDIDATE_ID:
@@ -3092,8 +3665,7 @@ def _require_core_context_reference_capability(
         or capability.scale_floor != parsed["scale_floor"]
         or authority.development_bundle_payload_sha256 != bundle.payload_sha256
         or authority.development_bundle_file_sha256 != bundle.file_sha256
-        or authority.development_bundle_source_bundle_sha256
-        != bundle.source_bundle_sha256
+        or authority.development_bundle_source_bundle_sha256 != bundle.source_bundle_sha256
         or authority.numerical_runtime_fingerprint_sha256
         != bundle.numerical_runtime_fingerprint_sha256
         or authority.clean_commit != bundle.clean_commit
@@ -3103,8 +3675,7 @@ def _require_core_context_reference_capability(
         != authority.semantic_binding_sha256
         or capability.development_bundle_payload_sha256 != bundle.payload_sha256
         or capability.development_bundle_file_sha256 != bundle.file_sha256
-        or capability.development_bundle_source_bundle_sha256
-        != bundle.source_bundle_sha256
+        or capability.development_bundle_source_bundle_sha256 != bundle.source_bundle_sha256
         or capability.numerical_runtime_fingerprint_sha256
         != bundle.numerical_runtime_fingerprint_sha256
         or capability.reference_root_seed != 20_260_910
@@ -3178,14 +3749,12 @@ def _require_core_development_result_capability(
         "grid_cell_count": len(parsed["grid_cells"]),
         "metric_row_count": len(parsed["participant_metric_rows"]),
         "invariant_row_count": len(parsed["invariant_rows"]),
-        "total_row_count": len(parsed["participant_metric_rows"])
-        + len(parsed["invariant_rows"]),
+        "total_row_count": len(parsed["participant_metric_rows"]) + len(parsed["invariant_rows"]),
         "participant_metric_rows_sha256": hashlib.sha256(
             canonical_json_bytes(
                 {
                     "schema": (
-                        "cfeg.metadata-calibration-efficiency-v3."
-                        "participant-metric-row-set.v1"
+                        "cfeg.metadata-calibration-efficiency-v3.participant-metric-row-set.v1"
                     ),
                     "rows": parsed["participant_metric_rows"],
                 }
@@ -3194,9 +3763,7 @@ def _require_core_development_result_capability(
         "invariant_rows_sha256": hashlib.sha256(
             canonical_json_bytes(
                 {
-                    "schema": (
-                        "cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"
-                    ),
+                    "schema": ("cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"),
                     "rows": parsed["invariant_rows"],
                 }
             )
@@ -3206,8 +3773,7 @@ def _require_core_development_result_capability(
             canonical_json_bytes(
                 {
                     "schema": (
-                        "cfeg.metadata-calibration-efficiency-v3."
-                        "complete-grid-gate-report.v1"
+                        "cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"
                     ),
                     "reports": parsed["complete_grid_gate_report"],
                 }
@@ -3220,10 +3786,7 @@ def _require_core_development_result_capability(
                         "cfeg.metadata-calibration-efficiency-v3."
                         "complete-uniform-block-weight-sensitivity.v1"
                     ),
-                    "reports": [
-                        report["uniform_block_weight_sensitivity"]
-                        for report in reports
-                    ],
+                    "reports": [report["uniform_block_weight_sensitivity"] for report in reports],
                 }
             )
         ).hexdigest(),
@@ -3231,8 +3794,7 @@ def _require_core_development_result_capability(
             canonical_json_bytes(
                 {
                     "schema": (
-                        "cfeg.metadata-calibration-efficiency-v3."
-                        "complete-resampling-sensitivity.v1"
+                        "cfeg.metadata-calibration-efficiency-v3.complete-resampling-sensitivity.v1"
                     ),
                     "reports": [report["resampling_sensitivity"] for report in reports],
                 }
@@ -3245,10 +3807,7 @@ def _require_core_development_result_capability(
                         "cfeg.metadata-calibration-efficiency-v3."
                         "complete-sensitivity-participant-vectors.v1"
                     ),
-                    "reports": [
-                        report["sensitivity_participant_vectors"]
-                        for report in reports
-                    ],
+                    "reports": [report["sensitivity_participant_vectors"] for report in reports],
                 }
             )
         ).hexdigest(),
@@ -3260,35 +3819,29 @@ def _require_core_development_result_capability(
     if (
         authority.development_bundle_payload_sha256 != bundle.payload_sha256
         or authority.development_bundle_file_sha256 != bundle.file_sha256
-        or authority.development_bundle_source_bundle_sha256
-        != bundle.source_bundle_sha256
+        or authority.development_bundle_source_bundle_sha256 != bundle.source_bundle_sha256
         or authority.numerical_runtime_fingerprint_sha256
         != bundle.numerical_runtime_fingerprint_sha256
         or authority.clean_commit != bundle.clean_commit
         or authority.clean_tree != bundle.clean_tree
-        or capability.development_bundle_source_bundle_sha256
-        != bundle.source_bundle_sha256
+        or capability.development_bundle_source_bundle_sha256 != bundle.source_bundle_sha256
         or capability.numerical_runtime_fingerprint_sha256
         != bundle.numerical_runtime_fingerprint_sha256
         or capability.development_rng_authority_schema != authority.schema
         or capability.development_rng_authority_semantic_binding_sha256
         != authority.semantic_binding_sha256
         or capability.rng_key_map_sha256 != authority.key_map_sha256
-        or capability.context_reference_payload_sha256
-        != reference_artifact.payload_sha256
+        or capability.context_reference_payload_sha256 != reference_artifact.payload_sha256
         or capability.context_reference_file_sha256 != reference_artifact.file_sha256
         or capability.validated_context_reference_semantic_binding_sha256
         != reference_proof.semantic_binding_sha256
         or reference_proof.development_bundle_payload_sha256 != bundle.payload_sha256
         or reference_proof.development_bundle_file_sha256 != bundle.file_sha256
-        or reference_proof.development_bundle_source_bundle_sha256
-        != bundle.source_bundle_sha256
+        or reference_proof.development_bundle_source_bundle_sha256 != bundle.source_bundle_sha256
         or reference_proof.numerical_runtime_fingerprint_sha256
         != bundle.numerical_runtime_fingerprint_sha256
     ):
-        raise AuthorityError(
-            "V3 development proof is not one bundle/RNG/reference execution chain"
-        )
+        raise AuthorityError("V3 development proof is not one bundle/RNG/reference execution chain")
     return capability
 
 
@@ -3315,9 +3868,7 @@ def _require_core_selected_method_proposal(
         "scientific_candidate_id": parsed["scientific_candidate_id"],
         "selected_grid_cell_index": parsed["selected_grid_cell_index"],
         "selected_grid_cell_id": parsed["selected_grid_cell_id"],
-        "selected_prototype_prior_pseudocount": parsed[
-            "selected_prototype_prior_pseudocount"
-        ],
+        "selected_prototype_prior_pseudocount": parsed["selected_prototype_prior_pseudocount"],
         "selected_lambda_max": parsed["selected_lambda_max"],
         "selected_operator_instance_sha256": parsed["selected_operator_instance_sha256"],
         "master_plan_file_sha256": parsed["master_plan_file_sha256"],
@@ -3330,9 +3881,7 @@ def _require_core_selected_method_proposal(
         "development_result_file_sha256": parsed["development_result_file_sha256"],
         "complete_grid_gate_report_sha256": parsed["complete_grid_gate_report_sha256"],
         "minimum_mandatory_observed_gain": rank["minimum_mandatory_observed_gain"],
-        "minimum_corresponding_one_sided_LCB": rank[
-            "minimum_corresponding_one_sided_LCB"
-        ],
+        "minimum_corresponding_one_sided_LCB": rank["minimum_corresponding_one_sided_LCB"],
         "clean_commit": parsed["clean_commit"],
         "clean_tree": parsed["clean_tree"],
     }
@@ -3355,11 +3904,11 @@ _CONTEXT_REFERENCE_FIELDS = frozenset(
         "payload_sha256",
     }
 )
-_CONTEXT_TABLE_FIELDS = frozenset(
-    {"interface_lookup_key", "centers", "scales", "observed_counts"}
-)
+_CONTEXT_TABLE_FIELDS = frozenset({"interface_lookup_key", "centers", "scales", "observed_counts"})
 _SYNTHETIC_CHANNELS = tuple(f"ch{index:02d}" for index in range(8))
 _SYNTHETIC_INTERFACES = ("neutral", "wet", "dry")
+
+
 def _validate_context_reference_content(value: Mapping[str, Any]) -> None:
     _require_exact_keys(value, _CONTEXT_REFERENCE_FIELDS, "context reference")
     if value.get("schema") != ARTIFACT_SCHEMAS["context_reference"]:
@@ -3367,7 +3916,9 @@ def _validate_context_reference_content(value: Mapping[str, Any]) -> None:
     if value.get("candidate_id") != CANDIDATE_ID:
         raise ValidationError("context-reference candidate mismatch")
     if value.get("domain") != "synthetic_development_and_future_synthetic":
-        raise AuthorityError("current V3 contract permits only the outcome-free synthetic reference")
+        raise AuthorityError(
+            "current V3 contract permits only the outcome-free synthetic reference"
+        )
     channels = tuple(value.get("canonical_channels", ()))
     if channels != _SYNTHETIC_CHANNELS:
         raise ValidationError("synthetic context-reference channels must be ch00 through ch07")
@@ -3386,14 +3937,18 @@ def _validate_context_reference_content(value: Mapping[str, Any]) -> None:
             raise ValidationError("context-reference table lookup key mismatch")
         for field_name in ("centers", "scales", "observed_counts"):
             if not isinstance(table[field_name], (list, tuple)) or len(table[field_name]) != 8:
-                raise ValidationError("context-reference vectors must match eight canonical channels")
+                raise ValidationError(
+                    "context-reference vectors must match eight canonical channels"
+                )
         for scale in table["scales"]:
             if not isinstance(scale, (int, float)) or isinstance(scale, bool) or scale < 0.05:
                 raise ValidationError("context-reference scales must satisfy the frozen floor")
         minimum = 256 if index == 3 else 128
         for count in table["observed_counts"]:
             if not isinstance(count, int) or isinstance(count, bool) or count < minimum:
-                raise ValidationError("context-reference observed count is below the frozen minimum")
+                raise ValidationError(
+                    "context-reference observed count is below the frozen minimum"
+                )
     if (
         value["minimum_per_interface_channel_count"] != 128
         or value["pooled_per_channel_fallback_minimum_count"] != 256
@@ -3442,6 +3997,11 @@ def publish_context_reference(
     rng_authority: object,
     core_capability: object,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     _validate_context_reference_bytes(
         value,
@@ -3503,6 +4063,11 @@ def _validate_context_reference_at_path(
         raise AuthorityError(
             "canonical context-reference authority requires the exact canonical path"
         )
+    if scope == "canonical":
+        _require_active_governed_process(
+            recheck_site_packages=True,
+            recheck_source=True,
+        )
     file_bytes = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
         file_bytes,
@@ -3551,6 +4116,10 @@ def validate_context_reference(
     rng_authority: object,
     core_capability: object,
 ) -> ValidatedArtifactCapability:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     capability = _validate_context_reference_at_path(
         CONTEXT_REFERENCE_CANONICAL_PATH,
         development_bundle=development_bundle,
@@ -3583,15 +4152,87 @@ def _validate_context_reference_under_test_root(
 
 
 _GRID_CELLS = (
-    (1, "p3-nu_1-lambda_0p10", "1", "0p10", 1.0, 0.10, "63ad5a68d79dbad9cfe4443a207eefd96a15d643bf6bbb4914c7a487bb59e5f9"),
-    (2, "p3-nu_1-lambda_0p20", "1", "0p20", 1.0, 0.20, "60b4fdb0f0039ac4e0a08c2ebb7e11e36e0aa43b0578362ada8e0bed81e8a43f"),
-    (3, "p3-nu_1-lambda_0p30", "1", "0p30", 1.0, 0.30, "16c9d0b71e855df9190bc961b78b0fdc1fd9123628ace1d856ddd7b0faad2786"),
-    (4, "p3-nu_4-lambda_0p10", "4", "0p10", 4.0, 0.10, "38c8ffbcc9746bfcfb0a8157012111412f1eecb9c9ed590135763fd548c29613"),
-    (5, "p3-nu_4-lambda_0p20", "4", "0p20", 4.0, 0.20, "5723702a4df184cc70dc6195a8031904eb57d0300e555dbf8cfa6345dc9b8347"),
-    (6, "p3-nu_4-lambda_0p30", "4", "0p30", 4.0, 0.30, "73668e3f34272a69d8a0ba7265acb3b53b40aeb0c4ea5889bc910d7d878d3558"),
-    (7, "p3-nu_16-lambda_0p10", "16", "0p10", 16.0, 0.10, "a0a46034f0d857410c9a70661cce5c73e25a31bd7b51515d0b8adf8ebd2c3201"),
-    (8, "p3-nu_16-lambda_0p20", "16", "0p20", 16.0, 0.20, "035c524182fc1c4fca0ae5ccb273d09b4499955784e89b948861312511620d08"),
-    (9, "p3-nu_16-lambda_0p30", "16", "0p30", 16.0, 0.30, "d0db62d57756ea1513b910d6c7e2b85b82d0a0b8aa1b76a4a7f9a03ea32e3bfa"),
+    (
+        1,
+        "p3-nu_1-lambda_0p10",
+        "1",
+        "0p10",
+        1.0,
+        0.10,
+        "63ad5a68d79dbad9cfe4443a207eefd96a15d643bf6bbb4914c7a487bb59e5f9",
+    ),
+    (
+        2,
+        "p3-nu_1-lambda_0p20",
+        "1",
+        "0p20",
+        1.0,
+        0.20,
+        "60b4fdb0f0039ac4e0a08c2ebb7e11e36e0aa43b0578362ada8e0bed81e8a43f",
+    ),
+    (
+        3,
+        "p3-nu_1-lambda_0p30",
+        "1",
+        "0p30",
+        1.0,
+        0.30,
+        "16c9d0b71e855df9190bc961b78b0fdc1fd9123628ace1d856ddd7b0faad2786",
+    ),
+    (
+        4,
+        "p3-nu_4-lambda_0p10",
+        "4",
+        "0p10",
+        4.0,
+        0.10,
+        "38c8ffbcc9746bfcfb0a8157012111412f1eecb9c9ed590135763fd548c29613",
+    ),
+    (
+        5,
+        "p3-nu_4-lambda_0p20",
+        "4",
+        "0p20",
+        4.0,
+        0.20,
+        "5723702a4df184cc70dc6195a8031904eb57d0300e555dbf8cfa6345dc9b8347",
+    ),
+    (
+        6,
+        "p3-nu_4-lambda_0p30",
+        "4",
+        "0p30",
+        4.0,
+        0.30,
+        "73668e3f34272a69d8a0ba7265acb3b53b40aeb0c4ea5889bc910d7d878d3558",
+    ),
+    (
+        7,
+        "p3-nu_16-lambda_0p10",
+        "16",
+        "0p10",
+        16.0,
+        0.10,
+        "a0a46034f0d857410c9a70661cce5c73e25a31bd7b51515d0b8adf8ebd2c3201",
+    ),
+    (
+        8,
+        "p3-nu_16-lambda_0p20",
+        "16",
+        "0p20",
+        16.0,
+        0.20,
+        "035c524182fc1c4fca0ae5ccb273d09b4499955784e89b948861312511620d08",
+    ),
+    (
+        9,
+        "p3-nu_16-lambda_0p30",
+        "16",
+        "0p30",
+        16.0,
+        0.30,
+        "d0db62d57756ea1513b910d6c7e2b85b82d0a0b8aa1b76a4a7f9a03ea32e3bfa",
+    ),
 )
 _GRID_CELL_FIELDS = (
     "index",
@@ -3665,9 +4306,7 @@ def _validate_development_result_content(value: Mapping[str, Any]) -> None:
         or len(stress) != 5
         or tuple(sorted(set(stress))) != tuple(stress)
         or any(
-            not isinstance(item, int)
-            or isinstance(item, bool)
-            or not 0 <= item < 48
+            not isinstance(item, int) or isinstance(item, bool) or not 0 <= item < 48
             for item in stress
         )
     ):
@@ -3766,6 +4405,11 @@ def publish_development_result(
     validated_context_reference: object,
     core_capability: object,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     if len(data) > DEVELOPMENT_RESULT_MAXIMUM_BYTES:
         raise ValidationError("development result exceeds its frozen safe size ceiling")
@@ -3802,6 +4446,10 @@ def validate_development_result(
 ) -> ValidatedArtifactCapability:
     """Issue result authority only from exact canonical published bytes."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = DEVELOPMENT_RESULT_CANONICAL_PATH
     data = load_exact_artifact_bytes(
         [path],
@@ -3837,8 +4485,7 @@ def validate_development_result(
 
 
 CANONICAL_DEVELOPMENT_RESULT_RECOVERY_CAPABILITY_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3."
-    "canonical-development-result-recovery-capability.v1"
+    "cfeg.metadata-calibration-efficiency-v3.canonical-development-result-recovery-capability.v1"
 )
 
 
@@ -3892,9 +4539,7 @@ def _canonical_development_result_recovery_binding(
             "development_bundle_payload_sha256": bundle.payload_sha256,
             "development_bundle_file_sha256": bundle.file_sha256,
             "development_bundle_source_bundle_sha256": bundle.source_bundle_sha256,
-            "numerical_runtime_fingerprint_sha256": (
-                bundle.numerical_runtime_fingerprint_sha256
-            ),
+            "numerical_runtime_fingerprint_sha256": (bundle.numerical_runtime_fingerprint_sha256),
             "context_reference_schema": context_reference.schema,
             "context_reference_payload_sha256": context_reference.payload_sha256,
             "context_reference_file_sha256": context_reference.file_sha256,
@@ -3917,9 +4562,11 @@ def _issue_canonical_development_result_recovery_capability(
     _observer: object,
 ) -> CanonicalDevelopmentResultRecoveryCapability:
     if _observer is not _CAPABILITY_ISSUER:
-        raise AuthorityError(
-            "development-result recovery issuance requires canonical observation"
-        )
+        raise AuthorityError("development-result recovery issuance requires canonical observation")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     binding = _canonical_development_result_recovery_binding(
         bundle=bundle,
         context_reference=context_reference,
@@ -3978,12 +4625,9 @@ def _load_canonical_development_result_for_a_recovery(
     if (
         context.payload_sha256 != context_payload["payload_sha256"]
         or context.file_sha256 != file_sha256(context_data)
-        or canonical_json_bytes(context._validated_payload)
-        != canonical_json_bytes(context_payload)
+        or canonical_json_bytes(context._validated_payload) != canonical_json_bytes(context_payload)
     ):
-        raise AuthorityError(
-            "A-stage development recovery context differs from canonical bytes"
-        )
+        raise AuthorityError("A-stage development recovery context differs from canonical bytes")
     result_data = load_exact_artifact_bytes(
         [DEVELOPMENT_RESULT_CANONICAL_PATH],
         declared_paths=[DEVELOPMENT_RESULT_CANONICAL_PATH],
@@ -4029,6 +4673,10 @@ def observe_canonical_development_result_for_a_recovery(
 ) -> CanonicalDevelopmentResultRecoveryCapability:
     """Issue audit-only A recovery authority from immutable canonical bytes."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     bundle, context, snapshot, result, result_data = (
         _load_canonical_development_result_for_a_recovery(
             development_bundle=development_bundle,
@@ -4049,9 +4697,7 @@ def _require_canonical_development_result_recovery_seal(
     value: object,
 ) -> CanonicalDevelopmentResultRecoveryCapability:
     if type(value) is not CanonicalDevelopmentResultRecoveryCapability:
-        raise AuthorityError(
-            "exact CanonicalDevelopmentResultRecoveryCapability required"
-        )
+        raise AuthorityError("exact CanonicalDevelopmentResultRecoveryCapability required")
     capability = value
     if capability._validation_marker is not _CAPABILITY_ISSUER:
         raise AuthorityError("canonical development-result recovery marker is invalid")
@@ -4070,10 +4716,9 @@ def _require_canonical_development_result_recovery_seal(
         result=capability._validated_payload,
         result_file_bytes=artifact_bytes(capability._validated_payload),
     )
-    if (
-        any(getattr(capability, name) != expected for name, expected in binding.items())
-        or capability.semantic_binding_sha256 != _artifact_binding_sha256(binding)
-    ):
+    if any(
+        getattr(capability, name) != expected for name, expected in binding.items()
+    ) or capability.semantic_binding_sha256 != _artifact_binding_sha256(binding):
         raise AuthorityError("canonical development-result recovery seal mismatch")
     return capability
 
@@ -4098,14 +4743,11 @@ def require_canonical_development_result_recovery_capability(
     )
     if (
         snapshot != capability._snapshot
-        or canonical_json_bytes(result)
-        != canonical_json_bytes(capability._validated_payload)
+        or canonical_json_bytes(result) != canonical_json_bytes(capability._validated_payload)
         or any(getattr(capability, name) != expected for name, expected in binding.items())
         or capability.semantic_binding_sha256 != _artifact_binding_sha256(binding)
     ):
-        raise AuthorityError(
-            "canonical development-result recovery no longer matches exact disk"
-        )
+        raise AuthorityError("canonical development-result recovery no longer matches exact disk")
     return capability
 
 
@@ -4130,9 +4772,7 @@ def development_result_recovery_source_file_sha256(
         if item.path == repository_relative_path and item.kind == "regular_file"
     )
     if len(matches) != 1:
-        raise AuthorityError(
-            "development recovery bundle lacks one exact regular source blob"
-        )
+        raise AuthorityError("development recovery bundle lacks one exact regular source blob")
     return matches[0]
 
 
@@ -4146,8 +4786,7 @@ def _development_result_audit_hashes(
                 canonical_json_bytes(
                     {
                         "schema": (
-                            "cfeg.metadata-calibration-efficiency-v3."
-                            "participant-metric-row-set.v1"
+                            "cfeg.metadata-calibration-efficiency-v3.participant-metric-row-set.v1"
                         ),
                         "rows": value["participant_metric_rows"],
                     }
@@ -4156,10 +4795,7 @@ def _development_result_audit_hashes(
             "invariant_rows_sha256": hashlib.sha256(
                 canonical_json_bytes(
                     {
-                        "schema": (
-                            "cfeg.metadata-calibration-efficiency-v3."
-                            "invariant-row-set.v1"
-                        ),
+                        "schema": ("cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"),
                         "rows": value["invariant_rows"],
                     }
                 )
@@ -4168,8 +4804,7 @@ def _development_result_audit_hashes(
                 canonical_json_bytes(
                     {
                         "schema": (
-                            "cfeg.metadata-calibration-efficiency-v3."
-                            "complete-grid-gate-report.v1"
+                            "cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"
                         ),
                         "reports": reports,
                     }
@@ -4183,8 +4818,7 @@ def _development_result_audit_hashes(
                             "complete-uniform-block-weight-sensitivity.v1"
                         ),
                         "reports": [
-                            report["uniform_block_weight_sensitivity"]
-                            for report in reports
+                            report["uniform_block_weight_sensitivity"] for report in reports
                         ],
                     }
                 )
@@ -4208,8 +4842,7 @@ def _development_result_audit_hashes(
                             "complete-sensitivity-participant-vectors.v1"
                         ),
                         "reports": [
-                            report["sensitivity_participant_vectors"]
-                            for report in reports
+                            report["sensitivity_participant_vectors"] for report in reports
                         ],
                     }
                 )
@@ -4235,23 +4868,18 @@ def _require_core_audited_development_result(
     )
     expected = {
         "schema": (
-            "cfeg.metadata-calibration-efficiency-v3."
-            "audited-development-result-capability.v1"
+            "cfeg.metadata-calibration-efficiency-v3.audited-development-result-capability.v1"
         ),
         "candidate_id": CANDIDATE_ID,
         "payload_schema": recovery.development_result_schema,
         "payload_sha256": recovery.development_result_payload_sha256,
         "development_result_file_sha256": recovery.development_result_file_sha256,
-        "development_bundle_payload_sha256": (
-            recovery.development_bundle_payload_sha256
-        ),
+        "development_bundle_payload_sha256": (recovery.development_bundle_payload_sha256),
         "development_bundle_file_sha256": recovery.development_bundle_file_sha256,
         "development_bundle_source_bundle_sha256": (
             recovery.development_bundle_source_bundle_sha256
         ),
-        "numerical_runtime_fingerprint_sha256": (
-            recovery.numerical_runtime_fingerprint_sha256
-        ),
+        "numerical_runtime_fingerprint_sha256": (recovery.numerical_runtime_fingerprint_sha256),
         "context_reference_schema": recovery.context_reference_schema,
         "context_reference_payload_sha256": recovery.context_reference_payload_sha256,
         "context_reference_file_sha256": recovery.context_reference_file_sha256,
@@ -4259,11 +4887,11 @@ def _require_core_audited_development_result(
         "clean_tree": recovery.clean_tree,
         **_development_result_audit_hashes(recovery._validated_payload),
         "selection_status": recovery._validated_payload["selection_status"],
-        "selected_grid_cell_id": recovery._validated_payload[
-            "selected_grid_cell_id"
-        ],
+        "selected_grid_cell_id": recovery._validated_payload["selected_grid_cell_id"],
     }
-    if any(getattr(capability, name) != expected_value for name, expected_value in expected.items()):
+    if any(
+        getattr(capability, name) != expected_value for name, expected_value in expected.items()
+    ):
         raise AuthorityError("core A recovery proof differs from canonical evidence")
     _require_sha256(
         capability.semantic_binding_sha256,
@@ -4279,6 +4907,10 @@ def recover_canonical_development_result_at_bundle_source(
 ) -> tuple[ValidatedArtifactCapability, object]:
     """Recover canonical A result authority plus a sealed core audit proof."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     recovery = observe_canonical_development_result_for_a_recovery(
         development_bundle=development_bundle,
         context_reference=context_reference,
@@ -4328,6 +4960,10 @@ def reopen_development_result_at_bundle_source(
 ) -> ValidatedArtifactCapability:
     """Recover a canonical development result at clean A, including NO_GO."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     artifact, _ = recover_canonical_development_result_at_bundle_source(
         development_bundle=development_bundle,
         context_reference=context_reference,
@@ -4342,6 +4978,10 @@ def build_selected_method_freeze_from_canonical_development_result(
 ) -> Mapping[str, Any]:
     """Rebuild PASS selection bytes only from the sealed canonical A audit."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     result = require_validated_artifact_capability(
         development_result,
         expected_schema=ARTIFACT_SCHEMAS["development_result"],
@@ -4362,8 +5002,7 @@ def build_selected_method_freeze_from_canonical_development_result(
         or audited.payload_sha256 != result.payload_sha256
         or audited.development_result_file_sha256 != result.file_sha256
         or audited.selection_status != "SELECTED_METHOD_PROPOSED"
-        or audited.selected_grid_cell_id
-        != result._validated_payload["selected_grid_cell_id"]
+        or audited.selected_grid_cell_id != result._validated_payload["selected_grid_cell_id"]
     ):
         raise AuthorityError("selected recovery proof differs from result authority")
     selected = build_selected_method_freeze_payload_for_a_recovery(
@@ -4381,10 +5020,7 @@ def build_selected_method_freeze_from_canonical_development_result(
     gate_report_sha256 = hashlib.sha256(
         canonical_json_bytes(
             {
-                "schema": (
-                    "cfeg.metadata-calibration-efficiency-v3."
-                    "complete-grid-gate-report.v1"
-                ),
+                "schema": ("cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"),
                 "reports": result._validated_payload["complete_grid_gate_report"],
             }
         )
@@ -4402,16 +5038,10 @@ def build_selected_method_freeze_from_canonical_development_result(
         "clean_commit": audited.clean_commit,
         "clean_tree": audited.clean_tree,
     }
-    if (
-        selected["selected_grid_cell_id"] != audited.selected_grid_cell_id
-        or any(
-            _plain_json(selected[name]) != _plain_json(expected)
-            for name, expected in bindings.items()
-        )
+    if selected["selected_grid_cell_id"] != audited.selected_grid_cell_id or any(
+        _plain_json(selected[name]) != _plain_json(expected) for name, expected in bindings.items()
     ):
-        raise AuthorityError(
-            "A recovery selector differs from the canonical development result"
-        )
+        raise AuthorityError("A recovery selector differs from the canonical development result")
     return selected
 
 
@@ -4576,10 +5206,7 @@ def _validate_selected_method_freeze_bytes(
     gate_report_sha256 = hashlib.sha256(
         canonical_json_bytes(
             {
-                "schema": (
-                    "cfeg.metadata-calibration-efficiency-v3."
-                    "complete-grid-gate-report.v1"
-                ),
+                "schema": ("cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"),
                 "reports": result_payload["complete_grid_gate_report"],
             }
         )
@@ -4614,6 +5241,10 @@ def validate_selected_method_freeze(
 ) -> ValidatedArtifactCapability:
     """Validate selected B without reusing an A-only ephemeral RNG proposal."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     snapshot = _require_clean_source_snapshot(snapshot)
     recovery = require_bundle_selected_delta_recovery_capability(recovery_capability)
     if (
@@ -4630,8 +5261,7 @@ def validate_selected_method_freeze(
 
 
 BUNDLE_SELECTED_DELTA_RECOVERY_CAPABILITY_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3."
-    "bundle-selected-delta-recovery-capability.v1"
+    "cfeg.metadata-calibration-efficiency-v3.bundle-selected-delta-recovery-capability.v1"
 )
 
 
@@ -4681,9 +5311,7 @@ def _bundle_selected_delta_binding(
             "development_bundle_payload_sha256": bundle.payload_sha256,
             "development_bundle_file_sha256": bundle.file_sha256,
             "development_bundle_source_bundle_sha256": bundle.source_bundle_sha256,
-            "numerical_runtime_fingerprint_sha256": (
-                bundle.numerical_runtime_fingerprint_sha256
-            ),
+            "numerical_runtime_fingerprint_sha256": (bundle.numerical_runtime_fingerprint_sha256),
             "bundle_commit": bundle.clean_commit,
             "bundle_tree": bundle.clean_tree,
             "selected_method_freeze_payload_sha256": selected_payload["payload_sha256"],
@@ -4705,6 +5333,10 @@ def _issue_bundle_selected_delta_recovery_capability(
 ) -> BundleSelectedDeltaRecoveryCapability:
     if _observer is not _CAPABILITY_ISSUER:
         raise AuthorityError("selected-delta recovery issuance requires canonical observation")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     binding = _bundle_selected_delta_binding(
         bundle,
         selected_payload,
@@ -4729,6 +5361,10 @@ def validate_bundle_selected_delta_recovery(
 ) -> BundleSelectedDeltaRecoveryCapability:
     """Issue audit-only recovery proof from exact current B and canonical selected bytes."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     _require_frozen_numerical_executor_environment()
     bundle = require_current_numerical_runtime_fingerprint(development_bundle)
     snapshot = _require_clean_source_snapshot(snapshot)
@@ -4752,10 +5388,8 @@ def validate_bundle_selected_delta_recovery(
     )
     _validate_selected_method_freeze_content(selected_payload)
     if (
-        selected_payload["development_bundle_payload_sha256"]
-        != bundle.payload_sha256
-        or selected_payload["development_bundle_file_sha256"]
-        != bundle.file_sha256
+        selected_payload["development_bundle_payload_sha256"] != bundle.payload_sha256
+        or selected_payload["development_bundle_file_sha256"] != bundle.file_sha256
         or selected_payload["clean_commit"] != bundle.clean_commit
         or selected_payload["clean_tree"] != bundle.clean_tree
     ):
@@ -4801,9 +5435,7 @@ def require_bundle_selected_delta_recovery_capability(
             exact_fields=_SELECTED_FREEZE_FIELDS,
         ),
     )
-    if canonical_json_bytes(selected_payload) != canonical_json_bytes(
-        capability._selected_payload
-    ):
+    if canonical_json_bytes(selected_payload) != canonical_json_bytes(capability._selected_payload):
         raise AuthorityError("selected-delta recovery selected payload changed")
     binding = _bundle_selected_delta_binding(
         bundle,
@@ -4889,10 +5521,8 @@ def _load_durable_development_selection_graph(
         ),
     )
     if (
-        selected["payload_sha256"]
-        != recovery.selected_method_freeze_payload_sha256
-        or file_sha256(selected_data)
-        != recovery.selected_method_freeze_file_sha256
+        selected["payload_sha256"] != recovery.selected_method_freeze_payload_sha256
+        or file_sha256(selected_data) != recovery.selected_method_freeze_file_sha256
         or result["payload_sha256"] != selected["development_result_payload_sha256"]
         or file_sha256(result_data) != selected["development_result_file_sha256"]
     ):
@@ -4907,8 +5537,12 @@ def reopen_context_reference(
 ) -> ValidatedArtifactCapability:
     """Reopen canonical reference authority at B through the durable result chain."""
 
-    recovery, selected, _, result, result_data = (
-        _load_durable_development_selection_graph(recovery_capability)
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
+    recovery, selected, _, result, result_data = _load_durable_development_selection_graph(
+        recovery_capability
     )
     bundle = require_development_bundle_capability(
         development_bundle,
@@ -4918,8 +5552,7 @@ def reopen_context_reference(
     if (
         bundle.payload_sha256 != recovery.development_bundle_payload_sha256
         or bundle.file_sha256 != recovery.development_bundle_file_sha256
-        or bundle.source_bundle_sha256
-        != recovery.development_bundle_source_bundle_sha256
+        or bundle.source_bundle_sha256 != recovery.development_bundle_source_bundle_sha256
     ):
         raise AuthorityError("reference reopen bundle differs from B recovery")
     reference_data = load_exact_artifact_bytes(
@@ -4950,11 +5583,8 @@ def reopen_context_reference(
     if (
         core_reference.payload_sha256 != reference["payload_sha256"]
         or core_reference.domain != reference["domain"]
-        or tuple(core_reference.canonical_channels)
-        != tuple(reference["canonical_channels"])
-        or tuple(
-            table.interface_lookup_key for table in core_reference.interface_tables
-        )
+        or tuple(core_reference.canonical_channels) != tuple(reference["canonical_channels"])
+        or tuple(table.interface_lookup_key for table in core_reference.interface_tables)
         != tuple(table["interface_lookup_key"] for table in reference["interface_tables"])
     ):
         raise AuthorityError("core context audit differs from canonical reference bytes")
@@ -4985,8 +5615,12 @@ def reopen_development_result(
 ) -> ValidatedArtifactCapability:
     """Reopen canonical development authority without recreating RNG authority."""
 
-    recovery, selected, _, result, result_data = (
-        _load_durable_development_selection_graph(recovery_capability)
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
+    recovery, selected, _, result, result_data = _load_durable_development_selection_graph(
+        recovery_capability
     )
     bundle = require_development_bundle_capability(
         development_bundle,
@@ -5042,6 +5676,10 @@ def reopen_selected_method_freeze(
 ) -> ValidatedArtifactCapability:
     """Reopen selected B from exact A→B delta plus durable dev semantics."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     recovery, selected, selected_data, result, result_data = (
         _load_durable_development_selection_graph(recovery_capability)
     )
@@ -5054,10 +5692,9 @@ def reopen_selected_method_freeze(
         development_result,
         expected_schema=ARTIFACT_SCHEMAS["development_result"],
     )
-    if (
-        result_capability.payload_sha256 != result["payload_sha256"]
-        or result_capability.file_sha256 != file_sha256(result_data)
-    ):
+    if result_capability.payload_sha256 != result[
+        "payload_sha256"
+    ] or result_capability.file_sha256 != file_sha256(result_data):
         raise AuthorityError("selected reopen development capability differs from disk")
     try:
         from cfeg.analysis.metadata_calibration_v3_synthetic import (
@@ -5076,10 +5713,7 @@ def reopen_selected_method_freeze(
     gate_report_sha256 = hashlib.sha256(
         canonical_json_bytes(
             {
-                "schema": (
-                    "cfeg.metadata-calibration-efficiency-v3."
-                    "complete-grid-gate-report.v1"
-                ),
+                "schema": ("cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"),
                 "reports": result["complete_grid_gate_report"],
             }
         )
@@ -5112,25 +5746,41 @@ def reopen_selected_method_freeze(
 
 
 _PYTEST_ISOLATED_BOOTSTRAP = (
-    "import pathlib,sys;"
-    "p=pathlib.Path('/home/whwovy/califreeEEG/src');"
-    "sys.path.insert(0,str(p));"
-    "import cfeg,pytest;"
-    "f=pathlib.Path(cfeg.__file__).resolve();"
-    "assert f.is_relative_to(p.resolve());"
-    "raise SystemExit(pytest.main(sys.argv[1:]))"
+    _GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE
+    + "import cfeg\n"
+    + "import cfeg.metadata_calibration_v3_governance as g\n"
+    + "_site_args=[(i,v) for i,v in enumerate(sys.argv) "
+    + "if v.startswith(g._PYTHON_SITE_INVENTORY_ARG_PREFIX)]\n"
+    + "if len(_site_args)!=1:\n"
+    + " raise RuntimeError('governed pytest requires one site-inventory digest')\n"
+    + "_site_index,_site_arg=_site_args[0]\n"
+    + "_site_digest=_site_arg[len(g._PYTHON_SITE_INVENTORY_ARG_PREFIX):]\n"
+    + "del sys.argv[_site_index]\n"
+    + "g.establish_governed_process("
+    + "expected_python_site_inventory_sha256=_site_digest)\n"
+    + "import pytest\n"
+    + "g._require_loaded_modules_within_governed_roots(require_pytest=True)\n"
+    + "_pytest_exit_code=pytest.main(sys.argv[1:])\n"
+    + "g._require_active_governed_process(recheck_site_packages=True)\n"
+    + "raise SystemExit(_pytest_exit_code)\n"
 )
 _TEST_COMMANDS = MappingProxyType(
     {
         "focused_v3": (
-            os.fspath(V3_PYTHON_EXECUTABLE),
-            "-I",
-            "-B",
+            *_GOVERNED_PYTHON_SUBPROCESS_PREFIX,
             "-c",
             _PYTEST_ISOLATED_BOOTSTRAP,
             "-q",
+            "-c",
+            "pyproject.toml",
+            "--rootdir=.",
+            "-o",
+            "addopts=",
+            "-o",
+            "pythonpath=",
             "-o",
             "xfail_strict=true",
+            "--import-mode=importlib",
             "-p",
             "no:cacheprovider",
             "tests/test_metadata_calibration_v3.py",
@@ -5141,19 +5791,354 @@ _TEST_COMMANDS = MappingProxyType(
             "tests/test_metadata_calibration_v3_runner.py",
         ),
         "repository_full": (
-            os.fspath(V3_PYTHON_EXECUTABLE),
-            "-I",
-            "-B",
+            *_GOVERNED_PYTHON_SUBPROCESS_PREFIX,
             "-c",
             _PYTEST_ISOLATED_BOOTSTRAP,
             "-q",
+            "-c",
+            "pyproject.toml",
+            "--rootdir=.",
+            "-o",
+            "addopts=",
+            "-o",
+            "pythonpath=",
             "-o",
             "xfail_strict=true",
+            "--import-mode=importlib",
             "-p",
             "no:cacheprovider",
         ),
     }
 )
+
+
+def _require_governed_python_command_prefix(argv: Sequence[str]) -> None:
+    prefix_length = len(_GOVERNED_PYTHON_SUBPROCESS_PREFIX)
+    if (
+        len(argv) <= prefix_length + 1
+        or tuple(argv[:prefix_length]) != _GOVERNED_PYTHON_SUBPROCESS_PREFIX
+        or argv[prefix_length] != "-c"
+        or not isinstance(argv[prefix_length + 1], str)
+        or not argv[prefix_length + 1]
+    ):
+        raise AuthorityError("governed Python command requires exact python -I -B -S -c")
+
+
+def _require_loaded_module_path(module_name: str, expected_path: Path) -> None:
+    module = sys.modules.get(module_name)
+    module_path = getattr(module, "__file__", None)
+    if not isinstance(module_path, str):
+        raise AuthorityError(f"governed Python did not import required module: {module_name}")
+    observed = Path(module_path)
+    if (
+        observed != expected_path
+        or observed.resolve(strict=True) != expected_path
+        or expected_path.resolve(strict=True) != expected_path
+    ):
+        raise AuthorityError(f"governed Python imported {module_name} outside its exact root")
+
+
+def _require_loaded_modules_within_governed_roots(
+    *,
+    require_pytest: bool,
+    allow_site_packages: bool = True,
+) -> None:
+    allowed_roots = [
+        V3_SOURCE_REPOSITORY / "src",
+        V3_SOURCE_REPOSITORY / "tests",
+        V3_SOURCE_REPOSITORY / "scripts",
+        Path("/usr/lib/python3.10"),
+    ]
+    if allow_site_packages:
+        allowed_roots.append(V3_SITE_PACKAGES)
+    for module_name, module in tuple(sys.modules.items()):
+        module_file = getattr(module, "__file__", None)
+        if module_file is None:
+            continue
+        if not isinstance(module_file, str) or not module_file:
+            raise AuthorityError(f"loaded module has malformed source identity: {module_name}")
+        raw_path = Path(module_file)
+        try:
+            resolved_path = raw_path.resolve(strict=True)
+        except (OSError, RuntimeError) as exc:
+            raise AuthorityError(
+                f"loaded module source cannot be resolved exactly: {module_name}"
+            ) from exc
+        if raw_path != resolved_path or not any(
+            _is_same_or_descendant(resolved_path, root) for root in allowed_roots
+        ):
+            raise AuthorityError(f"loaded module is outside governed roots: {module_name}")
+    if require_pytest:
+        _require_loaded_module_path(
+            "pytest",
+            V3_SITE_PACKAGES / "pytest/__init__.py",
+        )
+
+
+GOVERNED_PROCESS_CAPABILITY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.governed-process-capability.v1"
+)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class GovernedProcessCapability:
+    schema: str
+    process_id: int
+    role: str
+    python_site_inventory_sha256: str
+    executable_file_sha256: str
+    clean_commit: str
+    clean_tree: str
+    source_bundle_sha256: str
+    environment_sha256: str
+    capability_seal_sha256: str
+    _validation_marker: object = field(repr=False, compare=False)
+
+    def __init__(
+        self,
+        *,
+        role: str,
+        python_site_inventory_sha256: str,
+        executable_file_sha256: str,
+        snapshot: CleanSourceSnapshot,
+        _issuer: object,
+    ) -> None:
+        if _issuer is not _CAPABILITY_ISSUER:
+            raise AuthorityError("GovernedProcessCapability has no valid issuer")
+        bindings = {
+            "schema": GOVERNED_PROCESS_CAPABILITY_SCHEMA,
+            "process_id": os.getpid(),
+            "role": role,
+            "python_site_inventory_sha256": python_site_inventory_sha256,
+            "executable_file_sha256": executable_file_sha256,
+            "clean_commit": snapshot.identity.commit,
+            "clean_tree": snapshot.identity.tree,
+            "source_bundle_sha256": snapshot.source_bundle_sha256,
+            "environment_sha256": hashlib.sha256(
+                canonical_json_bytes(_OBSERVED_TEST_ENVIRONMENT)
+            ).hexdigest(),
+        }
+        for name, value in bindings.items():
+            object.__setattr__(self, name, value)
+        object.__setattr__(
+            self,
+            "capability_seal_sha256",
+            hashlib.sha256(canonical_json_bytes(bindings)).hexdigest(),
+        )
+        object.__setattr__(self, "_validation_marker", _issuer)
+
+
+_ACTIVE_GOVERNED_PROCESS_CAPABILITY: GovernedProcessCapability | None = None
+
+
+def governed_runner_command(command: str) -> tuple[str, ...]:
+    if command not in _GOVERNED_RUNNER_COMMANDS:
+        raise ValidationError("unknown governed V3 runner command")
+    return (*_GOVERNED_PYTHON_SUBPROCESS_PREFIX, os.fspath(V3_RUNNER_PATH), command)
+
+
+def _governed_process_role(expected_site_inventory_sha256: str) -> str:
+    original = tuple(getattr(sys, "orig_argv", ()))
+    if original == _FRESH_CANARY_EXEC_COMMAND:
+        if tuple(sys.argv) != ("-c", _FRESH_CANARY_EXEC_PHASE):
+            raise AuthorityError("fresh-audit child sys.argv is not exact")
+        return "fresh_canary_audit"
+    for command in _GOVERNED_RUNNER_COMMANDS:
+        expected = governed_runner_command(command)
+        if original == expected:
+            if tuple(sys.argv) != (os.fspath(V3_RUNNER_PATH), command):
+                raise AuthorityError("governed runner sys.argv is not exact")
+            return f"runner_{command.replace('-', '_')}"
+    for name in _TEST_COMMANDS:
+        if (
+            len(original) >= 3
+            and original[-3]
+            == f"{_PYTHON_SITE_INVENTORY_ARG_PREFIX}{expected_site_inventory_sha256}"
+            and original[-2].startswith("--basetemp=")
+            and original[-1].startswith("--junitxml=")
+        ):
+            junit_path = original[-1].split("=", 1)[1]
+            try:
+                _require_frozen_test_argv(
+                    name,
+                    original,
+                    junit_path,
+                    expected_python_site_inventory_sha256=(expected_site_inventory_sha256),
+                )
+            except AuthorityError:
+                continue
+            if not sys.argv or sys.argv[0] != "-c":
+                raise AuthorityError("governed pytest sys.argv is not exact")
+            return f"pytest_{name}"
+    raise AuthorityError("process orig_argv is not a frozen governed V3 role")
+
+
+def _assert_governed_python_subprocess_runtime(
+    *,
+    expected_python_site_inventory_sha256: str,
+) -> tuple[str, CleanSourceSnapshot, Mapping[str, Any]]:
+    """Validate one pre-import isolated process and its complete site tree."""
+
+    expected_path = (
+        *_ISOLATED_STDLIB_SYS_PATH,
+        os.fspath(V3_SOURCE_REPOSITORY / "src"),
+        os.fspath(V3_SITE_PACKAGES),
+    )
+    if (
+        sys.flags.isolated != 1
+        or sys.flags.dont_write_bytecode != 1
+        or sys.flags.no_site != 1
+        or sys.flags.ignore_environment != 1
+        or sys.flags.no_user_site != 1
+        or sys.flags.hash_randomization != 1
+        or Path(sys.executable) != V3_PYTHON_EXECUTABLE
+        or tuple(sys.path) != expected_path
+        or dict(os.environ) != dict(_OBSERVED_TEST_ENVIRONMENT)
+    ):
+        raise AuthorityError("governed Python runtime differs from exact -I -B -S bootstrap")
+    _require_sha256(
+        expected_python_site_inventory_sha256,
+        "expected governed Python site inventory",
+    )
+    role = _governed_process_role(expected_python_site_inventory_sha256)
+    site_inventory = _capture_complete_site_packages_inventory()
+    if site_inventory["inventory_sha256"] != expected_python_site_inventory_sha256:
+        raise AuthorityError("pre-import Python site inventory differs from trusted digest")
+    if _current_executable_file_sha256() != _hash_installed_regular_file(
+        V3_PYTHON_EXECUTABLE.resolve(strict=True)
+    ):
+        raise AuthorityError("governed Python executable bytes differ from the pinned binary")
+    _require_loaded_module_path(
+        "cfeg",
+        V3_SOURCE_REPOSITORY / "src/cfeg/__init__.py",
+    )
+    _require_loaded_module_path(
+        "cfeg.metadata_calibration_v3_governance",
+        V3_SOURCE_REPOSITORY / "src/cfeg/metadata_calibration_v3_governance.py",
+    )
+    _require_loaded_modules_within_governed_roots(
+        require_pytest=False,
+        allow_site_packages=False,
+    )
+    snapshot = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
+    _require_loaded_governance_source_at_snapshot(snapshot)
+    init_record = next(
+        (entry for entry in snapshot.tracked_files if entry.path == "src/cfeg/__init__.py"),
+        None,
+    )
+    if (
+        init_record is None
+        or init_record.kind != "regular_file"
+        or init_record.file_sha256
+        != _hash_installed_regular_file(V3_SOURCE_REPOSITORY / "src/cfeg/__init__.py")
+    ):
+        raise AuthorityError("loaded cfeg package root differs from tracked source inventory")
+    return role, snapshot, site_inventory
+
+
+def establish_governed_process(
+    *,
+    expected_python_site_inventory_sha256: str,
+) -> GovernedProcessCapability:
+    """Issue one process-local authority after stdlib-only pre-import validation."""
+
+    global _ACTIVE_GOVERNED_PROCESS_CAPABILITY
+    role, snapshot, _ = _assert_governed_python_subprocess_runtime(
+        expected_python_site_inventory_sha256=expected_python_site_inventory_sha256,
+    )
+    capability = GovernedProcessCapability(
+        role=role,
+        python_site_inventory_sha256=expected_python_site_inventory_sha256,
+        executable_file_sha256=_current_executable_file_sha256(),
+        snapshot=snapshot,
+        _issuer=_CAPABILITY_ISSUER,
+    )
+    _ACTIVE_GOVERNED_PROCESS_CAPABILITY = capability
+    return capability
+
+
+def _require_active_governed_process(
+    *,
+    recheck_site_packages: bool = False,
+    recheck_source: bool = False,
+    require_mutation_role: bool = False,
+) -> GovernedProcessCapability:
+    value = _ACTIVE_GOVERNED_PROCESS_CAPABILITY
+    if type(value) is not GovernedProcessCapability:
+        raise AuthorityError("active exact GovernedProcessCapability required")
+    capability = value
+    bindings = {
+        "schema": capability.schema,
+        "process_id": capability.process_id,
+        "role": capability.role,
+        "python_site_inventory_sha256": capability.python_site_inventory_sha256,
+        "executable_file_sha256": capability.executable_file_sha256,
+        "clean_commit": capability.clean_commit,
+        "clean_tree": capability.clean_tree,
+        "source_bundle_sha256": capability.source_bundle_sha256,
+        "environment_sha256": capability.environment_sha256,
+    }
+    expected_path = (
+        *_ISOLATED_STDLIB_SYS_PATH,
+        os.fspath(V3_SOURCE_REPOSITORY / "src"),
+        os.fspath(V3_SITE_PACKAGES),
+    )
+    if (
+        capability._validation_marker is not _CAPABILITY_ISSUER
+        or capability.schema != GOVERNED_PROCESS_CAPABILITY_SCHEMA
+        or capability.process_id != os.getpid()
+        or capability.environment_sha256
+        != hashlib.sha256(canonical_json_bytes(_OBSERVED_TEST_ENVIRONMENT)).hexdigest()
+        or capability.capability_seal_sha256
+        != hashlib.sha256(canonical_json_bytes(bindings)).hexdigest()
+        or capability.executable_file_sha256 != _current_executable_file_sha256()
+        or sys.flags.isolated != 1
+        or sys.flags.dont_write_bytecode != 1
+        or sys.flags.no_site != 1
+        or sys.flags.ignore_environment != 1
+        or sys.flags.no_user_site != 1
+        or sys.flags.hash_randomization != 1
+        or Path(sys.executable) != V3_PYTHON_EXECUTABLE
+        or tuple(sys.path) != expected_path
+        or dict(os.environ) != dict(_OBSERVED_TEST_ENVIRONMENT)
+        or _governed_process_role(capability.python_site_inventory_sha256) != capability.role
+    ):
+        raise AuthorityError("governed-process authority binding is invalid")
+    if require_mutation_role and capability.role not in {
+        "runner_resume",
+        "fresh_canary_audit",
+    }:
+        raise AuthorityError("this governed process role cannot mutate canonical state")
+    _require_loaded_modules_within_governed_roots(require_pytest=False)
+    if recheck_site_packages:
+        current = _capture_complete_site_packages_inventory()
+        if current["inventory_sha256"] != capability.python_site_inventory_sha256:
+            raise AuthorityError("Python site inventory drifted after process attestation")
+    if recheck_source:
+        current_source = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
+        if (
+            current_source.identity.commit != capability.clean_commit
+            or current_source.identity.tree != capability.clean_tree
+            or current_source.source_bundle_sha256 != capability.source_bundle_sha256
+        ):
+            raise AuthorityError("source drifted after governed-process attestation")
+        _require_loaded_governance_source_at_snapshot(current_source)
+    return capability
+
+
+def require_governed_process_capability(
+    value: object,
+    *,
+    expected_role: str | None = None,
+) -> GovernedProcessCapability:
+    """Validate the nominal capability installed for this exact live process."""
+
+    capability = _require_active_governed_process()
+    if value is not capability:
+        raise AuthorityError("governed-process capability is not the active exact instance")
+    if expected_role is not None and capability.role != expected_role:
+        raise AuthorityError("governed-process capability role mismatch")
+    return capability
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -5255,9 +6240,7 @@ class ObservedTestRunCapability:
                 "stderr_sha256": self.stderr_sha256,
                 "junit_report_file_sha256": self.junit_report_file_sha256,
                 "junit_report_path": self.junit_report_path,
-                "junit_report_base64": base64.b64encode(self.junit_report_bytes).decode(
-                    "ascii"
-                ),
+                "junit_report_base64": base64.b64encode(self.junit_report_bytes).decode("ascii"),
                 "source_bundle_sha256": self.source_bundle_sha256,
                 "working_directory": self.working_directory,
                 "environment_sha256": self.environment_sha256,
@@ -5305,9 +6288,7 @@ def _parse_pytest_junit_report(data: bytes) -> Mapping[str, int]:
                 totals[name] += int(raw)
     except (KeyError, ValueError) as exc:
         raise AuthorityError("pytest JUnit report has invalid exact count attributes") from exc
-    totals["passed"] = (
-        totals["collected"] - totals["failed"] - totals["skipped"] - totals["errors"]
-    )
+    totals["passed"] = totals["collected"] - totals["failed"] - totals["skipped"] - totals["errors"]
     if totals["passed"] < 0:
         raise AuthorityError("pytest JUnit report counts are inconsistent")
     return MappingProxyType(totals)
@@ -5351,6 +6332,7 @@ def _run_observed_test_at_repository(
     snapshot = _require_clean_source_snapshot(snapshot)
     if name not in _TEST_COMMANDS:
         raise ValidationError("test role is not in the frozen command allowlist")
+    _require_governed_python_command_prefix(_TEST_COMMANDS[name])
     if scope not in {"canonical", "test-only"}:
         raise ValidationError("unknown observed-test scope")
     root = _canonical_absolute_path(repository)
@@ -5360,10 +6342,17 @@ def _run_observed_test_at_repository(
     if not _same_source_snapshot(before, snapshot):
         raise AuthorityError("test runner source differs from the approved clean snapshot")
     before_runtime_inventory, before_runtime_fingerprint = _current_numerical_runtime()
+    site_inventory_sha256 = _python_site_inventory_sha256(before_runtime_inventory)
     junit_directory = Path(tempfile.mkdtemp(prefix="cfeg-v3-junit-", dir="/tmp"))
     os.chmod(junit_directory, 0o700)
     junit_path = junit_directory / "report.xml"
-    argv = (*_TEST_COMMANDS[name], f"--junitxml={junit_path}")
+    basetemp_path = junit_directory / "pytest-temp"
+    argv = (
+        *_TEST_COMMANDS[name],
+        f"{_PYTHON_SITE_INVENTORY_ARG_PREFIX}{site_inventory_sha256}",
+        f"--basetemp={basetemp_path}",
+        f"--junitxml={junit_path}",
+    )
     executable = _canonical_absolute_path(argv[0]).resolve(strict=True)
     executable_sha256 = file_sha256(executable.read_bytes())
     process: subprocess.Popen[bytes] | None = None
@@ -5384,11 +6373,9 @@ def _run_observed_test_at_repository(
         if not _same_source_snapshot(after, snapshot):
             raise AuthorityError("source changed while the allowlisted test command ran")
         after_runtime_inventory, after_runtime_fingerprint = _current_numerical_runtime()
-        if (
-            before_runtime_fingerprint != after_runtime_fingerprint
-            or _plain_json(before_runtime_inventory)
-            != _plain_json(after_runtime_inventory)
-        ):
+        if before_runtime_fingerprint != after_runtime_fingerprint or _plain_json(
+            before_runtime_inventory
+        ) != _plain_json(after_runtime_inventory):
             raise AuthorityError("numerical runtime changed while the test command ran")
         junit_data = _read_and_seal_junit_report(junit_path)
         receipt = _parse_pytest_junit_report(junit_data)
@@ -5403,10 +6390,7 @@ def _run_observed_test_at_repository(
                 process.communicate()
         raise
     finally:
-        try:
-            junit_path.unlink(missing_ok=True)
-        finally:
-            junit_directory.rmdir()
+        shutil.rmtree(junit_directory)
     if (
         process.returncode != 0
         or receipt["collected"] <= 0
@@ -5447,6 +6431,11 @@ def run_observed_test(
 ) -> ObservedTestRunCapability:
     """Run a frozen test command only in the canonical source repository."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     return _run_observed_test_at_repository(
         name,
         repository=V3_SOURCE_REPOSITORY,
@@ -5473,9 +6462,12 @@ def _require_frozen_test_argv(
     name: str,
     argv: Sequence[str],
     junit_report_path: str,
+    *,
+    expected_python_site_inventory_sha256: str,
 ) -> None:
     if name not in _TEST_COMMANDS:
         raise AuthorityError("test role is not in the frozen command allowlist")
+    _require_governed_python_command_prefix(_TEST_COMMANDS[name])
     path = _canonical_absolute_path(junit_report_path)
     if (
         path.parent.parent != Path("/tmp")
@@ -5483,7 +6475,17 @@ def _require_frozen_test_argv(
         or path.name != "report.xml"
     ):
         raise AuthorityError("JUnit report path is outside the runner-owned temp namespace")
-    expected = (*_TEST_COMMANDS[name], f"--junitxml={path}")
+    basetemp_path = path.parent / "pytest-temp"
+    _require_sha256(
+        expected_python_site_inventory_sha256,
+        "expected test Python site inventory",
+    )
+    expected = (
+        *_TEST_COMMANDS[name],
+        f"{_PYTHON_SITE_INVENTORY_ARG_PREFIX}{expected_python_site_inventory_sha256}",
+        f"--basetemp={basetemp_path}",
+        f"--junitxml={path}",
+    )
     if tuple(argv) != expected:
         raise AuthorityError("observed test argv differs from the frozen command template")
 
@@ -5495,6 +6497,7 @@ def _require_observed_test_run_capability(
     snapshot: CleanSourceSnapshot,
     expected_scope: str,
     expected_environment_sha256: str,
+    expected_python_site_inventory_sha256: str,
 ) -> ObservedTestRunCapability:
     snapshot = _require_clean_source_snapshot(snapshot)
     expected_root = (
@@ -5531,10 +6534,11 @@ def _require_observed_test_run_capability(
         expected_name,
         capability.argv,
         capability.junit_report_path,
+        expected_python_site_inventory_sha256=(expected_python_site_inventory_sha256),
     )
-    expected_executable = _canonical_absolute_path(
-        _TEST_COMMANDS[expected_name][0]
-    ).resolve(strict=True)
+    expected_executable = _canonical_absolute_path(_TEST_COMMANDS[expected_name][0]).resolve(
+        strict=True
+    )
     if capability.executable_file_sha256 != file_sha256(expected_executable.read_bytes()):
         raise AuthorityError("observed test executable changed after the run")
     junit_summary = _parse_pytest_junit_report(capability.junit_report_bytes)
@@ -5567,13 +6571,14 @@ def require_observed_test_run_capability(
 ) -> ObservedTestRunCapability:
     """Require a production observation; test-root receipts never satisfy it."""
 
-    _, runtime_fingerprint = _current_numerical_runtime()
+    runtime_inventory, runtime_fingerprint = _current_numerical_runtime()
     return _require_observed_test_run_capability(
         value,
         expected_name=expected_name,
         snapshot=snapshot,
         expected_scope="canonical",
         expected_environment_sha256=runtime_fingerprint,
+        expected_python_site_inventory_sha256=_python_site_inventory_sha256(runtime_inventory),
     )
 
 
@@ -5642,20 +6647,23 @@ def _validate_test_evidence_content(value: Mapping[str, Any]) -> None:
         "repository_full",
     ):
         raise ValidationError("test evidence requires focused_v3 then repository_full runs")
-    _, runtime_fingerprint = _current_numerical_runtime()
+    runtime_inventory, runtime_fingerprint = _current_numerical_runtime()
     for run in runs:
         if not isinstance(run, Mapping):
             raise ValidationError("test run must be an object")
         _require_exact_keys(run, _TEST_RUN_FIELDS, "test run")
         argv = run["argv"]
-        if not isinstance(argv, (list, tuple)) or not argv or any(
-            not isinstance(item, str) or not item for item in argv
+        if (
+            not isinstance(argv, (list, tuple))
+            or not argv
+            or any(not isinstance(item, str) or not item for item in argv)
         ):
             raise ValidationError("test run argv must be a nonempty string vector")
         _require_frozen_test_argv(
             str(run["name"]),
             argv,
             str(run["junit_report_path"]),
+            expected_python_site_inventory_sha256=_python_site_inventory_sha256(runtime_inventory),
         )
         try:
             junit_data = base64.b64decode(str(run["junit_report_base64"]), validate=True)
@@ -5714,7 +6722,7 @@ def seal_test_evidence(
     snapshot = _require_clean_source_snapshot(snapshot)
     if len(observed_runs) != 2:
         raise AuthorityError("test evidence requires exactly two observed run capabilities")
-    _, runtime_fingerprint = _current_numerical_runtime()
+    runtime_inventory, runtime_fingerprint = _current_numerical_runtime()
     runs = tuple(
         _require_observed_test_run_capability(
             observed_runs[index],
@@ -5722,6 +6730,7 @@ def seal_test_evidence(
             snapshot=snapshot,
             expected_scope="canonical",
             expected_environment_sha256=runtime_fingerprint,
+            expected_python_site_inventory_sha256=_python_site_inventory_sha256(runtime_inventory),
         )
         for index, name in enumerate(("focused_v3", "repository_full"))
     )
@@ -5815,6 +6824,11 @@ def publish_test_evidence(
     observed_runs: Sequence[ObservedTestRunCapability],
     snapshot: CleanSourceSnapshot,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     _validate_test_evidence_bytes(
         value,
@@ -5841,6 +6855,10 @@ def validate_test_evidence(
 ) -> ValidatedArtifactCapability:
     """Issue test authority only from the exact canonical publication."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = TEST_EVIDENCE_CANONICAL_PATH
     data = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -5876,6 +6894,10 @@ def reopen_test_evidence(
 ) -> ValidatedArtifactCapability:
     """Reopen immutable all-pass evidence without recreating historical PIDs."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     selected = require_validated_artifact_capability(
         selected_method_freeze,
         expected_schema=ARTIFACT_SCHEMAS["selected_method_freeze"],
@@ -6041,8 +7063,7 @@ def require_canary_artifact_capability(
     )
     if (
         validate_payload_hash(capability._validated_payload) != capability.payload_sha256
-        or file_sha256(artifact_bytes(capability._validated_payload))
-        != capability.file_sha256
+        or file_sha256(artifact_bytes(capability._validated_payload)) != capability.file_sha256
         or capability.capability_seal_sha256 != expected_seal
     ):
         raise AuthorityError("canary artifact capability payload hash mismatch")
@@ -6083,6 +7104,10 @@ def _issue_canary_artifact_from_canonical_path(
 ) -> CanaryArtifactCapability:
     if _observer is not _CAPABILITY_ISSUER:
         raise AuthorityError("canary issuance requires exact canonical observation")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     _require_git_object(source_commit, "canary source commit")
     _require_git_object(source_tree, "canary source tree")
     parsed = _validate_canary_artifact_bytes(
@@ -6117,7 +7142,9 @@ class HistoricalCanaryClock:
 
     def __post_init__(self) -> None:
         if self.timestamp_UTC != CANARY_TIMESTAMP_UTC:
-            raise ValidationError("historical canary clock must bind the declared fixture timestamp")
+            raise ValidationError(
+                "historical canary clock must bind the declared fixture timestamp"
+            )
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -6251,7 +7278,11 @@ def validate_canary_fixture(
         pulse = response["pulse"]
     except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError) as exc:
         raise ValidationError("historical canary fixture structure is malformed") from exc
-    if not isinstance(fixture, dict) or not isinstance(response, dict) or not isinstance(pulse, dict):
+    if (
+        not isinstance(fixture, dict)
+        or not isinstance(response, dict)
+        or not isinstance(pulse, dict)
+    ):
         raise ValidationError("historical canary fixture objects are malformed")
     response_digest = hashlib.sha256(canonical_json_bytes(response)).hexdigest()
     if fixture.get("parsed_response_canonical_sha256") != response_digest:
@@ -6272,6 +7303,10 @@ def reopen_historical_canary_seed(
 ) -> CanarySeedCapability:
     """Load and validate the frozen canary fixture from exact committed B."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     snapshot = _require_clean_source_snapshot(snapshot)
     current = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
     if not _same_source_snapshot(current, snapshot):
@@ -6400,10 +7435,8 @@ def build_canary_authorization(
         raise ValidationError("canary authorization must be after full test evidence")
     selected_payload = selected._validated_payload
     if (
-        tests._validated_payload["selected_method_freeze_payload_sha256"]
-        != selected.payload_sha256
-        or tests._validated_payload["selected_method_freeze_file_sha256"]
-        != selected.file_sha256
+        tests._validated_payload["selected_method_freeze_payload_sha256"] != selected.payload_sha256
+        or tests._validated_payload["selected_method_freeze_file_sha256"] != selected.file_sha256
         or tests._validated_payload["clean_commit"] != selected.source_commit
         or tests._validated_payload["clean_tree"] != selected.source_tree
     ):
@@ -6455,6 +7488,11 @@ def publish_canary_authorization(
     selected_method_freeze: ValidatedArtifactCapability,
     test_evidence: ValidatedArtifactCapability,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     _validate_canary_authorization_bytes(
         value,
@@ -6484,6 +7522,10 @@ def validate_canary_authorization(
     selected_method_freeze: ValidatedArtifactCapability,
     test_evidence: ValidatedArtifactCapability,
 ) -> CanaryArtifactCapability:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = CANARY_CANONICAL_ROOT / "authorization.json"
     data = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -6571,6 +7613,11 @@ def publish_canary_claim(
     *,
     authorization: CanaryArtifactCapability,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     _validate_canary_claim_bytes(
         value,
@@ -6598,6 +7645,10 @@ def validate_canary_claim(
     *,
     authorization: CanaryArtifactCapability,
 ) -> CanaryArtifactCapability:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = CANARY_CANONICAL_ROOT / "claim.json"
     data = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -6677,6 +7728,11 @@ def publish_canary_beacon(
     claim: CanaryArtifactCapability,
     seed: CanarySeedCapability,
 ) -> PublishedArtifact:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     data = artifact_bytes(value)
     _validate_canary_beacon_bytes(value, file_bytes=data, claim=claim, seed=seed)
     claim = require_canary_artifact_capability(
@@ -6701,6 +7757,10 @@ def validate_canary_beacon(
     claim: CanaryArtifactCapability,
     seed: CanarySeedCapability,
 ) -> CanaryArtifactCapability:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     path = CANARY_CANONICAL_ROOT / "beacon.json"
     data = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -6880,8 +7940,7 @@ def require_published_canary_result_capability(
     if (
         capability.payload_sha256 != artifact.payload_sha256
         or capability.file_sha256 != artifact.file_sha256
-        or capability.publisher_process_id
-        != artifact._validated_payload["publisher_process_id"]
+        or capability.publisher_process_id != artifact._validated_payload["publisher_process_id"]
         or capability.publisher_executable_file_sha256
         != artifact._validated_payload["publisher_executable_file_sha256"]
         or capability.path != CANARY_RESULT_CANONICAL_PATH
@@ -6904,6 +7963,11 @@ def publish_canary_result(
 ) -> PublishedCanaryResultCapability:
     """Publish only at the frozen canonical canary result path."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     value = build_canary_result(
         beacon,
         seed,
@@ -7006,9 +8070,7 @@ def _observe_canary_result_at_path(
         seed,
         probe_digest_sha256=str(parsed["probe_digest_sha256"]),
         publisher_process_id=parsed["publisher_process_id"],
-        publisher_executable_file_sha256=str(
-            parsed["publisher_executable_file_sha256"]
-        ),
+        publisher_executable_file_sha256=str(parsed["publisher_executable_file_sha256"]),
     )
     if canonical_json_bytes(parsed) != canonical_json_bytes(expected):
         raise ValidationError("published canary result differs from exact reconstruction")
@@ -7044,6 +8106,10 @@ def observe_published_canary_result(
     beacon: CanaryArtifactCapability,
     seed: CanarySeedCapability,
 ) -> PublishedCanaryResultCapability:
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     return _observe_canary_result_at_path(
         CANARY_RESULT_CANONICAL_PATH,
         beacon=beacon,
@@ -7059,6 +8125,10 @@ def reopen_published_canary_result(
 ) -> PublishedCanaryResultCapability:
     """Reopen a durable result even when its validated publisher has exited."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     return _observe_canary_result_at_path(
         CANARY_RESULT_CANONICAL_PATH,
         beacon=beacon,
@@ -7169,8 +8239,7 @@ _FRESH_AUDIT_REFERENCE_SCHEMAS = MappingProxyType(
 )
 _FRESH_AUDIT_CANONICAL_PATHS = MappingProxyType(
     {
-        "selected_method_freeze": V3_SOURCE_REPOSITORY
-        / SELECTED_METHOD_FREEZE_REPOSITORY_PATH,
+        "selected_method_freeze": V3_SOURCE_REPOSITORY / SELECTED_METHOD_FREEZE_REPOSITORY_PATH,
         "test_evidence": CANARY_CANONICAL_ROOT / "test-evidence.json",
         "canary_authorization": CANARY_CANONICAL_ROOT / "authorization.json",
         "canary_claim": CANARY_CANONICAL_ROOT / "claim.json",
@@ -7289,9 +8358,7 @@ class FreshCanaryAuditCapability:
             "clean_commit": clean_commit,
             "clean_tree": clean_tree,
             "exact_state_trace": [state.value for state in exact_state_trace],
-            "selected_method_freeze_payload_sha256": (
-                selected_method_freeze_payload_sha256
-            ),
+            "selected_method_freeze_payload_sha256": (selected_method_freeze_payload_sha256),
             "selected_method_freeze_file_sha256": selected_method_freeze_file_sha256,
             "test_evidence_payload_sha256": test_evidence_payload_sha256,
             "test_evidence_file_sha256": test_evidence_file_sha256,
@@ -7366,14 +8433,36 @@ def _fresh_exec_command_sha256() -> str:
     ).hexdigest()
 
 
+def _canonical_bundle_python_site_inventory_sha256() -> str:
+    """Read only the sealed bundle's stdlib-verifiable pre-import site digest."""
+
+    path = Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH)
+    file_bytes = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
+    parsed = parse_artifact_bytes(
+        file_bytes,
+        ArtifactSpec(
+            schema=DEVELOPMENT_BUNDLE_SCHEMA,
+            exact_fields=_DEVELOPMENT_BUNDLE_FIELDS,
+        ),
+    )
+    runtime_inventory = parsed.get("numerical_runtime_inventory")
+    if not isinstance(runtime_inventory, Mapping):
+        raise AuthorityError("canonical bundle runtime inventory is malformed")
+    claimed_fingerprint = parsed.get("numerical_runtime_fingerprint_sha256")
+    _require_sha256(claimed_fingerprint, "canonical bundle runtime fingerprint")
+    if numerical_runtime_fingerprint_sha256(runtime_inventory) != claimed_fingerprint:
+        raise AuthorityError("canonical bundle runtime inventory hash is invalid")
+    return _python_site_inventory_sha256(runtime_inventory)
+
+
 def _assert_fresh_canary_exec_child_context() -> None:
     """Reject direct calls, forks, non-isolated imports, and variable child argv."""
 
-    if sys.flags.isolated != 1 or sys.flags.dont_write_bytecode != 1:
-        raise AuthorityError("fresh audit child requires isolated -I -B execution")
+    if sys.flags.isolated != 1 or sys.flags.dont_write_bytecode != 1 or sys.flags.no_site != 1:
+        raise AuthorityError("fresh audit child requires the exact -I -B -S bootstrap")
     if tuple(getattr(sys, "orig_argv", ())) != _FRESH_CANARY_EXEC_COMMAND:
         raise AuthorityError("fresh audit child command line differs from the frozen role")
-    if tuple(sys.argv) != (_FRESH_CANARY_EXEC_PHASE,):
+    if tuple(sys.argv) != ("-c", _FRESH_CANARY_EXEC_PHASE):
         raise AuthorityError("fresh audit child received an unexpected argument")
     if _process_command_line(os.getpid()) != _FRESH_CANARY_EXEC_COMMAND:
         raise AuthorityError("fresh audit child /proc command line mismatch")
@@ -7387,6 +8476,14 @@ def _assert_fresh_canary_exec_child_context() -> None:
         raise AuthorityError("fresh audit child did not execute the pinned Python binary")
     if dict(os.environ) != dict(_OBSERVED_TEST_ENVIRONMENT):
         raise AuthorityError("fresh audit child environment differs from the exact allowlist")
+    expected_site_inventory_sha256 = _canonical_bundle_python_site_inventory_sha256()
+    process = establish_governed_process(
+        expected_python_site_inventory_sha256=expected_site_inventory_sha256,
+    )
+    require_governed_process_capability(
+        process,
+        expected_role="fresh_canary_audit",
+    )
 
 
 def _build_fresh_exec_receipt(
@@ -7413,9 +8510,7 @@ def _build_fresh_exec_receipt(
             "source_bundle_sha256": graph.snapshot.source_bundle_sha256,
             "fresh_audit_payload_sha256": parsed["payload_sha256"],
             "fresh_audit_file_sha256": file_sha256(fresh_audit_file_bytes),
-            "fresh_audit_file_base64": base64.b64encode(
-                fresh_audit_file_bytes
-            ).decode("ascii"),
+            "fresh_audit_file_base64": base64.b64encode(fresh_audit_file_bytes).decode("ascii"),
         }
     )
 
@@ -7429,6 +8524,11 @@ def _issue_observed_fresh_exec_capability(
 ) -> ObservedFreshCanaryExecCapability:
     if _observer is not _FRESH_EXEC_OBSERVER_ISSUER:
         raise AuthorityError("fresh exec issuance requires the pinned parent observer")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     snapshot = _require_clean_source_snapshot(snapshot)
     if process.pid == os.getpid() or process.poll() is not None:
         raise AuthorityError("fresh audit child must be a distinct live process")
@@ -7538,14 +8638,12 @@ def _require_observed_fresh_exec_capability(
         or capability._process.pid != capability.auditor_process_id
         or capability._process.poll() is not None
         or tuple(capability._process.args) != _FRESH_CANARY_EXEC_COMMAND
-        or _process_command_line(capability.auditor_process_id)
-        != _FRESH_CANARY_EXEC_COMMAND
+        or _process_command_line(capability.auditor_process_id) != _FRESH_CANARY_EXEC_COMMAND
         or _process_executable_file_sha256(capability.auditor_process_id)
         != capability.auditor_executable_file_sha256
         or capability.exact_orig_argv_sha256 != _fresh_exec_command_sha256()
         or audit["payload_sha256"] != capability.fresh_audit_payload_sha256
-        or file_sha256(capability._fresh_audit_file_bytes)
-        != capability.fresh_audit_file_sha256
+        or file_sha256(capability._fresh_audit_file_bytes) != capability.fresh_audit_file_sha256
     ):
         raise AuthorityError("fresh exec capability no longer matches its live child")
     return capability
@@ -7559,7 +8657,9 @@ def _validated_fresh_audit_inputs(
     canary_claim: CanaryArtifactCapability,
     canary_beacon: CanaryArtifactCapability,
     published_canary_result: PublishedCanaryResultCapability,
-) -> Mapping[str, DevelopmentBundleCapability | ValidatedArtifactCapability | CanaryArtifactCapability]:
+) -> Mapping[
+    str, DevelopmentBundleCapability | ValidatedArtifactCapability | CanaryArtifactCapability
+]:
     selected = require_validated_artifact_capability(
         selected_method_freeze,
         expected_schema=ARTIFACT_SCHEMAS["selected_method_freeze"],
@@ -7580,9 +8680,7 @@ def _validated_fresh_audit_inputs(
         canary_beacon,
         expected_schema=ARTIFACT_SCHEMAS["canary_beacon"],
     )
-    result_publication = require_published_canary_result_capability(
-        published_canary_result
-    )
+    result_publication = require_published_canary_result_capability(published_canary_result)
     result = result_publication.artifact
     for name, capability in (
         ("canary authorization", authorization),
@@ -7603,8 +8701,7 @@ def _validated_fresh_audit_inputs(
     if (
         tests_payload["selected_method_freeze_payload_sha256"] != selected.payload_sha256
         or tests_payload["selected_method_freeze_file_sha256"] != selected.file_sha256
-        or authorization_payload["selected_method_freeze_payload_sha256"]
-        != selected.payload_sha256
+        or authorization_payload["selected_method_freeze_payload_sha256"] != selected.payload_sha256
         or authorization_payload["selected_method_freeze_file_sha256"] != selected.file_sha256
         or authorization_payload["test_evidence_payload_sha256"] != tests.payload_sha256
         or authorization_payload["test_evidence_file_sha256"] != tests.file_sha256
@@ -7669,9 +8766,7 @@ def _build_fresh_canary_audit_for_process(
         canary_beacon=canary_beacon,
         published_canary_result=published_canary_result,
     )
-    result_publication = require_published_canary_result_capability(
-        published_canary_result
-    )
+    result_publication = require_published_canary_result_capability(published_canary_result)
     result_payload = result_publication.artifact._validated_payload
     if (
         clean_commit != selected_method_freeze.source_commit
@@ -7891,6 +8986,10 @@ def _validate_fresh_canary_audit_at_paths(
 ) -> FreshCanaryAuditCapability:
     if _observer is not _CAPABILITY_ISSUER:
         raise AuthorityError("fresh-audit issuance requires exact canonical observation")
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     if frozenset(audited_artifact_paths) != frozenset(_FRESH_AUDIT_REFERENCE_NAMES):
         raise ValidationError("fresh audit requires the exact audited artifact path set")
     publication = require_published_canary_result_capability(published_canary_result)
@@ -8034,6 +9133,10 @@ def validate_fresh_canary_audit(
 ) -> FreshCanaryAuditCapability:
     """Validate only the exact canonical fresh-audit publication graph."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     return _validate_fresh_canary_audit_at_paths(
         audited_artifact_paths=_FRESH_AUDIT_CANONICAL_PATHS,
         audit_path=CANARY_FRESH_AUDIT_CANONICAL_PATH,
@@ -8067,6 +9170,11 @@ def observe_child_fresh_canary_audit(
 ) -> FreshCanaryAuditCapability:
     """Observe a still-live exec child's canonical audit from the parent."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     if auditor_process_id == os.getpid():
         raise AuthorityError("fresh audit child must be distinct from its parent")
     return _validate_fresh_canary_audit_at_paths(
@@ -8101,6 +9209,10 @@ def reopen_fresh_canary_audit(
 ) -> FreshCanaryAuditCapability:
     """Reopen durable fresh-audit authority after both recorded processes exit."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     return _validate_fresh_canary_audit_at_paths(
         audited_artifact_paths=_FRESH_AUDIT_CANONICAL_PATHS,
         audit_path=CANARY_FRESH_AUDIT_CANONICAL_PATH,
@@ -8123,6 +9235,10 @@ def reopen_fresh_canary_audit(
 def run_fresh_canary_audit_in_exec_subprocess() -> FreshCanaryAuditCapability:
     """Run or reopen the fixed canonical audit through a clean isolated exec."""
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
     graph = _reopen_canonical_canary_graph()
     try:
         return reopen_fresh_canary_audit(
@@ -8138,6 +9254,11 @@ def run_fresh_canary_audit_in_exec_subprocess() -> FreshCanaryAuditCapability:
     except FileNotFoundError:
         pass
 
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
     process = subprocess.Popen(
         _FRESH_CANARY_EXEC_COMMAND,
         stdin=subprocess.PIPE,
@@ -8229,12 +9350,8 @@ def require_fresh_canary_audit_capability(value: object) -> FreshCanaryAuditCapa
         "clean_commit": capability.clean_commit,
         "clean_tree": capability.clean_tree,
         "exact_state_trace": [state.value for state in capability.exact_state_trace],
-        "selected_method_freeze_payload_sha256": (
-            capability.selected_method_freeze_payload_sha256
-        ),
-        "selected_method_freeze_file_sha256": (
-            capability.selected_method_freeze_file_sha256
-        ),
+        "selected_method_freeze_payload_sha256": (capability.selected_method_freeze_payload_sha256),
+        "selected_method_freeze_file_sha256": (capability.selected_method_freeze_file_sha256),
         "test_evidence_payload_sha256": capability.test_evidence_payload_sha256,
         "test_evidence_file_sha256": capability.test_evidence_file_sha256,
         "canary_result_payload_sha256": capability.canary_result_payload_sha256,
@@ -8252,12 +9369,9 @@ def require_fresh_canary_audit_capability(value: object) -> FreshCanaryAuditCapa
         or validate_payload_hash(payload) != capability.payload_sha256
         or file_sha256(artifact_bytes(payload)) != capability.file_sha256
         or capability.scope != "canonical"
-        or capability.publisher_process_id
-        != payload["publisher_process_id"]
-        or capability.auditor_process_id
-        != payload["distinct_auditor_process_id"]
-        or capability.auditor_executable_file_sha256
-        != payload["auditor_executable_file_sha256"]
+        or capability.publisher_process_id != payload["publisher_process_id"]
+        or capability.auditor_process_id != payload["distinct_auditor_process_id"]
+        or capability.auditor_executable_file_sha256 != payload["auditor_executable_file_sha256"]
         or capability.publisher_process_id == capability.auditor_process_id
         or not isinstance(capability.auditor_liveness_observed, bool)
         or capability.clean_commit != payload["clean_commit"]
@@ -8268,14 +9382,10 @@ def require_fresh_canary_audit_capability(value: object) -> FreshCanaryAuditCapa
         != payload["selected_method_freeze_payload_sha256"]
         or capability.selected_method_freeze_file_sha256
         != payload["selected_method_freeze_file_sha256"]
-        or capability.test_evidence_payload_sha256
-        != payload["test_evidence_payload_sha256"]
-        or capability.test_evidence_file_sha256
-        != payload["test_evidence_file_sha256"]
-        or capability.canary_result_payload_sha256
-        != payload["canary_result_payload_sha256"]
-        or capability.canary_result_file_sha256
-        != payload["canary_result_file_sha256"]
+        or capability.test_evidence_payload_sha256 != payload["test_evidence_payload_sha256"]
+        or capability.test_evidence_file_sha256 != payload["test_evidence_file_sha256"]
+        or capability.canary_result_payload_sha256 != payload["canary_result_payload_sha256"]
+        or capability.canary_result_file_sha256 != payload["canary_result_file_sha256"]
         or capability.capability_seal_sha256 != _artifact_binding_sha256(seal)
     ):
         raise AuthorityError("fresh canary audit capability binding mismatch")
@@ -8530,8 +9640,9 @@ def require_attempt_manifest_capability(value: object) -> AttemptManifestCapabil
         raise AuthorityError("attempt manifest capability payload binding mismatch")
     _require_sha256(capability.payload_sha256, "attempt manifest payload_sha256")
     _require_sha256(capability.file_sha256, "attempt manifest file_sha256")
-    if capability.attempt_id != f"sha256-{capability.payload_sha256}" or not _ATTEMPT_ID_RE.fullmatch(
-        capability.attempt_id
+    if (
+        capability.attempt_id != f"sha256-{capability.payload_sha256}"
+        or not _ATTEMPT_ID_RE.fullmatch(capability.attempt_id)
     ):
         raise AuthorityError("attempt ID is not derived from the exact manifest payload hash")
     created = _parse_rfc3339_seconds(
@@ -8590,10 +9701,8 @@ def _validated_manifest_references(
         or selected.source_tree != clean_identity.tree
         or tests._validated_payload["selected_method_freeze_payload_sha256"]
         != selected.payload_sha256
-        or tests._validated_payload["selected_method_freeze_file_sha256"]
-        != selected.file_sha256
-        or selected.payload_sha256
-        != fresh_canary_audit.selected_method_freeze_payload_sha256
+        or tests._validated_payload["selected_method_freeze_file_sha256"] != selected.file_sha256
+        or selected.payload_sha256 != fresh_canary_audit.selected_method_freeze_payload_sha256
         or selected.file_sha256 != fresh_canary_audit.selected_method_freeze_file_sha256
         or tests.payload_sha256 != fresh_canary_audit.test_evidence_payload_sha256
         or tests.file_sha256 != fresh_canary_audit.test_evidence_file_sha256
@@ -8778,9 +9887,7 @@ def validate_attempt_manifest(
         raise ValidationError("attempt seed statement base64 is not canonical with padding")
     statement = build_seed_statement(
         scientific_candidate_id=str(parsed["scientific_candidate_id"]),
-        selected_method_freeze_payload_sha256=references[
-            "selected_method_freeze"
-        ].payload_sha256,
+        selected_method_freeze_payload_sha256=references["selected_method_freeze"].payload_sha256,
         exact_target_timestamp_UTC=str(parsed["exact_target_timestamp_UTC"]),
         exact_HTTPS_endpoint=str(parsed["exact_HTTPS_endpoint"]),
     )
@@ -8867,9 +9974,7 @@ class ExecutionAuthorizationCapability:
         object.__setattr__(self, "payload_sha256", payload_sha256)
         object.__setattr__(self, "file_sha256", file_sha256)
         object.__setattr__(self, "attempt_id", attempt_id)
-        object.__setattr__(
-            self, "attempt_manifest_payload_sha256", attempt_manifest_payload_sha256
-        )
+        object.__setattr__(self, "attempt_manifest_payload_sha256", attempt_manifest_payload_sha256)
         object.__setattr__(self, "attempt_manifest_file_sha256", attempt_manifest_file_sha256)
         object.__setattr__(self, "exact_target_timestamp_UTC", exact_target_timestamp_UTC)
         object.__setattr__(self, "exact_HTTPS_endpoint", exact_HTTPS_endpoint)
@@ -8902,9 +10007,7 @@ def require_execution_authorization_capability(
     _require_sha256(capability.payload_sha256, "execution authorization payload_sha256")
     _require_sha256(capability.file_sha256, "execution authorization file_sha256")
     signed = _parse_rfc3339_seconds(capability.signed_at_UTC, "authorization signed_at_UTC")
-    created = _parse_rfc3339_seconds(
-        manifest.manifest_created_at_UTC, "manifest created_at_UTC"
-    )
+    created = _parse_rfc3339_seconds(manifest.manifest_created_at_UTC, "manifest created_at_UTC")
     target = _parse_rfc3339_seconds(manifest.exact_target_timestamp_UTC, "manifest target")
     if not created < signed < target:
         raise AuthorityError("authorization signature time is outside the exact open interval")
@@ -8918,9 +10021,7 @@ def build_execution_authorization_signed_payload(
 ) -> Mapping[str, Any]:
     manifest = require_attempt_manifest_capability(manifest)
     signed = _parse_rfc3339_seconds(signed_at_UTC, "authorization signed_at_UTC")
-    created = _parse_rfc3339_seconds(
-        manifest.manifest_created_at_UTC, "manifest created_at_UTC"
-    )
+    created = _parse_rfc3339_seconds(manifest.manifest_created_at_UTC, "manifest created_at_UTC")
     target = _parse_rfc3339_seconds(manifest.exact_target_timestamp_UTC, "manifest target")
     if not created < signed < target:
         raise ValidationError("authorization must be signed after manifest and before target")
@@ -9009,7 +10110,12 @@ def validate_execution_authorization(
         or parsed["owner_authority_ssh_fingerprint"] != OWNER_AUTHORITY_FINGERPRINT
     ):
         raise ValidationError("execution authorization trust-root record mismatch")
-    public_key = _validate_owner_public_key_bytes(owner_public_key_bytes)
+    exponent, modulus = _validate_owner_public_key_bytes(owner_public_key_bytes)
+    from cryptography.exceptions import InvalidSignature
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding, rsa
+
+    public_key = rsa.RSAPublicNumbers(exponent, modulus).public_key()
     encoded = str(parsed["detached_signature_base64"])
     try:
         signature = base64.b64decode(encoded, validate=True)
@@ -9102,9 +10208,7 @@ class GlobalClaimCapability:
         object.__setattr__(self, "payload_sha256", payload_sha256)
         object.__setattr__(self, "file_sha256", file_sha256)
         object.__setattr__(self, "attempt_id", attempt_id)
-        object.__setattr__(
-            self, "attempt_manifest_payload_sha256", attempt_manifest_payload_sha256
-        )
+        object.__setattr__(self, "attempt_manifest_payload_sha256", attempt_manifest_payload_sha256)
         object.__setattr__(self, "attempt_manifest_file_sha256", attempt_manifest_file_sha256)
         object.__setattr__(
             self,
@@ -9279,8 +10383,7 @@ def require_published_global_claim_capability(
         or capability.path != SCIENTIFIC_GLOBAL_CLAIM_CANONICAL_PATH
         or capability.payload_sha256 != claim.payload_sha256
         or capability.file_sha256 != claim.file_sha256
-        or capability.attempt_manifest_payload_sha256
-        != claim.attempt_manifest_payload_sha256
+        or capability.attempt_manifest_payload_sha256 != claim.attempt_manifest_payload_sha256
         or capability.attempt_manifest_file_sha256 != claim.attempt_manifest_file_sha256
         or capability.execution_authorization_payload_sha256
         != claim.execution_authorization_payload_sha256
@@ -9325,8 +10428,7 @@ def require_scientific_beacon_capability(value: object) -> ScientificBeaconCapab
         capability._validation_marker is not _CAPABILITY_ISSUER
         or capability.schema != ARTIFACT_SCHEMAS["scientific_beacon"]
         or capability.candidate_id != CANDIDATE_ID
-        or capability.attempt_id
-        != f"sha256-{capability.attempt_manifest_payload_sha256}"
+        or capability.attempt_id != f"sha256-{capability.attempt_manifest_payload_sha256}"
     ):
         raise AuthorityError("scientific beacon capability identity mismatch")
     for name in (
@@ -9481,7 +10583,10 @@ def require_scientific_seed_capability(
     capability = value
     if capability._validation_marker is not _CAPABILITY_ISSUER:
         raise AuthorityError("scientific seed capability marker is invalid")
-    if capability.schema != SCIENTIFIC_SEED_CAPABILITY_SCHEMA or capability.candidate_id != CANDIDATE_ID:
+    if (
+        capability.schema != SCIENTIFIC_SEED_CAPABILITY_SCHEMA
+        or capability.candidate_id != CANDIDATE_ID
+    ):
         raise AuthorityError("scientific seed capability identity mismatch")
     expected = _scientific_seed_digest(
         attempt_manifest_payload_sha256=capability.attempt_manifest_payload_sha256,
@@ -9513,6 +10618,8 @@ def require_scientific_seed_capability(
 
 def scientific_seed_sequence(capability: ScientificSeedCapability) -> np.random.SeedSequence:
     capability = require_scientific_seed_capability(capability)
+    import numpy as np
+
     return np.random.SeedSequence(entropy=capability.seed_sequence_entropy)
 
 
@@ -9529,6 +10636,8 @@ def scientific_rng(capability: ScientificSeedCapability) -> np.random.Generator:
 
     capability = require_scientific_seed_capability(capability)
     assert_scientific_execution_authorized()
+    import numpy as np
+
     return np.random.Generator(np.random.PCG64DXSM(scientific_seed_sequence(capability)))
 
 
@@ -9544,8 +10653,8 @@ def publish_scientific_global_claim(
         authorization,
         manifest=manifest,
     )
-    claimed_at_UTC = datetime.now(timezone.utc).replace(microsecond=0).strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
+    claimed_at_UTC = (
+        datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
     )
     value = build_global_claim(
         manifest,

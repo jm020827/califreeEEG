@@ -16,6 +16,37 @@ import cfeg.metadata_calibration_v3_governance as gov
 
 _REPOSITORY = Path(__file__).resolve().parents[1]
 _FIXTURE = _REPOSITORY / "tests/fixtures/nist_beacon_v2_20260905T180000Z.json"
+_TEST_ONLY_PYTEST_BOOTSTRAP = (
+    gov._GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE
+    + f"_site_prefix={gov._PYTHON_SITE_INVENTORY_ARG_PREFIX!r}\n"
+    + "_site_args=[i for i,v in enumerate(sys.argv) if v.startswith(_site_prefix)]\n"
+    + "if len(_site_args)!=1:\n raise RuntimeError('missing test site digest')\n"
+    + "del sys.argv[_site_args[0]]\n"
+    + "import pytest\n"
+    + "raise SystemExit(pytest.main(sys.argv[1:]))\n"
+)
+
+
+def _test_only_pytest_command(*paths: str) -> tuple[str, ...]:
+    return (
+        *gov.governed_python_subprocess_prefix(),
+        "-c",
+        _TEST_ONLY_PYTEST_BOOTSTRAP,
+        "-q",
+        "-c",
+        "pyproject.toml",
+        "--rootdir=.",
+        "-o",
+        "addopts=",
+        "-o",
+        "pythonpath=",
+        "-o",
+        "xfail_strict=true",
+        "--import-mode=importlib",
+        "-p",
+        "no:cacheprovider",
+        *paths,
+    )
 
 
 @pytest.fixture
@@ -38,6 +69,10 @@ def _commit_tiny_repository(
     module = root / "src/cfeg/metadata_calibration_v3_governance.py"
     module.parent.mkdir(parents=True)
     module.write_text("# immutable test source\n", encoding="utf-8")
+    (root / "pyproject.toml").write_text(
+        '[tool.pytest.ini_options]\naddopts = "--basetemp=.pytest-temp"\n',
+        encoding="utf-8",
+    )
     if include_frozen_files:
         for relative_path, data in _frozen_file_bytes().items():
             path = root / relative_path
@@ -114,10 +149,23 @@ def test_runtime_inventory_hashes_all_distribution_files_and_rejects_drift(
 ) -> None:
     inventory, fingerprint = gov._current_numerical_runtime()
     distributions = {item["distribution"]: item for item in inventory["distributions"]}
-    assert {"numpy", "scipy", "PyYAML", "cryptography", "pytest"} <= set(
-        distributions
-    )
+    assert {"numpy", "scipy", "PyYAML", "cryptography", "pytest"} <= set(distributions)
+    assert {
+        "exceptiongroup",
+        "iniconfig",
+        "packaging",
+        "pluggy",
+        "Pygments",
+        "tomli",
+        "typing_extensions",
+        "cffi",
+        "pycparser",
+    } <= set(distributions)
     assert len(distributions["scipy"]["installed_file_inventory"]) > 1_000
+    assert all(
+        set(record) == {"path", "size_bytes", "mode", "file_sha256"}
+        for record in distributions["pluggy"]["installed_file_inventory"]
+    )
     assert inventory["python"]["implementation_cache_tag"]
     assert inventory["numpy_runtime_configuration_sha256"]
     altered = json.loads(gov.canonical_json_bytes(inventory))
@@ -135,7 +183,149 @@ def test_runtime_inventory_hashes_all_distribution_files_and_rejects_drift(
         gov._require_current_numerical_runtime_binding(inventory, fingerprint)
 
 
+def test_pluggy_dependency_drift_changes_the_runtime_fingerprint() -> None:
+    inventory, fingerprint = gov._current_numerical_runtime()
+    altered = json.loads(gov.canonical_json_bytes(inventory))
+    pluggy = next(item for item in altered["distributions"] if item["distribution"] == "pluggy")
+    pluggy["installed_file_inventory"][0]["file_sha256"] = "0" * 64
+    pluggy["installed_file_inventory_sha256"] = gov.file_sha256(
+        gov.canonical_json_bytes({"files": pluggy["installed_file_inventory"]})
+    )
+    assert gov.numerical_runtime_fingerprint_sha256(altered) != fingerprint
+    with pytest.raises(gov.AuthorityError, match="stored numerical runtime inventory"):
+        gov._require_current_numerical_runtime_binding(altered, fingerprint)
+
+
+def test_complete_site_inventory_binds_pyc_pth_paths_modes_and_hardlinks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    site = tmp_path / "site-packages"
+    cache = site / "demo/__pycache__"
+    cache.mkdir(parents=True)
+    source = site / "demo/module.py"
+    bytecode = cache / "module.cpython-310.pyc"
+    path_control = site / "editable.pth"
+    source.write_bytes(b"value = 1\n")
+    bytecode.write_bytes(b"bound bytecode\n")
+    path_control.write_bytes(b"/exact/source\n")
+    hardlink = site / "demo/module-hardlink.py"
+    os.link(source, hardlink)
+    monkeypatch.setattr(gov, "V3_SITE_PACKAGES", site)
+
+    baseline = gov._capture_complete_site_packages_inventory()
+    assert baseline["schema"] == (
+        "cfeg.metadata-calibration-efficiency-v3.python-site-inventory.v1"
+    )
+    assert baseline["regular_file_count"] == 4
+    assert baseline["directory_count"] == 3
+
+    bytecode.write_bytes(b"changed bytecode\n")
+    changed_bytes = gov._capture_complete_site_packages_inventory()
+    assert changed_bytes["inventory_sha256"] != baseline["inventory_sha256"]
+    bytecode.write_bytes(b"bound bytecode\n")
+    source.chmod(0o600)
+    changed_mode = gov._capture_complete_site_packages_inventory()
+    assert changed_mode["inventory_sha256"] != baseline["inventory_sha256"]
+    source.chmod(0o644)
+    path_control.unlink()
+    missing = gov._capture_complete_site_packages_inventory()
+    assert missing["inventory_sha256"] != baseline["inventory_sha256"]
+    path_control.write_bytes(b"/exact/source\n")
+    (site / "unexpected.py").write_bytes(b"hostile = True\n")
+    extra = gov._capture_complete_site_packages_inventory()
+    assert extra["inventory_sha256"] != baseline["inventory_sha256"]
+
+
+@pytest.mark.parametrize("kind", ("symlink", "fifo"))
+def test_complete_site_inventory_rejects_links_and_special_files(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    kind: str,
+) -> None:
+    site = tmp_path / "site-packages"
+    site.mkdir()
+    target = site / "target.py"
+    target.write_bytes(b"safe = True\n")
+    hostile = site / "hostile"
+    if kind == "symlink":
+        hostile.symlink_to(target)
+    else:
+        os.mkfifo(hostile)
+    monkeypatch.setattr(gov, "V3_SITE_PACKAGES", site)
+    with pytest.raises(gov.AuthorityError, match="unsafe type"):
+        gov._capture_complete_site_packages_inventory()
+
+
+def test_complete_site_inventory_rejects_directory_swap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    site = tmp_path / "site-packages"
+    package = site / "demo"
+    package.mkdir(parents=True)
+    (package / "module.py").write_bytes(b"safe = True\n")
+    monkeypatch.setattr(gov, "V3_SITE_PACKAGES", site)
+    original_open = gov.os.open
+    swapped = False
+    monkeypatch.setattr(gov, "_require_dirfd_primitives", lambda: None)
+
+    def swap_before_open(
+        path: object,
+        flags: int,
+        *args: object,
+        **kwargs: object,
+    ) -> int:
+        nonlocal swapped
+        if path == "demo" and flags & os.O_DIRECTORY and not swapped:
+            swapped = True
+            package.rename(site / "demo-old")
+            package.mkdir()
+        return original_open(path, flags, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(gov.os, "open", swap_before_open)
+    with pytest.raises(gov.AuthorityError, match="changed during traversal"):
+        gov._capture_complete_site_packages_inventory()
+
+
+def test_runtime_mismatch_rejects_before_external_import(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    site = tmp_path / "site-packages"
+    site.mkdir()
+    dependency = site / "dependency.py"
+    dependency.write_bytes(b"side_effect = False\n")
+    monkeypatch.setattr(gov, "V3_SITE_PACKAGES", site)
+    baseline = gov._capture_complete_site_packages_inventory()
+    expected_inventory = {"python_site_inventory": dict(baseline)}
+    expected_fingerprint = gov.numerical_runtime_fingerprint_sha256(expected_inventory)
+    dependency.write_bytes(b"side_effect = True\n")
+    imported: list[str] = []
+    monkeypatch.setattr(
+        gov.importlib,
+        "import_module",
+        lambda name: imported.append(name),
+    )
+    with pytest.raises(gov.AuthorityError, match="before external runtime code"):
+        gov._require_current_numerical_runtime_binding(
+            expected_inventory,
+            expected_fingerprint,
+        )
+    assert imported == []
+
+
 def test_focused_a_suite_covers_all_six_v3_implementation_boundaries() -> None:
+    expected_prefix = (
+        os.fspath(gov.V3_PYTHON_EXECUTABLE),
+        "-I",
+        "-B",
+        "-S",
+    )
+    assert gov.governed_python_subprocess_prefix() == expected_prefix
+    assert gov._FRESH_CANARY_EXEC_COMMAND[:4] == expected_prefix
+    assert gov._TEST_COMMANDS["focused_v3"][:4] == expected_prefix
+    assert gov._TEST_COMMANDS["repository_full"][:4] == expected_prefix
     assert gov._TEST_COMMANDS["focused_v3"][-6:] == (
         "tests/test_metadata_calibration_v3.py",
         "tests/test_metadata_calibration_v3_synthetic.py",
@@ -144,12 +334,54 @@ def test_focused_a_suite_covers_all_six_v3_implementation_boundaries() -> None:
         "tests/test_metadata_calibration_v3_contract.py",
         "tests/test_metadata_calibration_v3_runner.py",
     )
+    for command in gov._TEST_COMMANDS.values():
+        assert "--rootdir=." in command
+        assert "--import-mode=importlib" in command
+        assert ("-o", "addopts=") == command[
+            command.index("addopts=") - 1 : command.index("addopts=") + 1
+        ]
+        assert ("-o", "pythonpath=") == command[
+            command.index("pythonpath=") - 1 : command.index("pythonpath=") + 1
+        ]
+        assert ("-p", "no:cacheprovider") == command[
+            command.index("no:cacheprovider") - 1 : command.index("no:cacheprovider") + 1
+        ]
     environment = gov.frozen_numerical_executor_environment()
     assert "HOME" not in environment
     assert environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] == "1"
     assert environment["OPENBLAS_NUM_THREADS"] == "1"
     with pytest.raises(TypeError):
         environment["OPENBLAS_NUM_THREADS"] = "2"  # type: ignore[index]
+
+
+def test_no_site_bootstrap_adds_only_frozen_source_and_site_paths() -> None:
+    script = (
+        gov._GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE
+        + "import pytest\n"
+        + "print(int(sys.flags.no_site))\n"
+        + "print(int(sys.flags.hash_randomization))\n"
+        + "print('|'.join(sys.path))\n"
+        + "print(pathlib.Path(pytest.__file__).resolve())\n"
+    )
+    completed = subprocess.run(
+        (*gov.governed_python_subprocess_prefix(), "-c", script),
+        check=True,
+        capture_output=True,
+        env=dict(gov.frozen_numerical_executor_environment()),
+    )
+    lines = completed.stdout.decode("utf-8").splitlines()
+    assert lines == [
+        "1",
+        "1",
+        "|".join(
+            (
+                *gov._ISOLATED_STDLIB_SYS_PATH,
+                os.fspath(gov.V3_SOURCE_REPOSITORY / "src"),
+                os.fspath(gov.V3_SITE_PACKAGES),
+            )
+        ),
+        os.fspath(gov.V3_SITE_PACKAGES / "pytest/__init__.py"),
+    ]
 
 
 def test_development_result_size_ceiling_covers_exact_verbose_row_shape() -> None:
@@ -181,10 +413,7 @@ def test_development_result_size_ceiling_covers_exact_verbose_row_shape() -> Non
         "pairing_sha256s": [digest] * 5,
         "support_reliability_capability_sha256s": [digest] * 5,
         "pairing_packet_binding_changed_fraction": 1.0,
-        "pairing_mean_derangement_abs_g_M_change_by_query_block": [
-            123.45678901234567
-        ]
-        * 5,
+        "pairing_mean_derangement_abs_g_M_change_by_query_block": [123.45678901234567] * 5,
         "pairing_scientifically_changed_count": 5,
         "pairing_potential_unit_count": 5,
         "context_packet_covered_count": 5,
@@ -206,20 +435,13 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
         encoding="utf-8",
     )
     snapshot = _commit_tiny_repository(repository, include_frozen_files=True)
-    command = (
-        os.fspath(gov.V3_PYTHON_EXECUTABLE),
-        "-I",
-        "-B",
-        "-c",
-        gov._PYTEST_ISOLATED_BOOTSTRAP,
-        "-q",
-        "-o",
-        "xfail_strict=true",
-        "-p",
-        "no:cacheprovider",
-        "test_sample.py",
-    )
+    command = _test_only_pytest_command("test_sample.py")
     monkeypatch.setattr(gov, "_TEST_COMMANDS", {"focused_v3": command})
+    git_exclude = repository / ".git/info/exclude"
+    git_exclude.write_text(
+        git_exclude.read_text(encoding="utf-8") + "\n.pytest-temp/\n.pytest_cache/\n",
+        encoding="utf-8",
+    )
     observed = gov._run_observed_test_under_test_root(
         "focused_v3",
         repository=repository,
@@ -229,6 +451,30 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert observed.passed_tests == observed.collected_tests == 1
     assert len(observed.junit_report_file_sha256) == 64
     assert observed.junit_report_path.startswith("/tmp/cfeg-v3-junit-")
+    site_argument, basetemp_argument, junit_argument = observed.argv[-3:]
+    assert site_argument.startswith(gov._PYTHON_SITE_INVENTORY_ARG_PREFIX)
+    assert len(site_argument.removeprefix(gov._PYTHON_SITE_INVENTORY_ARG_PREFIX)) == 64
+    assert basetemp_argument.startswith("--basetemp=/tmp/cfeg-v3-junit-")
+    assert basetemp_argument.endswith("/pytest-temp")
+    assert junit_argument == f"--junitxml={observed.junit_report_path}"
+    assert ("-o", "addopts=") == observed.argv[
+        observed.argv.index("addopts=") - 1 : observed.argv.index("addopts=") + 1
+    ]
+    assert "--import-mode=importlib" in observed.argv
+    assert ("-p", "no:cacheprovider") == observed.argv[
+        observed.argv.index("no:cacheprovider") - 1 : observed.argv.index("no:cacheprovider") + 1
+    ]
+    assert not (repository / ".pytest-temp").exists()
+    assert not (repository / ".pytest_cache").exists()
+    with pytest.raises(gov.AuthorityError, match="frozen command template"):
+        gov._require_frozen_test_argv(
+            "focused_v3",
+            (*observed.argv[:-2], "--basetemp=/tmp/hostile", observed.argv[-1]),
+            observed.junit_report_path,
+            expected_python_site_inventory_sha256=site_argument.removeprefix(
+                gov._PYTHON_SITE_INVENTORY_ARG_PREFIX
+            ),
+        )
     with pytest.raises(gov.AuthorityError, match="binding mismatch"):
         gov.require_observed_test_run_capability(
             observed,
@@ -312,19 +558,7 @@ def test_committed_frozen_file_drift_cannot_consume_bundle_path(
         check=True,
     )
     snapshot = gov.capture_clean_source_snapshot(repository)
-    command = (
-        os.fspath(gov.V3_PYTHON_EXECUTABLE),
-        "-I",
-        "-B",
-        "-c",
-        gov._PYTEST_ISOLATED_BOOTSTRAP,
-        "-q",
-        "-o",
-        "xfail_strict=true",
-        "-p",
-        "no:cacheprovider",
-        "test_sample.py",
-    )
+    command = _test_only_pytest_command("test_sample.py")
     monkeypatch.setattr(gov, "_TEST_COMMANDS", {"focused_v3": command})
     observed = gov._run_observed_test_under_test_root(
         "focused_v3",
@@ -467,6 +701,99 @@ def test_sparse_checkout_state_cannot_enter_source_authority(tmp_path: Path) -> 
     assert gov.capture_clean_source_snapshot(repository).identity == snapshot.identity
 
 
+def test_git_exclude_cannot_hide_untracked_tests_conftest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = tmp_path / "excluded-conftest"
+    repository.mkdir()
+    tracked_test = repository / "tests/test_clean.py"
+    tracked_test.parent.mkdir(parents=True)
+    tracked_test.write_text("def test_clean():\n    assert True\n", encoding="utf-8")
+    snapshot = _commit_tiny_repository(repository)
+    hidden = repository / "tests/conftest.py"
+    (repository / ".git/info/exclude").write_text(
+        "tests/conftest.py\n",
+        encoding="utf-8",
+    )
+    hidden.write_text("pytest_plugins = ['hostile_plugin']\n", encoding="utf-8")
+    status = subprocess.run(
+        [
+            "git",
+            "-C",
+            os.fspath(repository),
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "-z",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    assert status.stdout == b""
+    with pytest.raises(gov.AuthorityError, match="execution tree contains untracked"):
+        gov.capture_clean_source_snapshot(repository)
+
+    spawned = False
+    real_popen = subprocess.Popen
+
+    def guarded_spawn(*args: object, **kwargs: object) -> subprocess.Popen[bytes]:
+        nonlocal spawned
+        argv = args[0]
+        if isinstance(argv, (tuple, list)) and argv[0] == os.fspath(gov.V3_PYTHON_EXECUTABLE):
+            spawned = True
+            raise AssertionError("hidden conftest reached Python subprocess launch")
+        return real_popen(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(subprocess, "Popen", guarded_spawn)
+    with pytest.raises(gov.AuthorityError, match="execution tree contains untracked"):
+        gov._run_observed_test_under_test_root(
+            "focused_v3",
+            repository=repository,
+            snapshot=snapshot,
+        )
+    assert not spawned
+
+
+@pytest.mark.parametrize(
+    "hidden_relative_path",
+    (
+        "src/cfeg/__pycache__/poison.cpython-310.pyc",
+        "src/calibration_free_eeg.egg-info/PKG-INFO",
+    ),
+)
+def test_ignored_generated_import_tree_is_rejected_before_execution(
+    tmp_path: Path,
+    hidden_relative_path: str,
+) -> None:
+    repository = tmp_path / "ignored-import-tree"
+    repository.mkdir()
+    _commit_tiny_repository(repository)
+    (repository / ".git/info/exclude").write_text(
+        f"/{hidden_relative_path}\n",
+        encoding="utf-8",
+    )
+    hidden = repository / hidden_relative_path
+    hidden.parent.mkdir(parents=True)
+    hidden.write_bytes(b"untracked import metadata")
+    status = subprocess.run(
+        [
+            "git",
+            "-C",
+            os.fspath(repository),
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "-z",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    assert status.stdout == b""
+    with pytest.raises(gov.AuthorityError, match="execution tree contains untracked"):
+        gov.capture_clean_source_snapshot(repository)
+
+
 def test_loaded_governance_source_cannot_be_stale_even_when_git_is_clean(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -493,6 +820,11 @@ def test_prepublication_source_drift_never_reaches_bundle_o_excl(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: object(),
+    )
     repository = tmp_path / "source-drift"
     repository.mkdir()
     snapshot = _commit_tiny_repository(repository)
@@ -540,6 +872,11 @@ def test_prepublication_source_drift_never_reaches_bundle_o_excl(
 def test_test_and_result_publishers_repeat_guards_before_o_excl(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: object(),
+    )
     value = gov.seal_payload({"schema": "test-only.guard-probe.v1"})
     calls: list[str] = []
 
@@ -576,9 +913,7 @@ def test_test_and_result_publishers_repeat_guards_before_o_excl(
     monkeypatch.setattr(
         gov,
         "require_development_rng_bundle_capability",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            gov.AuthorityError("A drift")
-        ),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(gov.AuthorityError("A drift")),
     )
     with pytest.raises(gov.AuthorityError, match="A drift"):
         gov.publish_development_result(
@@ -636,21 +971,37 @@ def test_observed_runner_rejects_source_mutation_even_after_zero_exit(
         encoding="utf-8",
     )
     snapshot = _commit_tiny_repository(repository)
-    command = (
-        os.fspath(gov.V3_PYTHON_EXECUTABLE),
-        "-I",
-        "-B",
-        "-c",
-        gov._PYTEST_ISOLATED_BOOTSTRAP,
-        "-q",
-        "-o",
-        "xfail_strict=true",
-        "-p",
-        "no:cacheprovider",
-        "test_mutation.py",
-    )
+    command = _test_only_pytest_command("test_mutation.py")
     monkeypatch.setattr(gov, "_TEST_COMMANDS", {"focused_v3": command})
     with pytest.raises(gov.ValidationError, match="already-clean worktree"):
+        gov._run_observed_test_under_test_root(
+            "focused_v3",
+            repository=repository,
+            snapshot=snapshot,
+        )
+
+
+def test_observed_runner_rejects_python_command_without_no_site(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = tmp_path / "missing-no-site"
+    repository.mkdir()
+    snapshot = _commit_tiny_repository(repository)
+    monkeypatch.setattr(
+        gov,
+        "_TEST_COMMANDS",
+        {
+            "focused_v3": (
+                os.fspath(gov.V3_PYTHON_EXECUTABLE),
+                "-I",
+                "-B",
+                "-c",
+                "raise SystemExit(0)",
+            )
+        },
+    )
+    with pytest.raises(gov.AuthorityError, match="exact python -I -B -S -c"):
         gov._run_observed_test_under_test_root(
             "focused_v3",
             repository=repository,
@@ -672,21 +1023,7 @@ def test_observed_runner_rejects_skips_and_malformed_junit(
     monkeypatch.setattr(
         gov,
         "_TEST_COMMANDS",
-        {
-            "focused_v3": (
-                os.fspath(gov.V3_PYTHON_EXECUTABLE),
-                "-I",
-                "-B",
-                "-c",
-                gov._PYTEST_ISOLATED_BOOTSTRAP,
-                "-q",
-                "-o",
-                "xfail_strict=true",
-                "-p",
-                "no:cacheprovider",
-                "test_skip.py",
-            )
-        },
+        {"focused_v3": _test_only_pytest_command("test_skip.py")},
     )
     with pytest.raises(gov.AuthorityError, match="did not pass completely"):
         gov._run_observed_test_under_test_root(
@@ -709,14 +1046,21 @@ def test_observed_runner_never_chmods_a_symlinked_junit_target(
     victim.write_bytes(b"do not touch")
     victim.chmod(0o600)
     script = (
-        "import os,sys; "
-        "path=sys.argv[-1].split('=',1)[1]; "
-        f"os.symlink({os.fspath(victim)!r},path)"
+        gov._GOVERNED_PYTHON_BOOTSTRAP_PREAMBLE
+        + "import os\n"
+        + "path=sys.argv[-1].split('=',1)[1]\n"
+        + f"os.symlink({os.fspath(victim)!r},path)\n"
     )
     monkeypatch.setattr(
         gov,
         "_TEST_COMMANDS",
-        {"focused_v3": (os.fspath(gov.V3_PYTHON_EXECUTABLE), "-c", script)},
+        {
+            "focused_v3": (
+                *gov.governed_python_subprocess_prefix(),
+                "-c",
+                script,
+            )
+        },
     )
     with pytest.raises(OSError):
         gov._run_observed_test_under_test_root(
@@ -758,6 +1102,11 @@ def test_selected_source_delta_allows_only_new_frozen_blob() -> None:
 def test_selected_reopen_uses_only_durable_b_audit_not_ephemeral_a_proposal(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: object(),
+    )
     core = ModuleType("cfeg.analysis.metadata_calibration_v3_synthetic")
     monkeypatch.setitem(
         sys.modules,
@@ -915,18 +1264,19 @@ def test_fabricated_development_summary_cannot_mint_authority() -> None:
 def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: object(),
+    )
     core = ModuleType("cfeg.analysis.metadata_calibration_v3_synthetic")
     monkeypatch.setitem(
         sys.modules,
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result = dict(
-        gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["development_result"]})
-    )
-    context_payload = dict(
-        gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["context_reference"]})
-    )
+    result = dict(gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["development_result"]}))
+    context_payload = dict(gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["context_reference"]}))
     context = SimpleNamespace(_validated_payload=context_payload)
     bundle = SimpleNamespace(schema=gov.DEVELOPMENT_BUNDLE_SCHEMA)
     audited_proof = SimpleNamespace(selection_status="DEVELOPMENT_NO_GO")
@@ -990,11 +1340,9 @@ def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
         lambda *_args, **_kwargs: expected,
     )
 
-    recovered_artifact, recovered_audit = (
-        gov.recover_canonical_development_result_at_bundle_source(
-            development_bundle=bundle,  # type: ignore[arg-type]
-            context_reference=context,  # type: ignore[arg-type]
-        )
+    recovered_artifact, recovered_audit = gov.recover_canonical_development_result_at_bundle_source(
+        development_bundle=bundle,  # type: ignore[arg-type]
+        context_reference=context,  # type: ignore[arg-type]
     )
     assert recovered_artifact is expected
     assert recovered_audit is audited_proof
@@ -1004,6 +1352,11 @@ def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
 def test_a_selection_recovery_requires_the_sealed_core_audit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: object(),
+    )
     core = ModuleType("cfeg.analysis.metadata_calibration_v3_synthetic")
     monkeypatch.setitem(
         sys.modules,
@@ -1039,10 +1392,7 @@ def test_a_selection_recovery_requires_the_sealed_core_audit(
     gate_sha256 = gov.file_sha256(
         gov.canonical_json_bytes(
             {
-                "schema": (
-                    "cfeg.metadata-calibration-efficiency-v3."
-                    "complete-grid-gate-report.v1"
-                ),
+                "schema": ("cfeg.metadata-calibration-efficiency-v3.complete-grid-gate-report.v1"),
                 "reports": [],
             }
         )
@@ -1053,13 +1403,9 @@ def test_a_selection_recovery_requires_the_sealed_core_audit(
                 "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
                 "selected_grid_cell_id": audited.selected_grid_cell_id,
                 "master_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.MASTER_PLAN_PATH],
-                "synthetic_plan_file_sha256": gov.FROZEN_FILE_SHA256[
-                    gov.SYNTHETIC_PLAN_PATH
-                ],
+                "synthetic_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.SYNTHETIC_PLAN_PATH],
                 "development_bundle_schema": gov.DEVELOPMENT_BUNDLE_SCHEMA,
-                "development_bundle_payload_sha256": (
-                    audited.development_bundle_payload_sha256
-                ),
+                "development_bundle_payload_sha256": (audited.development_bundle_payload_sha256),
                 "development_bundle_file_sha256": audited.development_bundle_file_sha256,
                 "development_result_schema": result.schema,
                 "development_result_payload_sha256": result.payload_sha256,
@@ -1214,7 +1560,7 @@ def test_fresh_audit_requires_pinned_isolated_exec_and_parent_observation() -> N
     assert not hasattr(gov, "_publish_fresh_canary_audit_from_exec_child")
     with pytest.raises(TypeError, match="pinned parent launcher"):
         gov.ObservedFreshCanaryExecCapability()
-    with pytest.raises(gov.AuthorityError, match="fresh audit child"):
+    with pytest.raises(gov.AuthorityError, match="exact -I -B -S bootstrap"):
         gov._assert_fresh_canary_exec_child_context()
     with pytest.raises(gov.AuthorityError, match="pinned parent observer"):
         gov._issue_observed_fresh_exec_capability(
@@ -1290,10 +1636,13 @@ def test_canary_seed_and_probe_exact_oracles_never_enter_scientific_executor() -
     )
     assert seed.seed_digest_sha256 == gov.CANARY_SEED_DIGEST
     assert seed.full_unsigned_256_bit_root_seed == gov.CANARY_ROOT_SEED
-    assert gov.canary_probe_digest(
-        seed,
-        prevalidation_trace=tuple(gov.CanaryState)[:4],
-    ) == gov.CANARY_PROBE_DIGEST
+    assert (
+        gov.canary_probe_digest(
+            seed,
+            prevalidation_trace=tuple(gov.CanaryState)[:4],
+        )
+        == gov.CANARY_PROBE_DIGEST
+    )
     with pytest.raises(gov.AuthorityError, match="ScientificSeedCapability"):
         gov.scientific_seed_sequence(seed)  # type: ignore[arg-type]
     with pytest.raises(gov.AuthorityError, match="ScientificBeaconCapability"):
@@ -1305,9 +1654,7 @@ def test_seed_statement_is_target_bound_noncircular_and_rejects_endpoint_drift()
         scientific_candidate_id=f"{gov.CANDIDATE_ID}-p3-nu_4-lambda_0p20",
         selected_method_freeze_payload_sha256="a" * 64,
         exact_target_timestamp_UTC="2030-01-01T00:10:00Z",
-        exact_HTTPS_endpoint=(
-            "https://beacon.nist.gov/beacon/2.0/pulse/time/1893456600000"
-        ),
+        exact_HTTPS_endpoint=("https://beacon.nist.gov/beacon/2.0/pulse/time/1893456600000"),
     )
     assert statement.endswith(b"\n")
     assert b"attempt" not in statement
@@ -1334,11 +1681,12 @@ def test_future_authority_and_human_outcomes_fail_closed() -> None:
 
 def test_pinned_owner_public_key_is_exact_rsa4096_without_private_material() -> None:
     public_bytes = (_REPOSITORY / gov.OWNER_AUTHORITY_PUBLIC_KEY_PATH).read_bytes()
-    key = gov._validate_owner_public_key_bytes(public_bytes)
-    assert key.key_size == 4096
-    assert gov.file_sha256(public_bytes) == gov.FROZEN_FILE_SHA256[
-        gov.OWNER_AUTHORITY_PUBLIC_KEY_PATH
-    ]
+    exponent, modulus = gov._validate_owner_public_key_bytes(public_bytes)
+    assert exponent == 65_537
+    assert modulus.bit_length() == 4096
+    assert (
+        gov.file_sha256(public_bytes) == gov.FROZEN_FILE_SHA256[gov.OWNER_AUTHORITY_PUBLIC_KEY_PATH]
+    )
     with pytest.raises(gov.ValidationError, match="file hash mismatch"):
         gov._validate_owner_public_key_bytes(public_bytes + b"\n")
 
