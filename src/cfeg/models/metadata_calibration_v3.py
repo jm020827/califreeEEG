@@ -154,9 +154,12 @@ class V3OperatorConfig:
     ideal_prototype_smoothing: float = 0.05
 
     def __post_init__(self) -> None:
-        if not isinstance(self.grid_cell, V3GridCell):
-            raise TypeError("grid_cell must be a V3GridCell.")
-        _positive_finite(self.score_epsilon, "score_epsilon")
+        if type(self.grid_cell) is not V3GridCell:
+            raise TypeError("grid_cell must be an exact V3GridCell.")
+        if self.grid_cell != grid_cell_by_id(self.grid_cell.grid_cell_id):
+            raise ValueError("grid_cell must equal one exact canonical V3 grid cell.")
+        if _positive_finite(self.score_epsilon, "score_epsilon") != 1.0e-12:
+            raise ValueError("V3 score_epsilon is frozen at 1e-12.")
         smoothing = _finite_float(self.ideal_prototype_smoothing, "ideal_prototype_smoothing")
         if smoothing != 0.05:
             raise ValueError("V3 ideal_prototype_smoothing is frozen at 0.05.")
@@ -210,6 +213,23 @@ def grid_cell_by_id(grid_cell_id: str) -> V3GridCell:
     if len(matches) != 1:
         raise ValueError(f"unknown V3 grid cell {requested!r}.")
     return matches[0]
+
+
+def _require_exact_operator_config(value: object) -> V3OperatorConfig:
+    if type(value) is not V3OperatorConfig:
+        raise TypeError("config must be an exact V3OperatorConfig.")
+    cell = value.grid_cell
+    if type(cell) is not V3GridCell or cell != grid_cell_by_id(cell.grid_cell_id):
+        raise ValueError("config grid cell is not the exact canonical instance value.")
+    if cell.operator_instance_sha256 != operator_instance_sha256(
+        grid_cell_id=cell.grid_cell_id,
+        nu_token=cell.nu_token,
+        lambda_token=cell.lambda_token,
+    ):
+        raise ValueError("config operator-instance digest is invalid.")
+    if value.score_epsilon != 1.0e-12 or value.ideal_prototype_smoothing != 0.05:
+        raise ValueError("config numeric constants differ from the frozen V3 contract.")
+    return value
 
 
 def normalize_fbcca_scores(
@@ -333,8 +353,8 @@ class V3SupportProduct:
             raise ValueError("support-product operator binding is invalid.")
         keys = _keys_tuple(self.ordered_support_block_keys, "ordered_support_block_keys")
         _sha256(self.query_normalizer_sha256, "query_normalizer_sha256")
-        if not isinstance(self.reliability_capability, MFreeSupportReliabilityCapability):
-            raise TypeError("reliability_capability has the wrong nominal type.")
+        if type(self.reliability_capability) is not MFreeSupportReliabilityCapability:
+            raise TypeError("reliability_capability has the wrong exact nominal type.")
         capability = self.reliability_capability
         if (
             capability.active_grid_cell_id != self.active_grid_cell_id
@@ -409,8 +429,7 @@ def blockwise_p3_support(
 ) -> V3SupportProduct:
     """Build the common M-free blockwise P3 mixture and reliability capability."""
 
-    if not isinstance(config, V3OperatorConfig):
-        raise TypeError("config must be a V3OperatorConfig.")
+    config = _require_exact_operator_config(config)
     query_key = _nonempty_ascii(query_key, "query_key")
     keys = _keys_tuple(ordered_support_block_keys, "ordered_support_block_keys")
     _sha256(support_eeg_label_manifest_sha256, "support_eeg_label_manifest_sha256")
@@ -1114,6 +1133,7 @@ class ContextPreflightCapability:
 def preflight_context(
     *,
     reference: ContextReference,
+    validated_reference: ValidatedContextReference,
     query_key: str,
     ordered_support_block_keys: Sequence[str],
     query_packet: Mapping[str, Any] | ContextPacket,
@@ -1122,7 +1142,70 @@ def preflight_context(
     lookup_mode: ContextLookupMode = "interface",
     wrong_interface_lookup_key: str | None = None,
 ) -> ContextPreflightCapability:
-    """Validate raw context and calculate affinities before support access."""
+    """Validate raw context using a nominally authorized reference receipt."""
+
+    if type(reference) is not ContextReference:
+        raise TypeError("reference must be an exact ContextReference.")
+    proof = require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
+    if (
+        proof.domain != reference.domain
+        or proof.canonical_channels != reference.canonical_channels
+        or proof.interface_lookup_keys
+        != tuple(table.interface_lookup_key for table in reference.interface_tables)
+    ):
+        raise ValueError("validated context-reference semantics differ from reference.")
+    return _preflight_context_impl(
+        reference=reference,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        query_packet=query_packet,
+        support_packets=support_packets,
+        pairing_sha256=pairing_sha256,
+        lookup_mode=lookup_mode,
+        wrong_interface_lookup_key=wrong_interface_lookup_key,
+    )
+
+
+def _preflight_context_unit(
+    *,
+    reference: ContextReference,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    query_packet: Mapping[str, Any] | ContextPacket,
+    support_packets: Sequence[Mapping[str, Any] | ContextPacket],
+    pairing_sha256: str,
+    lookup_mode: ContextLookupMode = "interface",
+    wrong_interface_lookup_key: str | None = None,
+) -> ContextPreflightCapability:
+    """Explicit unit-fixture seam that carries no publication authority."""
+
+    return _preflight_context_impl(
+        reference=reference,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        query_packet=query_packet,
+        support_packets=support_packets,
+        pairing_sha256=pairing_sha256,
+        lookup_mode=lookup_mode,
+        wrong_interface_lookup_key=wrong_interface_lookup_key,
+    )
+
+
+def _preflight_context_impl(
+    *,
+    reference: ContextReference,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    query_packet: Mapping[str, Any] | ContextPacket,
+    support_packets: Sequence[Mapping[str, Any] | ContextPacket],
+    pairing_sha256: str,
+    lookup_mode: ContextLookupMode = "interface",
+    wrong_interface_lookup_key: str | None = None,
+) -> ContextPreflightCapability:
+    """Shared pure implementation; callers choose production or unit authority."""
 
     if type(reference) is not ContextReference:
         raise TypeError("reference must be an exact ContextReference.")
@@ -1449,20 +1532,19 @@ def prequential_gate_decision(
 ) -> PrequentialGateDecision:
     """Fit/evaluate the chronological gate using A_Q versus A0 and no metadata."""
 
-    if not isinstance(config, V3OperatorConfig):
-        raise TypeError("config must be a V3OperatorConfig.")
+    config = _require_exact_operator_config(config)
     budget = _final_budget(budget)
     if budget not in PREQUENTIAL_BUDGETS:
         raise ValueError("prequential gate budget must be 3 or 5.")
     scores = np.asarray(calibration_fbcca_scores_by_block, dtype=np.float64)
     labels = np.asarray(observed_labels_by_block)
-    if scores.ndim != 3 or scores.shape[0] < budget:
-        raise ValueError("calibration scores must contain every block through the budget.")
+    if scores.ndim != 3 or scores.shape[0] != budget:
+        raise ValueError("calibration scores must contain exactly the authorized prefix.")
     if scores.shape[1] != scores.shape[2] or scores.shape[1] < 2:
         raise ValueError("each calibration block must be complete and class-balanced.")
     classes = scores.shape[2]
     resolved_labels = _integer_labels(labels, classes, "observed_labels_by_block")
-    if resolved_labels.shape != scores.shape[:2] or resolved_labels.shape[0] < budget:
+    if resolved_labels.shape != scores.shape[:2]:
         raise ValueError("observed labels must match calibration score blocks.")
     partitions = tuple(block_partition_sha256s)
     if len(partitions) != budget:
@@ -1581,8 +1663,9 @@ def apply_v3_operator(
     budget = _final_budget(budget)
     if variant not in {"A_Q", "A_QM"}:
         raise ValueError("variant must be A_Q or A_QM.")
-    if not isinstance(config, V3OperatorConfig):
-        raise TypeError("config must be a V3OperatorConfig.")
+    config = _require_exact_operator_config(config)
+    if variant == "A_Q" and context_trust is not None:
+        raise ValueError("A_Q rejects every metadata/context capability input.")
     if gate_mode not in {"deployed", "forced_on"}:
         raise ValueError("gate_mode must be deployed or forced_on.")
     _, base = normalize_fbcca_scores(scores, epsilon=config.score_epsilon)
@@ -1695,23 +1778,93 @@ def apply_v3_after_preflight(
     budget: int,
     config: V3OperatorConfig,
     preflight: ContextPreflightCapability,
+    expected_ordered_support_block_keys: Sequence[str],
+    expected_pairing_sha256: str,
     support_loader: Callable[[], V3SupportProduct],
     gate_decision: PrequentialGateDecision | object | None = None,
     gate_mode: Literal["deployed", "forced_on"] = "deployed",
 ) -> V3OperatorOutput:
     """Enforce the preflight-before-support-access sequencing for A_QM."""
 
-    if type(preflight) is not ContextPreflightCapability:
-        raise TypeError("preflight must be an exact ContextPreflightCapability.")
-    if not callable(support_loader):
-        raise TypeError("support_loader must be callable.")
     scores = _finite_matrix(query_fbcca_scores, "query_fbcca_scores")
+    query_key = _nonempty_ascii(query_key, "query_key")
     budget = _final_budget(budget)
+    config = _require_exact_operator_config(config)
+    _, base = normalize_fbcca_scores(scores, epsilon=config.score_epsilon)
     if budget == 0:
-        _, base = normalize_fbcca_scores(scores, epsilon=config.score_epsilon)
         return _fallback_output(scores, base, "A_QM", budget, True, "k0_exact_A0")
+
+    try:
+        current_support_keys = _keys_tuple(
+            expected_ordered_support_block_keys,
+            "expected_ordered_support_block_keys",
+        )
+        current_pairing = _sha256(
+            expected_pairing_sha256,
+            "expected_pairing_sha256",
+        )
+    except (TypeError, ValueError):
+        return _fallback_output(
+            scores,
+            base,
+            "A_QM",
+            budget,
+            False,
+            "invalid_current_context_binding_exact_A0",
+        )
+    if len(current_support_keys) != budget:
+        return _fallback_output(
+            scores,
+            base,
+            "A_QM",
+            budget,
+            False,
+            "invalid_current_context_binding_exact_A0",
+        )
+
+    if type(preflight) is not ContextPreflightCapability:
+        return _fallback_output(
+            scores,
+            base,
+            "A_QM",
+            budget,
+            False,
+            "invalid_preflight_capability_exact_A0",
+        )
+    try:
+        ContextPreflightCapability.__post_init__(preflight)
+        support_keys = _keys_tuple(
+            preflight.ordered_support_block_keys,
+            "preflight.ordered_support_block_keys",
+        )
+        if type(preflight.ordered_support_block_keys) is not tuple:
+            raise TypeError("preflight support keys must remain an exact tuple.")
+        _sha256(preflight.pairing_sha256, "preflight.pairing_sha256")
+    except (AttributeError, TypeError, ValueError, OverflowError):
+        return _fallback_output(
+            scores,
+            base,
+            "A_QM",
+            budget,
+            False,
+            "invalid_preflight_capability_exact_A0",
+        )
+    if (
+        preflight.candidate_id != CANDIDATE_ID
+        or preflight.query_key != query_key
+        or len(support_keys) != budget
+        or support_keys != current_support_keys
+        or preflight.pairing_sha256 != current_pairing
+    ):
+        return _fallback_output(
+            scores,
+            base,
+            "A_QM",
+            budget,
+            False,
+            "preflight_current_binding_mismatch_exact_A0",
+        )
     if preflight.rejects_before_support_access:
-        _, base = normalize_fbcca_scores(scores, epsilon=config.score_epsilon)
         return _fallback_output(
             scores,
             base,
@@ -1720,6 +1873,8 @@ def apply_v3_after_preflight(
             False,
             preflight.decision_reason,
         )
+    if not callable(support_loader):
+        raise TypeError("support_loader must be callable after an accepting preflight.")
     product = support_loader()
     if type(product) is not V3SupportProduct:
         raise TypeError("support_loader must return an exact V3SupportProduct.")

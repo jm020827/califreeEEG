@@ -191,14 +191,70 @@ class SyntheticParticipant:
 
 @dataclass(frozen=True)
 class StrictFBCCAProduct:
+    """Query-only strict-FBCCA anchors for immutable blocks 6..10."""
+
     scores: np.ndarray
+    query_eeg_sha256s: tuple[str, ...]
     producer_sha256: str
 
     def __post_init__(self) -> None:
-        if self.scores.shape != (10, 12, 12) or self.scores.dtype != np.float64:
-            raise ValueError("strict FBCCA scores must have exact [10,12,12] float64 shape.")
+        if self.scores.shape != (5, 12, 12) or self.scores.dtype != np.float64:
+            raise ValueError(
+                "query strict-FBCCA scores must have exact [5,12,12] float64 shape."
+            )
         if not np.isfinite(self.scores).all() or self.scores.flags.writeable:
-            raise ValueError("strict FBCCA scores must be finite and immutable.")
+            raise ValueError("query strict-FBCCA scores must be finite and immutable.")
+        if len(self.query_eeg_sha256s) != 5:
+            raise ValueError("query product requires five exact EEG hashes.")
+        for digest in self.query_eeg_sha256s:
+            _sha256(digest, "query_eeg_sha256")
+        _sha256(self.producer_sha256, "producer_sha256")
+
+    def score_for_query_block(self, block: int) -> np.ndarray:
+        if type(block) is not int or block not in QUERY_BLOCKS:
+            raise ValueError("query score access is restricted to blocks 6..10.")
+        return self.scores[block - QUERY_BLOCKS[0]]
+
+
+@dataclass(frozen=True)
+class StrictFBCCASupportProduct:
+    """Lazily produced support scores, labels, and exact partition bindings."""
+
+    budget: int
+    scores: np.ndarray
+    recorded_support_labels: np.ndarray
+    partition_sha256s: tuple[str, ...]
+    support_eeg_label_manifest_sha256: str
+    producer_sha256: str
+
+    def __post_init__(self) -> None:
+        if type(self.budget) is not int or self.budget not in (1, 3, 5):
+            raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
+        if self.scores.shape != (self.budget, 12, 12) or self.scores.dtype != np.float64:
+            raise ValueError("support FBCCA scores have the wrong frozen shape/dtype.")
+        if (
+            self.recorded_support_labels.shape != (self.budget, 12)
+            or self.recorded_support_labels.dtype.kind not in "iu"
+        ):
+            raise ValueError("support labels have the wrong frozen shape/dtype.")
+        if (
+            not np.isfinite(self.scores).all()
+            or self.scores.flags.writeable
+            or self.recorded_support_labels.flags.writeable
+        ):
+            raise ValueError("support scores and labels must be finite and immutable.")
+        if np.any(self.recorded_support_labels < 0) or np.any(
+            self.recorded_support_labels >= 12
+        ):
+            raise ValueError("support labels contain an out-of-range class.")
+        if len(self.partition_sha256s) != self.budget:
+            raise ValueError("support product requires one partition hash per block.")
+        for digest in self.partition_sha256s:
+            _sha256(digest, "partition_sha256")
+        _sha256(
+            self.support_eeg_label_manifest_sha256,
+            "support_eeg_label_manifest_sha256",
+        )
         _sha256(self.producer_sha256, "producer_sha256")
 
 
@@ -746,6 +802,8 @@ def generate_synthetic_participant(
 def apply_source_range_stress(
     participant: SyntheticParticipant,
     reference: v3.ContextReference,
+    *,
+    validated_reference: v3.ValidatedContextReference,
 ) -> SyntheticParticipant:
     """Set every B4 query valid-channel source z coordinate to exactly +10."""
 
@@ -755,6 +813,10 @@ def apply_source_range_stress(
         raise TypeError("source-range stress accepts only an exact B4 participant.")
     if type(reference) is not v3.ContextReference:
         raise TypeError("reference must be an exact ContextReference.")
+    v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
     updated: list[tuple[str, tuple[v3.ContextPacket, ...]]] = []
     for condition, packets in participant.context_packets_by_condition:
         table = reference.table_by_interface.get(condition)
@@ -801,23 +863,116 @@ def produce_strict_fbcca(
     contract: SyntheticV3Contract,
     participant: SyntheticParticipant,
 ) -> StrictFBCCAProduct:
-    """Apply the frozen seven-band strict FBCCA to one participant."""
+    """Produce query-only anchors without reading any support waveform or label."""
 
     if type(contract) is not SyntheticV3Contract:
         raise TypeError("contract must be an exact SyntheticV3Contract.")
     if type(participant) is not SyntheticParticipant:
         raise TypeError("participant must be an exact SyntheticParticipant.")
-    flat = participant.signals.reshape(120, 8, 500)
+    scores = _score_strict_fbcca_blocks(
+        contract,
+        participant.signals[5:10],
+    )
+    query_eeg_sha256s = tuple(
+        _array_sha256(participant.signals[block - 1]) for block in QUERY_BLOCKS
+    )
+    producer_sha = _canonical_sha256(
+        {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "strict-fbcca-query-product.v1"
+            ),
+            "plan_sha256": contract.plan_sha256,
+            "filterbank_sha256": contract.filterbank_sha256,
+            "query_blocks": list(QUERY_BLOCKS),
+            "query_eeg_sha256s": list(query_eeg_sha256s),
+            "scores_sha256": _array_sha256(scores),
+        }
+    )
+    return StrictFBCCAProduct(
+        scores=scores,
+        query_eeg_sha256s=query_eeg_sha256s,
+        producer_sha256=producer_sha,
+    )
+
+
+def produce_strict_fbcca_support(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    budget: int,
+) -> StrictFBCCASupportProduct:
+    """Read and score a support prefix only when a caller invokes its loader."""
+
+    if type(contract) is not SyntheticV3Contract:
+        raise TypeError("contract must be an exact SyntheticV3Contract.")
+    if type(participant) is not SyntheticParticipant:
+        raise TypeError("participant must be an exact SyntheticParticipant.")
+    if type(budget) is not int or budget not in (1, 3, 5):
+        raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
+    scores = _score_strict_fbcca_blocks(
+        contract,
+        participant.signals[:budget],
+    )
+    labels = _readonly(participant.recorded_support_labels[:budget])
+    partitions = participant.partition_sha256s[:budget]
+    manifest = _canonical_sha256(
+        {
+            "schema": "cfeg.metadata-calibration-efficiency-v3.support-manifest.v1",
+            "participant_partition_sha256s": list(partitions),
+            "recorded_support_labels_sha256": _array_sha256(labels),
+        }
+    )
+    producer_sha = _canonical_sha256(
+        {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "strict-fbcca-support-product.v1"
+            ),
+            "plan_sha256": contract.plan_sha256,
+            "filterbank_sha256": contract.filterbank_sha256,
+            "support_blocks": list(range(1, budget + 1)),
+            "support_eeg_label_manifest_sha256": manifest,
+            "scores_sha256": _array_sha256(scores),
+        }
+    )
+    return StrictFBCCASupportProduct(
+        budget=budget,
+        scores=scores,
+        recorded_support_labels=labels,
+        partition_sha256s=partitions,
+        support_eeg_label_manifest_sha256=manifest,
+        producer_sha256=producer_sha,
+    )
+
+
+def _score_strict_fbcca_blocks(
+    contract: SyntheticV3Contract,
+    block_signals: np.ndarray,
+) -> np.ndarray:
+    """Score only the waveform blocks explicitly supplied by the caller."""
+
+    values = np.asarray(block_signals)
+    if (
+        values.ndim != 4
+        or values.shape[0] not in {1, 3, 5}
+        or values.shape[1:] != (12, 8, 500)
+        or values.dtype != np.float64
+        or not np.isfinite(values).all()
+    ):
+        raise ValueError("strict FBCCA block input has the wrong frozen shape/dtype.")
+    block_count = values.shape[0]
+    flat = values.reshape(block_count * 12, 8, 500)
     subbands, parameters = apply_filterbank(flat, sfreq=250.0, filterbank=contract.filterbank)
     weights = np.asarray(parameters["weights"], dtype=np.float64)
-    if subbands.shape != (7, 120, 8, 500) or len(weights) != 7:
+    if subbands.shape != (7, block_count * 12, 8, 500) or len(weights) != 7:
         raise RuntimeError("strict FBCCA did not produce the frozen seven subbands.")
     references = make_reference_signals(
         8.0 + 0.4 * np.arange(12), 250.0, 500, n_harmonics=5
     )
-    scores = np.zeros((120, 12), dtype=np.float64)
+    scores = np.zeros((block_count * 12, 12), dtype=np.float64)
     for band_index, weight in enumerate(weights):
-        for trial_index in range(120):
+        for trial_index in range(block_count * 12):
             correlations = np.asarray(
                 [
                     cca_score(
@@ -830,17 +985,7 @@ def produce_strict_fbcca(
                 dtype=np.float64,
             )
             scores[trial_index] += weight * correlations**2
-    scores = _readonly(scores.reshape(10, 12, 12))
-    producer_sha = _canonical_sha256(
-        {
-            "schema": "cfeg.metadata-calibration-efficiency-v3.strict-fbcca-product.v1",
-            "plan_sha256": contract.plan_sha256,
-            "filterbank_sha256": contract.filterbank_sha256,
-            "participant_partition_sha256s": list(participant.partition_sha256s),
-            "scores_sha256": _array_sha256(scores),
-        }
-    )
-    return StrictFBCCAProduct(scores=scores, producer_sha256=producer_sha)
+    return _readonly(scores.reshape(block_count, 12, 12))
 
 
 @cache
@@ -962,8 +1107,11 @@ def evaluate_synthetic_participant(
     fbcca: StrictFBCCAProduct,
     reference: v3.ContextReference,
     grid_cell: v3.V3GridCell,
+    *,
+    validated_reference: v3.ValidatedContextReference,
+    support_loader: Callable[[int], StrictFBCCASupportProduct],
 ) -> list[dict[str, Any]]:
-    """Evaluate the exact family grid for one participant and one parameter cell."""
+    """Evaluate one grid cell with support access behind a post-preflight loader."""
 
     if type(participant) is not SyntheticParticipant:
         raise TypeError("participant must be an exact SyntheticParticipant.")
@@ -971,21 +1119,50 @@ def evaluate_synthetic_participant(
         raise TypeError("fbcca must be an exact StrictFBCCAProduct.")
     if type(reference) is not v3.ContextReference:
         raise TypeError("reference must be an exact ContextReference.")
+    v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
     if type(grid_cell) is not v3.V3GridCell:
         raise TypeError("grid_cell must be an exact V3GridCell.")
+    if fbcca.query_eeg_sha256s != tuple(
+        _array_sha256(participant.signals[block - 1]) for block in QUERY_BLOCKS
+    ):
+        raise ValueError("query FBCCA product does not bind this participant.")
+    if not callable(support_loader):
+        raise TypeError("support_loader must be callable.")
     config = v3.V3OperatorConfig(grid_cell)
     products: dict[tuple[str, int, int], v3.V3SupportProduct] = {}
     gates: dict[int, v3.PrequentialGateDecision] = {}
+    support_prefixes: dict[int, StrictFBCCASupportProduct] = {}
+
+    def support_for(budget: int) -> StrictFBCCASupportProduct:
+        if budget not in support_prefixes:
+            loaded = support_loader(budget)
+            if type(loaded) is not StrictFBCCASupportProduct:
+                raise TypeError("support_loader must return an exact support product.")
+            if (
+                loaded.budget != budget
+                or loaded.partition_sha256s != participant.partition_sha256s[:budget]
+                or not np.array_equal(
+                    loaded.recorded_support_labels,
+                    participant.recorded_support_labels[:budget],
+                )
+            ):
+                raise ValueError("lazy support product does not bind this participant/prefix.")
+            support_prefixes[budget] = loaded
+        return support_prefixes[budget]
 
     def gate_for(budget: int) -> v3.PrequentialGateDecision | None:
         if budget not in (3, 5):
             return None
         if budget not in gates:
+            support = support_for(budget)
             gates[budget] = v3.prequential_gate_decision(
-                fbcca.scores[:budget],
-                participant.recorded_support_labels[:budget],
+                support.scores,
+                support.recorded_support_labels,
                 budget=budget,
-                block_partition_sha256s=participant.partition_sha256s[:budget],
+                block_partition_sha256s=support.partition_sha256s,
                 config=config,
             )
         return gates[budget]
@@ -995,24 +1172,16 @@ def evaluate_synthetic_participant(
         if key not in products:
             packets = participant.context_packets(condition)
             support_keys = tuple(packet.packet_key for packet in packets[:budget])
-            support_manifest = _canonical_sha256(
-                {
-                    "schema": "cfeg.metadata-calibration-efficiency-v3.support-manifest.v1",
-                    "participant_partition_sha256s": list(
-                        participant.partition_sha256s[:budget]
-                    ),
-                    "recorded_support_labels_sha256": _array_sha256(
-                        participant.recorded_support_labels[:budget]
-                    ),
-                }
-            )
+            support = support_for(budget)
             products[key] = v3.blockwise_p3_support(
-                fbcca.scores[query_block - 1],
-                fbcca.scores[:budget],
-                participant.recorded_support_labels[:budget],
+                fbcca.score_for_query_block(query_block),
+                support.scores,
+                support.recorded_support_labels,
                 query_key=packets[query_block - 1].packet_key,
                 ordered_support_block_keys=support_keys,
-                support_eeg_label_manifest_sha256=support_manifest,
+                support_eeg_label_manifest_sha256=(
+                    support.support_eeg_label_manifest_sha256
+                ),
                 config=config,
             )
         return products[key]
@@ -1024,6 +1193,7 @@ def evaluate_synthetic_participant(
                 participant=participant,
                 fbcca=fbcca,
                 reference=reference,
+                validated_reference=validated_reference,
                 config=config,
                 spec=spec,
                 product_for=product_for,
@@ -1047,12 +1217,12 @@ def _evaluate_method_spec(
     participant: SyntheticParticipant,
     fbcca: StrictFBCCAProduct,
     reference: v3.ContextReference,
+    validated_reference: v3.ValidatedContextReference,
     config: v3.V3OperatorConfig,
     spec: MethodSpec,
     product_for: Callable[[str, int, int], v3.V3SupportProduct],
     gate_for: Callable[[int], v3.PrequentialGateDecision | None],
 ) -> dict[str, Any]:
-    labels_by_block = participant.true_labels
     probabilities_by_query: list[np.ndarray] = []
     exact_a0_flags: list[bool] = []
     support_enabled_flags: list[bool] = []
@@ -1065,8 +1235,7 @@ def _evaluate_method_spec(
     covered_context_flags: list[bool] = []
 
     for query_block in QUERY_BLOCKS:
-        query_scores = fbcca.scores[query_block - 1]
-        query_labels = labels_by_block[query_block - 1]
+        query_scores = fbcca.score_for_query_block(query_block)
         if spec.role == "A0":
             base = v3.normalize_fbcca_scores(query_scores)[1]
             outputs = [
@@ -1109,12 +1278,14 @@ def _evaluate_method_spec(
                 query_block=query_block,
                 query_scores=query_scores,
                 reference=reference,
+                validated_reference=validated_reference,
                 config=config,
                 spec=spec,
                 product_for=product_for,
                 gate_for=gate_for,
             )
 
+        query_labels = participant.true_labels[query_block - 1]
         block_bas = [_balanced_accuracy_from_probabilities(item.probabilities, query_labels) for item in outputs]
         block_logs = [_correct_log_probability(item.probabilities, query_labels) for item in outputs]
         # For exhaustive derangements the metric, not the probability vector,
@@ -1150,6 +1321,7 @@ def _evaluate_method_spec(
                     query_block=query_block,
                     query_scores=query_scores,
                     reference=reference,
+                    validated_reference=validated_reference,
                     config=config,
                     control="correct",
                     assignment=tuple(range(spec.budget)),
@@ -1271,6 +1443,7 @@ def _evaluate_aqm_query(
     query_block: int,
     query_scores: np.ndarray,
     reference: v3.ContextReference,
+    validated_reference: v3.ValidatedContextReference,
     config: v3.V3OperatorConfig,
     spec: MethodSpec,
     product_for: Callable[[str, int, int], v3.V3SupportProduct],
@@ -1294,6 +1467,7 @@ def _evaluate_aqm_query(
                 query_block=query_block,
                 query_scores=query_scores,
                 reference=reference,
+                validated_reference=validated_reference,
                 config=config,
                 control=spec.control,
                 assignment=assignment,
@@ -1311,6 +1485,7 @@ def _evaluate_aqm_query(
             query_block=query_block,
             query_scores=query_scores,
             reference=reference,
+            validated_reference=validated_reference,
             config=config,
             control=spec.control,
             assignment=tuple(range(spec.budget)),
@@ -1329,6 +1504,7 @@ def _evaluate_aqm_assignment(
     query_block: int,
     query_scores: np.ndarray,
     reference: v3.ContextReference,
+    validated_reference: v3.ValidatedContextReference,
     config: v3.V3OperatorConfig,
     control: str,
     assignment: tuple[int, ...],
@@ -1376,6 +1552,7 @@ def _evaluate_aqm_assignment(
     )
     preflight = v3.preflight_context(
         reference=reference,
+        validated_reference=validated_reference,
         query_key=query_packet.packet_key,
         ordered_support_block_keys=logical_support_keys,
         query_packet=query_packet,
@@ -1391,6 +1568,8 @@ def _evaluate_aqm_assignment(
             budget=budget,
             config=config,
             preflight=preflight,
+            expected_ordered_support_block_keys=logical_support_keys,
+            expected_pairing_sha256=pairing,
             support_loader=lambda: product_for(condition, budget, query_block),
             gate_decision=None,
             gate_mode=gate_mode,  # type: ignore[arg-type]
@@ -1401,18 +1580,31 @@ def _evaluate_aqm_assignment(
             comparable_counts=preflight.comparable_channel_counts,
             pairing_sha256=preflight.pairing_sha256,
         )
-    product = product_for(condition, budget, query_block)
-    trust = v3.finalize_context_trust(preflight, product.reliability_capability)
-    output = v3.apply_v3_operator(
+    gate_decision = gate_for(budget)
+    loaded_product: v3.V3SupportProduct | None = None
+
+    def load_product() -> v3.V3SupportProduct:
+        nonlocal loaded_product
+        loaded_product = product_for(condition, budget, query_block)
+        return loaded_product
+
+    output = v3.apply_v3_after_preflight(
         query_scores,
         query_key=query_packet.packet_key,
         budget=budget,
-        variant="A_QM",
         config=config,
-        support_product=product,
-        gate_decision=gate_for(budget),
+        preflight=preflight,
+        expected_ordered_support_block_keys=logical_support_keys,
+        expected_pairing_sha256=pairing,
+        support_loader=load_product,
+        gate_decision=gate_decision,
         gate_mode=gate_mode,  # type: ignore[arg-type]
-        context_trust=trust,
+    )
+    if loaded_product is None:  # pragma: no cover - accepted preflight always loads once
+        raise RuntimeError("accepted context preflight did not load support.")
+    trust = v3.finalize_context_trust(
+        preflight,
+        loaded_product.reliability_capability,
     )
     metric = _metric_output_from_operator(
         output,
@@ -1428,7 +1620,7 @@ def _evaluate_aqm_assignment(
         affinities=metric.affinities,
         comparable_counts=metric.comparable_counts,
         pairing_sha256=metric.pairing_sha256,
-        reliability_sha256=product.reliability_capability.payload_sha256,
+        reliability_sha256=loaded_product.reliability_capability.payload_sha256,
     )
 
 
@@ -1685,11 +1877,17 @@ def validate_participant_metric_row(row: Mapping[str, Any]) -> None:
 def build_invariant_rows(
     reference: v3.ContextReference,
     grid_cell: v3.V3GridCell,
+    *,
+    validated_reference: v3.ValidatedContextReference,
 ) -> list[dict[str, Any]]:
     """Execute the six N5 and four N6 deterministic implementation guards."""
 
     if type(reference) is not v3.ContextReference or type(grid_cell) is not v3.V3GridCell:
         raise TypeError("invariant rows require exact reference and grid-cell objects.")
+    v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
     config = v3.V3OperatorConfig(grid_cell)
     query_scores = np.eye(12, dtype=np.float64)
     support_scores = np.stack([np.eye(12, dtype=np.float64)] * 3)
@@ -1719,7 +1917,12 @@ def build_invariant_rows(
     unknown_support = _packet_at_reference_z(
         reference, "N5-support", "__pooled__", 0.5, "unknown"
     )
-    unknown = _one_block_preflight(reference, unknown_query, unknown_support)
+    unknown = _one_block_preflight(
+        reference,
+        validated_reference,
+        unknown_query,
+        unknown_support,
+    )
     n5_results["unknown_interface_category"] = not unknown.rejects_before_support_access
 
     for case_id, invalid in (
@@ -1730,7 +1933,12 @@ def build_invariant_rows(
         raw_support = _context_packet_mapping(base_support)
         raw_query["impedance_kohm_by_channel"] = [invalid] * 8
         raw_support["impedance_kohm_by_channel"] = [invalid] * 8
-        preflight = _one_block_preflight(reference, raw_query, raw_support)
+        preflight = _one_block_preflight(
+            reference,
+            validated_reference,
+            raw_query,
+            raw_support,
+        )
         trust = v3.finalize_context_trust(preflight, product.reliability_capability)
         aqm = v3.apply_v3_operator(
             query_scores,
@@ -1748,16 +1956,30 @@ def build_invariant_rows(
 
     wrong_count = _context_packet_mapping(base_query)
     wrong_count["impedance_kohm_by_channel"] = wrong_count["impedance_kohm_by_channel"][:-1]
-    wrong = _one_block_preflight(reference, wrong_count, base_support)
+    wrong = _one_block_preflight(
+        reference,
+        validated_reference,
+        wrong_count,
+        base_support,
+    )
     n5_results["wrong_channel_count"] = wrong.decision_reason == "malformed_packet_exact_A0"
     mismatched = _one_block_preflight(
-        reference, base_query, base_support, pairing_override="b" * 64
+        reference,
+        validated_reference,
+        base_query,
+        base_support,
+        pairing_override="b" * 64,
     )
     n5_results["packet_key_or_pairing_digest_mismatch"] = (
         mismatched.decision_reason == "pairing_mismatch_exact_A0"
     )
     ood_query = _packet_at_reference_z(reference, "N5-query", "neutral", 10.0)
-    ood = _one_block_preflight(reference, ood_query, base_support)
+    ood = _one_block_preflight(
+        reference,
+        validated_reference,
+        ood_query,
+        base_support,
+    )
     n5_results["query_source_standardized_OOD"] = (
         ood.decision_reason == "query_context_OOD_exact_A0"
     )
@@ -3515,6 +3737,7 @@ def _context_packet_mapping(packet: v3.ContextPacket) -> dict[str, Any]:
 
 def _one_block_preflight(
     reference: v3.ContextReference,
+    validated_reference: v3.ValidatedContextReference,
     query: Mapping[str, Any] | v3.ContextPacket,
     support: Mapping[str, Any] | v3.ContextPacket,
     *,
@@ -3532,6 +3755,7 @@ def _one_block_preflight(
     )
     return v3.preflight_context(
         reference=reference,
+        validated_reference=validated_reference,
         query_key=query_key,
         ordered_support_block_keys=("N5-support",),
         query_packet=query,

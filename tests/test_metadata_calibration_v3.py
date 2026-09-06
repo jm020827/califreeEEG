@@ -64,6 +64,14 @@ def _reference() -> v3.ContextReference:
     return v3.fit_context_reference(packets, domain="unit-test-domain")
 
 
+def _validated_reference(
+    reference: v3.ContextReference,
+) -> v3.ValidatedContextReference:
+    return v3.validate_context_reference_for_publication(
+        v3.context_reference_payload(reference)
+    )
+
+
 def _raw_packet(key: str, *, z: float, reference: v3.ContextReference) -> dict[str, object]:
     table = reference.table_by_interface["neutral"]
     values = [
@@ -101,6 +109,7 @@ def _preflight(
     )
     return v3.preflight_context(
         reference=reference,
+        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=slots,
         query_packet=query,
@@ -263,6 +272,25 @@ def test_context_publication_capability_is_nominal_exact_and_hash_bound() -> Non
     with pytest.raises(ValueError, match="semantic binding"):
         v3.require_validated_context_reference(tampered)
 
+    raw_query = _raw_packet("query", z=0.0, reference=_reference())
+    raw_support = _raw_packet("packet01", z=0.0, reference=_reference())
+    pairing = v3.context_pairing_sha256(
+        query_key="query",
+        ordered_support_block_keys=("block01",),
+        query_packet_key="query",
+        ordered_support_packet_keys=("packet01",),
+    )
+    with pytest.raises(TypeError, match="exact ValidatedContextReference"):
+        v3.preflight_context(
+            reference=_reference(),
+            validated_reference={"payload_sha256": payload["payload_sha256"]},
+            query_key="query",
+            ordered_support_block_keys=("block01",),
+            query_packet=raw_query,
+            support_packets=(raw_support,),
+            pairing_sha256=pairing,
+        )
+
 
 def test_preflight_pairing_changes_gM_but_not_M_free_reliability() -> None:
     reference = _reference()
@@ -301,6 +329,7 @@ def test_missing_metadata_is_exact_AQ_and_interface_only_has_no_effect() -> None
     )
     preflight = v3.preflight_context(
         reference=reference,
+        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=("block01",),
         query_packet=missing,
@@ -318,6 +347,16 @@ def test_missing_metadata_is_exact_AQ_and_interface_only_has_no_effect() -> None
         config=_config(),
         support_product=product,
     )
+    with pytest.raises(ValueError, match="rejects every metadata"):
+        v3.apply_v3_operator(
+            query,
+            query_key="query",
+            budget=1,
+            variant="A_Q",
+            config=_config(1),
+            support_product=product,
+            context_trust=trust,
+        )
     aqm = v3.apply_v3_operator(
         query,
         query_key="query",
@@ -350,6 +389,7 @@ def test_rejected_preflight_returns_A0_without_calling_support_loader(failure: s
         support["impedance_kohm_by_channel"] = [1.0] * 7
     preflight = v3.preflight_context(
         reference=reference,
+        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=slots,
         query_packet=query,
@@ -371,11 +411,62 @@ def test_rejected_preflight_returns_A0_without_calling_support_loader(failure: s
         budget=1,
         config=_config(),
         preflight=preflight,
+        expected_ordered_support_block_keys=slots,
+        expected_pairing_sha256=preflight.pairing_sha256,
         support_loader=forbidden_loader,
     )
     assert calls == 0
     assert output.exact_fallback
     assert output.fused_probabilities is output.base_probabilities
+
+
+@pytest.mark.parametrize(
+    "mismatch",
+    ["query", "depth", "order", "pairing", "tampered_payload"],
+)
+def test_valid_but_current_mismatched_preflight_returns_A0_before_support(
+    mismatch: str,
+) -> None:
+    reference = _reference()
+    preflight = _preflight(reference, query_z=0.0, support_z=(0.5,))
+    query_key = "query"
+    budget = 1
+    expected_keys = preflight.ordered_support_block_keys
+    expected_pairing = preflight.pairing_sha256
+    if mismatch == "query":
+        query_key = "different-query"
+    elif mismatch == "depth":
+        budget = 3
+        expected_keys = ("block01", "block02", "block03")
+    elif mismatch == "order":
+        expected_keys = ("different-block",)
+    elif mismatch == "pairing":
+        expected_pairing = "c" * 64
+    elif mismatch == "tampered_payload":
+        object.__setattr__(preflight, "pairing_sha256", "b" * 64)
+    calls = 0
+
+    def forbidden_loader() -> v3.V3SupportProduct:
+        nonlocal calls
+        calls += 1
+        raise AssertionError("support loader ran before current-binding rejection")
+
+    output = v3.apply_v3_after_preflight(
+        _score_fixture(1)[0],
+        query_key=query_key,
+        budget=budget,
+        config=_config(),
+        preflight=preflight,
+        expected_ordered_support_block_keys=expected_keys,
+        expected_pairing_sha256=expected_pairing,
+        support_loader=forbidden_loader,
+    )
+    assert calls == 0
+    assert output.fused_probabilities is output.base_probabilities
+    assert output.fallback_reason in {
+        "preflight_current_binding_mismatch_exact_A0",
+        "invalid_preflight_capability_exact_A0",
+    }
 
 
 def test_scientific_operator_has_no_raw_M_parameters_and_single_bounded_insertion() -> None:
