@@ -1,0 +1,412 @@
+from __future__ import annotations
+
+import inspect
+
+import numpy as np
+import pytest
+
+from cfeg.analysis import metadata_calibration_v3_synthetic as synthetic
+from cfeg.models import metadata_calibration_v3 as v3
+
+_UNIT_ROOT = 424242
+_FAMILY_CODES = {
+    "B1_participant_class_confusion": 3101,
+    "B2_participant_phase_spatial_shift": 3102,
+    "B3_impedance_linked_transfer_shift": 3103,
+    "B4_interface_calibrated_impedance_shift": 3104,
+    "N1_clean_anchor": 3201,
+    "N2_random_support_labels": 3202,
+    "N3_nonstationary_calibration": 3203,
+    "N4_context_null": 3204,
+    "N5_invalid_context": 3205,
+}
+_COMPONENT_CODES = {
+    name: index for index, name in enumerate(synthetic.COMPONENT_NAMES, start=1)
+}
+
+
+def _rng_factory(
+    family: str,
+    participant_index: int,
+    block: int,
+    class_index: int,
+    component: str,
+) -> np.random.Generator:
+    entropy = [
+        _UNIT_ROOT,
+        _FAMILY_CODES[family],
+        participant_index,
+        block,
+        class_index,
+        _COMPONENT_CODES[component],
+    ]
+    return np.random.Generator(np.random.PCG64DXSM(np.random.SeedSequence(entropy)))
+
+
+@pytest.fixture(scope="module")
+def contract() -> synthetic.SyntheticV3Contract:
+    return synthetic.validate_synthetic_contract()
+
+
+@pytest.fixture(scope="module")
+def reference() -> v3.ContextReference:
+    return synthetic.fit_synthetic_context_reference(_rng_factory)
+
+
+def _fake_fbcca() -> synthetic.StrictFBCCAProduct:
+    scores = np.empty((10, 12, 12), dtype=np.float64)
+    for block in range(10):
+        scores[block] = np.eye(12) + 0.01 * block
+    scores.setflags(write=False)
+    return synthetic.StrictFBCCAProduct(scores=scores, producer_sha256="d" * 64)
+
+
+def test_contract_hashes_counts_and_no_public_raw_seed_runner(
+    contract: synthetic.SyntheticV3Contract,
+) -> None:
+    assert contract.plan_sha256 == synthetic.EXPECTED_SYNTHETIC_PLAN_SHA256
+    assert contract.master_plan_sha256 == synthetic.EXPECTED_MASTER_PLAN_SHA256
+    assert contract.filterbank_sha256 == synthetic.EXPECTED_FILTERBANK_SHA256
+    assert synthetic.validate_development_contract(contract) == {
+        "condition_level_cells_per_parameter_pair": 172,
+        "B4_composite_cells_per_parameter_pair": 34,
+        "participant_summary_cells_per_parameter_pair": 206,
+        "development_participant_rows_per_parameter_pair": 9_888,
+        "development_participant_metric_rows": 88_992,
+        "development_invariant_rows": 90,
+        "total_development_rows": 89_082,
+    }
+    assert "run_development" not in vars(synthetic)
+    assert "root_seed" not in inspect.signature(
+        synthetic.generate_synthetic_participant
+    ).parameters
+
+
+def test_exact_identity_blueprint_has_89082_unique_nonoutcome_rows() -> None:
+    metric = list(synthetic._expected_metric_identities())
+    invariant = list(synthetic._expected_invariant_identities())
+    assert len(metric) == len(set(metric)) == 88_992
+    assert len(invariant) == len(set(invariant)) == 90
+    assert len(metric) + len(invariant) == 89_082
+    with pytest.raises(ValueError, match="requires 89082"):
+        synthetic.validate_complete_development_rows(
+            [], expected_stress_participant_indices=(0, 1, 2, 3, 4)
+        )
+
+
+def test_method_grid_matches_every_declared_family_cell_count() -> None:
+    expected = {
+        "B1_participant_class_confusion": 11,
+        "B2_participant_phase_spatial_shift": 11,
+        "B3_impedance_linked_transfer_shift": 25,
+        "B4_interface_calibrated_impedance_shift": 68,
+        "N1_clean_anchor": 16,
+        "N2_random_support_labels": 11,
+        "N3_nonstationary_calibration": 11,
+        "N4_context_null": 19,
+    }
+    assert {
+        family: len(synthetic.method_specs_for_family(family))
+        for family in synthetic.FAMILY_NAMES
+    } == expected
+    b4 = synthetic.method_specs_for_family("B4_interface_calibrated_impedance_shift")
+    assert sum(spec.condition == "wet" for spec in b4) == 34
+    assert sum(spec.condition == "dry" for spec in b4) == 34
+
+
+def test_covariate_only_reference_is_exact_ordered_and_roundtrips(
+    reference: v3.ContextReference,
+) -> None:
+    packets = synthetic.generate_covariate_reference_packets(_rng_factory)
+    assert len(packets) == 3 * 256
+    assert [packets[index]["interface"] for index in (0, 256, 512)] == [
+        "neutral",
+        "wet",
+        "dry",
+    ]
+    assert set(packets[0]) == {
+        "interface",
+        "impedance_kohm_by_channel",
+        "channel_availability",
+    }
+    assert [table.interface_lookup_key for table in reference.interface_tables] == [
+        "neutral",
+        "wet",
+        "dry",
+    ]
+    assert reference.canonical_channels == tuple(f"ch{index:02d}" for index in range(8))
+    assert min(min(table.observed_counts) for table in reference.interface_tables) >= 128
+    payload = v3.context_reference_payload(reference)
+    assert v3.validate_context_reference_payload(payload) == reference
+
+
+def test_generation_is_key_order_invariant_and_B3_context_tracks_signal_state(
+    contract: synthetic.SyntheticV3Contract,
+) -> None:
+    first = synthetic.generate_synthetic_participant(
+        contract,
+        family="B3_impedance_linked_transfer_shift",
+        participant_index=7,
+        rng_factory=_rng_factory,
+    )
+    synthetic.generate_synthetic_participant(
+        contract,
+        family="B1_participant_class_confusion",
+        participant_index=2,
+        rng_factory=_rng_factory,
+    )
+    second = synthetic.generate_synthetic_participant(
+        contract,
+        family="B3_impedance_linked_transfer_shift",
+        participant_index=7,
+        rng_factory=_rng_factory,
+    )
+    assert np.array_equal(first.signals, second.signals)
+    assert first.partition_sha256s == second.partition_sha256s
+    assert sorted(first.signal_states.tolist()) == [-1] * 5 + [1] * 5
+    assert first.context_states_by_condition[0][1] == tuple(first.signal_states)
+    packets = first.context_packets("neutral")
+    low = np.mean(
+        [
+            np.mean(packet.impedance_kohm_by_channel)
+            for packet, state in zip(packets, first.signal_states, strict=True)
+            if state == -1
+        ]
+    )
+    high = np.mean(
+        [
+            np.mean(packet.impedance_kohm_by_channel)
+            for packet, state in zip(packets, first.signal_states, strict=True)
+            if state == 1
+        ]
+    )
+    assert high > low
+    assert not first.signals.flags.writeable
+
+
+def test_family_specific_waveform_and_label_contracts(
+    contract: synthetic.SyntheticV3Contract,
+) -> None:
+    b1 = synthetic.generate_synthetic_participant(
+        contract,
+        family="B1_participant_class_confusion",
+        participant_index=1,
+        rng_factory=_rng_factory,
+    )
+    assert np.array_equal(
+        b1.generated_confuser_classes[0],
+        (np.arange(12) + 2) % 12,
+    )
+    n2 = synthetic.generate_synthetic_participant(
+        contract,
+        family="N2_random_support_labels",
+        participant_index=1,
+        rng_factory=_rng_factory,
+    )
+    assert all(
+        not np.array_equal(n2.recorded_support_labels[block], n2.true_labels[block])
+        for block in range(5)
+    )
+    assert np.array_equal(n2.recorded_support_labels[5:], n2.true_labels[5:])
+    n3 = synthetic.generate_synthetic_participant(
+        contract,
+        family="N3_nonstationary_calibration",
+        participant_index=1,
+        rng_factory=_rng_factory,
+    )
+    assert np.array_equal(n3.generated_target_classes[0], (np.arange(12) + 1) % 12)
+    assert np.array_equal(n3.generated_target_classes[5], np.arange(12))
+
+
+def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+) -> None:
+    participant = synthetic.generate_synthetic_participant(
+        contract,
+        family="B4_interface_calibrated_impedance_shift",
+        participant_index=0,
+        rng_factory=_rng_factory,
+    )
+    stressed = synthetic.apply_source_range_stress(participant, reference)
+    assert stressed.signals is participant.signals
+    assert stressed.partition_sha256s == participant.partition_sha256s
+    assert stressed.source_range_stress
+    for condition in ("wet", "dry"):
+        packets = stressed.context_packets(condition)
+        for query_block in synthetic.QUERY_BLOCKS:
+            query = packets[query_block - 1]
+            support = packets[0]
+            pairing = v3.context_pairing_sha256(
+                query_key=query.packet_key,
+                ordered_support_block_keys=(support.packet_key,),
+                query_packet_key=query.packet_key,
+                ordered_support_packet_keys=(support.packet_key,),
+            )
+            preflight = v3.preflight_context(
+                reference=reference,
+                query_key=query.packet_key,
+                ordered_support_block_keys=(support.packet_key,),
+                query_packet=query,
+                support_packets=(support,),
+                pairing_sha256=pairing,
+            )
+            assert preflight.decision_reason == "query_context_OOD_exact_A0"
+
+
+def test_invariant_suite_executes_all_ten_cases_for_each_cell(
+    reference: v3.ContextReference,
+) -> None:
+    rows = synthetic.build_invariant_rows(reference, v3.canonical_operator_grid()[0])
+    assert len(rows) == 10
+    assert all(row["passed"] for row in rows)
+    assert {row["family"] for row in rows} == {
+        "N5_invalid_context",
+        "N6_support_reliability_invariants",
+    }
+
+
+def test_participant_evaluator_emits_exact_B3_and_B4_counts(
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+) -> None:
+    cell = v3.canonical_operator_grid()[0]
+    b3 = synthetic.generate_synthetic_participant(
+        contract,
+        family="B3_impedance_linked_transfer_shift",
+        participant_index=0,
+        rng_factory=_rng_factory,
+    )
+    b3_rows = synthetic.evaluate_synthetic_participant(b3, _fake_fbcca(), reference, cell)
+    assert len(b3_rows) == 25
+    assert sum(row["control"] == "within_prefix_packet_shuffle" for row in b3_rows) == 2
+    k3 = next(
+        row
+        for row in b3_rows
+        if row["control"] == "within_prefix_packet_shuffle" and row["budget"] == 3
+    )
+    assert k3["pairing_packet_binding_changed_fraction"] == 1.0
+    assert len(k3["pairing_mean_derangement_abs_g_M_change_by_query_block"]) == 5
+
+    b4 = synthetic.generate_synthetic_participant(
+        contract,
+        family="B4_interface_calibrated_impedance_shift",
+        participant_index=0,
+        rng_factory=_rng_factory,
+    )
+    b4_rows = synthetic.evaluate_synthetic_participant(b4, _fake_fbcca(), reference, cell)
+    assert len(b4_rows) == 102
+    assert sum(row["condition"] == "equal_condition_composite" for row in b4_rows) == 34
+
+
+def test_strict_fbcca_producer_binds_frozen_shape_without_persisting_subbands(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+) -> None:
+    participant = synthetic.generate_synthetic_participant(
+        contract,
+        family="N1_clean_anchor",
+        participant_index=0,
+        rng_factory=_rng_factory,
+    )
+    weights = contract.filterbank["weights"]
+
+    def fake_filterbank(values, *, sfreq, filterbank):
+        assert values.shape == (120, 8, 500)
+        assert sfreq == 250.0
+        assert filterbank is contract.filterbank
+        return np.broadcast_to(values, (7, *values.shape)), {"weights": weights}
+
+    monkeypatch.setattr(synthetic, "apply_filterbank", fake_filterbank)
+    monkeypatch.setattr(synthetic, "cca_score", lambda value, reference, regularization: 0.25)
+    product = synthetic.produce_strict_fbcca(contract, participant)
+    assert product.scores.shape == (10, 12, 12)
+    assert np.isfinite(product.scores).all()
+    assert not product.scores.flags.writeable
+
+
+def _gate_report(cell: v3.V3GridCell, *, eligible: bool, mean: float, lcb: float):
+    components = {
+        "invariant_suite": eligible,
+        "pairing_potency": eligible,
+        "A_Q_viability_B1_or_B2": eligible,
+        "B3_metadata_efficacy": eligible,
+        "B4_metadata_efficacy": eligible,
+        "B4_in_reference_metadata_efficacy": eligible,
+        "B4_source_range_stress_safety": eligible,
+        "B4_interface_scale_value": eligible,
+        "k3_pairing_mechanism": eligible,
+        "B3_B4_deployment_viability": eligible,
+        "N1_null_noninferiority": eligible,
+        "N4_null_equivalence": eligible,
+        "severe_harm": eligible,
+        "adversarial_abstention": eligible,
+        "helpful_use_anti_triviality": eligible,
+    }
+    return {
+        "schema": "cfeg.metadata-calibration-efficiency-v3.grid-gate-report.v1",
+        "grid_cell_index": cell.index,
+        "grid_cell_id": cell.grid_cell_id,
+        "operator_instance_sha256": cell.operator_instance_sha256,
+        "prototype_prior_pseudocount": cell.prototype_prior_pseudocount,
+        "lambda_max": cell.lambda_max,
+        "components": components,
+        "A_Q_viability": {},
+        "metadata_efficacy": {},
+        "B4_in_reference_metadata_efficacy": {},
+        "B4_source_range_stress_safety": {},
+        "B4_interface_scale_value": {},
+        "pairing_mechanism": {},
+        "deployment_viability": {},
+        "pairing_potency": {},
+        "N1_null_noninferiority": {},
+        "N4_null_equivalence": {},
+        "severe_harm": {},
+        "adversarial_abstention": {},
+        "helpful_use_anti_triviality": {},
+        "selection_rank_tuple": {
+            "minimum_mandatory_observed_gain": mean,
+            "minimum_corresponding_one_sided_LCB": lcb,
+        },
+        "eligible": eligible,
+    }
+
+
+def test_selector_uses_gain_lcb_lambda_nu_then_index_without_rounding() -> None:
+    cells = v3.canonical_operator_grid()
+    reports = [_gate_report(cell, eligible=False, mean=0.0, lcb=0.0) for cell in cells]
+    reports[0] = _gate_report(cells[0], eligible=True, mean=0.02, lcb=0.01)
+    reports[3] = _gate_report(cells[3], eligible=True, mean=0.02, lcb=0.01)
+    reports[6] = _gate_report(cells[6], eligible=True, mean=0.02, lcb=0.01)
+    assert synthetic.select_grid_cell(reports)["grid_cell_id"] == cells[6].grid_cell_id
+    reports[8] = _gate_report(cells[8], eligible=True, mean=0.0200000000001, lcb=0.009)
+    assert synthetic.select_grid_cell(reports)["grid_cell_id"] == cells[8].grid_cell_id
+    assert synthetic.select_grid_cell(
+        [_gate_report(cell, eligible=False, mean=0.0, lcb=0.0) for cell in cells]
+    ) is None
+
+
+@pytest.mark.parametrize(
+    ("capability_type", "require_capability"),
+    (
+        (
+            synthetic.ValidatedDevelopmentResult,
+            synthetic.require_validated_development_result,
+        ),
+        (synthetic.SelectedMethodProposal, synthetic.require_selected_method_proposal),
+    ),
+)
+def test_publication_capabilities_reject_constructor_mapping_subclass_and_manual_new(
+    capability_type,
+    require_capability,
+) -> None:
+    with pytest.raises(TypeError, match="issued only"):
+        capability_type()
+    with pytest.raises(TypeError, match="exact"):
+        require_capability({"payload_sha256": "a" * 64})
+    with pytest.raises(TypeError, match="not issued"):
+        require_capability(object.__new__(capability_type))
+
+    forged_subclass = type("ForgedCapability", (capability_type,), {})
+    with pytest.raises(TypeError, match="exact"):
+        require_capability(object.__new__(forged_subclass))
