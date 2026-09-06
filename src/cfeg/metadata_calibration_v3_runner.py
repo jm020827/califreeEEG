@@ -90,6 +90,7 @@ _EXPECTED_GOVERNED_ENVIRONMENT = {
 }
 _SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
 _GIT_OBJECT_RE = re.compile(r"[0-9a-f]{40}\Z")
+_RFC3339_SECONDS_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
 _STRICT_GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": "/dev/null",
     "GIT_CONFIG_NOSYSTEM": "1",
@@ -1471,8 +1472,8 @@ def _require_loaded_module_at_source(
 def _rfc3339_now_after(previous: str | None = None) -> str:
     now = datetime.now(timezone.utc).replace(microsecond=0)
     if previous is not None:
-        if not isinstance(previous, str) or not previous.endswith("Z"):
-            raise RunnerError("prior artifact timestamp is not canonical UTC")
+        if not isinstance(previous, str) or not _RFC3339_SECONDS_RE.fullmatch(previous):
+            raise RunnerError("prior artifact timestamp is not strict RFC3339 seconds UTC")
         try:
             prior = datetime.fromisoformat(previous[:-1] + "+00:00")
         except ValueError as exc:
@@ -1480,8 +1481,11 @@ def _rfc3339_now_after(previous: str | None = None) -> str:
         if prior.tzinfo is None:
             raise RunnerError("prior artifact timestamp lacks a timezone")
         if now <= prior:
-            now = prior.astimezone(timezone.utc) + timedelta(seconds=1)
-    return now.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            try:
+                now = prior.astimezone(timezone.utc) + timedelta(seconds=1)
+            except OverflowError as exc:
+                raise RunnerError("prior artifact timestamp cannot be advanced") from exc
+    return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _artifact_payload(capability: Any, name: str) -> Mapping[str, Any]:

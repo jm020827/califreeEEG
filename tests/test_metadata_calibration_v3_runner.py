@@ -11,6 +11,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -29,6 +30,7 @@ from cfeg.metadata_calibration_v3_runner import (
     _capture_python_site_inventory,
     _capture_source_facts,
     _PreflightConfig,
+    _rfc3339_now_after,
     emit_selection_bytes,
     resume_once,
     run_cli,
@@ -554,6 +556,52 @@ def test_preflight_environment_requires_the_exact_key_set(
     assert completed.returncode == 0, completed.stderr
     assert completed.stdout.startswith("REJECTED:RunnerError:")
     assert "exact governed environment" in completed.stdout
+
+
+def test_rfc3339_timestamp_without_previous_is_strict_seconds_utc() -> None:
+    before = datetime.now(timezone.utc).replace(microsecond=0)
+    value = _rfc3339_now_after()
+    after = datetime.now(timezone.utc).replace(microsecond=0)
+    parsed = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    assert before <= parsed <= after
+    assert "." not in value
+
+
+def test_rfc3339_timestamp_strictly_advances_a_future_previous_value() -> None:
+    assert _rfc3339_now_after("2999-12-31T23:59:58Z") == "2999-12-31T23:59:59Z"
+
+
+def test_rfc3339_timestamp_fails_closed_when_no_later_second_exists() -> None:
+    with pytest.raises(RunnerError, match="cannot be advanced"):
+        _rfc3339_now_after("9999-12-31T23:59:59Z")
+
+
+@pytest.mark.parametrize(
+    "previous",
+    (
+        "2026-09-07T12:00:00.000Z",
+        "2026-09-07T12:00:00+00:00",
+        "2026-09-07 12:00:00Z",
+        "2026-09-07T12:00:00z",
+        "2026-02-30T12:00:00Z",
+        "not-a-timestamp",
+        "",
+        False,
+    ),
+)
+def test_rfc3339_timestamp_rejects_malformed_or_noncanonical_previous(
+    previous: object,
+) -> None:
+    with pytest.raises(RunnerError, match="timestamp"):
+        _rfc3339_now_after(previous)
+
+
+def test_generated_timestamp_is_accepted_by_governance_parser() -> None:
+    from cfeg import metadata_calibration_v3_governance as governance
+
+    value = _rfc3339_now_after("2999-12-31T23:59:58Z")
+    parsed = governance._parse_rfc3339_seconds(value, "runner generated timestamp")
+    assert parsed == datetime(2999, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
 
 
 def test_runner_top_level_is_stdlib_only_and_activates_stdlib_first() -> None:
