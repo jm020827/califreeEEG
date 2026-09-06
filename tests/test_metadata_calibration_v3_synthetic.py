@@ -776,6 +776,35 @@ def test_incremental_support_cache_never_reads_beyond_requested_budget(
     assert [values.shape[0] for values in seen] == [1, 2, 2]
 
 
+def test_incremental_support_cache_runs_real_fbcca_for_one_then_two_block_chunks(
+    contract: synthetic.SyntheticV3Contract,
+    unit_rng,
+) -> None:
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="N1_clean_anchor",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    loader = (
+        synthetic._incremental_strict_fbcca_support_loader_after_authorized_boundary(
+            contract,
+            participant,
+            _issuer=synthetic._STRICT_FBCCA_COMPUTATION_ISSUER,
+        )
+    )
+    k1 = loader(1)
+    k3 = loader(3)
+    k5 = loader(5)
+    assert (k1.scores.shape, k3.scores.shape, k5.scores.shape) == (
+        (1, 12, 12),
+        (3, 12, 12),
+        (5, 12, 12),
+    )
+    assert np.array_equal(k3.scores[:1], k1.scores)
+    assert np.array_equal(k5.scores[:3], k3.scores)
+
+
 def test_strict_products_are_nominal_and_query_mutation_fails_before_support(
     monkeypatch: pytest.MonkeyPatch,
     contract: synthetic.SyntheticV3Contract,

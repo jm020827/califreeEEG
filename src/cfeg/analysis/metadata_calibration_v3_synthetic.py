@@ -1867,7 +1867,7 @@ def _score_strict_fbcca_blocks(
     values = np.asarray(block_signals)
     if (
         values.ndim != 4
-        or values.shape[0] not in {1, 3, 5}
+        or not 1 <= values.shape[0] <= 5
         or values.shape[1:] != (12, 8, 500)
         or values.dtype != np.float64
         or not np.isfinite(values).all()
