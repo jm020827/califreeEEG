@@ -197,6 +197,7 @@ def test_partial_write_consumes_path_and_cannot_be_retried(
 
 def test_low_level_publication_cannot_consume_production_or_alias_paths(
     private_test_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     assert not hasattr(gov, "publish_write_once")
     with pytest.raises(gov.AuthorityError, match="production namespace"):
@@ -215,6 +216,7 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
             _publisher=object(),
         )
     guarded = private_test_path / "guarded"
+    monkeypatch.setattr(gov, "_ACTIVE_GOVERNED_PROCESS_CAPABILITY", None)
     with pytest.raises(gov.AuthorityError, match="GovernedProcessCapability"):
         gov._publish_write_once(
             guarded,
@@ -251,7 +253,10 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
         )
 
 
-def test_ordinary_python_cannot_enter_production_authority_gateways() -> None:
+def test_ordinary_python_cannot_enter_production_authority_gateways(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(gov, "_ACTIVE_GOVERNED_PROCESS_CAPABILITY", None)
     probe = object()
     calls = (
         lambda: gov.build_development_bundle(

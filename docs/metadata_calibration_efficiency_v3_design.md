@@ -346,3 +346,11 @@ subset의 Ruff format도 통과했다. Repository-wide lint는 기존 비-V3 11�
 뒤에만 covariate-only reference seed `20260910`과 nonreserved development seed `20260909`를
 각각 한 단계씩 실행한다. Future beacon/scientific seed, external·human EEG outcome과 외부
 메시지는 여전히 실행할 수 없다.
+
+Implementation A의 첫 bundle 시도는 write-once publication 전에 focused child의 negative
+test 3개가 실행 맥락별 오류 문구 차이로 실패해 종료됐다(`141 passed, 3 failed`). 정식
+`pytest_focused_v3` capability는 mutation role이 아니므로 production 호출은 모두 거부됐고,
+bundle/artifact/seed는 만들어지지 않았다. Ordinary-process test가 process-local capability를
+명시적으로 비우고 fresh-child test가 non-fresh governed role의 거부도 확인하도록 고쳤다.
+이 correction을 포함한 새 clean A에서 focused test 전체를 다시 관측하기 전에는 retry하지
+않는다.

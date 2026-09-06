@@ -84,6 +84,13 @@ wrapper가 부모 환경을 상속해 governance의 exact environment와 충돌�
 실행하지 않았다. Frozen plan/amendment/owner-key/V2 terminal·deny-overlay hash는 모두
 byte-identical하게 재확인했다.
 
+첫 bundle `resume`은 publication 전에 governed focused pytest가 `141 passed, 3 failed`로
+끝나 중단됐다. 세 실패는 production API가 열린 것이 아니라, ordinary-process rejection을
+검사하는 unit test가 정식 `pytest_focused_v3` capability 안에서도 capability 부재 문구만
+기대했던 test-context 오류였다. Artifact root와 seed는 생성되지 않았다. 해당 test는
+ordinary context를 명시적으로 격리하고 non-fresh role의 정확한 거부도 인정하도록 수정했으며,
+새 clean snapshot의 governed focused test가 통과해야만 bundle 생성을 다시 시도한다.
+
 Canary는 별도 typed microstate와 exact historical-pulse seed/hash-probe oracle을 쓰며,
 selected freeze·commit/tree·tests·fixture·전체 canary artifact를 묶은 fresh-process audit
 capability가 있어야 main lifecycle의 `CANARY_PASSED`로 넘어간다. Future scientific

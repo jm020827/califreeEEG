@@ -1560,7 +1560,10 @@ def test_fresh_audit_requires_pinned_isolated_exec_and_parent_observation() -> N
     assert not hasattr(gov, "_publish_fresh_canary_audit_from_exec_child")
     with pytest.raises(TypeError, match="pinned parent launcher"):
         gov.ObservedFreshCanaryExecCapability()
-    with pytest.raises(gov.AuthorityError, match="exact -I -B -S bootstrap"):
+    with pytest.raises(
+        gov.AuthorityError,
+        match="exact -I -B -S bootstrap|fresh audit child command line differs",
+    ):
         gov._assert_fresh_canary_exec_child_context()
     with pytest.raises(gov.AuthorityError, match="pinned parent observer"):
         gov._issue_observed_fresh_exec_capability(
