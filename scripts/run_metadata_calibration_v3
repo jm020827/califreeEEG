@@ -1,0 +1,35 @@
+#!/bin/sh
+set -eu
+
+exec /home/whwovy/califreeEEG/.venv/bin/python -I -B -S -c '
+import pathlib
+import sys
+
+python = "/home/whwovy/califreeEEG/.venv/bin/python"
+repository_src = "/home/whwovy/califreeEEG/src"
+site_packages = "/home/whwovy/califreeEEG/.venv/lib/python3.10/site-packages"
+standard_library = (
+    "/usr/lib/python310.zip",
+    "/usr/lib/python3.10",
+    "/usr/lib/python3.10/lib-dynload",
+)
+flags = sys.flags
+assert flags.isolated == 1
+assert flags.ignore_environment == 1
+assert flags.dont_write_bytecode == 1
+assert flags.no_user_site == 1
+assert flags.no_site == 1
+assert sys.executable == python
+assert tuple(sys.path) == standard_library
+sys.path[:] = [repository_src, *standard_library, site_packages]
+assert tuple(sys.path) == (repository_src, *standard_library, site_packages)
+
+import cfeg
+
+assert pathlib.Path(cfeg.__file__).resolve().is_relative_to(
+    pathlib.Path(repository_src).resolve()
+)
+from cfeg.metadata_calibration_v3_runner import main
+
+raise SystemExit(main())
+' cfeg-v3-runner "$@"
