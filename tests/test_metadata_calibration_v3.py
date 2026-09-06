@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import inspect
+import sys
+from types import ModuleType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -48,7 +50,7 @@ def _support_product(blocks: int = 3, *, query_key: str = "query") -> v3.V3Suppo
     )
 
 
-def _reference() -> v3.ContextReference:
+def _reference(*, domain: str = "unit-test-domain") -> v3.ContextReference:
     packets = []
     for interface, base in (("neutral", 2.0), ("wet", 3.0), ("dry", 5.0)):
         for packet_index in range(256):
@@ -61,14 +63,54 @@ def _reference() -> v3.ContextReference:
                     "channel_availability": [True] * 8,
                 }
             )
-    return v3.fit_context_reference(packets, domain="unit-test-domain")
+    return v3.fit_context_reference(packets, domain=domain)
 
 
-def _validated_reference(
-    reference: v3.ContextReference,
-) -> v3.ValidatedContextReference:
-    return v3.validate_context_reference_for_publication(
-        v3.context_reference_payload(reference)
+def _bundle_rng_authorities(
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[v3.ContextReferenceRNGAuthority, v3.DevelopmentRNGAuthority]:
+    """Issue production-shaped authorities without drawing either reserved seed."""
+
+    bundle = SimpleNamespace(
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        source_bundle_sha256="3" * 64,
+        numerical_runtime_fingerprint_sha256="4" * 64,
+        clean_commit="5" * 40,
+        clean_tree="6" * 40,
+        tracked_source_files=(
+            SimpleNamespace(
+                path=v3.MASTER_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.MASTER_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.SYNTHETIC_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.SYNTHETIC_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.MODEL_MODULE_REPOSITORY_PATH,
+                file_sha256=v3._IMPORTED_MODEL_MODULE_SHA256,
+            ),
+        ),
+    )
+    governance = ModuleType("cfeg.metadata_calibration_v3_governance")
+
+    def require_bundle(value, *, expected_commit, expected_tree):
+        assert value is bundle
+        assert expected_commit == bundle.clean_commit
+        assert expected_tree == bundle.clean_tree
+        return bundle
+
+    governance.require_development_rng_bundle_capability = require_bundle
+    monkeypatch.setitem(
+        sys.modules,
+        "cfeg.metadata_calibration_v3_governance",
+        governance,
+    )
+    return v3.issue_bundle_bound_rng_authorities(
+        bundle,
+        expected_commit=bundle.clean_commit,
+        expected_tree=bundle.clean_tree,
     )
 
 
@@ -107,9 +149,8 @@ def _preflight(
         query_packet_key="query",
         ordered_support_packet_keys=tuple(packet["packet_key"] for packet in packets),
     )
-    return v3.preflight_context(
+    return v3._preflight_context_unit(
         reference=reference,
-        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=slots,
         query_packet=query,
@@ -233,9 +274,23 @@ def test_context_reference_uses_pairwise_interface_then_pooled_fallback() -> Non
     assert sparse_reference.pooled_table.centers == (None,) * 8
 
 
-def test_context_publication_capability_is_nominal_exact_and_hash_bound() -> None:
-    payload = v3.context_reference_payload(_reference())
-    proof = v3.validate_context_reference_for_publication(payload)
+def test_context_publication_capability_is_nominal_exact_and_hash_bound(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reference = _reference(domain="synthetic_development_and_future_synthetic")
+    payload = v3.context_reference_payload(reference)
+    reference_authority, _ = _bundle_rng_authorities(monkeypatch)
+    from cfeg.analysis import metadata_calibration_v3_synthetic as synthetic
+
+    monkeypatch.setattr(
+        synthetic,
+        "_replay_context_reference_payload_from_validated_authority",
+        lambda authority: payload,
+    )
+    proof = v3.validate_context_reference_for_publication(
+        payload,
+        rng_authority=reference_authority,
+    )
     assert type(proof) is v3.ValidatedContextReference
     assert proof.payload_sha256 == payload["payload_sha256"]
     assert proof.interface_lookup_keys == ("neutral", "wet", "dry")
@@ -267,9 +322,12 @@ def test_context_publication_capability_is_nominal_exact_and_hash_bound() -> Non
     with pytest.raises(TypeError, match="exact ValidatedContextReference"):
         v3.require_validated_context_reference(object.__new__(ForgedContextProof))
 
-    tampered = v3.validate_context_reference_for_publication(payload)
+    tampered = v3.validate_context_reference_for_publication(
+        payload,
+        rng_authority=reference_authority,
+    )
     object.__setattr__(tampered, "domain", "tampered")
-    with pytest.raises(ValueError, match="semantic binding"):
+    with pytest.raises(ValueError, match="identity|semantic binding"):
         v3.require_validated_context_reference(tampered)
 
     raw_query = _raw_packet("query", z=0.0, reference=_reference())
@@ -327,9 +385,8 @@ def test_missing_metadata_is_exact_AQ_and_interface_only_has_no_effect() -> None
         query_packet_key="query",
         ordered_support_packet_keys=("packet01",),
     )
-    preflight = v3.preflight_context(
+    preflight = v3._preflight_context_unit(
         reference=reference,
-        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=("block01",),
         query_packet=missing,
@@ -387,9 +444,8 @@ def test_rejected_preflight_returns_A0_without_calling_support_loader(failure: s
         pairing = _HASH_A
     elif failure == "wrong_count":
         support["impedance_kohm_by_channel"] = [1.0] * 7
-    preflight = v3.preflight_context(
+    preflight = v3._preflight_context_unit(
         reference=reference,
-        validated_reference=_validated_reference(reference),
         query_key="query",
         ordered_support_block_keys=slots,
         query_packet=query,

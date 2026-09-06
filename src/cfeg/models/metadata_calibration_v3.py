@@ -17,6 +17,7 @@ from dataclasses import field as dataclass_field
 from functools import lru_cache
 from itertools import permutations
 from numbers import Integral, Real
+from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -49,6 +50,60 @@ SUPPORT_PRODUCT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.support-produc
 GATE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.prequential-gate.v1"
 OPERATOR_OUTPUT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.operator-output.v1"
 PAIRING_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.context-pairing.v1"
+CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.context-reference-rng-authority.v1"
+)
+DEVELOPMENT_RNG_AUTHORITY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-rng-authority.v1"
+)
+DEVELOPMENT_BUNDLE_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+)
+RNG_PRIMITIVE_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
+)
+
+MASTER_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
+SYNTHETIC_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
+MODEL_MODULE_REPOSITORY_PATH = "src/cfeg/models/metadata_calibration_v3.py"
+MASTER_PLAN_SHA256 = "29de9a4772da34769806ee4f1633f0cbe50d088945a1205507f43c2befa143db"
+SYNTHETIC_PLAN_SHA256 = "df676c0b38b65450a611ab652567531df8818aa83223d0aebd314ca3759a971f"
+CONTEXT_REFERENCE_ROOT_SEED = 20_260_910
+DEVELOPMENT_ROOT_SEED = 20_260_909
+RNG_KEY_ORDER = (
+    "root_seed",
+    "family_code",
+    "participant_index",
+    "block",
+    "class_index",
+    "component_code",
+)
+RNG_FAMILY_CODES = (
+    ("B1_participant_class_confusion", 3101),
+    ("B2_participant_phase_spatial_shift", 3102),
+    ("B3_impedance_linked_transfer_shift", 3103),
+    ("B4_interface_calibrated_impedance_shift", 3104),
+    ("N1_clean_anchor", 3201),
+    ("N2_random_support_labels", 3202),
+    ("N3_nonstationary_calibration", 3203),
+    ("N4_context_null", 3204),
+    ("N5_invalid_context", 3205),
+)
+RNG_COMPONENT_CODES = (
+    ("spatial_signature", 1),
+    ("class_phase", 2),
+    ("block_phase_drift", 3),
+    ("channel_gain", 4),
+    ("innovation_noise", 5),
+    ("confuser_state", 6),
+    ("support_label_permutation", 7),
+    ("impedance_measurement_noise", 8),
+    ("interface_assignment", 9),
+    ("context_control", 10),
+    ("sensitivity_resampling", 11),
+)
+
+_IMPORTED_MODEL_MODULE_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 FINAL_BUDGETS = (0, 1, 3, 5)
 PREQUENTIAL_BUDGETS = (3, 5)
@@ -116,6 +171,364 @@ def _array_sha256(value: np.ndarray) -> str:
         "bytes_sha256": hashlib.sha256(array.tobytes(order="C")).hexdigest(),
     }
     return _canonical_plain_sha256(payload)
+
+
+def rng_key_map_sha256() -> str:
+    """Return the exact frozen RNG vocabulary digest shared by both roles."""
+
+    return _canonical_plain_sha256(
+        {
+            "schema": RNG_PRIMITIVE_SCHEMA,
+            "bit_generator": "numpy.random.PCG64DXSM",
+            "construction": "numpy.random.SeedSequence",
+            "key_order": list(RNG_KEY_ORDER),
+            "family_codes": [[name, code] for name, code in RNG_FAMILY_CODES],
+            "component_codes": [[name, code] for name, code in RNG_COMPONENT_CODES],
+        }
+    )
+
+
+_CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER = object()
+_DEVELOPMENT_RNG_AUTHORITY_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class ContextReferenceRNGAuthority:
+    """Nominal bundle-bound authority for the exact reference seed only."""
+
+    schema: str
+    candidate_id: str
+    role: str
+    development_bundle_schema: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    development_bundle_source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
+    clean_commit: str
+    clean_tree: str
+    master_plan_file_sha256: str
+    synthetic_plan_file_sha256: str
+    rng_primitive_schema: str
+    root_seed: int
+    key_order: tuple[str, ...]
+    family_codes: tuple[tuple[str, int], ...]
+    component_codes: tuple[tuple[str, int], ...]
+    key_map_sha256: str
+    semantic_binding_sha256: str
+    _bundle_capability: object = dataclass_field(repr=False, compare=False)
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("ContextReferenceRNGAuthority is issued only from a canonical bundle.")
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class DevelopmentRNGAuthority:
+    """Nominal bundle-bound authority for development seed 20260909 only."""
+
+    schema: str
+    candidate_id: str
+    role: str
+    development_bundle_schema: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    development_bundle_source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
+    clean_commit: str
+    clean_tree: str
+    master_plan_file_sha256: str
+    synthetic_plan_file_sha256: str
+    rng_primitive_schema: str
+    root_seed: int
+    key_order: tuple[str, ...]
+    family_codes: tuple[tuple[str, int], ...]
+    component_codes: tuple[tuple[str, int], ...]
+    key_map_sha256: str
+    semantic_binding_sha256: str
+    _bundle_capability: object = dataclass_field(repr=False, compare=False)
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("DevelopmentRNGAuthority is issued only from a canonical bundle.")
+
+
+def _rng_authority_binding(value: ContextReferenceRNGAuthority | DevelopmentRNGAuthority) -> dict[str, Any]:
+    return {
+        "schema": value.schema,
+        "candidate_id": value.candidate_id,
+        "role": value.role,
+        "development_bundle_schema": value.development_bundle_schema,
+        "development_bundle_payload_sha256": value.development_bundle_payload_sha256,
+        "development_bundle_file_sha256": value.development_bundle_file_sha256,
+        "development_bundle_source_bundle_sha256": (
+            value.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            value.numerical_runtime_fingerprint_sha256
+        ),
+        "clean_commit": value.clean_commit,
+        "clean_tree": value.clean_tree,
+        "master_plan_file_sha256": value.master_plan_file_sha256,
+        "synthetic_plan_file_sha256": value.synthetic_plan_file_sha256,
+        "rng_primitive_schema": value.rng_primitive_schema,
+        "root_seed": value.root_seed,
+        "key_order": list(value.key_order),
+        "family_codes": [[name, code] for name, code in value.family_codes],
+        "component_codes": [[name, code] for name, code in value.component_codes],
+        "key_map_sha256": value.key_map_sha256,
+    }
+
+
+def issue_bundle_bound_rng_authorities(
+    development_bundle_capability: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> tuple[ContextReferenceRNGAuthority, DevelopmentRNGAuthority]:
+    """Issue the two disjoint RNG roles after canonical bundle revalidation."""
+
+    _git_object_id(expected_commit, "expected_commit")
+    _git_object_id(expected_tree, "expected_tree")
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            require_development_rng_bundle_capability,
+        )
+    except ImportError as error:  # pragma: no cover - integration installation failure
+        raise RuntimeError("V3 governance bundle validator is unavailable.") from error
+    bundle = require_development_rng_bundle_capability(
+        development_bundle_capability,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+    )
+    inventory = {
+        entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
+    }
+    if (
+        inventory.get(MASTER_PLAN_REPOSITORY_PATH) != MASTER_PLAN_SHA256
+        or inventory.get(SYNTHETIC_PLAN_REPOSITORY_PATH) != SYNTHETIC_PLAN_SHA256
+    ):
+        raise ValueError("canonical bundle does not bind the frozen V3 plan files.")
+    common = {
+        "candidate_id": CANDIDATE_ID,
+        "development_bundle_schema": DEVELOPMENT_BUNDLE_SCHEMA,
+        "development_bundle_payload_sha256": bundle.payload_sha256,
+        "development_bundle_file_sha256": bundle.file_sha256,
+        "development_bundle_source_bundle_sha256": bundle.source_bundle_sha256,
+        "numerical_runtime_fingerprint_sha256": (
+            bundle.numerical_runtime_fingerprint_sha256
+        ),
+        "clean_commit": bundle.clean_commit,
+        "clean_tree": bundle.clean_tree,
+        "master_plan_file_sha256": MASTER_PLAN_SHA256,
+        "synthetic_plan_file_sha256": SYNTHETIC_PLAN_SHA256,
+        "rng_primitive_schema": RNG_PRIMITIVE_SCHEMA,
+        "key_order": RNG_KEY_ORDER,
+        "family_codes": RNG_FAMILY_CODES,
+        "component_codes": RNG_COMPONENT_CODES,
+        "key_map_sha256": rng_key_map_sha256(),
+        "_bundle_capability": bundle,
+    }
+    reference = _issue_rng_authority(
+        ContextReferenceRNGAuthority,
+        schema=CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA,
+        role="context_reference",
+        root_seed=CONTEXT_REFERENCE_ROOT_SEED,
+        issuer=_CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER,
+        common=common,
+    )
+    development = _issue_rng_authority(
+        DevelopmentRNGAuthority,
+        schema=DEVELOPMENT_RNG_AUTHORITY_SCHEMA,
+        role="development",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+        issuer=_DEVELOPMENT_RNG_AUTHORITY_ISSUER,
+        common=common,
+    )
+    return (
+        require_context_reference_rng_authority(reference),
+        require_development_rng_authority(development),
+    )
+
+
+def _issue_rng_authority(
+    capability_type: type[ContextReferenceRNGAuthority | DevelopmentRNGAuthority],
+    *,
+    schema: str,
+    role: str,
+    root_seed: int,
+    issuer: object,
+    common: Mapping[str, Any],
+) -> ContextReferenceRNGAuthority | DevelopmentRNGAuthority:
+    expected_issuer = (
+        _CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER
+        if capability_type is ContextReferenceRNGAuthority
+        else _DEVELOPMENT_RNG_AUTHORITY_ISSUER
+        if capability_type is DevelopmentRNGAuthority
+        else None
+    )
+    if issuer is not expected_issuer:
+        raise TypeError("RNG authority issuer token/type pairing is invalid.")
+    value = object.__new__(capability_type)
+    fields = {
+        **dict(common),
+        "schema": schema,
+        "role": role,
+        "root_seed": root_seed,
+    }
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(
+        value,
+        "semantic_binding_sha256",
+        _canonical_plain_sha256(_rng_authority_binding(value)),
+    )
+    object.__setattr__(value, "_issuer", issuer)
+    return value
+
+
+def require_context_reference_rng_authority(value: object) -> ContextReferenceRNGAuthority:
+    """Revalidate the exact reference role and its originating bundle."""
+
+    if type(value) is not ContextReferenceRNGAuthority:
+        raise TypeError("an exact ContextReferenceRNGAuthority is required.")
+    _require_rng_authority(
+        value,
+        schema=CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA,
+        role="context_reference",
+        root_seed=CONTEXT_REFERENCE_ROOT_SEED,
+        issuer=_CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER,
+    )
+    return value
+
+
+def require_development_rng_authority(value: object) -> DevelopmentRNGAuthority:
+    """Revalidate the exact development role and its originating bundle."""
+
+    if type(value) is not DevelopmentRNGAuthority:
+        raise TypeError("an exact DevelopmentRNGAuthority is required.")
+    _require_rng_authority(
+        value,
+        schema=DEVELOPMENT_RNG_AUTHORITY_SCHEMA,
+        role="development",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+        issuer=_DEVELOPMENT_RNG_AUTHORITY_ISSUER,
+    )
+    return value
+
+
+def _require_rng_authority(
+    value: ContextReferenceRNGAuthority | DevelopmentRNGAuthority,
+    *,
+    schema: str,
+    role: str,
+    root_seed: int,
+    issuer: object,
+    revalidate_bundle: bool = True,
+) -> None:
+    if value._issuer is not issuer:
+        raise TypeError("RNG authority issuer marker is invalid.")
+    if (
+        value.schema != schema
+        or value.candidate_id != CANDIDATE_ID
+        or value.role != role
+        or value.development_bundle_schema != DEVELOPMENT_BUNDLE_SCHEMA
+        or value.master_plan_file_sha256 != MASTER_PLAN_SHA256
+        or value.synthetic_plan_file_sha256 != SYNTHETIC_PLAN_SHA256
+        or value.rng_primitive_schema != RNG_PRIMITIVE_SCHEMA
+        or type(value.root_seed) is not int
+        or value.root_seed != root_seed
+        or type(value.key_order) is not tuple
+        or value.key_order != RNG_KEY_ORDER
+        or type(value.family_codes) is not tuple
+        or value.family_codes != RNG_FAMILY_CODES
+        or type(value.component_codes) is not tuple
+        or value.component_codes != RNG_COMPONENT_CODES
+        or value.key_map_sha256 != rng_key_map_sha256()
+    ):
+        raise ValueError("RNG authority identity, role, seed, or key map is invalid.")
+    for name in (
+        "development_bundle_payload_sha256",
+        "development_bundle_file_sha256",
+        "development_bundle_source_bundle_sha256",
+        "numerical_runtime_fingerprint_sha256",
+        "master_plan_file_sha256",
+        "synthetic_plan_file_sha256",
+        "key_map_sha256",
+        "semantic_binding_sha256",
+    ):
+        _sha256(getattr(value, name), name)
+    _git_object_id(value.clean_commit, "clean_commit")
+    _git_object_id(value.clean_tree, "clean_tree")
+    if value.semantic_binding_sha256 != _canonical_plain_sha256(
+        _rng_authority_binding(value)
+    ):
+        raise ValueError("RNG authority semantic binding is invalid.")
+    if not revalidate_bundle:
+        return
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            require_development_rng_bundle_capability,
+        )
+    except ImportError as error:  # pragma: no cover - integration installation failure
+        raise RuntimeError("V3 governance bundle validator is unavailable.") from error
+    bundle = require_development_rng_bundle_capability(
+        value._bundle_capability,
+        expected_commit=value.clean_commit,
+        expected_tree=value.clean_tree,
+    )
+    inventory = {
+        entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
+    }
+    current_module_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    if (
+        current_module_sha256 != _IMPORTED_MODEL_MODULE_SHA256
+        or inventory.get(MODEL_MODULE_REPOSITORY_PATH)
+        != _IMPORTED_MODEL_MODULE_SHA256
+    ):
+        raise RuntimeError(
+            "loaded V3 model code does not equal the current bundle-bound source bytes."
+        )
+    if (
+        bundle.payload_sha256 != value.development_bundle_payload_sha256
+        or bundle.file_sha256 != value.development_bundle_file_sha256
+        or bundle.source_bundle_sha256
+        != value.development_bundle_source_bundle_sha256
+        or bundle.numerical_runtime_fingerprint_sha256
+        != value.numerical_runtime_fingerprint_sha256
+    ):
+        raise ValueError("RNG authority differs from its revalidated development bundle.")
+
+
+def _require_context_reference_rng_authority_semantics(
+    value: object,
+) -> ContextReferenceRNGAuthority:
+    if type(value) is not ContextReferenceRNGAuthority:
+        raise TypeError("an exact ContextReferenceRNGAuthority is required.")
+    _require_rng_authority(
+        value,
+        schema=CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA,
+        role="context_reference",
+        root_seed=CONTEXT_REFERENCE_ROOT_SEED,
+        issuer=_CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER,
+        revalidate_bundle=False,
+    )
+    return value
+
+
+def _require_development_rng_authority_semantics(
+    value: object,
+) -> DevelopmentRNGAuthority:
+    if type(value) is not DevelopmentRNGAuthority:
+        raise TypeError("an exact DevelopmentRNGAuthority is required.")
+    _require_rng_authority(
+        value,
+        schema=DEVELOPMENT_RNG_AUTHORITY_SCHEMA,
+        role="development",
+        root_seed=DEVELOPMENT_ROOT_SEED,
+        issuer=_DEVELOPMENT_RNG_AUTHORITY_ISSUER,
+        revalidate_bundle=False,
+    )
+    return value
 
 
 @dataclass(frozen=True)
@@ -281,7 +694,11 @@ def jensen_shannon_divergence(
     return _readonly(0.5 * _rowwise_kl(left, midpoint, eps) + 0.5 * _rowwise_kl(right, midpoint, eps))
 
 
-@dataclass(frozen=True)
+_SUPPORT_RELIABILITY_ISSUER = object()
+_SUPPORT_PRODUCT_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class MFreeSupportReliabilityCapability:
     candidate_id: str
     active_grid_cell_id: str
@@ -292,6 +709,10 @@ class MFreeSupportReliabilityCapability:
     support_eeg_label_manifest_sha256: str
     payload_sha256: str
     schema: str = SUPPORT_RELIABILITY_SCHEMA
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("MFreeSupportReliabilityCapability has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.schema != SUPPORT_RELIABILITY_SCHEMA or self.candidate_id != CANDIDATE_ID:
@@ -299,6 +720,12 @@ class MFreeSupportReliabilityCapability:
         grid = grid_cell_by_id(self.active_grid_cell_id)
         if self.exact_operator_instance_digest != grid.operator_instance_sha256:
             raise ValueError("support-reliability operator binding is invalid.")
+        if (
+            type(self.anchor_normalizer_sha256s) is not tuple
+            or type(self.ordered_support_block_keys) is not tuple
+            or type(self.block_reliabilities) is not tuple
+        ):
+            raise TypeError("support-reliability vectors must remain exact tuples.")
         keys = _keys_tuple(self.ordered_support_block_keys, "ordered_support_block_keys")
         if not keys:
             raise ValueError("support-reliability capability requires at least one block.")
@@ -328,7 +755,7 @@ class MFreeSupportReliabilityCapability:
         }
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True, init=False)
 class V3SupportProduct:
     query_key: str
     active_grid_cell_id: str
@@ -341,8 +768,13 @@ class V3SupportProduct:
     block_reliabilities: np.ndarray
     normalized_block_weights: np.ndarray
     reliability_capability: MFreeSupportReliabilityCapability
+    block_weight_mode: Literal["reliability", "uniform"]
     payload_sha256: str
     schema: str = SUPPORT_PRODUCT_SCHEMA
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("V3SupportProduct has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.schema != SUPPORT_PRODUCT_SCHEMA:
@@ -351,11 +783,13 @@ class V3SupportProduct:
         grid = grid_cell_by_id(self.active_grid_cell_id)
         if self.exact_operator_instance_digest != grid.operator_instance_sha256:
             raise ValueError("support-product operator binding is invalid.")
+        if type(self.ordered_support_block_keys) is not tuple:
+            raise TypeError("support-product keys must remain an exact tuple.")
         keys = _keys_tuple(self.ordered_support_block_keys, "ordered_support_block_keys")
         _sha256(self.query_normalizer_sha256, "query_normalizer_sha256")
-        if type(self.reliability_capability) is not MFreeSupportReliabilityCapability:
-            raise TypeError("reliability_capability has the wrong exact nominal type.")
-        capability = self.reliability_capability
+        capability = require_m_free_support_reliability(
+            self.reliability_capability
+        )
         if (
             capability.active_grid_cell_id != self.active_grid_cell_id
             or capability.exact_operator_instance_digest != self.exact_operator_instance_digest
@@ -381,7 +815,12 @@ class V3SupportProduct:
         )
         if not np.array_equal(reliabilities, np.asarray(capability.block_reliabilities)):
             raise ValueError("support-product reliabilities differ from the capability.")
-        expected_weights = reliabilities / reliabilities.sum()
+        if self.block_weight_mode == "reliability":
+            expected_weights = reliabilities / reliabilities.sum()
+        elif self.block_weight_mode == "uniform":
+            expected_weights = np.full(len(keys), 1.0 / len(keys), dtype=np.float64)
+        else:
+            raise ValueError("unknown block weight mode.")
         if not np.array_equal(weights, expected_weights):
             raise ValueError("normalized block weights are not the exact relative reliabilities.")
         expected_support = np.sum(weights[:, None, None] * per_block, axis=0)
@@ -414,7 +853,28 @@ class V3SupportProduct:
             "block_reliabilities": self.block_reliabilities.tolist(),
             "normalized_block_weights": self.normalized_block_weights.tolist(),
             "support_reliability_capability_sha256": self.reliability_capability.payload_sha256,
+            "block_weight_mode": self.block_weight_mode,
         }
+
+
+def require_m_free_support_reliability(
+    value: object,
+) -> MFreeSupportReliabilityCapability:
+    if type(value) is not MFreeSupportReliabilityCapability:
+        raise TypeError("an exact MFreeSupportReliabilityCapability is required.")
+    if value._issuer is not _SUPPORT_RELIABILITY_ISSUER:
+        raise TypeError("support-reliability capability issuer is invalid.")
+    MFreeSupportReliabilityCapability.__post_init__(value)
+    return value
+
+
+def require_v3_support_product(value: object) -> V3SupportProduct:
+    if type(value) is not V3SupportProduct:
+        raise TypeError("an exact V3SupportProduct is required.")
+    if value._issuer is not _SUPPORT_PRODUCT_ISSUER:
+        raise TypeError("support-product issuer is invalid.")
+    V3SupportProduct.__post_init__(value)
+    return value
 
 
 def blockwise_p3_support(
@@ -428,6 +888,54 @@ def blockwise_p3_support(
     config: V3OperatorConfig,
 ) -> V3SupportProduct:
     """Build the common M-free blockwise P3 mixture and reliability capability."""
+
+    return _blockwise_p3_support(
+        query_fbcca_scores,
+        support_fbcca_scores_by_block,
+        support_labels_by_block,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        support_eeg_label_manifest_sha256=support_eeg_label_manifest_sha256,
+        config=config,
+        block_weight_mode="reliability",
+    )
+
+
+def blockwise_p3_support_uniform_sensitivity(
+    query_fbcca_scores: np.ndarray,
+    support_fbcca_scores_by_block: np.ndarray,
+    support_labels_by_block: np.ndarray,
+    *,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    support_eeg_label_manifest_sha256: str,
+    config: V3OperatorConfig,
+) -> V3SupportProduct:
+    """Build the predeclared uniform-block-weight sensitivity product."""
+
+    return _blockwise_p3_support(
+        query_fbcca_scores,
+        support_fbcca_scores_by_block,
+        support_labels_by_block,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        support_eeg_label_manifest_sha256=support_eeg_label_manifest_sha256,
+        config=config,
+        block_weight_mode="uniform",
+    )
+
+
+def _blockwise_p3_support(
+    query_fbcca_scores: np.ndarray,
+    support_fbcca_scores_by_block: np.ndarray,
+    support_labels_by_block: np.ndarray,
+    *,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    support_eeg_label_manifest_sha256: str,
+    config: V3OperatorConfig,
+    block_weight_mode: Literal["reliability", "uniform"],
+) -> V3SupportProduct:
 
     config = _require_exact_operator_config(config)
     query_key = _nonempty_ascii(query_key, "query_key")
@@ -488,7 +996,12 @@ def blockwise_p3_support(
             )
         per_block[block_index] = _softmax(scores)
 
-    weights = reliabilities / reliabilities.sum()
+    if block_weight_mode == "reliability":
+        weights = reliabilities / reliabilities.sum()
+    elif block_weight_mode == "uniform":
+        weights = np.full(blocks, 1.0 / blocks, dtype=np.float64)
+    else:  # pragma: no cover - callers pass one literal
+        raise ValueError("unknown block weight mode.")
     mixture = np.sum(weights[:, None, None] * per_block, axis=0)
     readonly_reliabilities = _readonly(reliabilities)
     readonly_weights = _readonly(weights)
@@ -504,15 +1017,25 @@ def blockwise_p3_support(
         "block_reliabilities": readonly_reliabilities.tolist(),
         "support_eeg_label_manifest_sha256": support_eeg_label_manifest_sha256,
     }
-    reliability = MFreeSupportReliabilityCapability(
-        candidate_id=CANDIDATE_ID,
-        active_grid_cell_id=config.grid_cell.grid_cell_id,
-        exact_operator_instance_digest=config.grid_cell.operator_instance_sha256,
-        anchor_normalizer_sha256s=tuple(normalizer_hashes),
-        ordered_support_block_keys=keys,
-        block_reliabilities=tuple(float(value) for value in readonly_reliabilities),
-        support_eeg_label_manifest_sha256=support_eeg_label_manifest_sha256,
-        payload_sha256=canonical_payload_sha256(reliability_payload),
+    reliability = _issue_support_reliability(
+        {
+            "candidate_id": CANDIDATE_ID,
+            "active_grid_cell_id": config.grid_cell.grid_cell_id,
+            "exact_operator_instance_digest": (
+                config.grid_cell.operator_instance_sha256
+            ),
+            "anchor_normalizer_sha256s": tuple(normalizer_hashes),
+            "ordered_support_block_keys": keys,
+            "block_reliabilities": tuple(
+                float(value) for value in readonly_reliabilities
+            ),
+            "support_eeg_label_manifest_sha256": (
+                support_eeg_label_manifest_sha256
+            ),
+            "payload_sha256": canonical_payload_sha256(reliability_payload),
+            "schema": SUPPORT_RELIABILITY_SCHEMA,
+        },
+        _issuer=_SUPPORT_RELIABILITY_ISSUER,
     )
     product_payload = {
         "schema": SUPPORT_PRODUCT_SCHEMA,
@@ -527,21 +1050,57 @@ def blockwise_p3_support(
         "block_reliabilities": readonly_reliabilities.tolist(),
         "normalized_block_weights": readonly_weights.tolist(),
         "support_reliability_capability_sha256": reliability.payload_sha256,
+        "block_weight_mode": block_weight_mode,
     }
-    return V3SupportProduct(
-        query_key=query_key,
-        active_grid_cell_id=config.grid_cell.grid_cell_id,
-        exact_operator_instance_digest=config.grid_cell.operator_instance_sha256,
-        ordered_support_block_keys=keys,
-        query_normalizer_sha256=_array_sha256(base),
-        base_probabilities=base,
-        per_block_support_probabilities=readonly_per_block,
-        support_probabilities=readonly_mixture,
-        block_reliabilities=readonly_reliabilities,
-        normalized_block_weights=readonly_weights,
-        reliability_capability=reliability,
-        payload_sha256=canonical_payload_sha256(product_payload),
+    return _issue_support_product(
+        {
+            "query_key": query_key,
+            "active_grid_cell_id": config.grid_cell.grid_cell_id,
+            "exact_operator_instance_digest": (
+                config.grid_cell.operator_instance_sha256
+            ),
+            "ordered_support_block_keys": keys,
+            "query_normalizer_sha256": _array_sha256(base),
+            "base_probabilities": base,
+            "per_block_support_probabilities": readonly_per_block,
+            "support_probabilities": readonly_mixture,
+            "block_reliabilities": readonly_reliabilities,
+            "normalized_block_weights": readonly_weights,
+            "reliability_capability": reliability,
+            "block_weight_mode": block_weight_mode,
+            "payload_sha256": canonical_payload_sha256(product_payload),
+            "schema": SUPPORT_PRODUCT_SCHEMA,
+        },
+        _issuer=_SUPPORT_PRODUCT_ISSUER,
     )
+
+
+def _issue_support_reliability(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> MFreeSupportReliabilityCapability:
+    if _issuer is not _SUPPORT_RELIABILITY_ISSUER:
+        raise TypeError("support-reliability issuer token is invalid.")
+    value = object.__new__(MFreeSupportReliabilityCapability)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _SUPPORT_RELIABILITY_ISSUER)
+    return require_m_free_support_reliability(value)
+
+
+def _issue_support_product(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> V3SupportProduct:
+    if _issuer is not _SUPPORT_PRODUCT_ISSUER:
+        raise TypeError("support-product issuer token is invalid.")
+    value = object.__new__(V3SupportProduct)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _SUPPORT_PRODUCT_ISSUER)
+    return require_v3_support_product(value)
 
 
 @dataclass(frozen=True)
@@ -555,6 +1114,12 @@ class ContextScaleTable:
 
     def __post_init__(self) -> None:
         _nonempty_ascii(self.interface_lookup_key, "interface_lookup_key")
+        if (
+            type(self.centers) is not tuple
+            or type(self.scales) is not tuple
+            or type(self.observed_counts) is not tuple
+        ):
+            raise TypeError("context scale vectors must remain exact tuples.")
         if not (
             len(self.centers) == len(self.scales) == len(self.observed_counts) > 0
         ):
@@ -562,12 +1127,15 @@ class ContextScaleTable:
         for index, (center, scale, count) in enumerate(
             zip(self.centers, self.scales, self.observed_counts, strict=True)
         ):
+            if type(count) is not int:
+                raise TypeError(f"observed_counts[{index}] must be an exact int.")
             _nonnegative_integer(count, f"observed_counts[{index}]")
             if (center is None) != (scale is None):
                 raise ValueError("context center and scale must be available as a pair.")
             if center is not None:
                 _finite_float(center, f"centers[{index}]")
-                _positive_finite(scale, f"scales[{index}]")
+                if _positive_finite(scale, f"scales[{index}]") < 0.05:
+                    raise ValueError("every available context scale must be at least 0.05.")
 
 
 @dataclass(frozen=True)
@@ -588,10 +1156,12 @@ class ContextReference:
         if self.schema != CONTEXT_REFERENCE_SCHEMA:
             raise ValueError("context-reference schema is invalid.")
         _nonempty_ascii(self.domain, "domain")
+        if type(self.canonical_channels) is not tuple:
+            raise TypeError("canonical_channels must remain an exact tuple.")
         channels = _keys_tuple(self.canonical_channels, "canonical_channels")
-        if len(channels) != 8:
-            raise ValueError("V3 context reference requires exactly eight canonical channels.")
-        if not isinstance(self.interface_tables, tuple) or not self.interface_tables:
+        if channels != CANONICAL_CHANNELS:
+            raise ValueError("V3 canonical channels must be exactly ch00 through ch07.")
+        if type(self.interface_tables) is not tuple or not self.interface_tables:
             raise ValueError("context reference requires at least one interface table.")
         if any(type(table) is not ContextScaleTable for table in self.interface_tables):
             raise TypeError("interface_tables must contain exact ContextScaleTable objects.")
@@ -599,6 +1169,11 @@ class ContextReference:
             self.interface_tables
         ):
             raise ValueError("context interface lookup keys must be unique.")
+        if any(
+            table.interface_lookup_key == "__pooled__"
+            for table in self.interface_tables
+        ):
+            raise ValueError("__pooled__ is reserved for the pooled context table.")
         if any(len(table.centers) != len(channels) for table in self.interface_tables):
             raise ValueError("every context interface table must match canonical channels.")
         if type(self.pooled_table) is not ContextScaleTable:
@@ -619,6 +1194,29 @@ class ContextReference:
             raise ValueError("V3 pooled minimum count is frozen at 256.")
         if _positive_finite(self.scale_floor, "scale_floor") != 0.05:
             raise ValueError("V3 context scale floor is frozen at 0.05.")
+        for table in self.interface_tables:
+            for center, scale, count in zip(
+                table.centers,
+                table.scales,
+                table.observed_counts,
+                strict=True,
+            ):
+                available = center is not None and scale is not None
+                if available != (count >= self.minimum_per_interface_channel_count):
+                    raise ValueError(
+                        "interface center/scale availability must exactly follow count>=128."
+                    )
+        for center, scale, count in zip(
+            self.pooled_table.centers,
+            self.pooled_table.scales,
+            self.pooled_table.observed_counts,
+            strict=True,
+        ):
+            available = center is not None and scale is not None
+            if available != (count >= self.pooled_per_channel_fallback_minimum_count):
+                raise ValueError(
+                    "pooled center/scale availability must exactly follow count>=256."
+                )
         _validate_capability_hash(self, self._payload())
 
     @property
@@ -651,6 +1249,13 @@ class ContextReference:
         }
 
 
+def _require_context_reference(value: object) -> ContextReference:
+    if type(value) is not ContextReference:
+        raise TypeError("reference must be an exact ContextReference.")
+    ContextReference.__post_init__(value)
+    return value
+
+
 _VALIDATED_CONTEXT_REFERENCE_ISSUER = object()
 
 
@@ -675,7 +1280,19 @@ class ValidatedContextReference:
     minimum_per_interface_channel_count: int
     pooled_per_channel_fallback_minimum_count: int
     scale_floor: float
+    context_reference_rng_authority_schema: str
+    context_reference_rng_authority_semantic_binding_sha256: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    development_bundle_source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
+    reference_root_seed: int
+    rng_key_map_sha256: str
     semantic_binding_sha256: str
+    _rng_authority: ContextReferenceRNGAuthority = dataclass_field(
+        repr=False,
+        compare=False,
+    )
     _issuer: object = dataclass_field(repr=False, compare=False)
 
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -702,14 +1319,37 @@ def _validated_context_reference_binding(
             value.pooled_per_channel_fallback_minimum_count
         ),
         "scale_floor": value.scale_floor,
+        "context_reference_rng_authority_schema": (
+            value.context_reference_rng_authority_schema
+        ),
+        "context_reference_rng_authority_semantic_binding_sha256": (
+            value.context_reference_rng_authority_semantic_binding_sha256
+        ),
+        "development_bundle_payload_sha256": (
+            value.development_bundle_payload_sha256
+        ),
+        "development_bundle_file_sha256": value.development_bundle_file_sha256,
+        "development_bundle_source_bundle_sha256": (
+            value.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            value.numerical_runtime_fingerprint_sha256
+        ),
+        "reference_root_seed": value.reference_root_seed,
+        "rng_key_map_sha256": value.rng_key_map_sha256,
     }
 
 
 def _issue_validated_context_reference(
     reference: ContextReference,
+    rng_authority: ContextReferenceRNGAuthority,
+    *,
+    _issuer: object,
 ) -> ValidatedContextReference:
-    if type(reference) is not ContextReference:
-        raise TypeError("reference must be an exact ContextReference.")
+    if _issuer is not _VALIDATED_CONTEXT_REFERENCE_ISSUER:
+        raise TypeError("validated-reference issuer token is invalid.")
+    reference = _require_context_reference(reference)
+    authority = _require_context_reference_rng_authority_semantics(rng_authority)
     value = object.__new__(ValidatedContextReference)
     fields: dict[str, Any] = {
         "schema": VALIDATED_CONTEXT_REFERENCE_SCHEMA,
@@ -728,6 +1368,23 @@ def _issue_validated_context_reference(
             reference.pooled_per_channel_fallback_minimum_count
         ),
         "scale_floor": reference.scale_floor,
+        "context_reference_rng_authority_schema": authority.schema,
+        "context_reference_rng_authority_semantic_binding_sha256": (
+            authority.semantic_binding_sha256
+        ),
+        "development_bundle_payload_sha256": (
+            authority.development_bundle_payload_sha256
+        ),
+        "development_bundle_file_sha256": authority.development_bundle_file_sha256,
+        "development_bundle_source_bundle_sha256": (
+            authority.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            authority.numerical_runtime_fingerprint_sha256
+        ),
+        "reference_root_seed": authority.root_seed,
+        "rng_key_map_sha256": authority.key_map_sha256,
+        "_rng_authority": authority,
     }
     for name, item in fields.items():
         object.__setattr__(value, name, item)
@@ -737,7 +1394,7 @@ def _issue_validated_context_reference(
         _canonical_plain_sha256(_validated_context_reference_binding(value)),
     )
     object.__setattr__(value, "_issuer", _VALIDATED_CONTEXT_REFERENCE_ISSUER)
-    return require_validated_context_reference(value)
+    return _require_validated_context_reference_semantics(value)
 
 
 def fit_context_reference(
@@ -768,6 +1425,8 @@ def fit_context_reference(
                 f"context-reference packet {packet_index} must contain exactly {sorted(allowed)}."
             )
         interface = _nonempty_ascii(packet["interface"], f"packets[{packet_index}].interface")
+        if interface == "__pooled__":
+            raise ValueError("__pooled__ is reserved and cannot be a packet interface.")
         impedance = _sequence_length(
             packet["impedance_kohm_by_channel"],
             len(channels),
@@ -854,8 +1513,7 @@ def fit_context_reference(
 def context_reference_payload(reference: ContextReference) -> dict[str, Any]:
     """Return a schema-ready in-memory payload for governance sealing."""
 
-    if type(reference) is not ContextReference:
-        raise TypeError("reference must be an exact ContextReference.")
+    reference = _require_context_reference(reference)
     payload = reference._payload()
     payload["payload_sha256"] = reference.payload_sha256
     validate_context_reference_payload(payload)
@@ -923,11 +1581,29 @@ def validate_context_reference_payload(payload: Mapping[str, Any]) -> ContextRef
 
 def validate_context_reference_for_publication(
     payload: Mapping[str, Any],
+    *,
+    rng_authority: ContextReferenceRNGAuthority,
 ) -> ValidatedContextReference:
-    """Validate a sealed in-memory payload and issue its nominal proof."""
+    """Replay seed 20260910 exactly, byte-compare, and issue nominal proof."""
 
+    authority = require_context_reference_rng_authority(rng_authority)
+    try:
+        from cfeg.analysis.metadata_calibration_v3_synthetic import (
+            _replay_context_reference_payload_from_validated_authority,
+        )
+    except ImportError as error:  # pragma: no cover - integration installation failure
+        raise RuntimeError("V3 synthetic context replay is unavailable.") from error
+    replayed = _replay_context_reference_payload_from_validated_authority(authority)
+    if canonical_json_bytes(payload) != canonical_json_bytes(replayed):
+        raise ValueError("context-reference payload differs from exact authorized replay.")
     reference = validate_context_reference_payload(payload)
-    return _issue_validated_context_reference(reference)
+    if reference.domain != "synthetic_development_and_future_synthetic":
+        raise ValueError("production reference proof requires the exact synthetic domain.")
+    return _issue_validated_context_reference(
+        reference,
+        authority,
+        _issuer=_VALIDATED_CONTEXT_REFERENCE_ISSUER,
+    )
 
 
 def require_validated_context_reference(
@@ -936,6 +1612,34 @@ def require_validated_context_reference(
     expected_payload_sha256: str | None = None,
 ) -> ValidatedContextReference:
     """Require an authentic, internally consistent exact validation proof."""
+
+    return _require_validated_context_reference(
+        value,
+        expected_payload_sha256=expected_payload_sha256,
+        revalidate_bundle=True,
+    )
+
+
+def _require_validated_context_reference_semantics(
+    value: object,
+    *,
+    expected_payload_sha256: str | None = None,
+) -> ValidatedContextReference:
+    """Cheap exact proof check after a public boundary revalidated its bundle."""
+
+    return _require_validated_context_reference(
+        value,
+        expected_payload_sha256=expected_payload_sha256,
+        revalidate_bundle=False,
+    )
+
+
+def _require_validated_context_reference(
+    value: object,
+    *,
+    expected_payload_sha256: str | None,
+    revalidate_bundle: bool,
+) -> ValidatedContextReference:
 
     if type(value) is not ValidatedContextReference:
         raise TypeError("value must be an exact ValidatedContextReference.")
@@ -949,16 +1653,32 @@ def require_validated_context_reference(
         value.schema != VALIDATED_CONTEXT_REFERENCE_SCHEMA
         or value.candidate_id != CANDIDATE_ID
         or value.payload_schema != CONTEXT_REFERENCE_SCHEMA
+        or value.domain != "synthetic_development_and_future_synthetic"
+        or value.context_reference_rng_authority_schema
+        != CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA
+        or value.reference_root_seed != CONTEXT_REFERENCE_ROOT_SEED
+        or value.rng_key_map_sha256 != rng_key_map_sha256()
     ):
         raise ValueError("ValidatedContextReference identity is invalid.")
-    _sha256(value.payload_sha256, "payload_sha256")
+    for name in (
+        "payload_sha256",
+        "context_reference_rng_authority_semantic_binding_sha256",
+        "development_bundle_payload_sha256",
+        "development_bundle_file_sha256",
+        "development_bundle_source_bundle_sha256",
+        "numerical_runtime_fingerprint_sha256",
+        "rng_key_map_sha256",
+    ):
+        _sha256(getattr(value, name), name)
     _nonempty_ascii(value.domain, "domain")
     channels = _keys_tuple(value.canonical_channels, "canonical_channels")
     if len(channels) != 8:
         raise ValueError("validated context reference requires exactly eight channels.")
     interface_keys = _keys_tuple(value.interface_lookup_keys, "interface_lookup_keys")
-    if not interface_keys:
-        raise ValueError("validated context reference requires interface lookup keys.")
+    if interface_keys != ("neutral", "wet", "dry"):
+        raise ValueError(
+            "validated synthetic reference interfaces must be neutral, wet, dry in order."
+        )
     if (
         _positive_integer(
             value.minimum_per_interface_channel_count,
@@ -979,6 +1699,28 @@ def require_validated_context_reference(
     )
     if value.semantic_binding_sha256 != expected_binding:
         raise ValueError("ValidatedContextReference semantic binding is invalid.")
+    authority = (
+        require_context_reference_rng_authority(value._rng_authority)
+        if revalidate_bundle
+        else _require_context_reference_rng_authority_semantics(
+            value._rng_authority
+        )
+    )
+    if (
+        value.context_reference_rng_authority_semantic_binding_sha256
+        != authority.semantic_binding_sha256
+        or value.development_bundle_payload_sha256
+        != authority.development_bundle_payload_sha256
+        or value.development_bundle_file_sha256
+        != authority.development_bundle_file_sha256
+        or value.development_bundle_source_bundle_sha256
+        != authority.development_bundle_source_bundle_sha256
+        or value.numerical_runtime_fingerprint_sha256
+        != authority.numerical_runtime_fingerprint_sha256
+        or value.reference_root_seed != authority.root_seed
+        or value.rng_key_map_sha256 != authority.key_map_sha256
+    ):
+        raise ValueError("validated reference differs from its RNG provenance authority.")
     if expected_payload_sha256 is not None:
         _sha256(expected_payload_sha256, "expected_payload_sha256")
         if value.payload_sha256 != expected_payload_sha256:
@@ -1070,7 +1812,10 @@ def context_pairing_sha256(
     )
 
 
-@dataclass(frozen=True)
+_CONTEXT_PREFLIGHT_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class ContextPreflightCapability:
     candidate_id: str
     query_key: str
@@ -1082,11 +1827,21 @@ class ContextPreflightCapability:
     pairing_sha256: str
     payload_sha256: str
     schema: str = CONTEXT_PREFLIGHT_SCHEMA
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("ContextPreflightCapability has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.schema != CONTEXT_PREFLIGHT_SCHEMA or self.candidate_id != CANDIDATE_ID:
             raise ValueError("context-preflight capability identity is invalid.")
         _nonempty_ascii(self.query_key, "query_key")
+        if (
+            type(self.ordered_support_block_keys) is not tuple
+            or type(self.affinity_by_support_block) is not tuple
+            or type(self.comparable_channel_counts) is not tuple
+        ):
+            raise TypeError("context-preflight vectors must remain exact tuples.")
         keys = _keys_tuple(self.ordered_support_block_keys, "ordered_support_block_keys")
         if len(self.affinity_by_support_block) != len(keys) or len(
             self.comparable_channel_counts
@@ -1130,6 +1885,15 @@ class ContextPreflightCapability:
         }
 
 
+def require_context_preflight(value: object) -> ContextPreflightCapability:
+    if type(value) is not ContextPreflightCapability:
+        raise TypeError("an exact ContextPreflightCapability is required.")
+    if value._issuer is not _CONTEXT_PREFLIGHT_ISSUER:
+        raise TypeError("context-preflight capability issuer is invalid.")
+    ContextPreflightCapability.__post_init__(value)
+    return value
+
+
 def preflight_context(
     *,
     reference: ContextReference,
@@ -1144,11 +1908,67 @@ def preflight_context(
 ) -> ContextPreflightCapability:
     """Validate raw context using a nominally authorized reference receipt."""
 
-    if type(reference) is not ContextReference:
-        raise TypeError("reference must be an exact ContextReference.")
-    proof = require_validated_context_reference(
+    return _preflight_context_with_validated_reference(
+        reference=reference,
+        validated_reference=validated_reference,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        query_packet=query_packet,
+        support_packets=support_packets,
+        pairing_sha256=pairing_sha256,
+        lookup_mode=lookup_mode,
+        wrong_interface_lookup_key=wrong_interface_lookup_key,
+        revalidate_bundle=True,
+    )
+
+
+def _preflight_context_after_authorized_boundary(
+    *,
+    reference: ContextReference,
+    validated_reference: ValidatedContextReference,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    query_packet: Mapping[str, Any] | ContextPacket,
+    support_packets: Sequence[Mapping[str, Any] | ContextPacket],
+    pairing_sha256: str,
+    lookup_mode: ContextLookupMode = "interface",
+    wrong_interface_lookup_key: str | None = None,
+) -> ContextPreflightCapability:
+    """Cheap per-query proof validation after one public governance check."""
+
+    return _preflight_context_with_validated_reference(
+        reference=reference,
+        validated_reference=validated_reference,
+        query_key=query_key,
+        ordered_support_block_keys=ordered_support_block_keys,
+        query_packet=query_packet,
+        support_packets=support_packets,
+        pairing_sha256=pairing_sha256,
+        lookup_mode=lookup_mode,
+        wrong_interface_lookup_key=wrong_interface_lookup_key,
+        revalidate_bundle=False,
+    )
+
+
+def _preflight_context_with_validated_reference(
+    *,
+    reference: ContextReference,
+    validated_reference: ValidatedContextReference,
+    query_key: str,
+    ordered_support_block_keys: Sequence[str],
+    query_packet: Mapping[str, Any] | ContextPacket,
+    support_packets: Sequence[Mapping[str, Any] | ContextPacket],
+    pairing_sha256: str,
+    lookup_mode: ContextLookupMode,
+    wrong_interface_lookup_key: str | None,
+    revalidate_bundle: bool,
+) -> ContextPreflightCapability:
+
+    reference = _require_context_reference(reference)
+    proof = _require_validated_context_reference(
         validated_reference,
         expected_payload_sha256=reference.payload_sha256,
+        revalidate_bundle=revalidate_bundle,
     )
     if (
         proof.domain != reference.domain
@@ -1207,16 +2027,36 @@ def _preflight_context_impl(
 ) -> ContextPreflightCapability:
     """Shared pure implementation; callers choose production or unit authority."""
 
-    if type(reference) is not ContextReference:
-        raise TypeError("reference must be an exact ContextReference.")
+    reference = _require_context_reference(reference)
     query_key = _nonempty_ascii(query_key, "query_key")
     slots = _keys_tuple(ordered_support_block_keys, "ordered_support_block_keys")
     if not isinstance(support_packets, Sequence) or isinstance(support_packets, (str, bytes)):
-        return _rejected_preflight(reference, query_key, slots, pairing_sha256, "malformed_packet_exact_A0")
+        return _rejected_preflight(
+            reference,
+            query_key,
+            slots,
+            pairing_sha256,
+            "malformed_packet_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
+        )
     if len(support_packets) != len(slots):
-        return _rejected_preflight(reference, query_key, slots, pairing_sha256, "malformed_packet_exact_A0")
+        return _rejected_preflight(
+            reference,
+            query_key,
+            slots,
+            pairing_sha256,
+            "malformed_packet_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
+        )
     if lookup_mode not in {"interface", "pooled", "wrong_interface"}:
-        return _rejected_preflight(reference, query_key, slots, pairing_sha256, "malformed_packet_exact_A0")
+        return _rejected_preflight(
+            reference,
+            query_key,
+            slots,
+            pairing_sha256,
+            "malformed_packet_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
+        )
     try:
         query = (
             query_packet
@@ -1231,7 +2071,14 @@ def _preflight_context_impl(
         )
         supplied_pairing = _sha256(pairing_sha256, "pairing_sha256")
     except (TypeError, ValueError, OverflowError):
-        return _rejected_preflight(reference, query_key, slots, pairing_sha256, "malformed_packet_exact_A0")
+        return _rejected_preflight(
+            reference,
+            query_key,
+            slots,
+            pairing_sha256,
+            "malformed_packet_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
+        )
 
     expected_pairing = context_pairing_sha256(
         query_key=query_key,
@@ -1241,17 +2088,32 @@ def _preflight_context_impl(
     )
     if supplied_pairing != expected_pairing:
         return _rejected_preflight(
-            reference, query_key, slots, supplied_pairing, "pairing_mismatch_exact_A0"
+            reference,
+            query_key,
+            slots,
+            supplied_pairing,
+            "pairing_mismatch_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
         )
     if query.packet_key != query_key:
         return _rejected_preflight(
-            reference, query_key, slots, supplied_pairing, "pairing_mismatch_exact_A0"
+            reference,
+            query_key,
+            slots,
+            supplied_pairing,
+            "pairing_mismatch_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
         )
     if query.interface_lookup_key is not None and any(
         packet.interface_lookup_key not in {None, query.interface_lookup_key} for packet in supports
     ):
         return _rejected_preflight(
-            reference, query_key, slots, supplied_pairing, "cross_interface_exact_A0"
+            reference,
+            query_key,
+            slots,
+            supplied_pairing,
+            "cross_interface_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
         )
 
     try:
@@ -1263,7 +2125,12 @@ def _preflight_context_impl(
         )
     except (TypeError, ValueError):
         return _rejected_preflight(
-            reference, query_key, slots, supplied_pairing, "malformed_packet_exact_A0"
+            reference,
+            query_key,
+            slots,
+            supplied_pairing,
+            "malformed_packet_exact_A0",
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
         )
     query_z = _standardized_packet(query, centers, scales)
     valid_query_z = tuple(value for value in query_z if value is not None)
@@ -1287,6 +2154,7 @@ def _preflight_context_impl(
             comparable_counts=comparable_counts,
             decision_reason="query_context_OOD_exact_A0",
             pairing_sha256=supplied_pairing,
+            _issuer=_CONTEXT_PREFLIGHT_ISSUER,
         )
 
     affinities: list[float] = []
@@ -1313,10 +2181,14 @@ def _preflight_context_impl(
         comparable_counts=tuple(comparable_counts),
         decision_reason=reason,
         pairing_sha256=supplied_pairing,
+        _issuer=_CONTEXT_PREFLIGHT_ISSUER,
     )
 
 
-@dataclass(frozen=True)
+_CONTEXT_TRUST_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class ContextTrustCapability:
     candidate_id: str
     active_grid_cell_id: str
@@ -1332,6 +2204,10 @@ class ContextTrustCapability:
     pairing_sha256: str
     payload_sha256: str
     schema: str = CONTEXT_TRUST_SCHEMA
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("ContextTrustCapability has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.schema != CONTEXT_TRUST_SCHEMA or self.candidate_id != CANDIDATE_ID:
@@ -1340,6 +2216,8 @@ class ContextTrustCapability:
         if self.exact_operator_instance_digest != grid.operator_instance_sha256:
             raise ValueError("context-trust operator binding is invalid.")
         _nonempty_ascii(self.query_key, "query_key")
+        if type(self.ordered_support_block_keys) is not tuple:
+            raise TypeError("context-trust support keys must remain an exact tuple.")
         keys = _keys_tuple(self.ordered_support_block_keys, "ordered_support_block_keys")
         trust = _finite_float(self.g_M_by_query, "g_M_by_query")
         if not 0.0 <= trust <= 1.0:
@@ -1380,18 +2258,80 @@ class ContextTrustCapability:
         }
 
 
+def require_context_trust(value: object) -> ContextTrustCapability:
+    if type(value) is not ContextTrustCapability:
+        raise TypeError("an exact ContextTrustCapability is required.")
+    if value._issuer is not _CONTEXT_TRUST_ISSUER:
+        raise TypeError("context-trust capability issuer is invalid.")
+    ContextTrustCapability.__post_init__(value)
+    return value
+
+
+def _issue_context_trust(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> ContextTrustCapability:
+    if _issuer is not _CONTEXT_TRUST_ISSUER:
+        raise TypeError("context-trust issuer token is invalid.")
+    value = object.__new__(ContextTrustCapability)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _issuer)
+    return require_context_trust(value)
+
+
 def finalize_context_trust(
     preflight: ContextPreflightCapability,
     support_reliability: MFreeSupportReliabilityCapability,
 ) -> ContextTrustCapability:
     """Combine the preflight and the only authorized M-free signal summary."""
 
-    if type(preflight) is not ContextPreflightCapability:
-        raise TypeError("preflight must be an exact ContextPreflightCapability.")
-    if type(support_reliability) is not MFreeSupportReliabilityCapability:
-        raise TypeError(
-            "support_reliability must be an exact MFreeSupportReliabilityCapability."
-        )
+    preflight = require_context_preflight(preflight)
+    support_reliability = require_m_free_support_reliability(
+        support_reliability
+    )
+    weights = np.asarray(support_reliability.block_reliabilities, dtype=np.float64)
+    weights = weights / weights.sum()
+    return _finalize_context_trust_with_weights(
+        preflight,
+        support_reliability,
+        weights,
+        _issuer=_CONTEXT_TRUST_ISSUER,
+    )
+
+
+def finalize_context_trust_uniform_sensitivity(
+    preflight: ContextPreflightCapability,
+    support_product: V3SupportProduct,
+) -> ContextTrustCapability:
+    """Apply uniform common weights to both P3 mixing and context affinity."""
+
+    preflight = require_context_preflight(preflight)
+    product = require_v3_support_product(support_product)
+    if product.block_weight_mode != "uniform":
+        raise ValueError("uniform sensitivity requires an exact uniform support product.")
+    return _finalize_context_trust_with_weights(
+        preflight,
+        product.reliability_capability,
+        product.normalized_block_weights,
+        _issuer=_CONTEXT_TRUST_ISSUER,
+    )
+
+
+def _finalize_context_trust_with_weights(
+    preflight: ContextPreflightCapability,
+    support_reliability: MFreeSupportReliabilityCapability,
+    block_weights: np.ndarray,
+    *,
+    _issuer: object,
+) -> ContextTrustCapability:
+    if _issuer is not _CONTEXT_TRUST_ISSUER:
+        raise TypeError("context-trust finalizer issuer token is invalid.")
+    preflight = require_context_preflight(preflight)
+    support_reliability = require_m_free_support_reliability(
+        support_reliability
+    )
     if preflight.rejects_before_support_access:
         raise ValueError("a rejecting preflight cannot be finalized after support access.")
     if (
@@ -1401,8 +2341,12 @@ def finalize_context_trust(
     ):
         raise ValueError("preflight and support-reliability bindings differ.")
     affinity = np.asarray(preflight.affinity_by_support_block, dtype=np.float64)
-    reliability = np.asarray(support_reliability.block_reliabilities, dtype=np.float64)
-    trust = float(np.sum(reliability * affinity) / np.sum(reliability))
+    weights = _probability_vector(
+        block_weights,
+        len(preflight.ordered_support_block_keys),
+        "block_weights",
+    )
+    trust = float(np.sum(weights * affinity))
     if np.array_equal(affinity, np.ones_like(affinity)) or trust == 1.0:
         trust = 1.0
         reason = "exact_neutral_A_Q"
@@ -1428,24 +2372,39 @@ def finalize_context_trust(
         "support_reliability_capability_sha256": support_reliability.payload_sha256,
         "pairing_sha256": preflight.pairing_sha256,
     }
-    return ContextTrustCapability(
-        candidate_id=CANDIDATE_ID,
-        active_grid_cell_id=support_reliability.active_grid_cell_id,
-        exact_operator_instance_digest=support_reliability.exact_operator_instance_digest,
-        query_key=preflight.query_key,
-        ordered_support_block_keys=preflight.ordered_support_block_keys,
-        g_M_by_query=trust,
-        comparable_block_count_by_query=payload["comparable_block_count_by_query"],
-        decision_reason=reason,
-        context_reference_receipt_sha256=preflight.context_reference_receipt_sha256,
-        context_preflight_capability_sha256=preflight.payload_sha256,
-        support_reliability_capability_sha256=support_reliability.payload_sha256,
-        pairing_sha256=preflight.pairing_sha256,
-        payload_sha256=canonical_payload_sha256(payload),
+    return _issue_context_trust(
+        {
+            "candidate_id": CANDIDATE_ID,
+            "active_grid_cell_id": support_reliability.active_grid_cell_id,
+            "exact_operator_instance_digest": (
+                support_reliability.exact_operator_instance_digest
+            ),
+            "query_key": preflight.query_key,
+            "ordered_support_block_keys": preflight.ordered_support_block_keys,
+            "g_M_by_query": trust,
+            "comparable_block_count_by_query": payload[
+                "comparable_block_count_by_query"
+            ],
+            "decision_reason": reason,
+            "context_reference_receipt_sha256": (
+                preflight.context_reference_receipt_sha256
+            ),
+            "context_preflight_capability_sha256": preflight.payload_sha256,
+            "support_reliability_capability_sha256": (
+                support_reliability.payload_sha256
+            ),
+            "pairing_sha256": preflight.pairing_sha256,
+            "payload_sha256": canonical_payload_sha256(payload),
+            "schema": CONTEXT_TRUST_SCHEMA,
+        },
+        _issuer=_CONTEXT_TRUST_ISSUER,
     )
 
 
-@dataclass(frozen=True)
+_PREQUENTIAL_GATE_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class PrequentialGateDecision:
     candidate_id: str
     active_grid_cell_id: str
@@ -1460,6 +2419,10 @@ class PrequentialGateDecision:
     reason: str
     payload_sha256: str
     schema: str = GATE_SCHEMA
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("PrequentialGateDecision has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.schema != GATE_SCHEMA or self.candidate_id != CANDIDATE_ID:
@@ -1472,6 +2435,17 @@ class PrequentialGateDecision:
             raise ValueError("prequential gates exist only at k=3 and k=5.")
         if type(self.enabled) is not bool:
             raise TypeError("prequential gate enabled must be an exact bool.")
+        if any(
+            type(value) is not tuple
+            for value in (
+                self.evaluated_blocks,
+                self.fit_block_prefixes,
+                self.block_balanced_accuracy_deltas,
+                self.block_log_probability_deltas,
+                self.block_partition_sha256s,
+            )
+        ) or any(type(value) is not tuple for value in self.fit_block_prefixes):
+            raise TypeError("prequential gate vectors must remain exact tuples.")
         expected_evaluated = tuple(range(2, budget + 1))
         if self.evaluated_blocks != expected_evaluated:
             raise ValueError("prequential evaluated blocks are not the exact chronology.")
@@ -1520,6 +2494,29 @@ class PrequentialGateDecision:
             "block_partition_sha256s": list(self.block_partition_sha256s),
             "reason": self.reason,
         }
+
+
+def require_prequential_gate(value: object) -> PrequentialGateDecision:
+    if type(value) is not PrequentialGateDecision:
+        raise TypeError("an exact PrequentialGateDecision is required.")
+    if value._issuer is not _PREQUENTIAL_GATE_ISSUER:
+        raise TypeError("prequential gate issuer is invalid.")
+    PrequentialGateDecision.__post_init__(value)
+    return value
+
+
+def _issue_prequential_gate(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> PrequentialGateDecision:
+    if _issuer is not _PREQUENTIAL_GATE_ISSUER:
+        raise TypeError("prequential-gate issuer token is invalid.")
+    value = object.__new__(PrequentialGateDecision)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _issuer)
+    return require_prequential_gate(value)
 
 
 def prequential_gate_decision(
@@ -1608,19 +2605,27 @@ def prequential_gate_decision(
         "block_partition_sha256s": list(partitions),
         "reason": reason,
     }
-    return PrequentialGateDecision(
-        candidate_id=CANDIDATE_ID,
-        active_grid_cell_id=config.grid_cell.grid_cell_id,
-        exact_operator_instance_digest=config.grid_cell.operator_instance_sha256,
-        budget=budget,
-        enabled=enabled,
-        evaluated_blocks=evaluated,
-        fit_block_prefixes=tuple(tuple(range(1, block)) for block in evaluated),
-        block_balanced_accuracy_deltas=tuple(ba_deltas),
-        block_log_probability_deltas=tuple(log_deltas),
-        block_partition_sha256s=partitions,
-        reason=reason,
-        payload_sha256=canonical_payload_sha256(payload),
+    return _issue_prequential_gate(
+        {
+            "candidate_id": CANDIDATE_ID,
+            "active_grid_cell_id": config.grid_cell.grid_cell_id,
+            "exact_operator_instance_digest": (
+                config.grid_cell.operator_instance_sha256
+            ),
+            "budget": budget,
+            "enabled": enabled,
+            "evaluated_blocks": evaluated,
+            "fit_block_prefixes": tuple(
+                tuple(range(1, block)) for block in evaluated
+            ),
+            "block_balanced_accuracy_deltas": tuple(ba_deltas),
+            "block_log_probability_deltas": tuple(log_deltas),
+            "block_partition_sha256s": partitions,
+            "reason": reason,
+            "payload_sha256": canonical_payload_sha256(payload),
+            "schema": GATE_SCHEMA,
+        },
+        _issuer=_PREQUENTIAL_GATE_ISSUER,
     )
 
 
@@ -1683,7 +2688,12 @@ def apply_v3_operator(
             return _fallback_output(
                 scores, base, variant, budget, False, "missing_or_invalid_M_free_gate"
             )
-        gate = gate_decision
+        try:
+            gate = require_prequential_gate(gate_decision)
+        except (AttributeError, TypeError, ValueError, OverflowError):
+            return _fallback_output(
+                scores, base, variant, budget, False, "missing_or_invalid_M_free_gate"
+            )
         if (
             gate.budget != budget
             or gate.active_grid_cell_id != config.grid_cell.grid_cell_id
@@ -1697,9 +2707,7 @@ def apply_v3_operator(
     if not gate_enabled:
         return _fallback_output(scores, base, variant, budget, False, "M_free_gate_abstained")
 
-    if type(support_product) is not V3SupportProduct:
-        raise TypeError("enabled V3 operation requires an exact V3SupportProduct.")
-    product = support_product
+    product = require_v3_support_product(support_product)
     if (
         product.query_key != query_key
         or len(product.ordered_support_block_keys) != budget
@@ -1728,9 +2736,7 @@ def apply_v3_operator(
             context_sha=None,
         )
 
-    if type(context_trust) is not ContextTrustCapability:
-        raise TypeError("A_QM requires an exact ContextTrustCapability.")
-    trust = context_trust
+    trust = require_context_trust(context_trust)
     if (
         trust.candidate_id != CANDIDATE_ID
         or trust.active_grid_cell_id != product.active_grid_cell_id
@@ -1832,7 +2838,7 @@ def apply_v3_after_preflight(
             "invalid_preflight_capability_exact_A0",
         )
     try:
-        ContextPreflightCapability.__post_init__(preflight)
+        require_context_preflight(preflight)
         support_keys = _keys_tuple(
             preflight.ordered_support_block_keys,
             "preflight.ordered_support_block_keys",
@@ -1876,9 +2882,11 @@ def apply_v3_after_preflight(
     if not callable(support_loader):
         raise TypeError("support_loader must be callable after an accepting preflight.")
     product = support_loader()
-    if type(product) is not V3SupportProduct:
-        raise TypeError("support_loader must return an exact V3SupportProduct.")
-    trust = finalize_context_trust(preflight, product.reliability_capability)
+    product = require_v3_support_product(product)
+    if product.block_weight_mode == "uniform":
+        trust = finalize_context_trust_uniform_sensitivity(preflight, product)
+    else:
+        trust = finalize_context_trust(preflight, product.reliability_capability)
     return apply_v3_operator(
         scores,
         query_key=query_key,
@@ -1913,8 +2921,7 @@ def exhaustive_derangements(depth: int) -> tuple[tuple[int, ...], ...]:
 def uniform_weight_support_probability(product: V3SupportProduct) -> np.ndarray:
     """Predeclared sensitivity using uniform, rather than reliability, block weights."""
 
-    if type(product) is not V3SupportProduct:
-        raise TypeError("product must be an exact V3SupportProduct.")
+    product = require_v3_support_product(product)
     return _readonly(np.mean(product.per_block_support_probabilities, axis=0))
 
 
@@ -1927,7 +2934,10 @@ def _issue_preflight(
     comparable_counts: tuple[int, ...],
     decision_reason: str,
     pairing_sha256: str,
+    _issuer: object,
 ) -> ContextPreflightCapability:
+    if _issuer is not _CONTEXT_PREFLIGHT_ISSUER:
+        raise TypeError("context-preflight builder issuer token is invalid.")
     payload = {
         "schema": CONTEXT_PREFLIGHT_SCHEMA,
         "candidate_id": CANDIDATE_ID,
@@ -1939,17 +2949,35 @@ def _issue_preflight(
         "context_reference_receipt_sha256": reference.payload_sha256,
         "pairing_sha256": pairing_sha256,
     }
-    return ContextPreflightCapability(
-        candidate_id=CANDIDATE_ID,
-        query_key=query_key,
-        ordered_support_block_keys=slots,
-        affinity_by_support_block=affinities,
-        comparable_channel_counts=comparable_counts,
-        decision_reason=decision_reason,
-        context_reference_receipt_sha256=reference.payload_sha256,
-        pairing_sha256=pairing_sha256,
-        payload_sha256=canonical_payload_sha256(payload),
+    return _issue_context_preflight(
+        {
+            "candidate_id": CANDIDATE_ID,
+            "query_key": query_key,
+            "ordered_support_block_keys": slots,
+            "affinity_by_support_block": affinities,
+            "comparable_channel_counts": comparable_counts,
+            "decision_reason": decision_reason,
+            "context_reference_receipt_sha256": reference.payload_sha256,
+            "pairing_sha256": pairing_sha256,
+            "payload_sha256": canonical_payload_sha256(payload),
+            "schema": CONTEXT_PREFLIGHT_SCHEMA,
+        },
+        _issuer=_CONTEXT_PREFLIGHT_ISSUER,
     )
+
+
+def _issue_context_preflight(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> ContextPreflightCapability:
+    if _issuer is not _CONTEXT_PREFLIGHT_ISSUER:
+        raise TypeError("context-preflight issuer token is invalid.")
+    value = object.__new__(ContextPreflightCapability)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _issuer)
+    return require_context_preflight(value)
 
 
 def _rejected_preflight(
@@ -1958,7 +2986,11 @@ def _rejected_preflight(
     slots: tuple[str, ...],
     supplied_pairing: object,
     reason: str,
+    *,
+    _issuer: object,
 ) -> ContextPreflightCapability:
+    if _issuer is not _CONTEXT_PREFLIGHT_ISSUER:
+        raise TypeError("rejected-preflight issuer token is invalid.")
     pairing = (
         supplied_pairing
         if isinstance(supplied_pairing, str)
@@ -1974,6 +3006,7 @@ def _rejected_preflight(
         comparable_counts=tuple(0 for _ in slots),
         decision_reason=reason,
         pairing_sha256=pairing,
+        _issuer=_CONTEXT_PREFLIGHT_ISSUER,
     )
 
 
@@ -2283,6 +3316,16 @@ def _sha256(value: Any, name: str) -> str:
         or any(character not in "0123456789abcdef" for character in value)
     ):
         raise ValueError(f"{name} must be 64 lowercase hexadecimal characters.")
+    return value
+
+
+def _git_object_id(value: Any, name: str) -> str:
+    if (
+        type(value) is not str
+        or len(value) != 40
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(f"{name} must be an exact lowercase 40-hex Git object ID.")
     return value
 
 

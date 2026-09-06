@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
@@ -35,6 +36,12 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 _REPOSITORY = Path(__file__).resolve().parents[3]
+SYNTHETIC_MODULE_REPOSITORY_PATH = (
+    "src/cfeg/analysis/metadata_calibration_v3_synthetic.py"
+)
+_IMPORTED_SYNTHETIC_MODULE_SHA256 = hashlib.sha256(
+    Path(__file__).read_bytes()
+).hexdigest()
 DEFAULT_SYNTHETIC_PLAN_PATH = (
     _REPOSITORY / "configs/analysis/metadata_calibration_v3_synthetic.yaml"
 )
@@ -102,8 +109,93 @@ DEVELOPMENT_METRIC_ROWS = 88_992
 DEVELOPMENT_INVARIANT_ROWS = 90
 DEVELOPMENT_TOTAL_ROWS = 89_082
 FUTURE_SELECTED_TOTAL_ROWS = 19_786
+SENSITIVITY_SIGN_FLIP_DRAWS = 100_000
+SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS = 10_000
+SENSITIVITY_ENDPOINT_IDS = (
+    "B1_A_Q_minus_A0_eAUC",
+    "B2_A_Q_minus_A0_eAUC",
+    "B3_A_QM_minus_A_Q_eAUC",
+    "B4_A_QM_minus_A_Q_eAUC",
+    "B3_k3_correct_minus_shuffle",
+    "B4_k3_correct_minus_shuffle",
+)
+_SENSITIVITY_ENDPOINT_CODES = {
+    endpoint: index for index, endpoint in enumerate(SENSITIVITY_ENDPOINT_IDS, start=1)
+}
 
 RngFactory = Callable[[str, int, int, int, str], np.random.Generator]
+
+_UNIT_TEST_RNG_AUTHORITY_ISSUER = object()
+_SYNTHETIC_RNG_PRODUCER_ISSUER = object()
+_RESERVED_RNG_ROOT_SEEDS = frozenset(
+    {
+        20_260_906,
+        20_260_907,
+        20_260_908,
+        v3.DEVELOPMENT_ROOT_SEED,
+        v3.CONTEXT_REFERENCE_ROOT_SEED,
+        8812983586834372979543294859684702645563544465387352627235733726918051280063,
+    }
+)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class _UnitTestRNGAuthority:
+    """Nonproduction keyed-RNG authority that cannot carry a reserved seed."""
+
+    root_seed: int
+    semantic_binding_sha256: str
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("unit-test RNG authority has no public constructor.")
+
+
+def _issue_unit_test_rng_authority(root_seed: int) -> _UnitTestRNGAuthority:
+    """Issue an explicit unit authority while rejecting all disclosed roots."""
+
+    if type(root_seed) is not int or root_seed < 0:
+        raise TypeError("unit-test root_seed must be an exact nonnegative int.")
+    if root_seed in _RESERVED_RNG_ROOT_SEEDS:
+        raise ValueError("reserved development/reference/beacon seed is forbidden in tests.")
+    value = object.__new__(_UnitTestRNGAuthority)
+    object.__setattr__(value, "root_seed", root_seed)
+    object.__setattr__(
+        value,
+        "semantic_binding_sha256",
+        _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.unit-test-rng-authority.v1"
+                ),
+                "root_seed": root_seed,
+                "scope": "unit_test_only_never_production",
+            }
+        ),
+    )
+    object.__setattr__(value, "_issuer", _UNIT_TEST_RNG_AUTHORITY_ISSUER)
+    return _require_unit_test_rng_authority(value)
+
+
+def _require_unit_test_rng_authority(value: object) -> _UnitTestRNGAuthority:
+    if type(value) is not _UnitTestRNGAuthority:
+        raise TypeError("an exact _UnitTestRNGAuthority is required.")
+    if value._issuer is not _UNIT_TEST_RNG_AUTHORITY_ISSUER:
+        raise TypeError("unit-test RNG authority issuer is invalid.")
+    if type(value.root_seed) is not int or value.root_seed < 0:
+        raise TypeError("unit-test root_seed must remain an exact nonnegative int.")
+    if value.root_seed in _RESERVED_RNG_ROOT_SEEDS:
+        raise ValueError("reserved development/reference/beacon seed is forbidden in tests.")
+    expected = _canonical_sha256(
+        {
+            "schema": "cfeg.metadata-calibration-efficiency-v3.unit-test-rng-authority.v1",
+            "root_seed": value.root_seed,
+            "scope": "unit_test_only_never_production",
+        }
+    )
+    if value.semantic_binding_sha256 != expected:
+        raise ValueError("unit-test RNG authority binding is invalid.")
+    return value
 
 
 @dataclass(frozen=True)
@@ -118,7 +210,11 @@ class SyntheticV3Contract:
     filterbank: Mapping[str, Any]
 
 
-@dataclass(frozen=True)
+_SYNTHETIC_PARTICIPANT_ISSUER = object()
+_SOURCE_RANGE_STRESS_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class SyntheticParticipant:
     family: str
     participant_index: int
@@ -134,6 +230,14 @@ class SyntheticParticipant:
     innovation_sds: np.ndarray
     partition_sha256s: tuple[str, ...]
     source_range_stress: bool = False
+    generation_scope: Literal["development", "unit_test"]
+    rng_authority_semantic_binding_sha256: str
+    payload_sha256: str
+    _rng_authority: object = dataclass_field(repr=False, compare=False)
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("SyntheticParticipant has no public constructor.")
 
     def __post_init__(self) -> None:
         if self.family not in FAMILY_NAMES:
@@ -181,6 +285,28 @@ class SyntheticParticipant:
                 raise ValueError("synthetic participant arrays must be immutable.")
         if type(self.source_range_stress) is not bool:
             raise TypeError("source_range_stress must be an exact bool.")
+        _sha256(
+            self.rng_authority_semantic_binding_sha256,
+            "rng_authority_semantic_binding_sha256",
+        )
+        if self.generation_scope == "development":
+            authority = v3._require_development_rng_authority_semantics(
+                self._rng_authority
+            )
+        elif self.generation_scope == "unit_test":
+            authority = _require_unit_test_rng_authority(self._rng_authority)
+        else:
+            raise ValueError("unknown synthetic participant generation scope.")
+        if (
+            self.rng_authority_semantic_binding_sha256
+            != authority.semantic_binding_sha256
+        ):
+            raise ValueError("synthetic participant RNG authority binding is invalid.")
+        _sha256(self.payload_sha256, "synthetic participant payload_sha256")
+        if self.payload_sha256 != _canonical_sha256(
+            _synthetic_participant_binding(self)
+        ):
+            raise ValueError("synthetic participant content binding is invalid.")
 
     def context_packets(self, condition: str) -> tuple[v3.ContextPacket, ...]:
         matches = tuple(packets for name, packets in self.context_packets_by_condition if name == condition)
@@ -189,34 +315,147 @@ class SyntheticParticipant:
         return matches[0]
 
 
-@dataclass(frozen=True)
+def _synthetic_participant_binding(value: SyntheticParticipant) -> dict[str, Any]:
+    return {
+        "schema": "cfeg.metadata-calibration-efficiency-v3.synthetic-participant.v1",
+        "family": value.family,
+        "participant_index": value.participant_index,
+        "conditions": list(value.conditions),
+        "signals_sha256": _array_sha256(value.signals),
+        "true_labels_sha256": _array_sha256(value.true_labels),
+        "recorded_support_labels_sha256": _array_sha256(
+            value.recorded_support_labels
+        ),
+        "context_packets_by_condition": [
+            {
+                "condition": condition,
+                "packets": [
+                    {
+                        "packet_key": packet.packet_key,
+                        "interface_lookup_key": packet.interface_lookup_key,
+                        "impedance_kohm_by_channel": list(
+                            packet.impedance_kohm_by_channel
+                        ),
+                        "channel_availability": list(packet.channel_availability),
+                    }
+                    for packet in packets
+                ],
+            }
+            for condition, packets in value.context_packets_by_condition
+        ],
+        "signal_states_sha256": _array_sha256(value.signal_states),
+        "context_states_by_condition": [
+            {"condition": condition, "states": list(states)}
+            for condition, states in value.context_states_by_condition
+        ],
+        "generated_target_classes_sha256": _array_sha256(
+            value.generated_target_classes
+        ),
+        "generated_confuser_classes_sha256": _array_sha256(
+            value.generated_confuser_classes
+        ),
+        "innovation_sds_sha256": _array_sha256(value.innovation_sds),
+        "partition_sha256s": list(value.partition_sha256s),
+        "source_range_stress": value.source_range_stress,
+        "generation_scope": value.generation_scope,
+        "rng_authority_semantic_binding_sha256": (
+            value.rng_authority_semantic_binding_sha256
+        ),
+    }
+
+
+def _issue_synthetic_participant(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> SyntheticParticipant:
+    if _issuer is not _SYNTHETIC_PARTICIPANT_ISSUER:
+        raise TypeError("synthetic-participant issuer token is invalid.")
+    value = object.__new__(SyntheticParticipant)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(
+        value,
+        "payload_sha256",
+        _canonical_sha256(_synthetic_participant_binding(value)),
+    )
+    object.__setattr__(value, "_issuer", _SYNTHETIC_PARTICIPANT_ISSUER)
+    return _require_synthetic_participant_identity(value)
+
+
+def _require_synthetic_participant_identity(value: object) -> SyntheticParticipant:
+    if type(value) is not SyntheticParticipant:
+        raise TypeError("participant must be an exact SyntheticParticipant.")
+    if value._issuer is not _SYNTHETIC_PARTICIPANT_ISSUER:
+        raise TypeError("synthetic participant issuer is invalid.")
+    SyntheticParticipant.__post_init__(value)
+    return value
+
+
+_STRICT_FBCCA_PRODUCT_ISSUER = object()
+_STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER = object()
+
+
+@dataclass(frozen=True, slots=True, init=False)
 class StrictFBCCAProduct:
     """Query-only strict-FBCCA anchors for immutable blocks 6..10."""
 
     scores: np.ndarray
     query_eeg_sha256s: tuple[str, ...]
+    plan_sha256: str
+    filterbank_sha256: str
+    scores_sha256: str
     producer_sha256: str
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("StrictFBCCAProduct has no public constructor.")
 
     def __post_init__(self) -> None:
-        if self.scores.shape != (5, 12, 12) or self.scores.dtype != np.float64:
+        if (
+            type(self.scores) is not np.ndarray
+            or self.scores.shape != (5, 12, 12)
+            or self.scores.dtype != np.float64
+        ):
             raise ValueError(
                 "query strict-FBCCA scores must have exact [5,12,12] float64 shape."
             )
         if not np.isfinite(self.scores).all() or self.scores.flags.writeable:
             raise ValueError("query strict-FBCCA scores must be finite and immutable.")
-        if len(self.query_eeg_sha256s) != 5:
+        if type(self.query_eeg_sha256s) is not tuple or len(self.query_eeg_sha256s) != 5:
             raise ValueError("query product requires five exact EEG hashes.")
         for digest in self.query_eeg_sha256s:
             _sha256(digest, "query_eeg_sha256")
-        _sha256(self.producer_sha256, "producer_sha256")
+        if self.plan_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256:
+            raise ValueError("query product synthetic-plan binding is invalid.")
+        if self.filterbank_sha256 != EXPECTED_FILTERBANK_SHA256:
+            raise ValueError("query product filterbank binding is invalid.")
+        if self.scores_sha256 != _array_sha256(self.scores):
+            raise ValueError("query product score bytes differ from their bound hash.")
+        expected = _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "strict-fbcca-query-product.v1"
+                ),
+                "plan_sha256": self.plan_sha256,
+                "filterbank_sha256": self.filterbank_sha256,
+                "query_blocks": list(QUERY_BLOCKS),
+                "query_eeg_sha256s": list(self.query_eeg_sha256s),
+                "scores_sha256": self.scores_sha256,
+            }
+        )
+        if self.producer_sha256 != expected:
+            raise ValueError("query strict-FBCCA producer binding is invalid.")
 
     def score_for_query_block(self, block: int) -> np.ndarray:
+        require_strict_fbcca_product(self)
         if type(block) is not int or block not in QUERY_BLOCKS:
             raise ValueError("query score access is restricted to blocks 6..10.")
         return self.scores[block - QUERY_BLOCKS[0]]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True, init=False)
 class StrictFBCCASupportProduct:
     """Lazily produced support scores, labels, and exact partition bindings."""
 
@@ -225,12 +464,23 @@ class StrictFBCCASupportProduct:
     recorded_support_labels: np.ndarray
     partition_sha256s: tuple[str, ...]
     support_eeg_label_manifest_sha256: str
+    plan_sha256: str
+    filterbank_sha256: str
+    scores_sha256: str
     producer_sha256: str
+    _issuer: object = dataclass_field(repr=False, compare=False)
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        raise TypeError("StrictFBCCASupportProduct has no public constructor.")
 
     def __post_init__(self) -> None:
         if type(self.budget) is not int or self.budget not in (1, 3, 5):
             raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
-        if self.scores.shape != (self.budget, 12, 12) or self.scores.dtype != np.float64:
+        if (
+            type(self.scores) is not np.ndarray
+            or self.scores.shape != (self.budget, 12, 12)
+            or self.scores.dtype != np.float64
+        ):
             raise ValueError("support FBCCA scores have the wrong frozen shape/dtype.")
         if (
             self.recorded_support_labels.shape != (self.budget, 12)
@@ -247,7 +497,7 @@ class StrictFBCCASupportProduct:
             self.recorded_support_labels >= 12
         ):
             raise ValueError("support labels contain an out-of-range class.")
-        if len(self.partition_sha256s) != self.budget:
+        if type(self.partition_sha256s) is not tuple or len(self.partition_sha256s) != self.budget:
             raise ValueError("support product requires one partition hash per block.")
         for digest in self.partition_sha256s:
             _sha256(digest, "partition_sha256")
@@ -255,7 +505,90 @@ class StrictFBCCASupportProduct:
             self.support_eeg_label_manifest_sha256,
             "support_eeg_label_manifest_sha256",
         )
-        _sha256(self.producer_sha256, "producer_sha256")
+        if self.plan_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256:
+            raise ValueError("support product synthetic-plan binding is invalid.")
+        if self.filterbank_sha256 != EXPECTED_FILTERBANK_SHA256:
+            raise ValueError("support product filterbank binding is invalid.")
+        if self.scores_sha256 != _array_sha256(self.scores):
+            raise ValueError("support product score bytes differ from their bound hash.")
+        expected_manifest = _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.support-manifest.v1"
+                ),
+                "participant_partition_sha256s": list(self.partition_sha256s),
+                "recorded_support_labels_sha256": _array_sha256(
+                    self.recorded_support_labels
+                ),
+            }
+        )
+        if self.support_eeg_label_manifest_sha256 != expected_manifest:
+            raise ValueError("support labels/partitions differ from their bound manifest.")
+        expected = _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "strict-fbcca-support-product.v1"
+                ),
+                "plan_sha256": self.plan_sha256,
+                "filterbank_sha256": self.filterbank_sha256,
+                "support_blocks": list(range(1, self.budget + 1)),
+                "support_eeg_label_manifest_sha256": (
+                    self.support_eeg_label_manifest_sha256
+                ),
+                "scores_sha256": self.scores_sha256,
+            }
+        )
+        if self.producer_sha256 != expected:
+            raise ValueError("support strict-FBCCA producer binding is invalid.")
+
+
+def require_strict_fbcca_product(value: object) -> StrictFBCCAProduct:
+    if type(value) is not StrictFBCCAProduct:
+        raise TypeError("an exact StrictFBCCAProduct is required.")
+    if value._issuer is not _STRICT_FBCCA_PRODUCT_ISSUER:
+        raise TypeError("query strict-FBCCA product issuer is invalid.")
+    StrictFBCCAProduct.__post_init__(value)
+    return value
+
+
+def require_strict_fbcca_support_product(
+    value: object,
+) -> StrictFBCCASupportProduct:
+    if type(value) is not StrictFBCCASupportProduct:
+        raise TypeError("an exact StrictFBCCASupportProduct is required.")
+    if value._issuer is not _STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER:
+        raise TypeError("support strict-FBCCA product issuer is invalid.")
+    StrictFBCCASupportProduct.__post_init__(value)
+    return value
+
+
+def _issue_strict_fbcca_product(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> StrictFBCCAProduct:
+    if _issuer is not _STRICT_FBCCA_PRODUCT_ISSUER:
+        raise TypeError("query strict-FBCCA issuer token is invalid.")
+    value = object.__new__(StrictFBCCAProduct)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _STRICT_FBCCA_PRODUCT_ISSUER)
+    return require_strict_fbcca_product(value)
+
+
+def _issue_strict_fbcca_support_product(
+    fields: Mapping[str, Any],
+    *,
+    _issuer: object,
+) -> StrictFBCCASupportProduct:
+    if _issuer is not _STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER:
+        raise TypeError("support strict-FBCCA issuer token is invalid.")
+    value = object.__new__(StrictFBCCASupportProduct)
+    for name, item in fields.items():
+        object.__setattr__(value, name, item)
+    object.__setattr__(value, "_issuer", _STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER)
+    return require_strict_fbcca_support_product(value)
 
 
 @dataclass(frozen=True)
@@ -284,11 +617,17 @@ class ValidatedDevelopmentResult:
     development_bundle_schema: str
     development_bundle_payload_sha256: str
     development_bundle_file_sha256: str
+    development_bundle_source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
     context_reference_schema: str
     context_reference_payload_sha256: str
     context_reference_file_sha256: str
     development_rng_primitive_schema: str
     development_root_seed: int
+    development_rng_authority_schema: str
+    development_rng_authority_semantic_binding_sha256: str
+    rng_key_map_sha256: str
+    validated_context_reference_semantic_binding_sha256: str
     participant_count: int
     b4_source_range_stress_participant_indices: tuple[int, ...]
     grid_cell_count: int
@@ -299,10 +638,20 @@ class ValidatedDevelopmentResult:
     invariant_rows_sha256: str
     gate_report_count: int
     complete_grid_gate_report_sha256: str
+    uniform_block_weight_sensitivity_sha256: str
+    resampling_sensitivity_sha256: str
     eligible_grid_cell_ids: tuple[str, ...]
     selection_status: Literal["SELECTED_METHOD_PROPOSED", "DEVELOPMENT_NO_GO"]
     selected_grid_cell_id: str | None
     semantic_binding_sha256: str
+    _rng_authority: v3.DevelopmentRNGAuthority = dataclass_field(
+        repr=False,
+        compare=False,
+    )
+    _validated_reference: v3.ValidatedContextReference = dataclass_field(
+        repr=False,
+        compare=False,
+    )
     _issuer: object = dataclass_field(repr=False, compare=False)
 
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -333,12 +682,17 @@ class SelectedMethodProposal:
     development_result_schema: str
     development_result_payload_sha256: str
     development_result_file_sha256: str
+    validated_development_result_semantic_binding_sha256: str
     complete_grid_gate_report_sha256: str
     minimum_mandatory_observed_gain: float
     minimum_corresponding_one_sided_LCB: float
     clean_commit: str
     clean_tree: str
     semantic_binding_sha256: str
+    _validated_result: ValidatedDevelopmentResult = dataclass_field(
+        repr=False,
+        compare=False,
+    )
     _issuer: object = dataclass_field(repr=False, compare=False)
 
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -476,10 +830,40 @@ def development_row_counts(participants: int, *, grid_cells: int) -> dict[str, i
 
 
 def generate_covariate_reference_packets(
-    rng_factory: RngFactory,
+    *,
+    rng_authority: v3.ContextReferenceRNGAuthority,
 ) -> tuple[dict[str, Any], ...]:
-    """Generate the separately keyed 3x256 source covariate-only packets."""
+    """Generate the exact reference packets under canonical bundle authority."""
 
+    authority = v3.require_context_reference_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    return _generate_covariate_reference_packets_with_rng_factory(
+        _authorized_rng_factory(authority),
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _generate_covariate_reference_packets_for_test(
+    rng_authority: _UnitTestRNGAuthority,
+) -> tuple[dict[str, Any], ...]:
+    """Generate reference packets from an explicitly nonreserved unit seed."""
+
+    authority = _require_unit_test_rng_authority(rng_authority)
+    return _generate_covariate_reference_packets_with_rng_factory(
+        _unit_test_rng_factory(authority),
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _generate_covariate_reference_packets_with_rng_factory(
+    rng_factory: RngFactory,
+    *,
+    _issuer: object,
+) -> tuple[dict[str, Any], ...]:
+    """Internal reference implementation after authority validation."""
+
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("synthetic RNG producer issuer token is invalid.")
     _require_rng_factory(rng_factory)
     formulas = {
         "neutral": (math.log1p(6.0), 0.65, 0.05),
@@ -515,21 +899,110 @@ def generate_covariate_reference_packets(
     return tuple(packets)
 
 
-def fit_synthetic_context_reference(rng_factory: RngFactory) -> v3.ContextReference:
-    packets = generate_covariate_reference_packets(rng_factory)
+def fit_synthetic_context_reference(
+    *,
+    rng_authority: v3.ContextReferenceRNGAuthority,
+) -> v3.ContextReference:
+    authority = v3.require_context_reference_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    return _fit_synthetic_context_reference_with_rng_factory(
+        _authorized_rng_factory(authority),
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _fit_synthetic_context_reference_for_test(
+    rng_authority: _UnitTestRNGAuthority,
+) -> v3.ContextReference:
+    authority = _require_unit_test_rng_authority(rng_authority)
+    return _fit_synthetic_context_reference_with_rng_factory(
+        _unit_test_rng_factory(authority),
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _fit_synthetic_context_reference_with_rng_factory(
+    rng_factory: RngFactory,
+    *,
+    _issuer: object,
+) -> v3.ContextReference:
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("synthetic RNG producer issuer token is invalid.")
+    packets = _generate_covariate_reference_packets_with_rng_factory(
+        rng_factory,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
     return v3.fit_context_reference(
         packets,
         domain="synthetic_development_and_future_synthetic",
     )
 
 
+def replay_context_reference_payload(
+    *,
+    rng_authority: v3.ContextReferenceRNGAuthority,
+) -> dict[str, Any]:
+    """Deterministically replay and self-hash the authorized reference payload."""
+
+    authority = v3.require_context_reference_rng_authority(rng_authority)
+    return _replay_context_reference_payload_from_validated_authority(authority)
+
+
+def _replay_context_reference_payload_from_validated_authority(
+    rng_authority: v3.ContextReferenceRNGAuthority,
+) -> dict[str, Any]:
+    """Replay after the caller has performed the expensive governance check."""
+
+    authority = v3._require_context_reference_rng_authority_semantics(
+        rng_authority
+    )
+    _require_loaded_synthetic_source(authority)
+    reference = _fit_synthetic_context_reference_with_rng_factory(
+        _authorized_rng_factory(authority),
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+    return v3.context_reference_payload(reference)
+
+
 def stress_participant_indices(
-    rng_factory: RngFactory,
+    *,
+    participant_count: int,
+    rng_authority: v3.DevelopmentRNGAuthority,
+) -> tuple[int, ...]:
+    """Select the frozen stress ranks under canonical development authority."""
+
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    return _stress_participant_indices_with_rng_factory(
+        _authorized_rng_factory(authority),
+        participant_count=participant_count,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _stress_participant_indices_for_test(
+    rng_authority: _UnitTestRNGAuthority,
     *,
     participant_count: int,
 ) -> tuple[int, ...]:
+    authority = _require_unit_test_rng_authority(rng_authority)
+    return _stress_participant_indices_with_rng_factory(
+        _unit_test_rng_factory(authority),
+        participant_count=participant_count,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _stress_participant_indices_with_rng_factory(
+    rng_factory: RngFactory,
+    *,
+    participant_count: int,
+    _issuer: object,
+) -> tuple[int, ...]:
     """Select exactly 5/48 or 10/96 participants by smallest keyed rank."""
 
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("synthetic RNG producer issuer token is invalid.")
     count = _positive_exact_int(participant_count, "participant_count")
     if count == DEVELOPMENT_PARTICIPANTS:
         stress_count = 5
@@ -558,10 +1031,57 @@ def generate_synthetic_participant(
     *,
     family: str,
     participant_index: int,
+    rng_authority: v3.DevelopmentRNGAuthority,
+) -> SyntheticParticipant:
+    """Generate one participant under exact canonical development authority."""
+
+    _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    return _generate_synthetic_participant_with_rng_factory(
+        contract,
+        family=family,
+        participant_index=participant_index,
+        rng_factory=_authorized_rng_factory(authority),
+        rng_authority=authority,
+        generation_scope="development",
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _generate_synthetic_participant_for_test(
+    contract: SyntheticV3Contract,
+    *,
+    family: str,
+    participant_index: int,
+    rng_authority: _UnitTestRNGAuthority,
+) -> SyntheticParticipant:
+    authority = _require_unit_test_rng_authority(rng_authority)
+    return _generate_synthetic_participant_with_rng_factory(
+        contract,
+        family=family,
+        participant_index=participant_index,
+        rng_factory=_unit_test_rng_factory(authority),
+        rng_authority=authority,
+        generation_scope="unit_test",
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _generate_synthetic_participant_with_rng_factory(
+    contract: SyntheticV3Contract,
+    *,
+    family: str,
+    participant_index: int,
     rng_factory: RngFactory,
+    rng_authority: v3.DevelopmentRNGAuthority | _UnitTestRNGAuthority,
+    generation_scope: Literal["development", "unit_test"],
+    _issuer: object,
 ) -> SyntheticParticipant:
     """Generate one participant without materializing a family-sized EEG tensor."""
 
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("synthetic RNG producer issuer token is invalid.")
     if type(contract) is not SyntheticV3Contract:
         raise TypeError("contract must be an exact SyntheticV3Contract.")
     if family not in FAMILY_NAMES:
@@ -710,15 +1230,16 @@ def generate_synthetic_participant(
                 -1 if confuser_class is None else confuser_class
             )
             innovation_sds[block_index, class_index] = innovation_sd
-            waveform = (
+            target_waveform = (
                 target_amplitude
                 * spatial[class_index, :, None]
                 * _oscillation(
                     frequencies[target_class], phases[target_class], drift, timeline
                 )[None, :]
             )
+            confuser_waveform = np.zeros((channels, samples), dtype=np.float64)
             if confuser_class is not None:
-                waveform += (
+                confuser_waveform = (
                     confuser_amplitude
                     * spatial[class_index, :, None]
                     * _oscillation(
@@ -737,7 +1258,9 @@ def generate_synthetic_participant(
                 "innovation_noise",
             ).standard_normal((channels, samples))
             noise = _stationary_ar1(white, innovation_sd=innovation_sd, rho=0.55)
-            signals[block_index, class_index] = gains[:, None] * waveform + noise
+            signals[block_index, class_index] = (
+                gains[:, None] * target_waveform + confuser_waveform + noise
+            )
 
     contexts = tuple(
         (
@@ -779,23 +1302,40 @@ def generate_synthetic_participant(
         innovation_sds,
     )
     readonly = tuple(_readonly(array) for array in arrays)
-    return SyntheticParticipant(
-        family=family,
-        participant_index=participant_index,
-        conditions=conditions,
-        signals=readonly[0],
-        true_labels=readonly[1],
-        recorded_support_labels=readonly[2],
-        context_packets_by_condition=contexts,
-        signal_states=readonly[3],
-        context_states_by_condition=tuple(
-            (condition, tuple(int(value) for value in context_states[condition]))
-            for condition in conditions
-        ),
-        generated_target_classes=readonly[4],
-        generated_confuser_classes=readonly[5],
-        innovation_sds=readonly[6],
-        partition_sha256s=tuple(partition_hashes),
+    if generation_scope == "development":
+        authority_semantics = v3._require_development_rng_authority_semantics(
+            rng_authority
+        )
+    elif generation_scope == "unit_test":
+        authority_semantics = _require_unit_test_rng_authority(rng_authority)
+    else:  # pragma: no cover - private callers pass one literal
+        raise ValueError("unknown synthetic generation scope.")
+    return _issue_synthetic_participant(
+        {
+            "family": family,
+            "participant_index": participant_index,
+            "conditions": conditions,
+            "signals": readonly[0],
+            "true_labels": readonly[1],
+            "recorded_support_labels": readonly[2],
+            "context_packets_by_condition": contexts,
+            "signal_states": readonly[3],
+            "context_states_by_condition": tuple(
+                (condition, tuple(int(value) for value in context_states[condition]))
+                for condition in conditions
+            ),
+            "generated_target_classes": readonly[4],
+            "generated_confuser_classes": readonly[5],
+            "innovation_sds": readonly[6],
+            "partition_sha256s": tuple(partition_hashes),
+            "source_range_stress": False,
+            "generation_scope": generation_scope,
+            "rng_authority_semantic_binding_sha256": (
+                authority_semantics.semantic_binding_sha256
+            ),
+            "_rng_authority": authority_semantics,
+        },
+        _issuer=_SYNTHETIC_PARTICIPANT_ISSUER,
     )
 
 
@@ -803,20 +1343,72 @@ def apply_source_range_stress(
     participant: SyntheticParticipant,
     reference: v3.ContextReference,
     *,
+    contract: SyntheticV3Contract,
+    participant_count: int,
+    rng_authority: v3.DevelopmentRNGAuthority,
     validated_reference: v3.ValidatedContextReference,
 ) -> SyntheticParticipant:
     """Set every B4 query valid-channel source z coordinate to exactly +10."""
 
-    if type(participant) is not SyntheticParticipant or participant.family != (
+    _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    proof = v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
+    _require_shared_bundle_provenance(authority, proof)
+    participant = _require_synthetic_participant(
+        participant,
+        contract=contract,
+        expected_scope="development",
+        expected_rng_authority=authority,
+    )
+    selected = _stress_participant_indices_with_rng_factory(
+        _authorized_rng_factory(authority),
+        participant_count=participant_count,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+    if participant.participant_index not in selected:
+        raise ValueError("participant is not one of the exact authorized stress ranks.")
+    return _apply_source_range_stress_impl(
+        participant,
+        reference,
+        _issuer=_SOURCE_RANGE_STRESS_ISSUER,
+    )
+
+
+def _apply_source_range_stress_for_test(
+    participant: SyntheticParticipant,
+    reference: v3.ContextReference,
+) -> SyntheticParticipant:
+    """Explicit non-authoritative unit seam for deterministic stress semantics."""
+
+    participant = _require_synthetic_participant_identity(participant)
+    if participant.generation_scope != "unit_test":
+        raise TypeError("unit stress seam requires a unit-test participant.")
+    return _apply_source_range_stress_impl(
+        participant,
+        reference,
+        _issuer=_SOURCE_RANGE_STRESS_ISSUER,
+    )
+
+
+def _apply_source_range_stress_impl(
+    participant: SyntheticParticipant,
+    reference: v3.ContextReference,
+    *,
+    _issuer: object,
+) -> SyntheticParticipant:
+    if _issuer is not _SOURCE_RANGE_STRESS_ISSUER:
+        raise TypeError("source-range stress issuer token is invalid.")
+    participant = _require_synthetic_participant_identity(participant)
+    if participant.family != (
         "B4_interface_calibrated_impedance_shift"
     ):
         raise TypeError("source-range stress accepts only an exact B4 participant.")
     if type(reference) is not v3.ContextReference:
         raise TypeError("reference must be an exact ContextReference.")
-    v3.require_validated_context_reference(
-        validated_reference,
-        expected_payload_sha256=reference.payload_sha256,
-    )
     updated: list[tuple[str, tuple[v3.ContextPacket, ...]]] = []
     for condition, packets in participant.context_packets_by_condition:
         table = reference.table_by_interface.get(condition)
@@ -827,13 +1419,18 @@ def apply_source_range_stress(
             packet = packets[block - 1]
             impedance: list[float | None] = []
             availability: list[bool] = []
-            for center, scale in zip(table.centers, table.scales, strict=True):
+            for channel_index, (center, scale) in enumerate(
+                zip(table.centers, table.scales, strict=True)
+            ):
+                if center is None or scale is None:
+                    center = reference.pooled_table.centers[channel_index]
+                    scale = reference.pooled_table.scales[channel_index]
                 if center is None or scale is None:
                     impedance.append(None)
                     availability.append(False)
-                else:
-                    impedance.append(float(np.expm1(center + 10.0 * scale)))
-                    availability.append(True)
+                    continue
+                impedance.append(float(np.expm1(center + 10.0 * scale)))
+                availability.append(True)
             transformed[block - 1] = v3.ContextPacket(
                 packet_key=packet.packet_key,
                 interface_lookup_key=packet.interface_lookup_key,
@@ -841,21 +1438,29 @@ def apply_source_range_stress(
                 channel_availability=tuple(availability),
             )
         updated.append((condition, tuple(transformed)))
-    return SyntheticParticipant(
-        family=participant.family,
-        participant_index=participant.participant_index,
-        conditions=participant.conditions,
-        signals=participant.signals,
-        true_labels=participant.true_labels,
-        recorded_support_labels=participant.recorded_support_labels,
-        context_packets_by_condition=tuple(updated),
-        signal_states=participant.signal_states,
-        context_states_by_condition=participant.context_states_by_condition,
-        generated_target_classes=participant.generated_target_classes,
-        generated_confuser_classes=participant.generated_confuser_classes,
-        innovation_sds=participant.innovation_sds,
-        partition_sha256s=participant.partition_sha256s,
-        source_range_stress=True,
+    return _issue_synthetic_participant(
+        {
+            "family": participant.family,
+            "participant_index": participant.participant_index,
+            "conditions": participant.conditions,
+            "signals": participant.signals,
+            "true_labels": participant.true_labels,
+            "recorded_support_labels": participant.recorded_support_labels,
+            "context_packets_by_condition": tuple(updated),
+            "signal_states": participant.signal_states,
+            "context_states_by_condition": participant.context_states_by_condition,
+            "generated_target_classes": participant.generated_target_classes,
+            "generated_confuser_classes": participant.generated_confuser_classes,
+            "innovation_sds": participant.innovation_sds,
+            "partition_sha256s": participant.partition_sha256s,
+            "source_range_stress": True,
+            "generation_scope": participant.generation_scope,
+            "rng_authority_semantic_binding_sha256": (
+                participant.rng_authority_semantic_binding_sha256
+            ),
+            "_rng_authority": participant._rng_authority,
+        },
+        _issuer=_SYNTHETIC_PARTICIPANT_ISSUER,
     )
 
 
@@ -865,10 +1470,8 @@ def produce_strict_fbcca(
 ) -> StrictFBCCAProduct:
     """Produce query-only anchors without reading any support waveform or label."""
 
-    if type(contract) is not SyntheticV3Contract:
-        raise TypeError("contract must be an exact SyntheticV3Contract.")
-    if type(participant) is not SyntheticParticipant:
-        raise TypeError("participant must be an exact SyntheticParticipant.")
+    contract = _require_exact_contract(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
     scores = _score_strict_fbcca_blocks(
         contract,
         participant.signals[5:10],
@@ -889,10 +1492,16 @@ def produce_strict_fbcca(
             "scores_sha256": _array_sha256(scores),
         }
     )
-    return StrictFBCCAProduct(
-        scores=scores,
-        query_eeg_sha256s=query_eeg_sha256s,
-        producer_sha256=producer_sha,
+    return _issue_strict_fbcca_product(
+        {
+            "scores": scores,
+            "query_eeg_sha256s": query_eeg_sha256s,
+            "plan_sha256": contract.plan_sha256,
+            "filterbank_sha256": contract.filterbank_sha256,
+            "scores_sha256": _array_sha256(scores),
+            "producer_sha256": producer_sha,
+        },
+        _issuer=_STRICT_FBCCA_PRODUCT_ISSUER,
     )
 
 
@@ -904,16 +1513,65 @@ def produce_strict_fbcca_support(
 ) -> StrictFBCCASupportProduct:
     """Read and score a support prefix only when a caller invokes its loader."""
 
-    if type(contract) is not SyntheticV3Contract:
-        raise TypeError("contract must be an exact SyntheticV3Contract.")
-    if type(participant) is not SyntheticParticipant:
-        raise TypeError("participant must be an exact SyntheticParticipant.")
+    contract = _require_exact_contract(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
     if type(budget) is not int or budget not in (1, 3, 5):
         raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
     scores = _score_strict_fbcca_blocks(
         contract,
         participant.signals[:budget],
     )
+    return _strict_fbcca_support_product_from_scores(
+        contract,
+        participant,
+        budget=budget,
+        scores=scores,
+        _issuer=_STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER,
+    )
+
+
+def produce_strict_fbcca_support_prefixes(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+) -> tuple[StrictFBCCASupportProduct, StrictFBCCASupportProduct, StrictFBCCASupportProduct]:
+    """Score support blocks 1..5 once and issue exact k=1/3/5 products.
+
+    Callers remain responsible for invoking this only from a loader after an
+    accepting context preflight.  The isolated AQM operator never invokes it
+    on a rejecting preflight.
+    """
+
+    contract = _require_exact_contract(contract)
+    participant = _require_synthetic_participant(participant, contract=contract)
+    all_scores = _score_strict_fbcca_blocks(contract, participant.signals[:5])
+    return tuple(
+        _strict_fbcca_support_product_from_scores(
+            contract,
+            participant,
+            budget=budget,
+            scores=_readonly(all_scores[:budget]),
+            _issuer=_STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER,
+        )
+        for budget in (1, 3, 5)
+    )  # type: ignore[return-value]
+
+
+def _strict_fbcca_support_product_from_scores(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    *,
+    budget: int,
+    scores: np.ndarray,
+    _issuer: object,
+) -> StrictFBCCASupportProduct:
+    if _issuer is not _STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER:
+        raise TypeError("support-product computation issuer token is invalid.")
+    if type(budget) is not int or budget not in (1, 3, 5):
+        raise ValueError("support FBCCA budget must be exactly 1, 3, or 5.")
+    score_values = np.asarray(scores)
+    if score_values.shape != (budget, 12, 12) or score_values.dtype != np.float64:
+        raise ValueError("precomputed support scores have the wrong shape/dtype.")
+    scores = _readonly(score_values)
     labels = _readonly(participant.recorded_support_labels[:budget])
     partitions = participant.partition_sha256s[:budget]
     manifest = _canonical_sha256(
@@ -936,13 +1594,19 @@ def produce_strict_fbcca_support(
             "scores_sha256": _array_sha256(scores),
         }
     )
-    return StrictFBCCASupportProduct(
-        budget=budget,
-        scores=scores,
-        recorded_support_labels=labels,
-        partition_sha256s=partitions,
-        support_eeg_label_manifest_sha256=manifest,
-        producer_sha256=producer_sha,
+    return _issue_strict_fbcca_support_product(
+        {
+            "budget": budget,
+            "scores": scores,
+            "recorded_support_labels": labels,
+            "partition_sha256s": partitions,
+            "support_eeg_label_manifest_sha256": manifest,
+            "plan_sha256": contract.plan_sha256,
+            "filterbank_sha256": contract.filterbank_sha256,
+            "scores_sha256": _array_sha256(scores),
+            "producer_sha256": producer_sha,
+        },
+        _issuer=_STRICT_FBCCA_SUPPORT_PRODUCT_ISSUER,
     )
 
 
@@ -1103,26 +1767,129 @@ def method_specs_for_family(family: str) -> tuple[MethodSpec, ...]:
 
 
 def evaluate_synthetic_participant(
+    contract: SyntheticV3Contract,
     participant: SyntheticParticipant,
     fbcca: StrictFBCCAProduct,
     reference: v3.ContextReference,
     grid_cell: v3.V3GridCell,
     *,
+    rng_authority: v3.DevelopmentRNGAuthority,
     validated_reference: v3.ValidatedContextReference,
     support_loader: Callable[[int], StrictFBCCASupportProduct],
 ) -> list[dict[str, Any]]:
-    """Evaluate one grid cell with support access behind a post-preflight loader."""
+    """Evaluate one primary grid cell under exact bundle-bound authority."""
 
-    if type(participant) is not SyntheticParticipant:
-        raise TypeError("participant must be an exact SyntheticParticipant.")
-    if type(fbcca) is not StrictFBCCAProduct:
-        raise TypeError("fbcca must be an exact StrictFBCCAProduct.")
-    if type(reference) is not v3.ContextReference:
-        raise TypeError("reference must be an exact ContextReference.")
-    v3.require_validated_context_reference(
+    _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    proof = v3.require_validated_context_reference(
         validated_reference,
         expected_payload_sha256=reference.payload_sha256,
     )
+    _require_shared_bundle_provenance(authority, proof)
+    return _evaluate_synthetic_participant_impl(
+        contract,
+        participant,
+        fbcca,
+        reference,
+        grid_cell,
+        validated_reference=proof,
+        support_loader=support_loader,
+        block_weight_mode="reliability",
+        production_rng_authority=authority,
+    )
+
+
+def evaluate_uniform_block_weight_sensitivity(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    fbcca: StrictFBCCAProduct,
+    reference: v3.ContextReference,
+    grid_cell: v3.V3GridCell,
+    *,
+    rng_authority: v3.DevelopmentRNGAuthority,
+    validated_reference: v3.ValidatedContextReference,
+    support_loader: Callable[[int], StrictFBCCASupportProduct],
+) -> list[dict[str, Any]]:
+    """Evaluate the report-only common-uniform-block-weight sensitivity."""
+
+    _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    proof = v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
+    _require_shared_bundle_provenance(authority, proof)
+    return _evaluate_synthetic_participant_impl(
+        contract,
+        participant,
+        fbcca,
+        reference,
+        grid_cell,
+        validated_reference=proof,
+        support_loader=support_loader,
+        block_weight_mode="uniform",
+        production_rng_authority=authority,
+    )
+
+
+def _evaluate_synthetic_participant_for_test(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    fbcca: StrictFBCCAProduct,
+    reference: v3.ContextReference,
+    grid_cell: v3.V3GridCell,
+    *,
+    support_loader: Callable[[int], StrictFBCCASupportProduct],
+    block_weight_mode: Literal["reliability", "uniform"] = "reliability",
+) -> list[dict[str, Any]]:
+    """Explicit nonproduction evaluator seam for deterministic unit fixtures."""
+
+    return _evaluate_synthetic_participant_impl(
+        contract,
+        participant,
+        fbcca,
+        reference,
+        grid_cell,
+        validated_reference=None,
+        support_loader=support_loader,
+        block_weight_mode=block_weight_mode,
+        production_rng_authority=None,
+    )
+
+
+def _evaluate_synthetic_participant_impl(
+    contract: SyntheticV3Contract,
+    participant: SyntheticParticipant,
+    fbcca: StrictFBCCAProduct,
+    reference: v3.ContextReference,
+    grid_cell: v3.V3GridCell,
+    *,
+    validated_reference: v3.ValidatedContextReference | None,
+    support_loader: Callable[[int], StrictFBCCASupportProduct],
+    block_weight_mode: Literal["reliability", "uniform"],
+    production_rng_authority: v3.DevelopmentRNGAuthority | None,
+) -> list[dict[str, Any]]:
+    """Shared evaluator; the public wrapper establishes production authority."""
+
+    _require_exact_contract(contract)
+    participant = _require_synthetic_participant(
+        participant,
+        contract=contract,
+        expected_scope=(
+            "development" if production_rng_authority is not None else "unit_test"
+        ),
+        expected_rng_authority=(
+            production_rng_authority
+            if production_rng_authority is not None
+            else participant._rng_authority
+        ),
+    )
+    fbcca = require_strict_fbcca_product(fbcca)
+    reference = v3._require_context_reference(reference)
+    if block_weight_mode not in {"reliability", "uniform"}:
+        raise ValueError("block_weight_mode must be reliability or uniform.")
     if type(grid_cell) is not v3.V3GridCell:
         raise TypeError("grid_cell must be an exact V3GridCell.")
     if fbcca.query_eeg_sha256s != tuple(
@@ -1138,9 +1905,7 @@ def evaluate_synthetic_participant(
 
     def support_for(budget: int) -> StrictFBCCASupportProduct:
         if budget not in support_prefixes:
-            loaded = support_loader(budget)
-            if type(loaded) is not StrictFBCCASupportProduct:
-                raise TypeError("support_loader must return an exact support product.")
+            loaded = require_strict_fbcca_support_product(support_loader(budget))
             if (
                 loaded.budget != budget
                 or loaded.partition_sha256s != participant.partition_sha256s[:budget]
@@ -1173,7 +1938,12 @@ def evaluate_synthetic_participant(
             packets = participant.context_packets(condition)
             support_keys = tuple(packet.packet_key for packet in packets[:budget])
             support = support_for(budget)
-            products[key] = v3.blockwise_p3_support(
+            producer = (
+                v3.blockwise_p3_support
+                if block_weight_mode == "reliability"
+                else v3.blockwise_p3_support_uniform_sensitivity
+            )
+            products[key] = producer(
                 fbcca.score_for_query_block(query_block),
                 support.scores,
                 support.recorded_support_labels,
@@ -1217,7 +1987,7 @@ def _evaluate_method_spec(
     participant: SyntheticParticipant,
     fbcca: StrictFBCCAProduct,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    validated_reference: v3.ValidatedContextReference | None,
     config: v3.V3OperatorConfig,
     spec: MethodSpec,
     product_for: Callable[[str, int, int], v3.V3SupportProduct],
@@ -1443,7 +2213,7 @@ def _evaluate_aqm_query(
     query_block: int,
     query_scores: np.ndarray,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    validated_reference: v3.ValidatedContextReference | None,
     config: v3.V3OperatorConfig,
     spec: MethodSpec,
     product_for: Callable[[str, int, int], v3.V3SupportProduct],
@@ -1504,7 +2274,7 @@ def _evaluate_aqm_assignment(
     query_block: int,
     query_scores: np.ndarray,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    validated_reference: v3.ValidatedContextReference | None,
     config: v3.V3OperatorConfig,
     control: str,
     assignment: tuple[int, ...],
@@ -1550,17 +2320,23 @@ def _evaluate_aqm_assignment(
         query_packet_key=query_packet.packet_key,
         ordered_support_packet_keys=tuple(packet.packet_key for packet in support_packets),
     )
-    preflight = v3.preflight_context(
-        reference=reference,
-        validated_reference=validated_reference,
-        query_key=query_packet.packet_key,
-        ordered_support_block_keys=logical_support_keys,
-        query_packet=query_packet,
-        support_packets=support_packets,
-        pairing_sha256=pairing,
-        lookup_mode=lookup_mode,
-        wrong_interface_lookup_key=wrong_interface,
-    )
+    preflight_arguments = {
+        "reference": reference,
+        "query_key": query_packet.packet_key,
+        "ordered_support_block_keys": logical_support_keys,
+        "query_packet": query_packet,
+        "support_packets": support_packets,
+        "pairing_sha256": pairing,
+        "lookup_mode": lookup_mode,
+        "wrong_interface_lookup_key": wrong_interface,
+    }
+    if validated_reference is None:
+        preflight = v3._preflight_context_unit(**preflight_arguments)
+    else:
+        preflight = v3._preflight_context_after_authorized_boundary(
+            validated_reference=validated_reference,
+            **preflight_arguments,
+        )
     if preflight.rejects_before_support_access:
         output = v3.apply_v3_after_preflight(
             query_scores,
@@ -1602,10 +2378,16 @@ def _evaluate_aqm_assignment(
     )
     if loaded_product is None:  # pragma: no cover - accepted preflight always loads once
         raise RuntimeError("accepted context preflight did not load support.")
-    trust = v3.finalize_context_trust(
-        preflight,
-        loaded_product.reliability_capability,
-    )
+    if loaded_product.block_weight_mode == "uniform":
+        trust = v3.finalize_context_trust_uniform_sensitivity(
+            preflight,
+            loaded_product,
+        )
+    else:
+        trust = v3.finalize_context_trust(
+            preflight,
+            loaded_product.reliability_capability,
+        )
     metric = _metric_output_from_operator(
         output,
         affinities=preflight.affinity_by_support_block,
@@ -1875,19 +2657,52 @@ def validate_participant_metric_row(row: Mapping[str, Any]) -> None:
 
 
 def build_invariant_rows(
+    contract: SyntheticV3Contract,
     reference: v3.ContextReference,
     grid_cell: v3.V3GridCell,
     *,
+    rng_authority: v3.DevelopmentRNGAuthority,
     validated_reference: v3.ValidatedContextReference,
 ) -> list[dict[str, Any]]:
     """Execute the six N5 and four N6 deterministic implementation guards."""
 
-    if type(reference) is not v3.ContextReference or type(grid_cell) is not v3.V3GridCell:
-        raise TypeError("invariant rows require exact reference and grid-cell objects.")
-    v3.require_validated_context_reference(
+    _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    proof = v3.require_validated_context_reference(
         validated_reference,
         expected_payload_sha256=reference.payload_sha256,
     )
+    _require_shared_bundle_provenance(authority, proof)
+    return _build_invariant_rows_impl(
+        reference,
+        grid_cell,
+        validated_reference=proof,
+    )
+
+
+def _build_invariant_rows_for_test(
+    reference: v3.ContextReference,
+    grid_cell: v3.V3GridCell,
+) -> list[dict[str, Any]]:
+    """Explicit nonproduction invariant seam for unit fixtures."""
+
+    return _build_invariant_rows_impl(
+        reference,
+        grid_cell,
+        validated_reference=None,
+    )
+
+
+def _build_invariant_rows_impl(
+    reference: v3.ContextReference,
+    grid_cell: v3.V3GridCell,
+    *,
+    validated_reference: v3.ValidatedContextReference | None,
+) -> list[dict[str, Any]]:
+    if type(reference) is not v3.ContextReference or type(grid_cell) is not v3.V3GridCell:
+        raise TypeError("invariant rows require exact reference and grid-cell objects.")
+    v3.context_reference_payload(reference)
     config = v3.V3OperatorConfig(grid_cell)
     query_scores = np.eye(12, dtype=np.float64)
     support_scores = np.stack([np.eye(12, dtype=np.float64)] * 3)
@@ -2181,6 +2996,51 @@ def validate_complete_development_rows(
     return canonical_metric, canonical_invariant
 
 
+def _validate_complete_uniform_sensitivity_rows(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    expected_stress_participant_indices: Sequence[int],
+) -> list[dict[str, Any]]:
+    """Validate a report-only second evaluation without changing primary count."""
+
+    if isinstance(rows, (str, bytes)) or not isinstance(rows, Sequence):
+        raise TypeError("uniform sensitivity rows must be a sequence.")
+    if len(rows) != DEVELOPMENT_METRIC_ROWS:
+        raise ValueError(
+            "uniform sensitivity requires exactly 88,992 report-only metric rows."
+        )
+    stress = tuple(expected_stress_participant_indices)
+    if (
+        len(stress) != 5
+        or tuple(sorted(set(stress))) != stress
+        or any(
+            type(index) is not int
+            or not 0 <= index < DEVELOPMENT_PARTICIPANTS
+            for index in stress
+        )
+    ):
+        raise ValueError("uniform sensitivity stress ranks are invalid.")
+    copied = [dict(row) for row in rows]
+    for row in copied:
+        validate_participant_metric_row(row)
+    if Counter(_metric_identity(row) for row in copied) != Counter(
+        _expected_metric_identities()
+    ):
+        raise ValueError("uniform sensitivity metric grid is incomplete.")
+    expected_stress = set(stress)
+    for row in copied:
+        should_stress = (
+            row["family"] == "B4_interface_calibrated_impedance_shift"
+            and row["participant_index"] in expected_stress
+        )
+        if row["source_range_stress"] != should_stress:
+            raise ValueError("uniform sensitivity stress flags are invalid.")
+    canonical = sorted(copied, key=_participant_row_sort_key)
+    if copied != canonical:
+        raise ValueError("uniform sensitivity rows are not canonically ordered.")
+    return canonical
+
+
 def canonicalize_development_rows(
     participant_rows: Iterable[Mapping[str, Any]],
     invariant_rows: Iterable[Mapping[str, Any]],
@@ -2217,6 +3077,56 @@ def summarize_complete_development(
     return reports
 
 
+def _summarize_complete_development_authorized(
+    metric_rows: Sequence[Mapping[str, Any]],
+    invariant_rows: Sequence[Mapping[str, Any]],
+    uniform_metric_rows: Sequence[Mapping[str, Any]],
+    *,
+    rng_authority: v3.DevelopmentRNGAuthority,
+    _issuer: object,
+) -> list[dict[str, Any]]:
+    """Add report-only sensitivities after one public authority check."""
+
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("authorized development reducer issuer token is invalid.")
+    authority = v3._require_development_rng_authority_semantics(rng_authority)
+    if (
+        len(metric_rows) != DEVELOPMENT_METRIC_ROWS
+        or len(invariant_rows) != DEVELOPMENT_INVARIANT_ROWS
+        or len(uniform_metric_rows) != DEVELOPMENT_METRIC_ROWS
+    ):
+        raise ValueError("authorized development reduction requires all exact rows.")
+    rng_factory = _authorized_rng_factory(authority)
+    reports = []
+    for cell in v3.canonical_operator_grid():
+        cell_metrics = [
+            row for row in metric_rows if row["grid_cell_index"] == cell.index
+        ]
+        cell_invariants = [
+            row for row in invariant_rows if row["grid_cell_index"] == cell.index
+        ]
+        cell_uniform = [
+            row for row in uniform_metric_rows if row["grid_cell_index"] == cell.index
+        ]
+        if (
+            len(cell_metrics) != 9_888
+            or len(cell_invariants) != 10
+            or len(cell_uniform) != 9_888
+        ):
+            raise ValueError("one authorized grid cell is incomplete before reduction.")
+        reports.append(
+            _summarize_grid_cell(
+                cell,
+                cell_metrics,
+                cell_invariants,
+                uniform_rows=cell_uniform,
+                sensitivity_rng_factory=rng_factory,
+                _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+            )
+        )
+    return reports
+
+
 def select_grid_cell(gate_reports: Sequence[Mapping[str, Any]]) -> Mapping[str, Any] | None:
     """Apply the exact no-rounding V3 selector to complete gate reports."""
 
@@ -2246,7 +3156,15 @@ def _summarize_grid_cell(
     cell: v3.V3GridCell,
     rows: Sequence[Mapping[str, Any]],
     invariant_rows: Sequence[Mapping[str, Any]],
+    *,
+    uniform_rows: Sequence[Mapping[str, Any]] | None = None,
+    sensitivity_rng_factory: RngFactory | None = None,
+    _issuer: object | None = None,
 ) -> dict[str, Any]:
+    if (uniform_rows is None) != (sensitivity_rng_factory is None):
+        raise ValueError("uniform and resampling sensitivities must be reported together.")
+    if uniform_rows is not None and _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("authorized gate-report enrichment issuer token is invalid.")
     index = {_metric_lookup_key(row): row for row in rows}
     if len(index) != len(rows):
         raise ValueError("duplicate participant rows reached grid reduction.")
@@ -2400,6 +3318,22 @@ def _summarize_grid_cell(
         )
         mechanism_stats[family] = summary
         mechanism_vectors[family] = delta
+
+    mechanism_holm = holm_step_down(
+        {
+            family: summary["one_sided_t_p_value"]
+            for family, summary in mechanism_stats.items()
+        },
+        familywise_alpha=0.05,
+    )
+    for family, summary in mechanism_stats.items():
+        correction = mechanism_holm[family]
+        summary.update(correction)
+        summary["passed"] = bool(
+            summary["one_sided_95_LCB"] > 0.0
+            and summary["observed_mean"] >= 0.01
+            and correction["holm_reject"]
+        )
 
     deployment_stats = {}
     for family, condition in (
@@ -2683,11 +3617,451 @@ def _summarize_grid_cell(
         },
         "eligible": eligible,
     }
+    if uniform_rows is not None and sensitivity_rng_factory is not None:
+        uniform_index = {_metric_lookup_key(row): row for row in uniform_rows}
+        if len(uniform_index) != len(uniform_rows):
+            raise ValueError("duplicate uniform-sensitivity rows reached reduction.")
+
+        def uniform_vector(
+            family: str,
+            condition: str,
+            left: tuple[str, str, str],
+            right: tuple[str, str, str],
+            *,
+            budget: int | None = None,
+            eauc: bool,
+        ) -> np.ndarray:
+            values = []
+            for participant_index in range(DEVELOPMENT_PARTICIPANTS):
+                if eauc:
+                    left_value = _participant_eauc(
+                        uniform_index,
+                        family,
+                        participant_index,
+                        condition,
+                        *left,
+                        metric="balanced_accuracy",
+                    )
+                    right_value = _participant_eauc(
+                        uniform_index,
+                        family,
+                        participant_index,
+                        condition,
+                        *right,
+                        metric="balanced_accuracy",
+                    )
+                else:
+                    if budget is None:
+                        raise ValueError("uniform point contrast requires a budget.")
+                    left_value = float(
+                        uniform_index[
+                            (family, participant_index, condition, *left, budget)
+                        ]["balanced_accuracy"]
+                    )
+                    right_value = float(
+                        uniform_index[
+                            (family, participant_index, condition, *right, budget)
+                        ]["balanced_accuracy"]
+                    )
+                values.append(left_value - right_value)
+            return np.asarray(values, dtype=np.float64)
+
+        primary_sensitivity_vectors = {
+            "B1_A_Q_minus_A0_eAUC": aq_vectors[
+                "B1_participant_class_confusion"
+            ],
+            "B2_A_Q_minus_A0_eAUC": aq_vectors[
+                "B2_participant_phase_spatial_shift"
+            ],
+            "B3_A_QM_minus_A_Q_eAUC": metadata_vectors[
+                "B3_impedance_linked_transfer_shift"
+            ],
+            "B4_A_QM_minus_A_Q_eAUC": metadata_vectors[
+                "B4_interface_calibrated_impedance_shift"
+            ],
+            "B3_k3_correct_minus_shuffle": mechanism_vectors[
+                "B3_impedance_linked_transfer_shift"
+            ],
+            "B4_k3_correct_minus_shuffle": mechanism_vectors[
+                "B4_interface_calibrated_impedance_shift"
+            ],
+        }
+        uniform_sensitivity_vectors = {
+            "B1_A_Q_minus_A0_eAUC": uniform_vector(
+                "B1_participant_class_confusion",
+                "neutral",
+                ("A_Q", "none", "deployed"),
+                ("A0", "none", "none"),
+                eauc=True,
+            ),
+            "B2_A_Q_minus_A0_eAUC": uniform_vector(
+                "B2_participant_phase_spatial_shift",
+                "neutral",
+                ("A_Q", "none", "deployed"),
+                ("A0", "none", "none"),
+                eauc=True,
+            ),
+            "B3_A_QM_minus_A_Q_eAUC": uniform_vector(
+                "B3_impedance_linked_transfer_shift",
+                "neutral",
+                ("A_QM", "correct", "deployed"),
+                ("A_Q", "none", "deployed"),
+                eauc=True,
+            ),
+            "B4_A_QM_minus_A_Q_eAUC": uniform_vector(
+                "B4_interface_calibrated_impedance_shift",
+                "equal_condition_composite",
+                ("A_QM", "correct", "deployed"),
+                ("A_Q", "none", "deployed"),
+                eauc=True,
+            ),
+            "B3_k3_correct_minus_shuffle": uniform_vector(
+                "B3_impedance_linked_transfer_shift",
+                "neutral",
+                ("A_QM", "correct", "deployed"),
+                ("A_QM", "within_prefix_packet_shuffle", "deployed"),
+                budget=3,
+                eauc=False,
+            ),
+            "B4_k3_correct_minus_shuffle": uniform_vector(
+                "B4_interface_calibrated_impedance_shift",
+                "equal_condition_composite",
+                ("A_QM", "correct", "deployed"),
+                ("A_QM", "within_prefix_packet_shuffle", "deployed"),
+                budget=3,
+                eauc=False,
+            ),
+        }
+        report["uniform_block_weight_sensitivity"] = {
+            "schema": (
+                "cfeg.metadata-calibration-efficiency-v3."
+                "uniform-block-weight-sensitivity.v1"
+            ),
+            "promotion_or_selection_use": False,
+            "common_weight_rule": "both_p_support_and_g_M_use_exact_one_over_k",
+            "endpoints": {
+                endpoint: {
+                    "metric": (
+                        "participant_eAUC"
+                        if endpoint.endswith("eAUC")
+                        else "participant_k3_balanced_accuracy"
+                    ),
+                    "n": DEVELOPMENT_PARTICIPANTS,
+                    "reliability_weighted_observed_mean": float(
+                        np.mean(primary_sensitivity_vectors[endpoint])
+                    ),
+                    "uniform_weight_observed_mean": float(
+                        np.mean(uniform_sensitivity_vectors[endpoint])
+                    ),
+                    "paired_weighted_minus_uniform_mean": float(
+                        np.mean(
+                            primary_sensitivity_vectors[endpoint]
+                            - uniform_sensitivity_vectors[endpoint]
+                        )
+                    ),
+                }
+                for endpoint in SENSITIVITY_ENDPOINT_IDS
+            },
+        }
+        report["resampling_sensitivity"] = _sensitivity_resampling_with_rng_factory(
+            primary_sensitivity_vectors,
+            grid_cell_index=cell.index,
+            rng_factory=sensitivity_rng_factory,
+            sign_flip_draws=SENSITIVITY_SIGN_FLIP_DRAWS,
+            participant_bootstrap_draws=(
+                SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS
+            ),
+            require_complete=True,
+            _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+        )
     _validate_gate_report(report)
     return report
 
 
-def build_development_result_payload(
+def execute_complete_development(
+    contract: SyntheticV3Contract,
+    reference: v3.ContextReference,
+    *,
+    rng_authority: v3.DevelopmentRNGAuthority,
+    validated_reference: v3.ValidatedContextReference,
+    context_reference_file_sha256: str,
+    progress_callback: Callable[[Mapping[str, Any]], None] | None = None,
+) -> tuple[dict[str, Any], ValidatedDevelopmentResult]:
+    """Execute the sole authoritative 48x8x9 development pipeline in memory."""
+
+    contract = _require_exact_contract(contract)
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    reference = v3._require_context_reference(reference)
+    proof = v3.require_validated_context_reference(
+        validated_reference,
+        expected_payload_sha256=reference.payload_sha256,
+    )
+    _require_shared_bundle_provenance(authority, proof)
+    _sha256(context_reference_file_sha256, "context_reference_file_sha256")
+    if progress_callback is not None and not callable(progress_callback):
+        raise TypeError("progress_callback must be callable or None.")
+
+    rng_factory = _authorized_rng_factory(authority)
+    stress_indices = _stress_participant_indices_with_rng_factory(
+        rng_factory,
+        participant_count=DEVELOPMENT_PARTICIPANTS,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+    stress_set = set(stress_indices)
+    primary_rows: list[dict[str, Any]] = []
+    uniform_rows: list[dict[str, Any]] = []
+    for family in FAMILY_NAMES:
+        for participant_index in range(DEVELOPMENT_PARTICIPANTS):
+            participant = _generate_synthetic_participant_with_rng_factory(
+                contract,
+                family=family,
+                participant_index=participant_index,
+                rng_factory=rng_factory,
+                rng_authority=authority,
+                generation_scope="development",
+                _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+            )
+            if (
+                family == "B4_interface_calibrated_impedance_shift"
+                and participant_index in stress_set
+            ):
+                participant = _apply_source_range_stress_impl(
+                    participant,
+                    reference,
+                    _issuer=_SOURCE_RANGE_STRESS_ISSUER,
+                )
+            query_product = produce_strict_fbcca(contract, participant)
+            prefix_cache: dict[int, StrictFBCCASupportProduct] = {}
+
+            def support_loader(
+                budget: int,
+                *,
+                _cache: dict[int, StrictFBCCASupportProduct] = prefix_cache,
+                _participant: SyntheticParticipant = participant,
+            ) -> StrictFBCCASupportProduct:
+                if not _cache:
+                    _cache.update(
+                        {
+                            product.budget: product
+                            for product in produce_strict_fbcca_support_prefixes(
+                                contract,
+                                _participant,
+                            )
+                        }
+                    )
+                return _cache[budget]
+
+            for cell in v3.canonical_operator_grid():
+                primary_rows.extend(
+                    _evaluate_synthetic_participant_impl(
+                        contract,
+                        participant,
+                        query_product,
+                        reference,
+                        cell,
+                        validated_reference=proof,
+                        support_loader=support_loader,
+                        block_weight_mode="reliability",
+                        production_rng_authority=authority,
+                    )
+                )
+                uniform_rows.extend(
+                    _evaluate_synthetic_participant_impl(
+                        contract,
+                        participant,
+                        query_product,
+                        reference,
+                        cell,
+                        validated_reference=proof,
+                        support_loader=support_loader,
+                        block_weight_mode="uniform",
+                        production_rng_authority=authority,
+                    )
+                )
+            if progress_callback is not None:
+                progress_callback(
+                    MappingProxyType(
+                        {
+                            "stage": "participant_complete",
+                            "family": family,
+                            "participant_index": participant_index,
+                            "participant_count": DEVELOPMENT_PARTICIPANTS,
+                        }
+                    )
+                )
+
+    invariant_rows = [
+        row
+        for cell in v3.canonical_operator_grid()
+        for row in _build_invariant_rows_impl(
+            reference,
+            cell,
+            validated_reference=proof,
+        )
+    ]
+    canonical_primary = canonicalize_development_rows(primary_rows, invariant_rows)
+    metric_rows, canonical_invariants = validate_complete_development_rows(
+        canonical_primary,
+        expected_stress_participant_indices=stress_indices,
+    )
+    canonical_uniform = sorted(uniform_rows, key=_participant_row_sort_key)
+    canonical_uniform = _validate_complete_uniform_sensitivity_rows(
+        canonical_uniform,
+        expected_stress_participant_indices=stress_indices,
+    )
+    reports = _summarize_complete_development_authorized(
+        metric_rows,
+        canonical_invariants,
+        canonical_uniform,
+        rng_authority=authority,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+    payload = _assemble_development_result_payload(
+        contract,
+        metric_rows=metric_rows,
+        invariant_rows=canonical_invariants,
+        reports=reports,
+        expected_stress_participant_indices=stress_indices,
+        rng_authority=authority,
+        context_reference=reference,
+        context_reference_file_sha256=context_reference_file_sha256,
+        _issuer=_VALIDATED_DEVELOPMENT_RESULT_ISSUER,
+    )
+    result_proof = _issue_validated_development_result(
+        payload,
+        rng_authority=authority,
+        validated_reference=proof,
+        _issuer=_VALIDATED_DEVELOPMENT_RESULT_ISSUER,
+    )
+    return payload, result_proof
+
+
+def _execute_development_smoke_for_test(
+    contract: SyntheticV3Contract,
+    reference: v3.ContextReference,
+    *,
+    rng_authority: _UnitTestRNGAuthority,
+    families: Sequence[str],
+    participant_count: int,
+    grid_cell_indices: Sequence[int],
+) -> dict[str, Any]:
+    """Exercise real orchestration on a tiny scope without production authority."""
+
+    contract = _require_exact_contract(contract)
+    authority = _require_unit_test_rng_authority(rng_authority)
+    reference = v3._require_context_reference(reference)
+    if (
+        isinstance(families, (str, bytes))
+        or not isinstance(families, Sequence)
+        or not families
+        or tuple(dict.fromkeys(families)) != tuple(families)
+        or any(family not in FAMILY_NAMES for family in families)
+    ):
+        raise ValueError("smoke families must be a unique non-empty declared sequence.")
+    participants = _positive_exact_int(participant_count, "participant_count")
+    if participants > 2:
+        raise ValueError("unit orchestration smoke permits at most two participants.")
+    if isinstance(grid_cell_indices, (str, bytes)) or not isinstance(
+        grid_cell_indices, Sequence
+    ):
+        raise TypeError("grid_cell_indices must be a sequence.")
+    indices = tuple(grid_cell_indices)
+    if (
+        not indices
+        or tuple(sorted(set(indices))) != indices
+        or any(type(index) is not int or index not in range(1, 10) for index in indices)
+    ):
+        raise ValueError("smoke grid indices must be sorted unique values in 1..9.")
+
+    rng_factory = _unit_test_rng_factory(authority)
+    primary_rows: list[dict[str, Any]] = []
+    uniform_rows: list[dict[str, Any]] = []
+    for family in families:
+        for participant_index in range(participants):
+            participant = _generate_synthetic_participant_with_rng_factory(
+                contract,
+                family=family,
+                participant_index=participant_index,
+                rng_factory=rng_factory,
+                rng_authority=authority,
+                generation_scope="unit_test",
+                _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+            )
+            query_product = produce_strict_fbcca(contract, participant)
+            prefix_cache: dict[int, StrictFBCCASupportProduct] = {}
+
+            def support_loader(
+                budget: int,
+                *,
+                _cache: dict[int, StrictFBCCASupportProduct] = prefix_cache,
+                _participant: SyntheticParticipant = participant,
+            ) -> StrictFBCCASupportProduct:
+                if not _cache:
+                    _cache.update(
+                        {
+                            product.budget: product
+                            for product in produce_strict_fbcca_support_prefixes(
+                                contract,
+                                _participant,
+                            )
+                        }
+                    )
+                return _cache[budget]
+
+            for index in indices:
+                cell = v3.canonical_operator_grid()[index - 1]
+                primary_rows.extend(
+                    _evaluate_synthetic_participant_impl(
+                        contract,
+                        participant,
+                        query_product,
+                        reference,
+                        cell,
+                        validated_reference=None,
+                        support_loader=support_loader,
+                        block_weight_mode="reliability",
+                        production_rng_authority=None,
+                    )
+                )
+                uniform_rows.extend(
+                    _evaluate_synthetic_participant_impl(
+                        contract,
+                        participant,
+                        query_product,
+                        reference,
+                        cell,
+                        validated_reference=None,
+                        support_loader=support_loader,
+                        block_weight_mode="uniform",
+                        production_rng_authority=None,
+                    )
+                )
+    report: dict[str, Any] = {
+        "schema": (
+            "cfeg.metadata-calibration-efficiency-v3.unit-orchestration-smoke.v1"
+        ),
+        "scope": "unit_test_only_never_selection_or_publication",
+        "root_seed": authority.root_seed,
+        "families": list(families),
+        "participant_count": participants,
+        "grid_cell_indices": list(indices),
+        "primary_row_count": len(primary_rows),
+        "uniform_sensitivity_row_count": len(uniform_rows),
+        "primary_rows_sha256": _canonical_sha256(
+            {"schema": PARTICIPANT_METRIC_SCHEMA, "rows": primary_rows}
+        ),
+        "uniform_sensitivity_rows_sha256": _canonical_sha256(
+            {"schema": PARTICIPANT_METRIC_SCHEMA, "rows": uniform_rows}
+        ),
+        "selection_status": "FORBIDDEN_IN_UNIT_SMOKE",
+        "nominal_development_proof_issued": False,
+    }
+    report["payload_sha256"] = _payload_sha256(report)
+    return report
+
+
+def _build_development_result_payload_from_rows_for_test(
     contract: SyntheticV3Contract,
     *,
     rows: Sequence[Mapping[str, Any]],
@@ -2696,7 +4070,7 @@ def build_development_result_payload(
     context_reference: v3.ContextReference,
     context_reference_file_sha256: str,
 ) -> dict[str, Any]:
-    """Build a complete schema-ready result in memory; this function never writes."""
+    """Pure unit helper; caller-supplied rows can never mint a nominal proof."""
 
     if type(contract) is not SyntheticV3Contract:
         raise TypeError("contract must be an exact SyntheticV3Contract.")
@@ -2743,6 +4117,72 @@ def build_development_result_payload(
             "SELECTED_METHOD_PROPOSED" if selected is not None else "DEVELOPMENT_NO_GO"
         ),
         "selected_grid_cell_id": selected["grid_cell_id"] if selected is not None else None,
+    }
+    payload["payload_sha256"] = _payload_sha256(payload)
+    validate_development_result_payload(payload)
+    return payload
+
+
+def _assemble_development_result_payload(
+    contract: SyntheticV3Contract,
+    *,
+    metric_rows: Sequence[Mapping[str, Any]],
+    invariant_rows: Sequence[Mapping[str, Any]],
+    reports: Sequence[Mapping[str, Any]],
+    expected_stress_participant_indices: Sequence[int],
+    rng_authority: v3.DevelopmentRNGAuthority,
+    context_reference: v3.ContextReference,
+    context_reference_file_sha256: str,
+    _issuer: object,
+) -> dict[str, Any]:
+    """Assemble only results emitted by the private authoritative executor."""
+
+    if _issuer is not _VALIDATED_DEVELOPMENT_RESULT_ISSUER:
+        raise TypeError("development-result assembly issuer token is invalid.")
+    contract = _require_exact_contract(contract)
+    authority = v3._require_development_rng_authority_semantics(rng_authority)
+    reference = v3._require_context_reference(context_reference)
+    _sha256(context_reference_file_sha256, "context_reference_file_sha256")
+    if len(reports) != 9:
+        raise ValueError("authorized development result requires nine gate reports.")
+    report_values = [dict(report) for report in reports]
+    if any(set(report) != _ENRICHED_GATE_REPORT_KEYS for report in report_values):
+        raise ValueError("authorized gate reports must contain both sensitivities.")
+    for report in report_values:
+        _validate_gate_report(report)
+    selected = select_grid_cell(report_values)
+    payload: dict[str, Any] = {
+        "schema": DEVELOPMENT_RESULT_SCHEMA,
+        "candidate_id": v3.CANDIDATE_ID,
+        "generator_revision": "v1_single_insertion_context_trust",
+        "master_plan_file_sha256": contract.master_plan_sha256,
+        "synthetic_plan_file_sha256": contract.plan_sha256,
+        "development_bundle_schema": authority.development_bundle_schema,
+        "development_bundle_payload_sha256": (
+            authority.development_bundle_payload_sha256
+        ),
+        "development_bundle_file_sha256": authority.development_bundle_file_sha256,
+        "context_reference_schema": v3.CONTEXT_REFERENCE_SCHEMA,
+        "context_reference_payload_sha256": reference.payload_sha256,
+        "context_reference_file_sha256": context_reference_file_sha256,
+        "development_rng_primitive_schema": authority.rng_primitive_schema,
+        "development_root_seed": authority.root_seed,
+        "participant_count": DEVELOPMENT_PARTICIPANTS,
+        "B4_source_range_stress_participant_indices": list(
+            expected_stress_participant_indices
+        ),
+        "grid_cells": [_grid_record(cell) for cell in v3.canonical_operator_grid()],
+        "participant_metric_rows": [dict(row) for row in metric_rows],
+        "invariant_rows": [dict(row) for row in invariant_rows],
+        "complete_grid_gate_report": report_values,
+        "selection_status": (
+            "SELECTED_METHOD_PROPOSED"
+            if selected is not None
+            else "DEVELOPMENT_NO_GO"
+        ),
+        "selected_grid_cell_id": (
+            selected["grid_cell_id"] if selected is not None else None
+        ),
     }
     payload["payload_sha256"] = _payload_sha256(payload)
     validate_development_result_payload(payload)
@@ -2818,9 +4258,20 @@ def validate_development_result_payload(payload: Mapping[str, Any]) -> dict[str,
         expected_stress_participant_indices=stress,
     )
     reports = summarize_complete_development(metrics, invariants)
-    if payload["complete_grid_gate_report"] != reports:
-        raise ValueError("stored grid gate report does not equal exact recomputation.")
-    selected = select_grid_cell(reports)
+    stored_reports = payload["complete_grid_gate_report"]
+    if not isinstance(stored_reports, list) or len(stored_reports) != 9:
+        raise ValueError("stored grid gate report must contain exactly nine reports.")
+    enriched_flags = []
+    for expected, stored in zip(reports, stored_reports, strict=True):
+        if not isinstance(stored, Mapping):
+            raise TypeError("each stored grid gate report must be a mapping.")
+        _validate_gate_report(stored)
+        if {name: stored[name] for name in _GATE_REPORT_KEYS} != expected:
+            raise ValueError("stored primary gate report differs from exact recomputation.")
+        enriched_flags.append(set(stored) == _ENRICHED_GATE_REPORT_KEYS)
+    if any(enriched_flags) and not all(enriched_flags):
+        raise ValueError("gate-report sensitivities must be present for all or no cells.")
+    selected = select_grid_cell(stored_reports)
     expected_status = "SELECTED_METHOD_PROPOSED" if selected is not None else "DEVELOPMENT_NO_GO"
     expected_id = selected["grid_cell_id"] if selected is not None else None
     if payload["selection_status"] != expected_status or payload["selected_grid_cell_id"] != expected_id:
@@ -2843,11 +4294,25 @@ def _validated_development_result_binding(
             value.development_bundle_payload_sha256
         ),
         "development_bundle_file_sha256": value.development_bundle_file_sha256,
+        "development_bundle_source_bundle_sha256": (
+            value.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            value.numerical_runtime_fingerprint_sha256
+        ),
         "context_reference_schema": value.context_reference_schema,
         "context_reference_payload_sha256": value.context_reference_payload_sha256,
         "context_reference_file_sha256": value.context_reference_file_sha256,
         "development_rng_primitive_schema": value.development_rng_primitive_schema,
         "development_root_seed": value.development_root_seed,
+        "development_rng_authority_schema": value.development_rng_authority_schema,
+        "development_rng_authority_semantic_binding_sha256": (
+            value.development_rng_authority_semantic_binding_sha256
+        ),
+        "rng_key_map_sha256": value.rng_key_map_sha256,
+        "validated_context_reference_semantic_binding_sha256": (
+            value.validated_context_reference_semantic_binding_sha256
+        ),
         "participant_count": value.participant_count,
         "B4_source_range_stress_participant_indices": list(
             value.b4_source_range_stress_participant_indices
@@ -2860,6 +4325,10 @@ def _validated_development_result_binding(
         "invariant_rows_sha256": value.invariant_rows_sha256,
         "gate_report_count": value.gate_report_count,
         "complete_grid_gate_report_sha256": value.complete_grid_gate_report_sha256,
+        "uniform_block_weight_sensitivity_sha256": (
+            value.uniform_block_weight_sensitivity_sha256
+        ),
+        "resampling_sensitivity_sha256": value.resampling_sensitivity_sha256,
         "eligible_grid_cell_ids": list(value.eligible_grid_cell_ids),
         "selection_status": value.selection_status,
         "selected_grid_cell_id": value.selected_grid_cell_id,
@@ -2868,7 +4337,36 @@ def _validated_development_result_binding(
 
 def _issue_validated_development_result(
     result: Mapping[str, Any],
+    *,
+    rng_authority: v3.DevelopmentRNGAuthority,
+    validated_reference: v3.ValidatedContextReference,
+    _issuer: object,
 ) -> ValidatedDevelopmentResult:
+    if _issuer is not _VALIDATED_DEVELOPMENT_RESULT_ISSUER:
+        raise TypeError("validated-development-result issuer token is invalid.")
+    result = validate_development_result_payload(result)
+    if any(
+        set(report) != _ENRICHED_GATE_REPORT_KEYS
+        for report in result["complete_grid_gate_report"]
+    ):
+        raise ValueError("nominal development proof requires both frozen sensitivities.")
+    authority = v3._require_development_rng_authority_semantics(rng_authority)
+    reference = v3._require_validated_context_reference_semantics(
+        validated_reference,
+        expected_payload_sha256=result["context_reference_payload_sha256"],
+    )
+    _require_shared_bundle_provenance(authority, reference)
+    if (
+        result["development_bundle_schema"] != authority.development_bundle_schema
+        or result["development_bundle_payload_sha256"]
+        != authority.development_bundle_payload_sha256
+        or result["development_bundle_file_sha256"]
+        != authority.development_bundle_file_sha256
+        or result["development_rng_primitive_schema"]
+        != authority.rng_primitive_schema
+        or result["development_root_seed"] != authority.root_seed
+    ):
+        raise ValueError("development result differs from its RNG authority.")
     value = object.__new__(ValidatedDevelopmentResult)
     reports = result["complete_grid_gate_report"]
     fields: dict[str, Any] = {
@@ -2885,6 +4383,12 @@ def _issue_validated_development_result(
         "development_bundle_file_sha256": result[
             "development_bundle_file_sha256"
         ],
+        "development_bundle_source_bundle_sha256": (
+            authority.development_bundle_source_bundle_sha256
+        ),
+        "numerical_runtime_fingerprint_sha256": (
+            authority.numerical_runtime_fingerprint_sha256
+        ),
         "context_reference_schema": result["context_reference_schema"],
         "context_reference_payload_sha256": result[
             "context_reference_payload_sha256"
@@ -2894,6 +4398,14 @@ def _issue_validated_development_result(
             "development_rng_primitive_schema"
         ],
         "development_root_seed": result["development_root_seed"],
+        "development_rng_authority_schema": authority.schema,
+        "development_rng_authority_semantic_binding_sha256": (
+            authority.semantic_binding_sha256
+        ),
+        "rng_key_map_sha256": authority.key_map_sha256,
+        "validated_context_reference_semantic_binding_sha256": (
+            reference.semantic_binding_sha256
+        ),
         "participant_count": result["participant_count"],
         "b4_source_range_stress_participant_indices": tuple(
             result["B4_source_range_stress_participant_indices"]
@@ -2930,11 +4442,34 @@ def _issue_validated_development_result(
                 "reports": reports,
             }
         ),
+        "uniform_block_weight_sensitivity_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-uniform-block-weight-sensitivity.v1"
+                ),
+                "reports": [
+                    report["uniform_block_weight_sensitivity"]
+                    for report in reports
+                ],
+            }
+        ),
+        "resampling_sensitivity_sha256": _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "complete-resampling-sensitivity.v1"
+                ),
+                "reports": [report["resampling_sensitivity"] for report in reports],
+            }
+        ),
         "eligible_grid_cell_ids": tuple(
             report["grid_cell_id"] for report in reports if report["eligible"]
         ),
         "selection_status": result["selection_status"],
         "selected_grid_cell_id": result["selected_grid_cell_id"],
+        "_rng_authority": authority,
+        "_validated_reference": reference,
     }
     for name, item in fields.items():
         object.__setattr__(value, name, item)
@@ -2944,16 +4479,48 @@ def _issue_validated_development_result(
         _canonical_sha256(_validated_development_result_binding(value)),
     )
     object.__setattr__(value, "_issuer", _VALIDATED_DEVELOPMENT_RESULT_ISSUER)
-    return require_validated_development_result(value)
+    return _require_validated_development_result(
+        value,
+        expected_payload_sha256=result["payload_sha256"],
+        revalidate_bundle=False,
+    )
 
 
 def validate_development_result_for_publication(
     payload: Mapping[str, Any],
+    *,
+    validated_result: ValidatedDevelopmentResult,
 ) -> ValidatedDevelopmentResult:
-    """Validate all 89,082 rows and issue an immutable publication proof."""
+    """Match a payload to the proof issued only by the full executor."""
 
     result = validate_development_result_payload(payload)
-    return _issue_validated_development_result(result)
+    proof = require_validated_development_result(
+        validated_result,
+        expected_payload_sha256=result["payload_sha256"],
+    )
+    if (
+        proof.participant_metric_rows_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3."
+                    "participant-metric-row-set.v1"
+                ),
+                "rows": result["participant_metric_rows"],
+            }
+        )
+        or proof.invariant_rows_sha256
+        != _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.invariant-row-set.v1"
+                ),
+                "rows": result["invariant_rows"],
+            }
+        )
+    ):
+        raise ValueError("development proof differs from payload row bytes.")
+    return proof
 
 
 def require_validated_development_result(
@@ -2962,6 +4529,20 @@ def require_validated_development_result(
     expected_payload_sha256: str | None = None,
 ) -> ValidatedDevelopmentResult:
     """Require an authentic and internally bound exact development proof."""
+
+    return _require_validated_development_result(
+        value,
+        expected_payload_sha256=expected_payload_sha256,
+        revalidate_bundle=True,
+    )
+
+
+def _require_validated_development_result(
+    value: object,
+    *,
+    expected_payload_sha256: str | None,
+    revalidate_bundle: bool,
+) -> ValidatedDevelopmentResult:
 
     if type(value) is not ValidatedDevelopmentResult:
         raise TypeError("value must be an exact ValidatedDevelopmentResult.")
@@ -2982,6 +4563,9 @@ def require_validated_development_result(
         or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
         or value.development_rng_primitive_schema != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
         or value.development_root_seed != 20260909
+        or value.development_rng_authority_schema
+        != v3.DEVELOPMENT_RNG_AUTHORITY_SCHEMA
+        or value.rng_key_map_sha256 != v3.rng_key_map_sha256()
         or value.participant_count != DEVELOPMENT_PARTICIPANTS
     ):
         raise ValueError("ValidatedDevelopmentResult identity/bindings are invalid.")
@@ -2991,11 +4575,18 @@ def require_validated_development_result(
         "synthetic_plan_file_sha256",
         "development_bundle_payload_sha256",
         "development_bundle_file_sha256",
+        "development_bundle_source_bundle_sha256",
+        "numerical_runtime_fingerprint_sha256",
         "context_reference_payload_sha256",
         "context_reference_file_sha256",
+        "development_rng_authority_semantic_binding_sha256",
+        "rng_key_map_sha256",
+        "validated_context_reference_semantic_binding_sha256",
         "participant_metric_rows_sha256",
         "invariant_rows_sha256",
         "complete_grid_gate_report_sha256",
+        "uniform_block_weight_sensitivity_sha256",
+        "resampling_sensitivity_sha256",
         "semantic_binding_sha256",
     ):
         _sha256(getattr(value, name), name)
@@ -3036,6 +4627,39 @@ def require_validated_development_result(
     )
     if value.semantic_binding_sha256 != expected_binding:
         raise ValueError("ValidatedDevelopmentResult semantic binding is invalid.")
+    authority = (
+        v3.require_development_rng_authority(value._rng_authority)
+        if revalidate_bundle
+        else v3._require_development_rng_authority_semantics(value._rng_authority)
+    )
+    if revalidate_bundle:
+        _require_loaded_synthetic_source(authority)
+        reference = v3.require_validated_context_reference(
+            value._validated_reference,
+            expected_payload_sha256=value.context_reference_payload_sha256,
+        )
+    else:
+        reference = v3._require_validated_context_reference_semantics(
+            value._validated_reference,
+            expected_payload_sha256=value.context_reference_payload_sha256,
+        )
+    _require_shared_bundle_provenance(authority, reference)
+    if (
+        value.development_bundle_payload_sha256
+        != authority.development_bundle_payload_sha256
+        or value.development_bundle_file_sha256
+        != authority.development_bundle_file_sha256
+        or value.development_bundle_source_bundle_sha256
+        != authority.development_bundle_source_bundle_sha256
+        or value.numerical_runtime_fingerprint_sha256
+        != authority.numerical_runtime_fingerprint_sha256
+        or value.development_rng_authority_semantic_binding_sha256
+        != authority.semantic_binding_sha256
+        or value.rng_key_map_sha256 != authority.key_map_sha256
+        or value.validated_context_reference_semantic_binding_sha256
+        != reference.semantic_binding_sha256
+    ):
+        raise ValueError("ValidatedDevelopmentResult authority provenance is invalid.")
     if expected_payload_sha256 is not None:
         _sha256(expected_payload_sha256, "expected_payload_sha256")
         if value.payload_sha256 != expected_payload_sha256:
@@ -3046,6 +4670,7 @@ def require_validated_development_result(
 def build_selected_method_freeze_payload(
     development_result: Mapping[str, Any],
     *,
+    validated_development_result: ValidatedDevelopmentResult,
     development_result_file_sha256: str,
     clean_commit: str,
     clean_tree: str,
@@ -3053,6 +4678,10 @@ def build_selected_method_freeze_payload(
     """Build the deterministic selected-method freeze after a development PASS."""
 
     result = validate_development_result_payload(development_result)
+    validate_development_result_for_publication(
+        result,
+        validated_result=validated_development_result,
+    )
     _sha256(development_result_file_sha256, "development_result_file_sha256")
     _git_object_id(clean_commit, "clean_commit")
     _git_object_id(clean_tree, "clean_tree")
@@ -3233,6 +4862,9 @@ def _selected_method_proposal_binding(
         "development_result_schema": value.development_result_schema,
         "development_result_payload_sha256": value.development_result_payload_sha256,
         "development_result_file_sha256": value.development_result_file_sha256,
+        "validated_development_result_semantic_binding_sha256": (
+            value.validated_development_result_semantic_binding_sha256
+        ),
         "complete_grid_gate_report_sha256": value.complete_grid_gate_report_sha256,
         "minimum_mandatory_observed_gain": value.minimum_mandatory_observed_gain,
         "minimum_corresponding_one_sided_LCB": (
@@ -3245,7 +4877,27 @@ def _selected_method_proposal_binding(
 
 def _issue_selected_method_proposal(
     selected: Mapping[str, Any],
+    *,
+    validated_development_result: ValidatedDevelopmentResult,
+    _issuer: object,
 ) -> SelectedMethodProposal:
+    if _issuer is not _SELECTED_METHOD_PROPOSAL_ISSUER:
+        raise TypeError("selected-method proposal issuer token is invalid.")
+    result_proof = require_validated_development_result(
+        validated_development_result,
+        expected_payload_sha256=selected["development_result_payload_sha256"],
+    )
+    if (
+        result_proof.development_bundle_payload_sha256
+        != selected["development_bundle_payload_sha256"]
+        or result_proof.development_bundle_file_sha256
+        != selected["development_bundle_file_sha256"]
+        or result_proof.complete_grid_gate_report_sha256
+        != selected["complete_grid_gate_report_sha256"]
+        or result_proof.selection_status != "SELECTED_METHOD_PROPOSED"
+        or result_proof.selected_grid_cell_id != selected["selected_grid_cell_id"]
+    ):
+        raise ValueError("selected proposal differs from authorized development proof.")
     value = object.__new__(SelectedMethodProposal)
     rank = selected["selection_rank_tuple"]
     fields: dict[str, Any] = {
@@ -3279,6 +4931,9 @@ def _issue_selected_method_proposal(
         "development_result_file_sha256": selected[
             "development_result_file_sha256"
         ],
+        "validated_development_result_semantic_binding_sha256": (
+            result_proof.semantic_binding_sha256
+        ),
         "complete_grid_gate_report_sha256": selected[
             "complete_grid_gate_report_sha256"
         ],
@@ -3290,6 +4945,7 @@ def _issue_selected_method_proposal(
         ],
         "clean_commit": selected["clean_commit"],
         "clean_tree": selected["clean_tree"],
+        "_validated_result": result_proof,
     }
     for name, item in fields.items():
         object.__setattr__(value, name, item)
@@ -3299,13 +4955,18 @@ def _issue_selected_method_proposal(
         _canonical_sha256(_selected_method_proposal_binding(value)),
     )
     object.__setattr__(value, "_issuer", _SELECTED_METHOD_PROPOSAL_ISSUER)
-    return require_selected_method_proposal(value)
+    return _require_selected_method_proposal(
+        value,
+        expected_payload_sha256=selected["payload_sha256"],
+        revalidate_development=False,
+    )
 
 
 def validate_selected_method_proposal(
     payload: Mapping[str, Any],
     *,
     development_result: Mapping[str, Any],
+    validated_development_result: ValidatedDevelopmentResult,
 ) -> SelectedMethodProposal:
     """Issue a proposal proof only after exact selected/result cross-validation."""
 
@@ -3313,7 +4974,11 @@ def validate_selected_method_proposal(
         payload,
         development_result=development_result,
     )
-    return _issue_selected_method_proposal(selected)
+    return _issue_selected_method_proposal(
+        selected,
+        validated_development_result=validated_development_result,
+        _issuer=_SELECTED_METHOD_PROPOSAL_ISSUER,
+    )
 
 
 def require_selected_method_proposal(
@@ -3322,6 +4987,20 @@ def require_selected_method_proposal(
     expected_payload_sha256: str | None = None,
 ) -> SelectedMethodProposal:
     """Require an authentic and internally bound exact selection proposal."""
+
+    return _require_selected_method_proposal(
+        value,
+        expected_payload_sha256=expected_payload_sha256,
+        revalidate_development=True,
+    )
+
+
+def _require_selected_method_proposal(
+    value: object,
+    *,
+    expected_payload_sha256: str | None,
+    revalidate_development: bool,
+) -> SelectedMethodProposal:
 
     if type(value) is not SelectedMethodProposal:
         raise TypeError("value must be an exact SelectedMethodProposal.")
@@ -3351,6 +5030,7 @@ def require_selected_method_proposal(
         "development_bundle_file_sha256",
         "development_result_payload_sha256",
         "development_result_file_sha256",
+        "validated_development_result_semantic_binding_sha256",
         "complete_grid_gate_report_sha256",
         "semantic_binding_sha256",
     ):
@@ -3381,6 +5061,23 @@ def require_selected_method_proposal(
     expected_binding = _canonical_sha256(_selected_method_proposal_binding(value))
     if value.semantic_binding_sha256 != expected_binding:
         raise ValueError("SelectedMethodProposal semantic binding is invalid.")
+    result_proof = _require_validated_development_result(
+        value._validated_result,
+        expected_payload_sha256=value.development_result_payload_sha256,
+        revalidate_bundle=revalidate_development,
+    )
+    if (
+        value.validated_development_result_semantic_binding_sha256
+        != result_proof.semantic_binding_sha256
+        or value.development_bundle_payload_sha256
+        != result_proof.development_bundle_payload_sha256
+        or value.development_bundle_file_sha256
+        != result_proof.development_bundle_file_sha256
+        or value.complete_grid_gate_report_sha256
+        != result_proof.complete_grid_gate_report_sha256
+        or value.selected_grid_cell_id != result_proof.selected_grid_cell_id
+    ):
+        raise ValueError("SelectedMethodProposal development proof binding is invalid.")
     if expected_payload_sha256 is not None:
         _sha256(expected_payload_sha256, "expected_payload_sha256")
         if value.payload_sha256 != expected_payload_sha256:
@@ -3537,6 +5234,7 @@ def _one_sided_summary(values: np.ndarray) -> dict[str, Any]:
         "n": len(array),
         "observed_mean": float(np.mean(array)),
         "one_sided_95_LCB": _one_sided_t_lower_bound(array),
+        "one_sided_t_p_value": _one_sided_t_p_value(array),
     }
 
 
@@ -3549,6 +5247,238 @@ def _one_sided_t_lower_bound(values: np.ndarray) -> float:
     if standard_error == 0.0:
         return mean
     return mean - float(stats.t.ppf(0.95, len(array) - 1)) * standard_error
+
+
+def _one_sided_t_p_value(values: np.ndarray) -> float:
+    array = _finite_vector(values, "paired contrast")
+    if len(array) < 2:
+        raise ValueError("paired t test requires at least two participants.")
+    mean = float(np.mean(array))
+    standard_error = float(stats.sem(array))
+    if standard_error == 0.0:
+        return 0.0 if mean > 0.0 else 1.0
+    statistic = mean / standard_error
+    return float(stats.t.sf(statistic, len(array) - 1))
+
+
+def holm_step_down(
+    p_values: Mapping[str, float],
+    *,
+    familywise_alpha: float = 0.05,
+) -> dict[str, dict[str, Any]]:
+    """Return deterministic Holm step-down decisions for one named family."""
+
+    if not isinstance(p_values, Mapping) or not p_values:
+        raise ValueError("Holm correction requires a non-empty p-value mapping.")
+    alpha = _finite_float(familywise_alpha, "familywise_alpha")
+    if not 0.0 < alpha < 1.0:
+        raise ValueError("familywise_alpha must lie strictly inside (0,1).")
+    resolved: dict[str, float] = {}
+    for endpoint, raw in p_values.items():
+        if not isinstance(endpoint, str) or not endpoint:
+            raise TypeError("Holm endpoint IDs must be non-empty strings.")
+        value = _finite_float(raw, f"p_values[{endpoint!r}]")
+        if not 0.0 <= value <= 1.0:
+            raise ValueError("Holm p-values must lie in [0,1].")
+        resolved[endpoint] = value
+    ordered = sorted(resolved.items(), key=lambda item: (item[1], item[0]))
+    count = len(ordered)
+    continue_rejecting = True
+    adjusted_running = 0.0
+    result: dict[str, dict[str, Any]] = {}
+    for rank, (endpoint, raw) in enumerate(ordered, start=1):
+        threshold = alpha / (count - rank + 1)
+        rejected = continue_rejecting and raw <= threshold
+        if not rejected:
+            continue_rejecting = False
+        adjusted_running = max(adjusted_running, (count - rank + 1) * raw)
+        result[endpoint] = {
+            "raw_p_value": raw,
+            "holm_rank": rank,
+            "holm_threshold": threshold,
+            "holm_adjusted_p_value": min(1.0, adjusted_running),
+            "holm_reject": rejected,
+        }
+    return {endpoint: result[endpoint] for endpoint in sorted(result)}
+
+
+def sensitivity_resampling_report(
+    paired_vectors: Mapping[str, np.ndarray],
+    *,
+    grid_cell_index: int,
+    rng_authority: v3.DevelopmentRNGAuthority,
+) -> dict[str, Any]:
+    """Run the frozen report-only 100k sign flips and 10k bootstraps."""
+
+    authority = v3.require_development_rng_authority(rng_authority)
+    _require_loaded_synthetic_source(authority)
+    return _sensitivity_resampling_with_rng_factory(
+        paired_vectors,
+        grid_cell_index=grid_cell_index,
+        rng_factory=_authorized_rng_factory(authority),
+        sign_flip_draws=SENSITIVITY_SIGN_FLIP_DRAWS,
+        participant_bootstrap_draws=SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS,
+        require_complete=True,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _sensitivity_resampling_report_for_test(
+    paired_vectors: Mapping[str, np.ndarray],
+    *,
+    grid_cell_index: int,
+    rng_authority: _UnitTestRNGAuthority,
+    sign_flip_draws: int,
+    participant_bootstrap_draws: int,
+) -> dict[str, Any]:
+    """Small-draw sensitivity seam restricted to a nonreserved unit authority."""
+
+    authority = _require_unit_test_rng_authority(rng_authority)
+    return _sensitivity_resampling_with_rng_factory(
+        paired_vectors,
+        grid_cell_index=grid_cell_index,
+        rng_factory=_unit_test_rng_factory(authority),
+        sign_flip_draws=sign_flip_draws,
+        participant_bootstrap_draws=participant_bootstrap_draws,
+        require_complete=False,
+        _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
+    )
+
+
+def _sensitivity_resampling_with_rng_factory(
+    paired_vectors: Mapping[str, np.ndarray],
+    *,
+    grid_cell_index: int,
+    rng_factory: RngFactory,
+    sign_flip_draws: int,
+    participant_bootstrap_draws: int,
+    require_complete: bool,
+    _issuer: object,
+) -> dict[str, Any]:
+    if _issuer is not _SYNTHETIC_RNG_PRODUCER_ISSUER:
+        raise TypeError("sensitivity RNG producer issuer token is invalid.")
+    cell_index = _positive_exact_int(grid_cell_index, "grid_cell_index")
+    if cell_index not in range(1, 10):
+        raise ValueError("grid_cell_index must be in the canonical range 1..9.")
+    sign_draws = _positive_exact_int(sign_flip_draws, "sign_flip_draws")
+    bootstrap_draws = _positive_exact_int(
+        participant_bootstrap_draws,
+        "participant_bootstrap_draws",
+    )
+    if require_complete:
+        if tuple(paired_vectors) != SENSITIVITY_ENDPOINT_IDS:
+            raise ValueError("production sensitivity requires every endpoint in exact order.")
+        if (
+            sign_draws != SENSITIVITY_SIGN_FLIP_DRAWS
+            or bootstrap_draws != SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS
+        ):
+            raise ValueError("production sensitivity resampling counts are frozen.")
+    elif not paired_vectors:
+        raise ValueError("unit sensitivity requires at least one named endpoint.")
+
+    endpoint_reports: dict[str, Any] = {}
+    for endpoint, raw_vector in paired_vectors.items():
+        if endpoint not in _SENSITIVITY_ENDPOINT_CODES:
+            raise ValueError(f"unknown sensitivity endpoint {endpoint!r}.")
+        values = _finite_vector(raw_vector, endpoint)
+        if require_complete and len(values) != DEVELOPMENT_PARTICIPANTS:
+            raise ValueError("production sensitivity vectors require 48 participants.")
+        family = _sensitivity_family(endpoint)
+        endpoint_code = _SENSITIVITY_ENDPOINT_CODES[endpoint]
+        observed_mean = float(np.mean(values))
+
+        sign_rng = _rng(
+            rng_factory,
+            family,
+            cell_index,
+            endpoint_code,
+            0,
+            "sensitivity_resampling",
+        )
+        extreme = 0
+        remaining = sign_draws
+        while remaining:
+            chunk = min(4_096, remaining)
+            signs = sign_rng.integers(0, 2, size=(chunk, len(values)), dtype=np.int8)
+            signs = signs.astype(np.float64) * 2.0 - 1.0
+            null_means = np.mean(signs * values[None, :], axis=1)
+            extreme += int(np.sum(null_means >= observed_mean))
+            remaining -= chunk
+        sign_p = (extreme + 1.0) / (sign_draws + 1.0)
+
+        bootstrap_rng = _rng(
+            rng_factory,
+            family,
+            cell_index,
+            endpoint_code,
+            1,
+            "sensitivity_resampling",
+        )
+        bootstrap_means = np.empty(bootstrap_draws, dtype=np.float64)
+        remaining = bootstrap_draws
+        offset = 0
+        while remaining:
+            chunk = min(4_096, remaining)
+            indices = bootstrap_rng.integers(
+                0,
+                len(values),
+                size=(chunk, len(values)),
+            )
+            bootstrap_means[offset : offset + chunk] = np.mean(
+                values[indices], axis=1
+            )
+            offset += chunk
+            remaining -= chunk
+        lower, upper = np.quantile(bootstrap_means, [0.025, 0.975])
+        endpoint_reports[endpoint] = {
+            "n": len(values),
+            "observed_mean": observed_mean,
+            "sign_flip_draws": sign_draws,
+            "sign_flip_extreme_count": extreme,
+            "sign_flip_one_sided_p_value": float(sign_p),
+            "participant_bootstrap_draws": bootstrap_draws,
+            "participant_bootstrap_95_CI_lower": float(lower),
+            "participant_bootstrap_95_CI_upper": float(upper),
+            "sign_flip_rng_key": _sensitivity_rng_key(
+                family, cell_index, endpoint_code, 0
+            ),
+            "participant_bootstrap_rng_key": _sensitivity_rng_key(
+                family, cell_index, endpoint_code, 1
+            ),
+        }
+    return {
+        "schema": (
+            "cfeg.metadata-calibration-efficiency-v3.sensitivity-resampling-report.v1"
+        ),
+        "component": "sensitivity_resampling",
+        "promotion_or_selection_use": False,
+        "endpoints": endpoint_reports,
+    }
+
+
+def _sensitivity_family(endpoint: str) -> str:
+    prefix = endpoint.split("_", 1)[0]
+    return {
+        "B1": "B1_participant_class_confusion",
+        "B2": "B2_participant_phase_spatial_shift",
+        "B3": "B3_impedance_linked_transfer_shift",
+        "B4": "B4_interface_calibrated_impedance_shift",
+    }[prefix]
+
+
+def _sensitivity_rng_key(
+    family: str,
+    grid_cell_index: int,
+    endpoint_code: int,
+    stream_code: int,
+) -> dict[str, Any]:
+    return {
+        "family": family,
+        "participant_index": grid_cell_index,
+        "block": endpoint_code,
+        "class_index": stream_code,
+        "component": "sensitivity_resampling",
+    }
 
 
 def _paired_90_ci(values: np.ndarray) -> tuple[float, float]:
@@ -3607,10 +5537,17 @@ _GATE_REPORT_KEYS = {
     "selection_rank_tuple",
     "eligible",
 }
+_ENRICHED_GATE_REPORT_KEYS = {
+    *_GATE_REPORT_KEYS,
+    "uniform_block_weight_sensitivity",
+    "resampling_sensitivity",
+}
 
 
 def _validate_gate_report(report: Mapping[str, Any]) -> None:
-    _require_exact_keys(report, _GATE_REPORT_KEYS, "grid gate report")
+    report_keys = set(report)
+    if report_keys != _GATE_REPORT_KEYS and report_keys != _ENRICHED_GATE_REPORT_KEYS:
+        raise ValueError("grid gate report has missing or extra fields.")
     if report["schema"] != "cfeg.metadata-calibration-efficiency-v3.grid-gate-report.v1":
         raise ValueError("grid gate report schema is invalid.")
     cell = v3.grid_cell_by_id(report["grid_cell_id"])
@@ -3653,6 +5590,111 @@ def _validate_gate_report(report: Mapping[str, Any]) -> None:
     )
     for value in rank.values():
         _finite_float(value, "selection rank component")
+    if report_keys == _ENRICHED_GATE_REPORT_KEYS:
+        _validate_gate_report_sensitivities(report)
+
+
+def _validate_gate_report_sensitivities(report: Mapping[str, Any]) -> None:
+    uniform = report["uniform_block_weight_sensitivity"]
+    _require_exact_keys(
+        uniform,
+        {"schema", "promotion_or_selection_use", "common_weight_rule", "endpoints"},
+        "uniform block-weight sensitivity",
+    )
+    if (
+        uniform["schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.uniform-block-weight-sensitivity.v1"
+        or uniform["promotion_or_selection_use"] is not False
+        or uniform["common_weight_rule"]
+        != "both_p_support_and_g_M_use_exact_one_over_k"
+        or tuple(uniform["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
+    ):
+        raise ValueError("uniform block-weight sensitivity identity/order is invalid.")
+    for endpoint, summary in uniform["endpoints"].items():
+        _require_exact_keys(
+            summary,
+            {
+                "metric",
+                "n",
+                "reliability_weighted_observed_mean",
+                "uniform_weight_observed_mean",
+                "paired_weighted_minus_uniform_mean",
+            },
+            f"uniform sensitivity endpoint {endpoint}",
+        )
+        expected_metric = (
+            "participant_eAUC"
+            if endpoint.endswith("eAUC")
+            else "participant_k3_balanced_accuracy"
+        )
+        if summary["metric"] != expected_metric or summary["n"] != DEVELOPMENT_PARTICIPANTS:
+            raise ValueError("uniform sensitivity endpoint identity/count is invalid.")
+        for name in (
+            "reliability_weighted_observed_mean",
+            "uniform_weight_observed_mean",
+            "paired_weighted_minus_uniform_mean",
+        ):
+            _finite_float(summary[name], f"{endpoint}.{name}")
+
+    resampling = report["resampling_sensitivity"]
+    _require_exact_keys(
+        resampling,
+        {"schema", "component", "promotion_or_selection_use", "endpoints"},
+        "resampling sensitivity",
+    )
+    if (
+        resampling["schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.sensitivity-resampling-report.v1"
+        or resampling["component"] != "sensitivity_resampling"
+        or resampling["promotion_or_selection_use"] is not False
+        or tuple(resampling["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
+    ):
+        raise ValueError("resampling sensitivity identity/order is invalid.")
+    for endpoint, summary in resampling["endpoints"].items():
+        _require_exact_keys(
+            summary,
+            {
+                "n",
+                "observed_mean",
+                "sign_flip_draws",
+                "sign_flip_extreme_count",
+                "sign_flip_one_sided_p_value",
+                "participant_bootstrap_draws",
+                "participant_bootstrap_95_CI_lower",
+                "participant_bootstrap_95_CI_upper",
+                "sign_flip_rng_key",
+                "participant_bootstrap_rng_key",
+            },
+            f"resampling endpoint {endpoint}",
+        )
+        if (
+            summary["n"] != DEVELOPMENT_PARTICIPANTS
+            or summary["sign_flip_draws"] != SENSITIVITY_SIGN_FLIP_DRAWS
+            or summary["participant_bootstrap_draws"]
+            != SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS
+        ):
+            raise ValueError("resampling sensitivity frozen counts are invalid.")
+        extreme = _nonnegative_exact_int(
+            summary["sign_flip_extreme_count"],
+            "sign_flip_extreme_count",
+        )
+        if extreme > SENSITIVITY_SIGN_FLIP_DRAWS:
+            raise ValueError("sign-flip extreme count exceeds draw count.")
+        for name in (
+            "observed_mean",
+            "sign_flip_one_sided_p_value",
+            "participant_bootstrap_95_CI_lower",
+            "participant_bootstrap_95_CI_upper",
+        ):
+            _finite_float(summary[name], f"{endpoint}.{name}")
+        family = _sensitivity_family(endpoint)
+        code = _SENSITIVITY_ENDPOINT_CODES[endpoint]
+        if summary["sign_flip_rng_key"] != _sensitivity_rng_key(
+            family, int(report["grid_cell_index"]), code, 0
+        ) or summary["participant_bootstrap_rng_key"] != _sensitivity_rng_key(
+            family, int(report["grid_cell_index"]), code, 1
+        ):
+            raise ValueError("sensitivity RNG key binding is invalid.")
 
 
 def _artifact_reference(
@@ -3737,7 +5779,7 @@ def _context_packet_mapping(packet: v3.ContextPacket) -> dict[str, Any]:
 
 def _one_block_preflight(
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    validated_reference: v3.ValidatedContextReference | None,
     query: Mapping[str, Any] | v3.ContextPacket,
     support: Mapping[str, Any] | v3.ContextPacket,
     *,
@@ -3753,14 +5795,19 @@ def _one_block_preflight(
         query_packet_key=query_key,
         ordered_support_packet_keys=(support_key,),
     )
-    return v3.preflight_context(
-        reference=reference,
+    arguments = {
+        "reference": reference,
+        "query_key": query_key,
+        "ordered_support_block_keys": ("N5-support",),
+        "query_packet": query,
+        "support_packets": (support,),
+        "pairing_sha256": pairing,
+    }
+    if validated_reference is None:
+        return v3._preflight_context_unit(**arguments)
+    return v3._preflight_context_after_authorized_boundary(
         validated_reference=validated_reference,
-        query_key=query_key,
-        ordered_support_block_keys=("N5-support",),
-        query_packet=query,
-        support_packets=(support,),
-        pairing_sha256=pairing,
+        **arguments,
     )
 
 
@@ -4073,6 +6120,191 @@ def _rng(
     if type(result) is not np.random.Generator or type(result.bit_generator) is not np.random.PCG64DXSM:
         raise TypeError("RNG factory must return an exact Generator(PCG64DXSM).")
     return result
+
+
+def _authorized_rng_factory(
+    authority: v3.ContextReferenceRNGAuthority | v3.DevelopmentRNGAuthority,
+) -> RngFactory:
+    """Construct keyed PCG64DXSM only after revalidating authority per draw."""
+
+    if type(authority) is v3.ContextReferenceRNGAuthority:
+        checker: Callable[[object], object] = (
+            v3._require_context_reference_rng_authority_semantics
+        )
+    elif type(authority) is v3.DevelopmentRNGAuthority:
+        checker = v3._require_development_rng_authority_semantics
+    else:
+        raise TypeError("an exact context-reference or development RNG authority is required.")
+
+    def factory(
+        family: str,
+        participant_index: int,
+        block: int,
+        class_index: int,
+        component: str,
+    ) -> np.random.Generator:
+        current = checker(authority)
+        family_codes = dict(current.family_codes)  # type: ignore[attr-defined]
+        component_codes = dict(current.component_codes)  # type: ignore[attr-defined]
+        entropy = [
+            current.root_seed,  # type: ignore[attr-defined]
+            family_codes[family],
+            participant_index,
+            block,
+            class_index,
+            component_codes[component],
+        ]
+        return np.random.Generator(
+            np.random.PCG64DXSM(np.random.SeedSequence(entropy))
+        )
+
+    return factory
+
+
+def _require_loaded_synthetic_source(
+    authority: v3.ContextReferenceRNGAuthority | v3.DevelopmentRNGAuthority,
+) -> None:
+    """Reject old imported code even when another process restored clean disk A."""
+
+    if type(authority) is v3.ContextReferenceRNGAuthority:
+        current = v3._require_context_reference_rng_authority_semantics(authority)
+    elif type(authority) is v3.DevelopmentRNGAuthority:
+        current = v3._require_development_rng_authority_semantics(authority)
+    else:
+        raise TypeError("an exact production RNG authority is required.")
+    current_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    inventory = {
+        entry.path: entry.file_sha256
+        for entry in current._bundle_capability.tracked_source_files
+    }
+    if (
+        current_sha256 != _IMPORTED_SYNTHETIC_MODULE_SHA256
+        or inventory.get(SYNTHETIC_MODULE_REPOSITORY_PATH)
+        != _IMPORTED_SYNTHETIC_MODULE_SHA256
+    ):
+        raise RuntimeError(
+            "loaded V3 synthetic code does not equal current bundle-bound source bytes."
+        )
+
+
+def _unit_test_rng_factory(authority: _UnitTestRNGAuthority) -> RngFactory:
+    """Construct keyed PCG64DXSM from a nonreserved unit-test authority."""
+
+    authority = _require_unit_test_rng_authority(authority)
+    family_codes = dict(v3.RNG_FAMILY_CODES)
+    component_codes = dict(v3.RNG_COMPONENT_CODES)
+
+    def factory(
+        family: str,
+        participant_index: int,
+        block: int,
+        class_index: int,
+        component: str,
+    ) -> np.random.Generator:
+        current = _require_unit_test_rng_authority(authority)
+        entropy = [
+            current.root_seed,
+            family_codes[family],
+            participant_index,
+            block,
+            class_index,
+            component_codes[component],
+        ]
+        return np.random.Generator(
+            np.random.PCG64DXSM(np.random.SeedSequence(entropy))
+        )
+
+    return factory
+
+
+def _require_exact_contract(value: object) -> SyntheticV3Contract:
+    if type(value) is not SyntheticV3Contract:
+        raise TypeError("contract must be an exact SyntheticV3Contract.")
+    if (
+        value.plan_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
+        or value.master_plan_sha256 != EXPECTED_MASTER_PLAN_SHA256
+        or value.filterbank_sha256 != EXPECTED_FILTERBANK_SHA256
+        or value.plan_path != DEFAULT_SYNTHETIC_PLAN_PATH.resolve()
+        or value.master_plan_path != DEFAULT_MASTER_PLAN_PATH.resolve()
+    ):
+        raise ValueError("synthetic contract identity or plan binding is invalid.")
+    if not isinstance(value.plan, Mapping) or not isinstance(value.filterbank, Mapping):
+        raise TypeError("synthetic contract payloads must remain mappings.")
+    _validate_exact_plan_sections(value.plan)
+    return value
+
+
+def _require_shared_bundle_provenance(
+    authority: v3.DevelopmentRNGAuthority,
+    reference: v3.ValidatedContextReference,
+) -> None:
+    """Require reference and development execution to share one sealed bundle."""
+
+    if type(authority) is not v3.DevelopmentRNGAuthority:
+        raise TypeError("an exact DevelopmentRNGAuthority is required.")
+    if type(reference) is not v3.ValidatedContextReference:
+        raise TypeError("an exact ValidatedContextReference is required.")
+    if (
+        reference.development_bundle_payload_sha256
+        != authority.development_bundle_payload_sha256
+        or reference.development_bundle_file_sha256
+        != authority.development_bundle_file_sha256
+        or reference.development_bundle_source_bundle_sha256
+        != authority.development_bundle_source_bundle_sha256
+        or reference.numerical_runtime_fingerprint_sha256
+        != authority.numerical_runtime_fingerprint_sha256
+        or reference.rng_key_map_sha256 != authority.key_map_sha256
+    ):
+        raise ValueError(
+            "development authority and context-reference provenance differ."
+        )
+
+
+def _require_synthetic_participant(
+    value: object,
+    *,
+    contract: SyntheticV3Contract,
+    expected_scope: Literal["development", "unit_test"] | None = None,
+    expected_rng_authority: (
+        v3.DevelopmentRNGAuthority | _UnitTestRNGAuthority | None
+    ) = None,
+) -> SyntheticParticipant:
+    contract = _require_exact_contract(contract)
+    value = _require_synthetic_participant_identity(value)
+    if expected_scope is not None and value.generation_scope != expected_scope:
+        raise TypeError(
+            f"participant requires exact {expected_scope!r} generation scope."
+        )
+    if expected_rng_authority is not None:
+        if value._rng_authority is not expected_rng_authority:
+            raise ValueError("participant binds a different RNG authority instance.")
+        if (
+            value.rng_authority_semantic_binding_sha256
+            != expected_rng_authority.semantic_binding_sha256
+        ):
+            raise ValueError("participant binds a different RNG authority semantic hash.")
+    expected_partitions = tuple(
+        _canonical_sha256(
+            {
+                "schema": (
+                    "cfeg.metadata-calibration-efficiency-v3.synthetic-partition.v1"
+                ),
+                "plan_sha256": contract.plan_sha256,
+                "family": value.family,
+                "participant_index": value.participant_index,
+                "block": block_index + 1,
+                "signals_sha256": _array_sha256(value.signals[block_index]),
+                "true_labels_sha256": _array_sha256(value.true_labels[block_index]),
+                "recorded_labels_sha256": _array_sha256(
+                    value.recorded_support_labels[block_index]
+                ),
+            }
+        )
+        for block_index in range(10)
+    )
+    if value.partition_sha256s != expected_partitions:
+        raise ValueError("synthetic participant arrays differ from partition provenance.")
+    return value
 
 
 def _require_rng_factory(value: object) -> None:

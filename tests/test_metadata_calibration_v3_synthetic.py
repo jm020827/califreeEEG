@@ -9,92 +9,30 @@ from cfeg.analysis import metadata_calibration_v3_synthetic as synthetic
 from cfeg.models import metadata_calibration_v3 as v3
 
 _UNIT_ROOT = 424242
-_FAMILY_CODES = {
-    "B1_participant_class_confusion": 3101,
-    "B2_participant_phase_spatial_shift": 3102,
-    "B3_impedance_linked_transfer_shift": 3103,
-    "B4_interface_calibrated_impedance_shift": 3104,
-    "N1_clean_anchor": 3201,
-    "N2_random_support_labels": 3202,
-    "N3_nonstationary_calibration": 3203,
-    "N4_context_null": 3204,
-    "N5_invalid_context": 3205,
-}
-_COMPONENT_CODES = {
-    name: index for index, name in enumerate(synthetic.COMPONENT_NAMES, start=1)
-}
-
-
-def _rng_factory(
-    family: str,
-    participant_index: int,
-    block: int,
-    class_index: int,
-    component: str,
-) -> np.random.Generator:
-    entropy = [
-        _UNIT_ROOT,
-        _FAMILY_CODES[family],
-        participant_index,
-        block,
-        class_index,
-        _COMPONENT_CODES[component],
-    ]
-    return np.random.Generator(np.random.PCG64DXSM(np.random.SeedSequence(entropy)))
-
-
 @pytest.fixture(scope="module")
 def contract() -> synthetic.SyntheticV3Contract:
     return synthetic.validate_synthetic_contract()
 
 
 @pytest.fixture(scope="module")
-def reference() -> v3.ContextReference:
-    return synthetic.fit_synthetic_context_reference(_rng_factory)
+def unit_rng():
+    return synthetic._issue_unit_test_rng_authority(_UNIT_ROOT)
 
 
 @pytest.fixture(scope="module")
-def validated_reference(
-    reference: v3.ContextReference,
-) -> v3.ValidatedContextReference:
-    return v3.validate_context_reference_for_publication(
-        v3.context_reference_payload(reference)
-    )
+def reference(unit_rng) -> v3.ContextReference:
+    return synthetic._fit_synthetic_context_reference_for_test(unit_rng)
 
 
-def _fake_fbcca(participant: synthetic.SyntheticParticipant) -> synthetic.StrictFBCCAProduct:
-    scores = np.empty((5, 12, 12), dtype=np.float64)
-    for block in range(5):
-        scores[block] = np.eye(12) + 0.01 * block
-    scores.setflags(write=False)
-    return synthetic.StrictFBCCAProduct(
-        scores=scores,
-        query_eeg_sha256s=tuple(
-            synthetic._array_sha256(participant.signals[block - 1])
-            for block in synthetic.QUERY_BLOCKS
-        ),
-        producer_sha256="d" * 64,
-    )
+def _install_fake_scorer(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_score(_contract, signals):
+        scores = np.empty((signals.shape[0], 12, 12), dtype=np.float64)
+        for block in range(signals.shape[0]):
+            scores[block] = np.eye(12) + 0.01 * block
+        scores.setflags(write=False)
+        return scores
 
-
-def _fake_support(
-    participant: synthetic.SyntheticParticipant,
-    budget: int,
-) -> synthetic.StrictFBCCASupportProduct:
-    scores = np.empty((budget, 12, 12), dtype=np.float64)
-    for block in range(budget):
-        scores[block] = np.eye(12) + 0.01 * block
-    scores.setflags(write=False)
-    labels = np.array(participant.recorded_support_labels[:budget], copy=True)
-    labels.setflags(write=False)
-    return synthetic.StrictFBCCASupportProduct(
-        budget=budget,
-        scores=scores,
-        recorded_support_labels=labels,
-        partition_sha256s=participant.partition_sha256s[:budget],
-        support_eeg_label_manifest_sha256="c" * 64,
-        producer_sha256="e" * 64,
-    )
+    monkeypatch.setattr(synthetic, "_score_strict_fbcca_blocks", fake_score)
 
 
 def test_contract_hashes_counts_and_no_public_raw_seed_runner(
@@ -152,8 +90,9 @@ def test_method_grid_matches_every_declared_family_cell_count() -> None:
 
 def test_covariate_only_reference_is_exact_ordered_and_roundtrips(
     reference: v3.ContextReference,
+    unit_rng,
 ) -> None:
-    packets = synthetic.generate_covariate_reference_packets(_rng_factory)
+    packets = synthetic._generate_covariate_reference_packets_for_test(unit_rng)
     assert len(packets) == 3 * 256
     assert [packets[index]["interface"] for index in (0, 256, 512)] == [
         "neutral",
@@ -178,24 +117,25 @@ def test_covariate_only_reference_is_exact_ordered_and_roundtrips(
 
 def test_generation_is_key_order_invariant_and_B3_context_tracks_signal_state(
     contract: synthetic.SyntheticV3Contract,
+    unit_rng,
 ) -> None:
-    first = synthetic.generate_synthetic_participant(
+    first = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B3_impedance_linked_transfer_shift",
         participant_index=7,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
-    synthetic.generate_synthetic_participant(
+    synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B1_participant_class_confusion",
         participant_index=2,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
-    second = synthetic.generate_synthetic_participant(
+    second = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B3_impedance_linked_transfer_shift",
         participant_index=7,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     assert np.array_equal(first.signals, second.signals)
     assert first.partition_sha256s == second.partition_sha256s
@@ -222,33 +162,34 @@ def test_generation_is_key_order_invariant_and_B3_context_tracks_signal_state(
 
 def test_family_specific_waveform_and_label_contracts(
     contract: synthetic.SyntheticV3Contract,
+    unit_rng,
 ) -> None:
-    b1 = synthetic.generate_synthetic_participant(
+    b1 = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B1_participant_class_confusion",
         participant_index=1,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     assert np.array_equal(
         b1.generated_confuser_classes[0],
         (np.arange(12) + 2) % 12,
     )
-    n2 = synthetic.generate_synthetic_participant(
+    n2 = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="N2_random_support_labels",
         participant_index=1,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     assert all(
         not np.array_equal(n2.recorded_support_labels[block], n2.true_labels[block])
         for block in range(5)
     )
     assert np.array_equal(n2.recorded_support_labels[5:], n2.true_labels[5:])
-    n3 = synthetic.generate_synthetic_participant(
+    n3 = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="N3_nonstationary_calibration",
         participant_index=1,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     assert np.array_equal(n3.generated_target_classes[0], (np.arange(12) + 1) % 12)
     assert np.array_equal(n3.generated_target_classes[5], np.arange(12))
@@ -257,18 +198,17 @@ def test_family_specific_waveform_and_label_contracts(
 def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
     contract: synthetic.SyntheticV3Contract,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    unit_rng,
 ) -> None:
-    participant = synthetic.generate_synthetic_participant(
+    participant = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B4_interface_calibrated_impedance_shift",
         participant_index=0,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
-    stressed = synthetic.apply_source_range_stress(
+    stressed = synthetic._apply_source_range_stress_for_test(
         participant,
         reference,
-        validated_reference=validated_reference,
     )
     assert stressed.signals is participant.signals
     assert stressed.partition_sha256s == participant.partition_sha256s
@@ -284,9 +224,8 @@ def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
                 query_packet_key=query.packet_key,
                 ordered_support_packet_keys=(support.packet_key,),
             )
-            preflight = v3.preflight_context(
+            preflight = v3._preflight_context_unit(
                 reference=reference,
-                validated_reference=validated_reference,
                 query_key=query.packet_key,
                 ordered_support_block_keys=(support.packet_key,),
                 query_packet=query,
@@ -299,18 +238,17 @@ def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
 def test_rejected_synthetic_preflight_makes_zero_support_producer_calls(
     contract: synthetic.SyntheticV3Contract,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    unit_rng,
 ) -> None:
-    participant = synthetic.generate_synthetic_participant(
+    participant = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B4_interface_calibrated_impedance_shift",
         participant_index=0,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
-    participant = synthetic.apply_source_range_stress(
+    participant = synthetic._apply_source_range_stress_for_test(
         participant,
         reference,
-        validated_reference=validated_reference,
     )
     calls = {"waveform": 0, "label": 0, "score": 0}
 
@@ -338,7 +276,7 @@ def test_rejected_synthetic_preflight_makes_zero_support_producer_calls(
         query_block=6,
         query_scores=np.eye(12, dtype=np.float64),
         reference=reference,
-        validated_reference=validated_reference,
+        validated_reference=None,
         config=v3.V3OperatorConfig(v3.canonical_operator_grid()[0]),
         control="correct",
         assignment=(0,),
@@ -353,12 +291,10 @@ def test_rejected_synthetic_preflight_makes_zero_support_producer_calls(
 
 def test_invariant_suite_executes_all_ten_cases_for_each_cell(
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
 ) -> None:
-    rows = synthetic.build_invariant_rows(
+    rows = synthetic._build_invariant_rows_for_test(
         reference,
         v3.canonical_operator_grid()[0],
-        validated_reference=validated_reference,
     )
     assert len(rows) == 10
     assert all(row["passed"] for row in rows)
@@ -369,16 +305,18 @@ def test_invariant_suite_executes_all_ten_cases_for_each_cell(
 
 
 def test_participant_evaluator_emits_exact_B3_and_B4_counts(
+    monkeypatch: pytest.MonkeyPatch,
     contract: synthetic.SyntheticV3Contract,
     reference: v3.ContextReference,
-    validated_reference: v3.ValidatedContextReference,
+    unit_rng,
 ) -> None:
+    _install_fake_scorer(monkeypatch)
     cell = v3.canonical_operator_grid()[0]
-    b3 = synthetic.generate_synthetic_participant(
+    b3 = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B3_impedance_linked_transfer_shift",
         participant_index=0,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     invalid_reference_calls = 0
 
@@ -390,23 +328,29 @@ def test_participant_evaluator_emits_exact_B3_and_B4_counts(
         invalid_reference_calls += 1
         raise AssertionError("support loaded before reference authorization")
 
-    with pytest.raises(TypeError, match="exact ValidatedContextReference"):
+    with pytest.raises(TypeError, match="exact DevelopmentRNGAuthority"):
         synthetic.evaluate_synthetic_participant(
+            contract,
             b3,
-            _fake_fbcca(b3),
+            synthetic.produce_strict_fbcca(contract, b3),
             reference,
             cell,
+            rng_authority=unit_rng,
             validated_reference=reference,
             support_loader=forbidden_unvalidated_loader,
         )
     assert invalid_reference_calls == 0
-    b3_rows = synthetic.evaluate_synthetic_participant(
+    b3_rows = synthetic._evaluate_synthetic_participant_for_test(
+        contract,
         b3,
-        _fake_fbcca(b3),
+        synthetic.produce_strict_fbcca(contract, b3),
         reference,
         cell,
-        validated_reference=validated_reference,
-        support_loader=lambda budget: _fake_support(b3, budget),
+        support_loader=lambda budget: synthetic.produce_strict_fbcca_support(
+            contract,
+            b3,
+            budget=budget,
+        ),
     )
     assert len(b3_rows) == 25
     assert sum(row["control"] == "within_prefix_packet_shuffle" for row in b3_rows) == 2
@@ -418,19 +362,23 @@ def test_participant_evaluator_emits_exact_B3_and_B4_counts(
     assert k3["pairing_packet_binding_changed_fraction"] == 1.0
     assert len(k3["pairing_mean_derangement_abs_g_M_change_by_query_block"]) == 5
 
-    b4 = synthetic.generate_synthetic_participant(
+    b4 = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="B4_interface_calibrated_impedance_shift",
         participant_index=0,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
-    b4_rows = synthetic.evaluate_synthetic_participant(
+    b4_rows = synthetic._evaluate_synthetic_participant_for_test(
+        contract,
         b4,
-        _fake_fbcca(b4),
+        synthetic.produce_strict_fbcca(contract, b4),
         reference,
         cell,
-        validated_reference=validated_reference,
-        support_loader=lambda budget: _fake_support(b4, budget),
+        support_loader=lambda budget: synthetic.produce_strict_fbcca_support(
+            contract,
+            b4,
+            budget=budget,
+        ),
     )
     assert len(b4_rows) == 102
     assert sum(row["condition"] == "equal_condition_composite" for row in b4_rows) == 34
@@ -439,12 +387,13 @@ def test_participant_evaluator_emits_exact_B3_and_B4_counts(
 def test_strict_fbcca_producer_binds_frozen_shape_without_persisting_subbands(
     monkeypatch: pytest.MonkeyPatch,
     contract: synthetic.SyntheticV3Contract,
+    unit_rng,
 ) -> None:
-    participant = synthetic.generate_synthetic_participant(
+    participant = synthetic._generate_synthetic_participant_for_test(
         contract,
         family="N1_clean_anchor",
         participant_index=0,
-        rng_factory=_rng_factory,
+        rng_authority=unit_rng,
     )
     weights = contract.filterbank["weights"]
     seen_shapes: list[tuple[int, ...]] = []
