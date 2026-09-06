@@ -78,6 +78,11 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
         payload_sha256="7" * 64,
         file_sha256="8" * 64,
     )
+    start = SimpleNamespace(
+        receipt_schema="cfeg.metadata-calibration-efficiency-v3.development-start.v1",
+        receipt_payload_sha256="9" * 64,
+        receipt_file_sha256="a" * 64,
+    )
     governance = ModuleType("cfeg.metadata_calibration_v3_governance")
 
     def require_bundle(value, *, expected_commit, expected_tree):
@@ -87,17 +92,23 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
         return bundle
 
     def require_development_prerequisites(
-        value, context_value, *, expected_commit, expected_tree
+        value, context_value, start_value, *, expected_commit, expected_tree
     ):
         assert context_value is context
-        return require_bundle(
-            value,
-            expected_commit=expected_commit,
-            expected_tree=expected_tree,
-        ), context
+        assert start_value is start
+        return (
+            require_bundle(
+                value,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+            ),
+            context,
+            start,
+        )
 
     governance.require_context_reference_rng_bundle_capability = require_bundle
     governance.require_development_rng_prerequisites = require_development_prerequisites
+    governance.revalidate_development_rng_prerequisites = require_development_prerequisites
     monkeypatch.setitem(
         sys.modules,
         "cfeg.metadata_calibration_v3_governance",
@@ -111,6 +122,7 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
     development = v3.issue_bundle_bound_development_rng_authority(
         bundle,
         context,
+        start,
         expected_commit=bundle.clean_commit,
         expected_tree=bundle.clean_tree,
     )

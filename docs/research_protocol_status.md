@@ -1,7 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3.1 pre-outcome infrastructure recovery 구현·검증 중 / development-v1은 bundle+context 두 파일로 영구 은퇴 / development-v2 bundle 전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+현재 상태: **V3.2 pre-outcome infrastructure recovery 구현·검증 중 / development-v1·v2 영구 은퇴 / development-v3 bundle 전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
 현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
@@ -59,7 +59,7 @@ robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰�
 없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
 **해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
 
-현재는 V3.1 recovery 코드·unit test와 clean hash-pinned development-v2 bundle을 만드는
+현재는 V3.2 recovery 코드·unit test와 clean hash-pinned development-v3 bundle을 만드는
 단계다. Bundle은
 git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
 implementation commit/tree를 묶는다. Root seed
@@ -68,6 +68,33 @@ historical-pulse governance canary는 selected-method freeze와 state engine 뒤
 V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
 external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
+
+### V3.2 pre-outcome infrastructure recovery
+
+Development-v2에는 source commit `82e26d60fd17464380697126bb64ad73b36708a2`, tree
+`f7f59bda48610aeaa5bd1b6ffd288a7b56a4bb85`를 묶은 bundle 한 파일만 존재한다. `resume`은
+context seed `20260910`의 SeedSequence와 covariate-only reference replay를 두 번 메모리에서
+실행한 뒤 frozen `mappingproxy`의 JSON 직렬화에서 실패했다. 출력 한 줄의 SHA-256은
+`5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c`다. Context artifact,
+DevelopmentRNGAuthority, development seed `20260909`의 SeedSequence, DGP, result, selection과
+outcome은 생성·실행되지 않았다. 따라서 V2는 과학 결과가 아니라 pre-development
+infrastructure no-go이며 정확한 한 파일을 유지한 채 은퇴한다.
+
+Tracked 기준원은
+`configs/governance/metadata_calibration_v3_2_recovery_amendment.json`이고 유일한 새 attempt는
+`development-v3`, bundle schema는
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v3`다. Runner는 retired-v1
+reference의 frozen parse를 transport 경계에서만 plain dict/list로 detach하고 original bytes와
+다시 비교한다. Scientific operator, DGP, 3×3 grid, gate, rank와 seed는 그대로이며 projection
+SHA-256은 `0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79`다.
+
+Development-v3은 계약 검증 후 development authority/첫 RNG draw 전에 write-once
+`development-start.json`을 만든다. Publisher가 같은 creator process에 발급한 private nominal
+capability만 실행을 계속할 수 있다. Receipt만 남은 fresh restart는
+`DEVELOPMENT_ATTEMPT_CONSUMED` terminal이고 재실행할 수 없다. Receipt와 result가 함께 있으면
+read-only recovery만 허용하며 result는 receipt schema·payload SHA·file SHA를 정확히 묶는다.
+이 회복은 repository-local owner attestation이고 cryptographic signature가 아니며, 향후
+target-bound RSA-PSS scientific authorization을 대신하지 않는다.
 
 ### V3.1 pre-outcome infrastructure recovery
 

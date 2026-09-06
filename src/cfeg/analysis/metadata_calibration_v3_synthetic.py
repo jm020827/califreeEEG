@@ -83,10 +83,10 @@ _IMPORTED_FBCCA_NUMPY_MODULE = _fbcca_module.np
 _IMPORTED_FBCCA_SCIPY_SIGNAL_MODULE = _fbcca_module.signal
 
 EXPECTED_SYNTHETIC_PLAN_SHA256 = (
-    "0d51e184a34f4947c2b44503e6841056048129edb4faff3b40929b996ccf370f"
+    "172de79a5315ef6daba9d623f05ee6ebe37595fc8f9dc3c913b6f63c8119f693"
 )
 EXPECTED_MASTER_PLAN_SHA256 = (
-    "c4cdc38aacb03059e9f80ea3809cd84b196f557898a82627407423fc67691aab"
+    "ff82c78ab6765c2bf58062195d246df7eb1654cabd1eb413fa4c40ca1f461446"
 )
 EXPECTED_FILTERBANK_SHA256 = v3.FILTERBANK_SHA256
 SYNTHETIC_PLAN_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1"
@@ -727,6 +727,9 @@ class ValidatedDevelopmentResult:
     context_reference_schema: str
     context_reference_payload_sha256: str
     context_reference_file_sha256: str
+    development_start_schema: str
+    development_start_payload_sha256: str
+    development_start_file_sha256: str
     development_rng_primitive_schema: str
     development_root_seed: int
     development_rng_authority_schema: str
@@ -782,6 +785,9 @@ class AuditedDevelopmentResult:
     context_reference_schema: str
     context_reference_payload_sha256: str
     context_reference_file_sha256: str
+    development_start_schema: str
+    development_start_payload_sha256: str
+    development_start_file_sha256: str
     clean_commit: str
     clean_tree: str
     participant_metric_rows_sha256: str
@@ -864,8 +870,7 @@ def validate_synthetic_contract(
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != v3.CANDIDATE_ID
         or plan.get("generator_revision") != "v1_single_insertion_context_trust"
-        or plan.get("status")
-        != "V3_1_recovery_development_v2_not_yet_bundle_frozen_or_executable"
+        or plan.get("status") != "V3_2_recovery_development_v3_not_yet_bundle_frozen_or_executable"
     ):
         raise ValueError("synthetic plan identity/status is invalid.")
     master_section = plan.get("master_plan")
@@ -4234,6 +4239,7 @@ def _build_development_result_payload_from_rows_for_test(
     rows: Sequence[Mapping[str, Any]],
     expected_stress_participant_indices: Sequence[int],
     development_bundle_reference: Mapping[str, Any],
+    development_start_reference: Mapping[str, Any],
     context_reference: v3.ContextReference,
     context_reference_file_sha256: str,
 ) -> dict[str, Any]:
@@ -4245,7 +4251,12 @@ def _build_development_result_payload_from_rows_for_test(
     bundle = _artifact_reference(
         development_bundle_reference,
         "development bundle reference",
-        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v2",
+        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v3",
+    )
+    start = _artifact_reference(
+        development_start_reference,
+        "development start reference",
+        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-start.v1",
     )
     if type(context_reference) is not v3.ContextReference:
         raise TypeError("context_reference must be an exact ContextReference.")
@@ -4270,6 +4281,9 @@ def _build_development_result_payload_from_rows_for_test(
         "context_reference_schema": v3.CONTEXT_REFERENCE_SCHEMA,
         "context_reference_payload_sha256": context_reference.payload_sha256,
         "context_reference_file_sha256": context_reference_file_sha256,
+        "development_start_schema": start["schema"],
+        "development_start_payload_sha256": start["payload_sha256"],
+        "development_start_file_sha256": start["file_sha256"],
         "development_rng_primitive_schema": DEVELOPMENT_RNG_PRIMITIVE_SCHEMA,
         "development_root_seed": 20260909,
         "participant_count": DEVELOPMENT_PARTICIPANTS,
@@ -4332,6 +4346,9 @@ def _assemble_development_result_payload(
         "context_reference_schema": v3.CONTEXT_REFERENCE_SCHEMA,
         "context_reference_payload_sha256": reference.payload_sha256,
         "context_reference_file_sha256": context_reference_file_sha256,
+        "development_start_schema": authority.development_start_schema,
+        "development_start_payload_sha256": authority.development_start_payload_sha256,
+        "development_start_file_sha256": authority.development_start_file_sha256,
         "development_rng_primitive_schema": authority.rng_primitive_schema,
         "development_root_seed": authority.root_seed,
         "participant_count": DEVELOPMENT_PARTICIPANTS,
@@ -4368,6 +4385,9 @@ _DEVELOPMENT_RESULT_KEYS = {
     "context_reference_schema",
     "context_reference_payload_sha256",
     "context_reference_file_sha256",
+    "development_start_schema",
+    "development_start_payload_sha256",
+    "development_start_file_sha256",
     "development_rng_primitive_schema",
     "development_root_seed",
     "participant_count",
@@ -4399,8 +4419,10 @@ def validate_development_result_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
         or payload["context_reference_schema"] != v3.CONTEXT_REFERENCE_SCHEMA
+        or payload["development_start_schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
         or payload["development_rng_primitive_schema"] != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
         or payload["development_root_seed"] != 20260909
         or payload["participant_count"] != DEVELOPMENT_PARTICIPANTS
@@ -4411,6 +4433,8 @@ def validate_development_result_payload(
         "development_bundle_file_sha256",
         "context_reference_payload_sha256",
         "context_reference_file_sha256",
+        "development_start_payload_sha256",
+        "development_start_file_sha256",
         "payload_sha256",
     ):
         _sha256(payload[name], name)
@@ -4494,6 +4518,9 @@ def _validated_development_result_binding(
         "context_reference_schema": value.context_reference_schema,
         "context_reference_payload_sha256": value.context_reference_payload_sha256,
         "context_reference_file_sha256": value.context_reference_file_sha256,
+        "development_start_schema": value.development_start_schema,
+        "development_start_payload_sha256": value.development_start_payload_sha256,
+        "development_start_file_sha256": value.development_start_file_sha256,
         "development_rng_primitive_schema": value.development_rng_primitive_schema,
         "development_root_seed": value.development_root_seed,
         "development_rng_authority_schema": value.development_rng_authority_schema,
@@ -4558,6 +4585,9 @@ def _issue_validated_development_result(
         != authority.development_bundle_file_sha256
         or result["development_rng_primitive_schema"]
         != authority.rng_primitive_schema
+        or result["development_start_schema"] != authority.development_start_schema
+        or result["development_start_payload_sha256"] != authority.development_start_payload_sha256
+        or result["development_start_file_sha256"] != authority.development_start_file_sha256
         or result["development_root_seed"] != authority.root_seed
     ):
         raise ValueError("development result differs from its RNG authority.")
@@ -4588,6 +4618,11 @@ def _issue_validated_development_result(
             "context_reference_payload_sha256"
         ],
         "context_reference_file_sha256": result["context_reference_file_sha256"],
+        "development_start_schema": result["development_start_schema"],
+        "development_start_payload_sha256": result[
+            "development_start_payload_sha256"
+        ],
+        "development_start_file_sha256": result["development_start_file_sha256"],
         "development_rng_primitive_schema": result[
             "development_rng_primitive_schema"
         ],
@@ -4798,9 +4833,11 @@ def _require_validated_development_result(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
         or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
         or value.development_rng_primitive_schema != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
+        or value.development_start_schema
+        != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
         or value.development_root_seed != 20260909
         or value.development_rng_authority_schema
         != v3.DEVELOPMENT_RNG_AUTHORITY_SCHEMA
@@ -4818,6 +4855,8 @@ def _require_validated_development_result(
         "numerical_runtime_fingerprint_sha256",
         "context_reference_payload_sha256",
         "context_reference_file_sha256",
+        "development_start_payload_sha256",
+        "development_start_file_sha256",
         "development_rng_authority_semantic_binding_sha256",
         "rng_key_map_sha256",
         "validated_context_reference_semantic_binding_sha256",
@@ -4896,6 +4935,9 @@ def _require_validated_development_result(
         or value.development_rng_authority_semantic_binding_sha256
         != authority.semantic_binding_sha256
         or value.rng_key_map_sha256 != authority.key_map_sha256
+        or value.development_start_schema != authority.development_start_schema
+        or value.development_start_payload_sha256 != authority.development_start_payload_sha256
+        or value.development_start_file_sha256 != authority.development_start_file_sha256
         or value.validated_context_reference_semantic_binding_sha256
         != reference.semantic_binding_sha256
     ):
@@ -5026,7 +5068,7 @@ def validate_selected_method_freeze_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
         or payload["development_result_schema"] != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("selected-method freeze identity is invalid.")
@@ -5345,6 +5387,9 @@ def _audited_development_result_binding(
         "context_reference_schema": value.context_reference_schema,
         "context_reference_payload_sha256": value.context_reference_payload_sha256,
         "context_reference_file_sha256": value.context_reference_file_sha256,
+        "development_start_schema": value.development_start_schema,
+        "development_start_payload_sha256": value.development_start_payload_sha256,
+        "development_start_file_sha256": value.development_start_file_sha256,
         "clean_commit": value.clean_commit,
         "clean_tree": value.clean_tree,
         "participant_metric_rows_sha256": value.participant_metric_rows_sha256,
@@ -5399,6 +5444,9 @@ def _issue_audited_development_result(
             recovery.context_reference_payload_sha256
         ),
         "context_reference_file_sha256": recovery.context_reference_file_sha256,
+        "development_start_schema": recovery.development_start_schema,
+        "development_start_payload_sha256": recovery.development_start_payload_sha256,
+        "development_start_file_sha256": recovery.development_start_file_sha256,
         "clean_commit": recovery.clean_commit,
         "clean_tree": recovery.clean_tree,
         "participant_metric_rows_sha256": _canonical_sha256(
@@ -5500,6 +5548,8 @@ def _require_audited_development_result(
         or value.candidate_id != v3.CANDIDATE_ID
         or value.payload_schema != DEVELOPMENT_RESULT_SCHEMA
         or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
+        or value.development_start_schema
+        != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
         or value.selection_status
         not in {"SELECTED_METHOD_PROPOSED", "DEVELOPMENT_NO_GO"}
         or (
@@ -5522,6 +5572,8 @@ def _require_audited_development_result(
         "numerical_runtime_fingerprint_sha256",
         "context_reference_payload_sha256",
         "context_reference_file_sha256",
+        "development_start_payload_sha256",
+        "development_start_file_sha256",
         "participant_metric_rows_sha256",
         "invariant_rows_sha256",
         "complete_grid_gate_report_sha256",
@@ -5554,6 +5606,9 @@ def _require_audited_development_result(
         != recovery.context_reference_payload_sha256
         or value.context_reference_file_sha256
         != recovery.context_reference_file_sha256
+        or value.development_start_schema != recovery.development_start_schema
+        or value.development_start_payload_sha256 != recovery.development_start_payload_sha256
+        or value.development_start_file_sha256 != recovery.development_start_file_sha256
         or value.payload_sha256 != recovery.development_result_payload_sha256
         or value.clean_commit != recovery.clean_commit
         or value.clean_tree != recovery.clean_tree
@@ -5581,6 +5636,9 @@ def _require_result_evidence_matches_audited_proof(
         != result["context_reference_payload_sha256"]
         or proof.context_reference_file_sha256
         != result["context_reference_file_sha256"]
+        or proof.development_start_schema != result["development_start_schema"]
+        or proof.development_start_payload_sha256 != result["development_start_payload_sha256"]
+        or proof.development_start_file_sha256 != result["development_start_file_sha256"]
         or proof.participant_metric_rows_sha256
         != _canonical_sha256(
             {
@@ -5970,7 +6028,7 @@ def _require_selected_method_proposal(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
         or value.development_result_schema != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("SelectedMethodProposal identity/bindings are invalid.")
@@ -7178,14 +7236,16 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         raise ValueError("synthetic complete-grid arithmetic is not exact.")
     amendment = _mapping(plan, "preoutcome_amendment")
     if amendment != {
-        "path": "configs/governance/metadata_calibration_v3_1_recovery_amendment.json",
-        "file_sha256": (
+        "path": "configs/governance/metadata_calibration_v3_2_recovery_amendment.json",
+        "file_sha256": ("1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"),
+        "protocol_revision": "V3.2",
+        "development_attempt_id": "development-v3",
+        "original_path": ("configs/governance/metadata_calibration_v3_preoutcome_amendment.json"),
+        "prior_recovery_file_sha256": (
             "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
         ),
-        "protocol_revision": "V3.1",
-        "development_attempt_id": "development-v2",
-        "original_path": (
-            "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
+        "prior_recovery_path": (
+            "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
         ),
         "original_file_sha256": (
             "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202"
@@ -7194,36 +7254,62 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
             "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
         ),
     }:
-        raise ValueError("V3.1 recovery amendment binding is not exact.")
+        raise ValueError("V3.2 recovery amendment binding is not exact.")
     bundle = _mapping(plan, "development_bundle")
     if (
         bundle.get("current_status") != "absent"
-        or bundle.get("protocol_revision") != "V3.1"
-        or bundle.get("development_attempt_id") != "development-v2"
+        or bundle.get("protocol_revision") != "V3.2"
+        or bundle.get("development_attempt_id") != "development-v3"
         or bundle.get("schema")
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
         or bundle.get("canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-bundle.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/development-bundle.json"
         or bundle.get("context_reference_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/context-reference.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/context-reference.json"
         or bundle.get("development_result_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-result.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/development-result.json"
     ):
         raise ValueError("development bundle must remain absent in the frozen plan.")
+    start = _mapping(bundle, "development_start_receipt")
+    if start != {
+        "schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
+        "canonical_path": (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            "development-v3/development-start.json"
+        ),
+        "creation": "O_EXCL_after_contract_validation_before_development_authority_or_RNG",
+        "execution_capability": "private_and_creator_process_only",
+        "fresh_receipt_without_result": ("terminal_DEVELOPMENT_ATTEMPT_CONSUMED_no_resume"),
+        "fresh_receipt_with_result": "read_only_reopen_and_audit",
+        "development_result_must_bind": [
+            "schema",
+            "payload_sha256",
+            "file_sha256",
+        ],
+    }:
+        raise ValueError("development-start receipt contract is not exact.")
     recovery = _mapping(bundle, "recovery_prerequisite")
     if (
         recovery.get("amendment")
-        != "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
-        or recovery.get("retired_attempt_id") != "development-v1"
-        or recovery.get("retired_exact_file_count") != 2
-        or recovery.get("retired_bundle_file_sha256")
+        != "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+        or recovery.get("retired_v1_attempt_id") != "development-v1"
+        or recovery.get("retired_v1_exact_file_count") != 2
+        or recovery.get("retired_v1_bundle_file_sha256")
         != "9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a"
-        or recovery.get("retired_context_file_sha256")
+        or recovery.get("retired_v1_context_file_sha256")
         != "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
-        or recovery.get("retired_continuation_authorized") is not False
+        or recovery.get("retired_v2_attempt_id") != "development-v2"
+        or recovery.get("retired_v2_exact_file_count") != 1
+        or recovery.get("retired_v2_bundle_file_sha256")
+        != "a616945040ea45a78c2eed58bf251f1f379f9a82a320ed4f39c26f5efb073cac"
+        or recovery.get("retired_v2_context_reference_artifact_count") != 0
+        or recovery.get("retired_v2_context_reference_seedsequence_and_replay_executed") is not True
+        or recovery.get("retired_v2_context_reference_replay_count") != 2
+        or recovery.get("retired_v2_development_seedsequence_created") is not False
+        or recovery.get("retired_v1_and_v2_continuation_authorized") is not False
         or recovery.get("adopt_retired_context_exact_bytes") is not True
     ):
-        raise ValueError("development-v2 recovery prerequisite is not exact.")
+        raise ValueError("V3.2 recovery prerequisite is not exact.")
     lockbox = _mapping(plan, "scientific_lockbox")
     if lockbox.get("current_authority") is not False or lockbox.get("future_beacon_selected") is not False:
         raise ValueError("scientific lockbox authority must be false.")

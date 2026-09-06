@@ -58,7 +58,7 @@ DEVELOPMENT_RNG_AUTHORITY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-authority.v1"
 )
 DEVELOPMENT_BUNDLE_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
 )
 RNG_PRIMITIVE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
@@ -67,8 +67,8 @@ RNG_PRIMITIVE_SCHEMA = (
 MASTER_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
 MODEL_MODULE_REPOSITORY_PATH = "src/cfeg/models/metadata_calibration_v3.py"
-MASTER_PLAN_SHA256 = "c4cdc38aacb03059e9f80ea3809cd84b196f557898a82627407423fc67691aab"
-SYNTHETIC_PLAN_SHA256 = "0d51e184a34f4947c2b44503e6841056048129edb4faff3b40929b996ccf370f"
+MASTER_PLAN_SHA256 = "ff82c78ab6765c2bf58062195d246df7eb1654cabd1eb413fa4c40ca1f461446"
+SYNTHETIC_PLAN_SHA256 = "172de79a5315ef6daba9d623f05ee6ebe37595fc8f9dc3c913b6f63c8119f693"
 CONTEXT_REFERENCE_ROOT_SEED = 20_260_910
 DEVELOPMENT_ROOT_SEED = 20_260_909
 RNG_KEY_ORDER = (
@@ -246,6 +246,9 @@ class DevelopmentRNGAuthority:
     context_reference_schema: str
     context_reference_payload_sha256: str
     context_reference_file_sha256: str
+    development_start_schema: str
+    development_start_payload_sha256: str
+    development_start_file_sha256: str
     rng_primitive_schema: str
     root_seed: int
     key_order: tuple[str, ...]
@@ -255,6 +258,7 @@ class DevelopmentRNGAuthority:
     semantic_binding_sha256: str
     _bundle_capability: object = dataclass_field(repr=False, compare=False)
     _context_reference_capability: object = dataclass_field(repr=False, compare=False)
+    _development_start_capability: object = dataclass_field(repr=False, compare=False)
     _issuer: object = dataclass_field(repr=False, compare=False)
 
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -292,6 +296,9 @@ def _rng_authority_binding(value: ContextReferenceRNGAuthority | DevelopmentRNGA
                 "context_reference_schema": value.context_reference_schema,
                 "context_reference_payload_sha256": value.context_reference_payload_sha256,
                 "context_reference_file_sha256": value.context_reference_file_sha256,
+                "development_start_schema": value.development_start_schema,
+                "development_start_payload_sha256": value.development_start_payload_sha256,
+                "development_start_file_sha256": value.development_start_file_sha256,
             }
         )
     return binding
@@ -365,6 +372,7 @@ def issue_bundle_bound_context_reference_rng_authority(
 def issue_bundle_bound_development_rng_authority(
     development_bundle_capability: object,
     context_reference_capability: object,
+    development_start_capability: object,
     *,
     expected_commit: str,
     expected_tree: str,
@@ -377,9 +385,10 @@ def issue_bundle_bound_development_rng_authority(
         from cfeg.metadata_calibration_v3_governance import require_development_rng_prerequisites
     except ImportError as error:  # pragma: no cover - integration installation failure
         raise RuntimeError("V3 governance bundle validator is unavailable.") from error
-    bundle, context_reference = require_development_rng_prerequisites(
+    bundle, context_reference, development_start = require_development_rng_prerequisites(
         development_bundle_capability,
         context_reference_capability,
+        development_start_capability,
         expected_commit=expected_commit,
         expected_tree=expected_tree,
     )
@@ -389,7 +398,11 @@ def issue_bundle_bound_development_rng_authority(
             "context_reference_schema": context_reference.schema,
             "context_reference_payload_sha256": context_reference.payload_sha256,
             "context_reference_file_sha256": context_reference.file_sha256,
+            "development_start_schema": development_start.receipt_schema,
+            "development_start_payload_sha256": development_start.receipt_payload_sha256,
+            "development_start_file_sha256": development_start.receipt_file_sha256,
             "_context_reference_capability": context_reference,
+            "_development_start_capability": development_start,
         }
     )
     development = _issue_rng_authority(
@@ -413,7 +426,7 @@ def issue_bundle_bound_rng_authorities(
 
     del development_bundle_capability, expected_commit, expected_tree
     raise RuntimeError(
-        "paired RNG authority issuance retired by V3.1; use the role-specific JIT issuers"
+        "paired RNG authority issuance retired by V3.2; use the role-specific JIT issuers"
     )
 
 
@@ -529,6 +542,12 @@ def _require_rng_authority(
             raise ValueError("development RNG context-reference schema is invalid.")
         _sha256(value.context_reference_payload_sha256, "context_reference_payload_sha256")
         _sha256(value.context_reference_file_sha256, "context_reference_file_sha256")
+        if value.development_start_schema != (
+            "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
+        ):
+            raise ValueError("development RNG start-receipt schema is invalid.")
+        _sha256(value.development_start_payload_sha256, "development_start_payload_sha256")
+        _sha256(value.development_start_file_sha256, "development_start_file_sha256")
     _git_object_id(value.clean_commit, "clean_commit")
     _git_object_id(value.clean_tree, "clean_tree")
     if value.semantic_binding_sha256 != _canonical_plain_sha256(
@@ -548,18 +567,24 @@ def _require_rng_authority(
             expected_tree=value.clean_tree,
         )
     else:
-        bundle, context_reference = governance.require_development_rng_prerequisites(
-            value._bundle_capability,
-            value._context_reference_capability,
-            expected_commit=value.clean_commit,
-            expected_tree=value.clean_tree,
+        bundle, context_reference, development_start = (
+            governance.revalidate_development_rng_prerequisites(
+                value._bundle_capability,
+                value._context_reference_capability,
+                value._development_start_capability,
+                expected_commit=value.clean_commit,
+                expected_tree=value.clean_tree,
+            )
         )
         if (
             context_reference.schema != value.context_reference_schema
             or context_reference.payload_sha256 != value.context_reference_payload_sha256
             or context_reference.file_sha256 != value.context_reference_file_sha256
+            or development_start.receipt_schema != value.development_start_schema
+            or development_start.receipt_payload_sha256 != value.development_start_payload_sha256
+            or development_start.receipt_file_sha256 != value.development_start_file_sha256
         ):
-            raise ValueError("development RNG context-reference binding changed.")
+            raise ValueError("development RNG prerequisite binding changed.")
     inventory = {
         entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
     }

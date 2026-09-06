@@ -1,15 +1,15 @@
 # Metadata-assisted low-calibration SSVEP — V3 pre-outcome design
 
-상태: **V3.1 pre-outcome infrastructure recovery / development-v1은 bundle+context 두 파일로
-은퇴 / development-v2 bundle 전에는 development seed 미실행 / scientific lockbox·외부
-EEG·wearable EEG outcome 미승인**
+상태: **V3.2 pre-outcome infrastructure recovery / development-v1·v2 영구 은퇴 /
+development-v3 bundle 전 / development seed 미실행 / scientific lockbox·외부 EEG·wearable
+EEG outcome 미승인**
 
 기준 후보는 `metadata-calibration-efficiency-v3`, 결정 ID는 `DEC-20260906-024`다.
 기계 판독 기준원은
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`, synthetic 기준원은
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 최초 경계는 byte-identical
 `configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 현재 recovery 경계는
-`configs/governance/metadata_calibration_v3_1_recovery_amendment.json`이다.
+`configs/governance/metadata_calibration_v3_2_recovery_amendment.json`이다.
 
 ## 결론부터 말하면
 
@@ -305,26 +305,30 @@ Manifest는 selected freeze, development bundle, test evidence, canary result와
 file SHA를 함께 묶어야 한다. Manifest는 strict RFC3339 UTC 생성시각을 포함하고, signed-at은
 그 시각보다 뒤이면서 target보다 엄격히 앞이어야 한다. Filesystem mtime은 이 판단에 쓰지 않는다.
 
-Development-v1의 외부 write-once root에는 bundle과 covariate-only context reference 두 파일만
-존재하며 이 inventory를 영구 은퇴한다. 새 terminal 파일을 소급해 만들거나 기존 두 파일을
-수정·삭제·확장하지 않는다. 계속할 수 있는 유일한 attempt는
-`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/`이고 새 bundle은
-`cfeg.metadata-calibration-efficiency-v3.development-bundle.v2` schema로 clean A2
-commit/tree, recovery amendment, retired-v1 exact triplet·inventory, runtime과 tests를 묶는다.
-현재 허용된 것은 코드·문서·unit test와 이 clean implementation/development-v2 bundle을
-만드는 작업뿐이다. Root seed 20260909의 nonreserved development도 exact v2 bundle과 adopted
-context validator 전에는 실행하지 않는다. Historical-pulse canary도 state engine과 selected
-freeze 뒤에만 실행한다. 새 scientific synthetic lockbox, BETA/Dong/Choi outcome, wearable
-source·held outcome, 외부 저자에게 실제 메시지 전송은 아직 허용되지 않았다. 새 future
-beacon도 선택하지 않았다.
+Development-v1의 외부 write-once root는 bundle과 covariate-only context reference 두 파일,
+development-v2 root는 bundle 한 파일만 가진 채 영구 은퇴한다. 새 terminal 파일을 소급해
+만들거나 기존 파일을 수정·삭제·확장하지 않는다. V2 `resume`은 context seed `20260910`의
+SeedSequence와 covariate-only deterministic reference replay를 두 번 메모리에서 수행했지만,
+frozen `mappingproxy`를 JSON transport 경계에 그대로 넘겨 publication 전에 실패했다. 따라서
+V2 context artifact와 development RNG authority는 없고, development seed `20260909`의
+SeedSequence·DGP·result·selection·outcome은 실행되지 않았다.
 
-Development-v2 bundle, context reference, development result는 같은 v2 root의
-`development-bundle.json`, `context-reference.json`, `development-result.json`으로 고정한다.
-Development-v2 context file은 retired-v1 context와 byte-for-byte 같아야 하며 seed `20260910`으로 deterministic
-replay해 검증할 뿐 refit·reselection하지 않는다. Read-only `status`와 `emit-selection`은 이
-reference를 위한 별도 context-reference-only authority를 받고 development authority나 mutation
-authority를 받지 않는다. `resume`만 `DEVELOPMENT_PENDING`에서 exact bundle/context를 확인한 뒤
-development-only authority를 JIT 발급한다.
+계속할 수 있는 유일한 attempt는
+`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/`이며 bundle schema는
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v3`다. 새 bundle은 V1의 exact 두
+파일과 V2의 exact 한 파일 inventory, 두 recovery amendment, incident output digest, clean A3
+source/runtime/tests를 모두 묶는다. V3 context는 retired-v1 context의 exact bytes를 채택하며,
+runner transport 경계에서만 평범한 dict/list로 deep-detach한 뒤 byte equality를 다시 확인한다.
+
+Development-v3의 네 canonical 파일은 `development-bundle.json`, `context-reference.json`,
+`development-start.json`, `development-result.json`이다. `resume`은 scientific contract와
+bundle/context를 모두 검증한 직후, development authority나 첫 RNG draw보다 먼저
+`development-start.json`을 `O_EXCL`로 기록한다. 같은 creator process가 받은 private nominal
+capability만 그 한 실행에서 계속할 수 있다. 새 process가 start receipt만 발견하면
+`DEVELOPMENT_ATTEMPT_CONSUMED`로 영구 중단하고 replay하지 않으며, receipt와 result가 함께
+있으면 read-only audit만 허용한다. Result는 receipt의 schema·payload SHA·file SHA를 묶는다.
+Historical-pulse canary는 selected freeze 뒤에만 실행하며 scientific lockbox, external/human
+EEG outcome, network와 future beacon은 여전히 미승인이다.
 Post-result restart는 read-only recovery capability로 저장된 rows·gate·sensitivity evidence를
 검산한다. 이때 core가 고정 component-11 sensitivity resampling만 내부 replay하지만,
 DevelopmentRNGAuthority를 발급하거나 participant EEG/DGP를 재생성하지는 않는다.

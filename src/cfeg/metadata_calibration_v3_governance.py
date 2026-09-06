@@ -50,15 +50,18 @@ _GOVERNANCE_IMPORT_SOURCE_FILE_SHA256 = hashlib.sha256(
 CANDIDATE_ID = "metadata-calibration-efficiency-v3"
 CANARY_CANDIDATE_ID = "metadata-calibration-efficiency-v3-governance-canary"
 
-DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
 RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
 )
-RECOVERY_AMENDMENT_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v1"
+RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
 )
-PROTOCOL_REVISION = "V3.1"
-DEVELOPMENT_ATTEMPT_ID = "development-v2"
+RECOVERY_AMENDMENT_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v2"
+)
+PROTOCOL_REVISION = "V3.2"
+DEVELOPMENT_ATTEMPT_ID = "development-v3"
 CANARY_SEED_CAPABILITY_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-seed-capability.v1"
 FRESH_CANARY_AUDIT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1"
 FRESH_CANARY_AUDIT_CAPABILITY_SCHEMA = (
@@ -94,6 +97,7 @@ ARTIFACT_SCHEMAS = MappingProxyType(
             "cfeg.metadata-calibration-efficiency-v3.context-trust-capability.v1"
         ),
         "development_bundle": DEVELOPMENT_BUNDLE_SCHEMA,
+        "development_start": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
         "development_result": "cfeg.metadata-calibration-efficiency-v3.development-result.v1",
         "fresh_canary_audit_capability": FRESH_CANARY_AUDIT_CAPABILITY_SCHEMA,
         "scientific_attempt_manifest": ATTEMPT_MANIFEST_SCHEMA,
@@ -115,7 +119,8 @@ ARTIFACT_SCHEMAS = MappingProxyType(
 
 MASTER_PLAN_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
-PREOUTCOME_AMENDMENT_PATH = (
+PREOUTCOME_AMENDMENT_PATH = "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+PRIOR_RECOVERY_AMENDMENT_PATH = (
     "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
 )
 ORIGINAL_PREOUTCOME_AMENDMENT_PATH = (
@@ -129,9 +134,12 @@ V2_DENY_OVERLAY_PATH = "configs/governance/metadata_calibration_v2_terminal_deny
 
 FROZEN_FILE_SHA256 = MappingProxyType(
     {
-        MASTER_PLAN_PATH: "c4cdc38aacb03059e9f80ea3809cd84b196f557898a82627407423fc67691aab",
-        SYNTHETIC_PLAN_PATH: "0d51e184a34f4947c2b44503e6841056048129edb4faff3b40929b996ccf370f",
+        MASTER_PLAN_PATH: "ff82c78ab6765c2bf58062195d246df7eb1654cabd1eb413fa4c40ca1f461446",
+        SYNTHETIC_PLAN_PATH: "172de79a5315ef6daba9d623f05ee6ebe37595fc8f9dc3c913b6f63c8119f693",
         PREOUTCOME_AMENDMENT_PATH: (
+            "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
+        ),
+        PRIOR_RECOVERY_AMENDMENT_PATH: (
             "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
         ),
         ORIGINAL_PREOUTCOME_AMENDMENT_PATH: (
@@ -185,23 +193,22 @@ SCIENTIFIC_GLOBAL_CLAIM_CANONICAL_PATH = V3_CANONICAL_ROOT / "scientific/global-
 RETIRED_V1_DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / "development-v1"
 RETIRED_V1_DEVELOPMENT_BUNDLE_PATH = RETIRED_V1_DEVELOPMENT_ROOT / "development-bundle.json"
 RETIRED_V1_CONTEXT_REFERENCE_PATH = RETIRED_V1_DEVELOPMENT_ROOT / "context-reference.json"
+RETIRED_V2_DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / "development-v2"
+RETIRED_V2_DEVELOPMENT_BUNDLE_PATH = RETIRED_V2_DEVELOPMENT_ROOT / "development-bundle.json"
 DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / DEVELOPMENT_ATTEMPT_ID
 CONTEXT_REFERENCE_CANONICAL_PATH = DEVELOPMENT_ROOT / "context-reference.json"
+DEVELOPMENT_START_CANONICAL_PATH = DEVELOPMENT_ROOT / "development-start.json"
 DEVELOPMENT_RESULT_CANONICAL_PATH = DEVELOPMENT_ROOT / "development-result.json"
 RETIRED_V1_SOURCE_COMMIT = "569394da6894a2efed37b9dde162cbe4fe60534d"
 RETIRED_V1_SOURCE_TREE = "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd"
 RETIRED_V1_BUNDLE_PAYLOAD_SHA256 = (
     "959ce56a97e3ece034b52c44a993d393ef168bbb1bdbad9a72dee86cdf3430b3"
 )
-RETIRED_V1_BUNDLE_FILE_SHA256 = (
-    "9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a"
-)
+RETIRED_V1_BUNDLE_FILE_SHA256 = "9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a"
 RETIRED_V1_CONTEXT_PAYLOAD_SHA256 = (
     "c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253"
 )
-RETIRED_V1_CONTEXT_FILE_SHA256 = (
-    "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
-)
+RETIRED_V1_CONTEXT_FILE_SHA256 = "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
 RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v1"
 )
@@ -210,6 +217,22 @@ RETIRED_V1_ARTIFACT_INVENTORY_SHA256 = (
 )
 RETIRED_V1_INCIDENT_OUTPUT_SHA256 = (
     "8cdcfe3961979b2d691d4a241878abbf68aa743d8dd08ccbf01ffe1ec03a796a"
+)
+RETIRED_V2_SOURCE_COMMIT = "82e26d60fd17464380697126bb64ad73b36708a2"
+RETIRED_V2_SOURCE_TREE = "f7f59bda48610aeaa5bd1b6ffd288a7b56a4bb85"
+RETIRED_V2_SOURCE_BUNDLE_SHA256 = "a74d3a86f207520fd97c746809378146d75614fe287b1eaab96e50b15da3dbc0"
+RETIRED_V2_BUNDLE_PAYLOAD_SHA256 = (
+    "ce9628ecc5a2b000aa1ce370bba540e6d0fa2d46d3ae068cbcc5b43f089ba312"
+)
+RETIRED_V2_BUNDLE_FILE_SHA256 = "a616945040ea45a78c2eed58bf251f1f379f9a82a320ed4f39c26f5efb073cac"
+RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v2"
+)
+RETIRED_V2_ARTIFACT_INVENTORY_SHA256 = (
+    "7ae6a99b7ec2033b2ce0cdfbfedc05851b77d9e5dfeb21b485ebe4215f18c865"
+)
+RETIRED_V2_INCIDENT_OUTPUT_SHA256 = (
+    "5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c"
 )
 SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
     "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
@@ -273,18 +296,25 @@ _SCIENTIFIC_PROJECTION_UNCHANGED_COMPONENTS = (
     "evidence_roles_and_cohorts",
 )
 RETIRED_V1_INCIDENT_ERROR = "AuthorityError"
-RETIRED_V1_INCIDENT_MESSAGE = (
-    "this governed process role cannot mutate canonical state"
-)
+RETIRED_V1_INCIDENT_MESSAGE = "this governed process role cannot mutate canonical state"
 RETIRED_V1_INCIDENT_OUTPUT_BYTES = (
     b'{"command":"status","error":"AuthorityError","message":"this governed process '
     b'role cannot mutate canonical state","status":"FAIL_CLOSED"}\n'
+)
+RETIRED_V2_INCIDENT_ERROR = "TypeError"
+RETIRED_V2_INCIDENT_MESSAGE = "Object of type mappingproxy is not JSON serializable"
+RETIRED_V2_INCIDENT_OUTPUT_BYTES = (
+    b'{"command":"resume","error":"TypeError","message":"Object of type mappingproxy '
+    b'is not JSON serializable","status":"FAIL_CLOSED"}\n'
 )
 TEST_EVIDENCE_CANONICAL_PATH = CANARY_CANONICAL_ROOT / "test-evidence.json"
 SELECTED_METHOD_FREEZE_REPOSITORY_PATH = PurePosixPath(
     "configs/governance/metadata_calibration_v3_selected_method_freeze.json"
 )
 DEVELOPMENT_RESULT_MAXIMUM_BYTES = 512 * 1024 * 1024
+DEVELOPMENT_START_EXECUTION_CAPABILITY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-start-execution-capability.v1"
+)
 _CANONICAL_PYTHON_EXECUTION_ROOTS = ("src", "tests", "scripts")
 _ROOT_PYTEST_IMPORT_CONTROL_NAMES = frozenset(
     {
@@ -341,6 +371,7 @@ _OUTPUT_VALUE_RE = re.compile(r"[0-9A-F]{128}\Z")
 _CAPABILITY_ISSUER = object()
 _PUBLICATION_ISSUER = object()
 _FRESH_EXEC_OBSERVER_ISSUER = object()
+_DEVELOPMENT_START_EXECUTION_ISSUER = object()
 
 FRESH_CANARY_EXEC_RECEIPT_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.fresh-canary-exec-receipt.v1"
@@ -779,7 +810,7 @@ def _require_rng_bundle_capability_for_role(
     ):
         raise AuthorityError("RNG authority requires current source exactly at bundle A")
     _require_loaded_governance_source_identity(capability)
-    observe_retired_v1_artifacts()
+    observe_retired_development_attempts()
     return capability
 
 
@@ -3040,10 +3071,11 @@ def _require_frozen_files_in_source_snapshot(
 
 
 def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
-    """Validate the transparent V3.1 recovery record before bundle authority exists."""
+    """Validate the transparent V3.2 recovery record before bundle authority exists."""
 
     if not isinstance(data, bytes):
         raise ValidationError("recovery amendment must be immutable bytes")
+
     def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for key, item in pairs:
@@ -3065,37 +3097,57 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         raise ValidationError("recovery amendment is not strict UTF-8 JSON") from exc
     if not isinstance(value, Mapping):
         raise ValidationError("recovery amendment must be a JSON object")
-    retired = value.get("retired_development_attempt")
+    owner = value.get("owner_approval")
+    retired_v1 = value.get("retired_development_v1")
+    retired_v2 = value.get("retired_development_v2")
     recovery = value.get("authorized_recovery")
     projection = value.get("scientific_contract_projection")
     original = value.get("original_preoutcome_amendment")
-    if not all(isinstance(item, Mapping) for item in (retired, recovery, projection, original)):
+    prior = value.get("prior_recovery_amendment")
+    immutability = value.get("immutability")
+    if not all(
+        isinstance(item, Mapping)
+        for item in (
+            owner,
+            retired_v1,
+            retired_v2,
+            recovery,
+            projection,
+            original,
+            prior,
+            immutability,
+        )
+    ):
         raise ValidationError("recovery amendment is missing a required object")
-    assert isinstance(retired, Mapping)
+    assert isinstance(owner, Mapping)
+    assert isinstance(retired_v1, Mapping)
+    assert isinstance(retired_v2, Mapping)
     assert isinstance(recovery, Mapping)
     assert isinstance(projection, Mapping)
     assert isinstance(original, Mapping)
-    failure = retired.get("observed_status_failure")
-    observations = retired.get("execution_observations")
-    retired_bundle = retired.get("development_bundle")
-    retired_context = retired.get("context_reference")
-    immutability = value.get("immutability")
+    assert isinstance(prior, Mapping)
+    assert isinstance(immutability, Mapping)
+    failure = retired_v2.get("observed_resume_failure")
+    observations = retired_v2.get("execution_observations")
+    retired_v1_bundle = retired_v1.get("development_bundle")
+    retired_v1_context = retired_v1.get("context_reference")
+    retired_v2_bundle = retired_v2.get("development_bundle")
     if not all(
         isinstance(item, Mapping)
         for item in (
             failure,
             observations,
-            retired_bundle,
-            retired_context,
-            immutability,
+            retired_v1_bundle,
+            retired_v1_context,
+            retired_v2_bundle,
         )
     ):
         raise ValidationError("recovery amendment lacks incident observations")
     assert isinstance(failure, Mapping)
     assert isinstance(observations, Mapping)
-    assert isinstance(retired_bundle, Mapping)
-    assert isinstance(retired_context, Mapping)
-    assert isinstance(immutability, Mapping)
+    assert isinstance(retired_v1_bundle, Mapping)
+    assert isinstance(retired_v1_context, Mapping)
+    assert isinstance(retired_v2_bundle, Mapping)
     encoded = failure.get("emitted_json_line_utf8_base64")
     try:
         emitted = base64.b64decode(encoded, validate=True)
@@ -3105,9 +3157,7 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
     expected_definition = {
         "top_level_keys": ["candidate_id", "master", "schema", "synthetic"],
         "candidate_id_value": CANDIDATE_ID,
-        "master_value": (
-            "mapping_of_the_exact_master_keys_below_to_their_parsed_YAML_values"
-        ),
+        "master_value": ("mapping_of_the_exact_master_keys_below_to_their_parsed_YAML_values"),
         "synthetic_value": (
             "mapping_of_the_exact_synthetic_keys_below_to_their_parsed_YAML_values"
         ),
@@ -3125,10 +3175,13 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "decision_id",
                 "immutability",
                 "original_preoutcome_amendment",
+                "owner_approval",
+                "prior_recovery_amendment",
                 "protocol_revision",
                 "recorded_at_is_amendment_time_not_incident_timestamp",
                 "recorded_at_utc",
-                "retired_development_attempt",
+                "retired_development_v1",
+                "retired_development_v2",
                 "schema",
                 "scientific_contract_projection",
                 "scientific_objective_changed",
@@ -3147,9 +3200,14 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
             },
         ),
         (definition, set(expected_definition)),
-        (original, {"file_sha256", "must_remain_byte_identical", "path"}),
         (
-            retired,
+            owner,
+            {"approval_basis", "approval_scope", "approved_by", "attestation_note"},
+        ),
+        (original, {"file_sha256", "must_remain_byte_identical", "path"}),
+        (prior, {"file_sha256", "must_remain_byte_identical", "path"}),
+        (
+            retired_v1,
             {
                 "artifact_inventory_schema",
                 "artifact_inventory_sha256",
@@ -3160,27 +3218,35 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "development_bundle",
                 "exact_directory_inventory_must_remain_two_files",
                 "exact_file_names",
-                "execution_observations",
-                "observed_status_failure",
-                "scientific_interpretation",
                 "source_commit",
                 "source_tree",
             },
         ),
-        (retired_bundle, {"file_sha256", "path", "payload_sha256", "schema"}),
+        (retired_v1_bundle, {"file_sha256", "path", "payload_sha256", "schema"}),
         (
-            retired_context,
+            retired_v1_context,
+            {"file_sha256", "path", "payload_sha256", "schema"},
+        ),
+        (
+            retired_v2,
             {
-                "adopt_exact_bytes_in_development_v2",
-                "file_sha256",
-                "path",
-                "payload_sha256",
-                "refit_or_reselection",
-                "role",
-                "root_seed",
-                "schema",
+                "artifact_inventory_schema",
+                "artifact_inventory_sha256",
+                "attempt_id",
+                "canonical_root",
+                "continuation_authorized",
+                "development_bundle",
+                "exact_directory_inventory_must_remain_one_file",
+                "exact_file_names",
+                "execution_observations",
+                "observed_resume_failure",
+                "scientific_interpretation",
+                "source_bundle_sha256",
+                "source_commit",
+                "source_tree",
             },
         ),
+        (retired_v2_bundle, {"file_sha256", "path", "payload_sha256", "schema"}),
         (
             failure,
             {
@@ -3189,7 +3255,7 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "emitted_json_line_utf8_base64",
                 "exception_type",
                 "exit_code",
-                "intended_stage",
+                "failure_boundary",
                 "message",
             },
         ),
@@ -3197,14 +3263,17 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
             observations,
             {
                 "canary_artifact_count",
-                "context_reference_seedsequence_and_covariate_only_generation_executed",
+                "context_reference_artifact_count",
+                "context_reference_replay_count",
+                "context_reference_seed",
+                "context_reference_seedsequence_and_covariate_only_replay_executed",
                 "development_DGP_executed",
+                "development_rng_authority_object_instantiated_in_memory",
                 "development_result_artifact_count",
                 "development_seed",
                 "development_seedsequence_created",
-                "development_v1_experimental_workflow_outcome_observation_count",
-                "development_v1_governed_execution_network_access_count",
-                "paired_development_rng_authority_object_instantiated_in_memory",
+                "development_v2_experimental_workflow_outcome_observation_count",
+                "development_v2_governed_execution_network_access_count",
                 "selection_artifact_count",
             },
         ),
@@ -3215,12 +3284,20 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "canonical_root",
                 "context_reference_authority_policy",
                 "context_reference_policy",
+                "context_reference_transport_policy",
                 "development_authority_policy",
                 "development_bundle_schema",
+                "development_result_must_bind_start_receipt",
+                "development_start_receipt_path",
+                "development_start_receipt_policy",
+                "development_start_receipt_schema",
                 "human_EEG_outcome_authorized",
                 "network_access_authorized",
                 "only_authorized_development_attempt",
+                "receipt_with_result_restart_policy",
+                "receipt_without_result_restart_policy",
                 "requires_exact_retired_v1_two_file_inventory",
+                "requires_exact_retired_v2_one_file_inventory",
                 "scientific_lockbox_authorized",
             },
         ),
@@ -3228,9 +3305,13 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
             immutability,
             {
                 "development_v1_files_may_not_be_modified_deleted_or_extended",
-                "development_v1_schema_may_not_be_reinterpreted_as_v2",
+                "development_v1_or_v2_schema_may_not_be_reinterpreted_as_v3",
+                "development_v2_files_may_not_be_modified_deleted_or_extended",
+                "any_failure_after_development_start_receipt_consumes_attempt",
+                "future_target_bound_RSA_PSS_authorization_remains_separate_and_unissued",
                 "operator_DGP_grid_threshold_gate_rank_seed_or_evidence_change_requires_new_scientific_revision",
                 "original_preoutcome_amendment_may_not_be_modified",
+                "prior_V3_1_recovery_amendment_may_not_be_modified",
             },
         ),
     )
@@ -3239,7 +3320,7 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
     if (
         value.get("schema") != RECOVERY_AMENDMENT_SCHEMA
         or value.get("candidate_id") != CANDIDATE_ID
-        or value.get("decision_id") != "COR-20260907-029"
+        or value.get("decision_id") != "COR-20260907-030"
         or value.get("protocol_revision") != PROTOCOL_REVISION
         or value.get("status") != "preoutcome_infrastructure_recovery_only"
         or value.get("recorded_at_is_amendment_time_not_incident_timestamp") is not True
@@ -3250,68 +3331,111 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         or projection.get("sha256") != SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or _plain_json(definition) != expected_definition
         or projection.get("master_keys") != list(_SCIENTIFIC_PROJECTION_MASTER_KEYS)
-        or projection.get("synthetic_keys")
-        != list(_SCIENTIFIC_PROJECTION_SYNTHETIC_KEYS)
+        or projection.get("synthetic_keys") != list(_SCIENTIFIC_PROJECTION_SYNTHETIC_KEYS)
         or projection.get("unchanged_components")
         != list(_SCIENTIFIC_PROJECTION_UNCHANGED_COMPONENTS)
+        or owner
+        != {
+            "approved_by": "active_workspace_owner",
+            "approval_scope": (
+                "tracked_preoutcome_V3_2_development_v3_infrastructure_recovery_only"
+            ),
+            "approval_basis": (
+                "explicit_user_instruction_before_any_development_v3_bundle_context_or_"
+                "development_execution"
+            ),
+            "attestation_note": (
+                "This repository-local hash-bound receipt records the active user's explicit "
+                "approval; it is not a cryptographic signature or a future target-bound "
+                "execution authorization."
+            ),
+        }
         or original.get("path") != ORIGINAL_PREOUTCOME_AMENDMENT_PATH
-        or original.get("file_sha256")
-        != FROZEN_FILE_SHA256[ORIGINAL_PREOUTCOME_AMENDMENT_PATH]
+        or original.get("file_sha256") != FROZEN_FILE_SHA256[ORIGINAL_PREOUTCOME_AMENDMENT_PATH]
         or original.get("must_remain_byte_identical") is not True
-        or retired.get("attempt_id") != "development-v1"
-        or retired.get("canonical_root") != os.fspath(RETIRED_V1_DEVELOPMENT_ROOT)
-        or retired.get("source_commit") != RETIRED_V1_SOURCE_COMMIT
-        or retired.get("source_tree") != RETIRED_V1_SOURCE_TREE
-        or retired.get("artifact_inventory_schema")
-        != RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA
-        or retired.get("artifact_inventory_sha256")
-        != RETIRED_V1_ARTIFACT_INVENTORY_SHA256
-        or retired.get("exact_file_names")
+        or prior.get("path") != PRIOR_RECOVERY_AMENDMENT_PATH
+        or prior.get("file_sha256") != FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH]
+        or prior.get("must_remain_byte_identical") is not True
+        or retired_v1.get("attempt_id") != "development-v1"
+        or retired_v1.get("canonical_root") != os.fspath(RETIRED_V1_DEVELOPMENT_ROOT)
+        or retired_v1.get("source_commit") != RETIRED_V1_SOURCE_COMMIT
+        or retired_v1.get("source_tree") != RETIRED_V1_SOURCE_TREE
+        or retired_v1.get("artifact_inventory_schema") != RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA
+        or retired_v1.get("artifact_inventory_sha256") != RETIRED_V1_ARTIFACT_INVENTORY_SHA256
+        or retired_v1.get("exact_file_names")
         != ["context-reference.json", "development-bundle.json"]
-        or retired_bundle.get("path") != os.fspath(RETIRED_V1_DEVELOPMENT_BUNDLE_PATH)
-        or retired_bundle.get("schema") != RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA
-        or retired_bundle.get("payload_sha256") != RETIRED_V1_BUNDLE_PAYLOAD_SHA256
-        or retired_bundle.get("file_sha256") != RETIRED_V1_BUNDLE_FILE_SHA256
-        or retired_context.get("path") != os.fspath(RETIRED_V1_CONTEXT_REFERENCE_PATH)
-        or retired_context.get("schema") != ARTIFACT_SCHEMAS["context_reference"]
-        or retired_context.get("payload_sha256") != RETIRED_V1_CONTEXT_PAYLOAD_SHA256
-        or retired_context.get("file_sha256") != RETIRED_V1_CONTEXT_FILE_SHA256
-        or retired_context.get("root_seed") != 20_260_910
-        or retired_context.get("role") != "covariate_only_reference"
-        or retired_context.get("adopt_exact_bytes_in_development_v2") is not True
-        or retired_context.get("refit_or_reselection") != "forbidden"
-        or failure.get("argv") != ["scripts/run_metadata_calibration_v3", "status"]
+        or retired_v1_bundle.get("path") != os.fspath(RETIRED_V1_DEVELOPMENT_BUNDLE_PATH)
+        or retired_v1_bundle.get("schema") != RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA
+        or retired_v1_bundle.get("payload_sha256") != RETIRED_V1_BUNDLE_PAYLOAD_SHA256
+        or retired_v1_bundle.get("file_sha256") != RETIRED_V1_BUNDLE_FILE_SHA256
+        or retired_v1_context.get("path") != os.fspath(RETIRED_V1_CONTEXT_REFERENCE_PATH)
+        or retired_v1_context.get("schema") != ARTIFACT_SCHEMAS["context_reference"]
+        or retired_v1_context.get("payload_sha256") != RETIRED_V1_CONTEXT_PAYLOAD_SHA256
+        or retired_v1_context.get("file_sha256") != RETIRED_V1_CONTEXT_FILE_SHA256
+        or retired_v1.get("continuation_authorized") is not False
+        or retired_v1.get("exact_directory_inventory_must_remain_two_files") is not True
+        or retired_v2.get("attempt_id") != "development-v2"
+        or retired_v2.get("canonical_root") != os.fspath(RETIRED_V2_DEVELOPMENT_ROOT)
+        or retired_v2.get("source_commit") != RETIRED_V2_SOURCE_COMMIT
+        or retired_v2.get("source_tree") != RETIRED_V2_SOURCE_TREE
+        or retired_v2.get("source_bundle_sha256") != RETIRED_V2_SOURCE_BUNDLE_SHA256
+        or retired_v2.get("artifact_inventory_schema") != RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA
+        or retired_v2.get("artifact_inventory_sha256") != RETIRED_V2_ARTIFACT_INVENTORY_SHA256
+        or retired_v2.get("exact_file_names") != ["development-bundle.json"]
+        or retired_v2_bundle.get("path") != os.fspath(RETIRED_V2_DEVELOPMENT_BUNDLE_PATH)
+        or retired_v2_bundle.get("schema") != RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA
+        or retired_v2_bundle.get("payload_sha256") != RETIRED_V2_BUNDLE_PAYLOAD_SHA256
+        or retired_v2_bundle.get("file_sha256") != RETIRED_V2_BUNDLE_FILE_SHA256
+        or failure.get("argv") != ["scripts/run_metadata_calibration_v3", "resume"]
         or failure.get("exit_code") != 2
-        or failure.get("exception_type") != RETIRED_V1_INCIDENT_ERROR
-        or failure.get("message") != RETIRED_V1_INCIDENT_MESSAGE
-        or failure.get("emitted_json_line_sha256") != RETIRED_V1_INCIDENT_OUTPUT_SHA256
-        or failure.get("intended_stage") != "post_context_pre_development"
-        or emitted != RETIRED_V1_INCIDENT_OUTPUT_BYTES
-        or file_sha256(emitted) != RETIRED_V1_INCIDENT_OUTPUT_SHA256
-        or observations.get("context_reference_seedsequence_and_covariate_only_generation_executed")
+        or failure.get("exception_type") != RETIRED_V2_INCIDENT_ERROR
+        or failure.get("message") != RETIRED_V2_INCIDENT_MESSAGE
+        or failure.get("emitted_json_line_sha256") != RETIRED_V2_INCIDENT_OUTPUT_SHA256
+        or failure.get("failure_boundary")
+        != "after_context_seed_20260910_reference_replay_before_core_proof_and_context_publication"
+        or emitted != RETIRED_V2_INCIDENT_OUTPUT_BYTES
+        or file_sha256(emitted) != RETIRED_V2_INCIDENT_OUTPUT_SHA256
+        or observations.get("context_reference_seed") != 20_260_910
+        or observations.get("context_reference_seedsequence_and_covariate_only_replay_executed")
         is not True
-        or observations.get("paired_development_rng_authority_object_instantiated_in_memory")
-        is not True
+        or observations.get("context_reference_replay_count") != 2
+        or observations.get("context_reference_artifact_count") != 0
+        or observations.get("development_rng_authority_object_instantiated_in_memory") is not False
         or observations.get("development_seed") != 20_260_909
         or observations.get("development_seedsequence_created") is not False
         or observations.get("development_DGP_executed") is not False
         or observations.get("development_result_artifact_count") != 0
         or observations.get("selection_artifact_count") != 0
         or observations.get("canary_artifact_count") != 0
-        or observations.get("development_v1_experimental_workflow_outcome_observation_count")
-        != 0
-        or observations.get("development_v1_governed_execution_network_access_count") != 0
-        or retired.get("scientific_interpretation")
+        or observations.get("development_v2_experimental_workflow_outcome_observation_count") != 0
+        or observations.get("development_v2_governed_execution_network_access_count") != 0
+        or retired_v2.get("scientific_interpretation")
         != "infrastructure_no_go_pre_development_not_a_scientific_pass_or_fail"
-        or retired.get("continuation_authorized") is not False
-        or retired.get("exact_directory_inventory_must_remain_two_files") is not True
+        or retired_v2.get("continuation_authorized") is not False
+        or retired_v2.get("exact_directory_inventory_must_remain_one_file") is not True
         or recovery.get("attempt_id") != DEVELOPMENT_ATTEMPT_ID
         or recovery.get("development_bundle_schema") != DEVELOPMENT_BUNDLE_SCHEMA
         or recovery.get("canonical_root") != os.fspath(DEVELOPMENT_ROOT)
+        or recovery.get("development_start_receipt_schema") != ARTIFACT_SCHEMAS["development_start"]
+        or recovery.get("development_start_receipt_path")
+        != os.fspath(DEVELOPMENT_START_CANONICAL_PATH)
+        or recovery.get("development_start_receipt_policy")
+        != "O_EXCL_before_development_authority_and_first_RNG_draw_creator_process_only"
+        or recovery.get("receipt_without_result_restart_policy")
+        != "terminal_DEVELOPMENT_ATTEMPT_CONSUMED_no_resume"
+        or recovery.get("receipt_with_result_restart_policy") != "read_only_reopen_and_audit"
+        or recovery.get("development_result_must_bind_start_receipt")
+        != ["schema", "payload_sha256", "file_sha256"]
         or recovery.get("only_authorized_development_attempt") is not True
         or recovery.get("requires_exact_retired_v1_two_file_inventory") is not True
+        or recovery.get("requires_exact_retired_v2_one_file_inventory") is not True
         or recovery.get("context_reference_policy")
         != "copy_and_revalidate_exact_development_v1_context_bytes_without_refit"
+        or recovery.get("context_reference_transport_policy")
+        != (
+            "deep_detach_parsed_frozen_JSON_to_ordinary_dict_list_before_core_boundary_"
+            "while_preserving_exact_source_bytes"
+        )
         or recovery.get("context_reference_authority_policy")
         != "issue_reference_only_authority_for_status_and_context_publication"
         or recovery.get("development_authority_policy")
@@ -3322,12 +3446,16 @@ def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         or immutability
         != {
             "development_v1_files_may_not_be_modified_deleted_or_extended": True,
-            "development_v1_schema_may_not_be_reinterpreted_as_v2": True,
+            "development_v2_files_may_not_be_modified_deleted_or_extended": True,
+            "development_v1_or_v2_schema_may_not_be_reinterpreted_as_v3": True,
+            "any_failure_after_development_start_receipt_consumes_attempt": True,
             "original_preoutcome_amendment_may_not_be_modified": True,
+            "prior_V3_1_recovery_amendment_may_not_be_modified": True,
+            "future_target_bound_RSA_PSS_authorization_remains_separate_and_unissued": True,
             "operator_DGP_grid_threshold_gate_rank_seed_or_evidence_change_requires_new_scientific_revision": True,
         }
     ):
-        raise ValidationError("recovery amendment differs from the frozen V3.1 facts")
+        raise ValidationError("recovery amendment differs from the frozen V3.2 facts")
     return MappingProxyType(dict(value))
 
 
@@ -3385,17 +3513,15 @@ def _scientific_contract_projection_bytes(
 def _validate_scientific_contract_projection(
     frozen_file_bytes: Mapping[str, bytes],
 ) -> None:
-    """Prove V3.1 changed governance only, against both old A and current plans."""
+    """Prove V3.2 changed governance only, against old V3 and current plans."""
 
-    amendment = _validate_recovery_amendment_bytes(
-        frozen_file_bytes[PREOUTCOME_AMENDMENT_PATH]
-    )
+    amendment = _validate_recovery_amendment_bytes(frozen_file_bytes[PREOUTCOME_AMENDMENT_PATH])
     current = _scientific_contract_projection_bytes(
         master_bytes=frozen_file_bytes[MASTER_PLAN_PATH],
         synthetic_bytes=frozen_file_bytes[SYNTHETIC_PLAN_PATH],
         amendment=amendment,
     )
-    old = _scientific_contract_projection_bytes(
+    retired_v1 = _scientific_contract_projection_bytes(
         master_bytes=_run_git(
             V3_SOURCE_REPOSITORY,
             ("show", f"{RETIRED_V1_SOURCE_COMMIT}:{MASTER_PLAN_PATH}"),
@@ -3406,13 +3532,25 @@ def _validate_scientific_contract_projection(
         ),
         amendment=amendment,
     )
+    retired_v2 = _scientific_contract_projection_bytes(
+        master_bytes=_run_git(
+            V3_SOURCE_REPOSITORY,
+            ("show", f"{RETIRED_V2_SOURCE_COMMIT}:{MASTER_PLAN_PATH}"),
+        ),
+        synthetic_bytes=_run_git(
+            V3_SOURCE_REPOSITORY,
+            ("show", f"{RETIRED_V2_SOURCE_COMMIT}:{SYNTHETIC_PLAN_PATH}"),
+        ),
+        amendment=amendment,
+    )
     expected = SCIENTIFIC_CONTRACT_PROJECTION_SHA256
     if (
-        current != old
+        current != retired_v1
+        or current != retired_v2
         or file_sha256(current) != expected
         or amendment["scientific_contract_projection"]["sha256"] != expected
     ):
-        raise AuthorityError("V3.1 scientific-contract projection differs from retired V1")
+        raise AuthorityError("V3.2 scientific-contract projection differs from retired V1 or V2")
 
 
 def _require_frozen_files_in_current_repository(
@@ -3489,7 +3627,7 @@ _RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS = frozenset(
         "payload_sha256",
     }
 )
-_DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
+_RETIRED_V2_DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
     {
         "protocol_revision",
         "development_attempt_id",
@@ -3521,9 +3659,41 @@ _DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
         "scientific_contract_projection_sha256",
     }
 )
+_DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V2_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
+    {
+        "prior_recovery_amendment_path",
+        "prior_recovery_amendment_file_sha256",
+        "retired_v2_source_commit",
+        "retired_v2_source_tree",
+        "retired_v2_source_bundle_sha256",
+        "retired_v2_artifact_inventory_schema",
+        "retired_v2_artifact_inventory_sha256",
+        "retired_v2_development_bundle_path",
+        "retired_v2_development_bundle_schema",
+        "retired_v2_development_bundle_payload_sha256",
+        "retired_v2_development_bundle_file_sha256",
+        "retired_v2_incident_error",
+        "retired_v2_incident_message",
+        "retired_v2_incident_output_sha256",
+        "retired_v2_context_reference_root_seed",
+        "retired_v2_context_reference_replay_count",
+        "retired_v2_context_reference_present",
+        "retired_v2_development_root_seed",
+        "retired_v2_development_rng_authority_issued",
+        "retired_v2_development_seedsequence_created",
+        "retired_v2_development_DGP_executed",
+        "retired_v2_development_result_present",
+        "retired_v2_experimental_outcome_observed",
+        "retired_v2_governed_network_accessed",
+        "retired_v2_continuation_authorized",
+        "development_start_receipt_schema",
+        "development_start_receipt_path",
+        "development_start_receipt_policy",
+    }
+)
 DEVELOPMENT_BUNDLE_CANONICAL_PATH = (
     "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-    "development-v2/development-bundle.json"
+    "development-v3/development-bundle.json"
 )
 
 
@@ -3554,6 +3724,26 @@ def retired_v1_artifact_inventory_sha256() -> str:
     return hashlib.sha256(canonical_json_bytes(_retired_v1_inventory_preimage())).hexdigest()
 
 
+def _retired_v2_inventory_preimage() -> Mapping[str, Any]:
+    return {
+        "schema": RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA,
+        "attempt": "development-v2",
+        "artifacts": [
+            {
+                "name": "development_bundle",
+                "path": os.fspath(RETIRED_V2_DEVELOPMENT_BUNDLE_PATH),
+                "schema": RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA,
+                "payload_sha256": RETIRED_V2_BUNDLE_PAYLOAD_SHA256,
+                "file_sha256": RETIRED_V2_BUNDLE_FILE_SHA256,
+            }
+        ],
+    }
+
+
+def retired_v2_artifact_inventory_sha256() -> str:
+    return hashlib.sha256(canonical_json_bytes(_retired_v2_inventory_preimage())).hexdigest()
+
+
 def _retired_v1_stat_identity(value: os.stat_result) -> tuple[int, ...]:
     return (
         value.st_dev,
@@ -3581,9 +3771,7 @@ def _load_exact_retired_v1_directory_bytes(root: Path) -> Mapping[str, bytes]:
         except OSError as exc:
             raise AuthorityError("retired development-v1 inventory cannot be enumerated") from exc
         if names != expected_names:
-            raise AuthorityError(
-                "retired development-v1 must remain the exact two-file inventory"
-            )
+            raise AuthorityError("retired development-v1 must remain the exact two-file inventory")
         for name in sorted(expected_names):
             try:
                 child = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=descriptor)
@@ -3609,10 +3797,67 @@ def _load_exact_retired_v1_directory_bytes(root: Path) -> Mapping[str, bytes]:
             finally:
                 os.close(child)
         after = os.fstat(descriptor)
-        if _retired_v1_stat_identity(before) != _retired_v1_stat_identity(after) or frozenset(
-            os.listdir(descriptor)
-        ) != expected_names:
+        if (
+            _retired_v1_stat_identity(before) != _retired_v1_stat_identity(after)
+            or frozenset(os.listdir(descriptor)) != expected_names
+        ):
             raise AuthorityError("retired development-v1 directory changed while observed")
+    finally:
+        os.close(descriptor)
+    return MappingProxyType(loaded)
+
+
+def _load_exact_retired_v2_directory_bytes(root: Path) -> Mapping[str, bytes]:
+    """Read the exact bundle-only V2 retirement inventory without following links."""
+
+    root = _canonical_absolute_path(root)
+    descriptor = _open_absolute_directory(root, create=False, require_private_final=True)
+    expected_names = frozenset({"development-bundle.json"})
+    loaded: dict[str, bytes] = {}
+    try:
+        before = os.fstat(descriptor)
+        try:
+            names = frozenset(os.listdir(descriptor))
+        except OSError as exc:
+            raise AuthorityError("retired development-v2 inventory cannot be enumerated") from exc
+        if names != expected_names:
+            raise AuthorityError("retired development-v2 must remain the exact one-file inventory")
+        try:
+            child = os.open(
+                "development-bundle.json",
+                os.O_RDONLY | os.O_NOFOLLOW,
+                dir_fd=descriptor,
+            )
+        except OSError as exc:
+            raise AuthorityError(
+                "retired development-v2 bundle must be an owner-controlled mode-0400 regular file"
+            ) from exc
+        try:
+            observed = os.fstat(child)
+            if (
+                not stat.S_ISREG(observed.st_mode)
+                or observed.st_uid != os.geteuid()
+                or observed.st_nlink != 1
+                or stat.S_IMODE(observed.st_mode) != 0o400
+            ):
+                raise AuthorityError(
+                    "retired development-v2 bundle must be an owner-controlled mode-0400 regular file"
+                )
+            loaded["development-bundle.json"] = _read_all(
+                child,
+                maximum_bytes=64 * 1024 * 1024,
+            )
+            after_file = os.fstat(child)
+            if _retired_v1_stat_identity(observed) != _retired_v1_stat_identity(after_file):
+                raise AuthorityError("retired development-v2 bundle changed while read")
+        finally:
+            os.close(child)
+        after = os.fstat(descriptor)
+        if (
+            _retired_v1_stat_identity(before) != _retired_v1_stat_identity(after)
+            or frozenset(os.listdir(descriptor)) != expected_names
+        ):
+            raise AuthorityError("retired development-v2 directory changed while observed")
     finally:
         os.close(descriptor)
     return MappingProxyType(loaded)
@@ -3686,6 +3931,8 @@ def require_retired_v1_artifacts_capability(
     if type(value) is not RetiredV1ArtifactsCapability:
         raise AuthorityError("exact RetiredV1ArtifactsCapability required")
     capability = value
+    if getattr(capability, "_validation_marker", None) is not _CAPABILITY_ISSUER:
+        raise AuthorityError("retired development-v1 capability marker is invalid")
     bindings = {
         "schema": capability.schema,
         "candidate_id": capability.candidate_id,
@@ -3721,16 +3968,11 @@ def require_retired_v1_artifacts_capability(
         "continuation_authorized": False,
     }
     if (
-        capability._validation_marker is not _CAPABILITY_ISSUER
-        or bindings != expected
-        or capability.binding_sha256
-        != hashlib.sha256(canonical_json_bytes(expected)).hexdigest()
-        or retired_v1_artifact_inventory_sha256()
-        != RETIRED_V1_ARTIFACT_INVENTORY_SHA256
-        or file_sha256(capability._development_bundle_bytes)
-        != RETIRED_V1_BUNDLE_FILE_SHA256
-        or file_sha256(capability._context_reference_bytes)
-        != RETIRED_V1_CONTEXT_FILE_SHA256
+        bindings != expected
+        or capability.binding_sha256 != hashlib.sha256(canonical_json_bytes(expected)).hexdigest()
+        or retired_v1_artifact_inventory_sha256() != RETIRED_V1_ARTIFACT_INVENTORY_SHA256
+        or file_sha256(capability._development_bundle_bytes) != RETIRED_V1_BUNDLE_FILE_SHA256
+        or file_sha256(capability._context_reference_bytes) != RETIRED_V1_CONTEXT_FILE_SHA256
     ):
         raise AuthorityError("retired development-v1 capability binding is invalid")
     return capability
@@ -3807,7 +4049,142 @@ def retired_v1_context_reference_payload(value: object) -> Mapping[str, Any]:
     )
 
 
-def _retired_v1_bundle_fields() -> Mapping[str, Any]:
+@dataclass(frozen=True, slots=True, init=False)
+class RetiredV2ArtifactsCapability:
+    """Read-only proof that failed V2 remains its exact bundle-only prefix."""
+
+    schema: str
+    candidate_id: str
+    attempt_id: str
+    source_commit: str
+    source_tree: str
+    source_bundle_sha256: str
+    artifact_inventory_sha256: str
+    development_bundle_schema: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    incident_error: str
+    incident_output_sha256: str
+    context_reference_replay_count: int
+    context_reference_present: bool
+    development_seedsequence_created: bool
+    development_DGP_executed: bool
+    continuation_authorized: bool
+    binding_sha256: str
+    _development_bundle_bytes: bytes = field(repr=False, compare=False)
+    _validation_marker: object = field(repr=False, compare=False)
+
+    def __init__(self, *, development_bundle_bytes: bytes, _issuer: object) -> None:
+        if _issuer is not _CAPABILITY_ISSUER:
+            raise AuthorityError("RetiredV2ArtifactsCapability has no valid issuer")
+        bindings = _retired_v2_capability_bindings()
+        for name, item in bindings.items():
+            object.__setattr__(self, name, item)
+        object.__setattr__(
+            self,
+            "binding_sha256",
+            hashlib.sha256(canonical_json_bytes(bindings)).hexdigest(),
+        )
+        object.__setattr__(self, "_development_bundle_bytes", bytes(development_bundle_bytes))
+        object.__setattr__(self, "_validation_marker", _issuer)
+
+
+def _retired_v2_capability_bindings() -> Mapping[str, Any]:
+    return {
+        "schema": RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA,
+        "candidate_id": CANDIDATE_ID,
+        "attempt_id": "development-v2",
+        "source_commit": RETIRED_V2_SOURCE_COMMIT,
+        "source_tree": RETIRED_V2_SOURCE_TREE,
+        "source_bundle_sha256": RETIRED_V2_SOURCE_BUNDLE_SHA256,
+        "artifact_inventory_sha256": RETIRED_V2_ARTIFACT_INVENTORY_SHA256,
+        "development_bundle_schema": RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA,
+        "development_bundle_payload_sha256": RETIRED_V2_BUNDLE_PAYLOAD_SHA256,
+        "development_bundle_file_sha256": RETIRED_V2_BUNDLE_FILE_SHA256,
+        "incident_error": RETIRED_V2_INCIDENT_ERROR,
+        "incident_output_sha256": RETIRED_V2_INCIDENT_OUTPUT_SHA256,
+        "context_reference_replay_count": 2,
+        "context_reference_present": False,
+        "development_seedsequence_created": False,
+        "development_DGP_executed": False,
+        "continuation_authorized": False,
+    }
+
+
+def require_retired_v2_artifacts_capability(
+    value: object,
+) -> RetiredV2ArtifactsCapability:
+    if type(value) is not RetiredV2ArtifactsCapability:
+        raise AuthorityError("exact RetiredV2ArtifactsCapability required")
+    capability = value
+    if getattr(capability, "_validation_marker", None) is not _CAPABILITY_ISSUER:
+        raise AuthorityError("retired development-v2 capability marker is invalid")
+    expected = _retired_v2_capability_bindings()
+    observed = {name: getattr(capability, name) for name in expected}
+    if (
+        observed != expected
+        or capability.binding_sha256 != hashlib.sha256(canonical_json_bytes(expected)).hexdigest()
+        or retired_v2_artifact_inventory_sha256() != RETIRED_V2_ARTIFACT_INVENTORY_SHA256
+        or file_sha256(capability._development_bundle_bytes) != RETIRED_V2_BUNDLE_FILE_SHA256
+    ):
+        raise AuthorityError("retired development-v2 capability binding is invalid")
+    return capability
+
+
+def _observe_retired_v2_artifacts_from_exact_root(root: Path) -> RetiredV2ArtifactsCapability:
+    loaded = _load_exact_retired_v2_directory_bytes(root)
+    bundle_bytes = loaded["development-bundle.json"]
+    bundle = parse_artifact_bytes(
+        bundle_bytes,
+        ArtifactSpec(
+            schema=RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA,
+            exact_fields=_RETIRED_V2_DEVELOPMENT_BUNDLE_FIELDS,
+        ),
+    )
+    if (
+        root != RETIRED_V2_DEVELOPMENT_ROOT
+        or bundle["candidate_id"] != CANDIDATE_ID
+        or bundle["canonical_path"] != os.fspath(RETIRED_V2_DEVELOPMENT_BUNDLE_PATH)
+        or bundle["clean_git_commit"] != RETIRED_V2_SOURCE_COMMIT
+        or bundle["clean_git_tree"] != RETIRED_V2_SOURCE_TREE
+        or bundle["source_bundle_sha256"] != RETIRED_V2_SOURCE_BUNDLE_SHA256
+        or bundle["protocol_revision"] != "V3.1"
+        or bundle["development_attempt_id"] != "development-v2"
+        or bundle["preoutcome_amendment_path"] != PRIOR_RECOVERY_AMENDMENT_PATH
+        or bundle["preoutcome_amendment_file_sha256"]
+        != FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH]
+        or bundle["payload_sha256"] != RETIRED_V2_BUNDLE_PAYLOAD_SHA256
+        or file_sha256(bundle_bytes) != RETIRED_V2_BUNDLE_FILE_SHA256
+    ):
+        raise AuthorityError("retired development-v2 artifact identity mismatch")
+    return RetiredV2ArtifactsCapability(
+        development_bundle_bytes=bundle_bytes,
+        _issuer=_CAPABILITY_ISSUER,
+    )
+
+
+def observe_retired_v2_artifacts() -> RetiredV2ArtifactsCapability:
+    """Observe immutable failed V2; this grants no RNG or mutation authority."""
+
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
+    return _observe_retired_v2_artifacts_from_exact_root(RETIRED_V2_DEVELOPMENT_ROOT)
+
+
+def observe_retired_development_attempts() -> tuple[
+    RetiredV1ArtifactsCapability,
+    RetiredV2ArtifactsCapability,
+]:
+    """Re-observe both immutable failed prefixes before any V3 authority use."""
+
+    retired_v1 = observe_retired_v1_artifacts()
+    retired_v2 = observe_retired_v2_artifacts()
+    return retired_v1, retired_v2
+
+
+def _retired_attempt_bundle_fields() -> Mapping[str, Any]:
     return {
         "protocol_revision": PROTOCOL_REVISION,
         "development_attempt_id": DEVELOPMENT_ATTEMPT_ID,
@@ -3815,23 +4192,19 @@ def _retired_v1_bundle_fields() -> Mapping[str, Any]:
         "original_preoutcome_amendment_file_sha256": FROZEN_FILE_SHA256[
             ORIGINAL_PREOUTCOME_AMENDMENT_PATH
         ],
+        "prior_recovery_amendment_path": PRIOR_RECOVERY_AMENDMENT_PATH,
+        "prior_recovery_amendment_file_sha256": FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH],
         "retired_v1_source_commit": RETIRED_V1_SOURCE_COMMIT,
         "retired_v1_source_tree": RETIRED_V1_SOURCE_TREE,
         "retired_v1_artifact_inventory_schema": RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA,
         "retired_v1_artifact_inventory_sha256": RETIRED_V1_ARTIFACT_INVENTORY_SHA256,
-        "retired_v1_development_bundle_path": os.fspath(
-            RETIRED_V1_DEVELOPMENT_BUNDLE_PATH
-        ),
+        "retired_v1_development_bundle_path": os.fspath(RETIRED_V1_DEVELOPMENT_BUNDLE_PATH),
         "retired_v1_development_bundle_schema": RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA,
-        "retired_v1_development_bundle_payload_sha256": (
-            RETIRED_V1_BUNDLE_PAYLOAD_SHA256
-        ),
+        "retired_v1_development_bundle_payload_sha256": (RETIRED_V1_BUNDLE_PAYLOAD_SHA256),
         "retired_v1_development_bundle_file_sha256": RETIRED_V1_BUNDLE_FILE_SHA256,
         "retired_v1_context_reference_path": os.fspath(RETIRED_V1_CONTEXT_REFERENCE_PATH),
         "retired_v1_context_reference_schema": ARTIFACT_SCHEMAS["context_reference"],
-        "retired_v1_context_reference_payload_sha256": (
-            RETIRED_V1_CONTEXT_PAYLOAD_SHA256
-        ),
+        "retired_v1_context_reference_payload_sha256": (RETIRED_V1_CONTEXT_PAYLOAD_SHA256),
         "retired_v1_context_reference_file_sha256": RETIRED_V1_CONTEXT_FILE_SHA256,
         "retired_v1_incident_error": RETIRED_V1_INCIDENT_ERROR,
         "retired_v1_incident_message": RETIRED_V1_INCIDENT_MESSAGE,
@@ -3844,7 +4217,35 @@ def _retired_v1_bundle_fields() -> Mapping[str, Any]:
         "retired_v1_experimental_outcome_observed": False,
         "retired_v1_governed_network_accessed": False,
         "retired_v1_continuation_authorized": False,
+        "retired_v2_source_commit": RETIRED_V2_SOURCE_COMMIT,
+        "retired_v2_source_tree": RETIRED_V2_SOURCE_TREE,
+        "retired_v2_source_bundle_sha256": RETIRED_V2_SOURCE_BUNDLE_SHA256,
+        "retired_v2_artifact_inventory_schema": RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA,
+        "retired_v2_artifact_inventory_sha256": RETIRED_V2_ARTIFACT_INVENTORY_SHA256,
+        "retired_v2_development_bundle_path": os.fspath(RETIRED_V2_DEVELOPMENT_BUNDLE_PATH),
+        "retired_v2_development_bundle_schema": RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA,
+        "retired_v2_development_bundle_payload_sha256": (RETIRED_V2_BUNDLE_PAYLOAD_SHA256),
+        "retired_v2_development_bundle_file_sha256": RETIRED_V2_BUNDLE_FILE_SHA256,
+        "retired_v2_incident_error": RETIRED_V2_INCIDENT_ERROR,
+        "retired_v2_incident_message": RETIRED_V2_INCIDENT_MESSAGE,
+        "retired_v2_incident_output_sha256": RETIRED_V2_INCIDENT_OUTPUT_SHA256,
+        "retired_v2_context_reference_root_seed": 20_260_910,
+        "retired_v2_context_reference_replay_count": 2,
+        "retired_v2_context_reference_present": False,
+        "retired_v2_development_root_seed": 20_260_909,
+        "retired_v2_development_rng_authority_issued": False,
+        "retired_v2_development_seedsequence_created": False,
+        "retired_v2_development_DGP_executed": False,
+        "retired_v2_development_result_present": False,
+        "retired_v2_experimental_outcome_observed": False,
+        "retired_v2_governed_network_accessed": False,
+        "retired_v2_continuation_authorized": False,
         "scientific_contract_projection_sha256": SCIENTIFIC_CONTRACT_PROJECTION_SHA256,
+        "development_start_receipt_schema": ARTIFACT_SCHEMAS["development_start"],
+        "development_start_receipt_path": os.fspath(DEVELOPMENT_START_CANONICAL_PATH),
+        "development_start_receipt_policy": (
+            "O_EXCL_before_development_authority_and_first_RNG_draw_creator_process_only"
+        ),
     }
 
 
@@ -3874,7 +4275,7 @@ def _build_development_bundle(
     bundle = {
         "schema": DEVELOPMENT_BUNDLE_SCHEMA,
         "candidate_id": CANDIDATE_ID,
-        **dict(_retired_v1_bundle_fields()),
+        **dict(_retired_attempt_bundle_fields()),
         "created_at_UTC": created_at_UTC,
         "canonical_path": DEVELOPMENT_BUNDLE_CANONICAL_PATH,
         "master_plan_path": MASTER_PLAN_PATH,
@@ -3941,7 +4342,7 @@ def build_development_bundle(
         recheck_source=True,
         require_mutation_role=True,
     )
-    observe_retired_v1_artifacts()
+    observe_retired_development_attempts()
     value = _build_development_bundle(
         snapshot=snapshot,
         frozen_file_bytes=frozen_file_bytes,
@@ -3988,7 +4389,7 @@ def _validate_recorded_development_bundle(
     *,
     file_bytes: bytes,
 ) -> CleanSourceSnapshot:
-    observe_retired_v1_artifacts()
+    observe_retired_development_attempts()
     parsed = parse_artifact_bytes(
         file_bytes,
         ArtifactSpec(schema=DEVELOPMENT_BUNDLE_SCHEMA, exact_fields=_DEVELOPMENT_BUNDLE_FIELDS),
@@ -4000,7 +4401,7 @@ def _validate_recorded_development_bundle(
     expected_inventory = tuple(_freeze_json(item.as_record()) for item in snapshot.tracked_files)
     fixed = {
         "candidate_id": CANDIDATE_ID,
-        **dict(_retired_v1_bundle_fields()),
+        **dict(_retired_attempt_bundle_fields()),
         "canonical_path": DEVELOPMENT_BUNDLE_CANONICAL_PATH,
         "master_plan_path": MASTER_PLAN_PATH,
         "master_plan_file_sha256": FROZEN_FILE_SHA256[MASTER_PLAN_PATH],
@@ -4168,7 +4569,7 @@ def publish_development_bundle(
     )
     _require_prepublication_current_source(snapshot)
     _require_frozen_files_in_current_repository(snapshot, frozen_file_bytes)
-    observe_retired_v1_artifacts()
+    observe_retired_development_attempts()
     return _publish_write_once(
         DEVELOPMENT_ROOT,
         "development-bundle.json",
@@ -4221,7 +4622,7 @@ def _validate_development_bundle_at_path(
             recheck_site_packages=True,
             recheck_source=True,
         )
-        observe_retired_v1_artifacts()
+        observe_retired_development_attempts()
     if scope == "canonical":
         current = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
         if not _same_source_snapshot(current, snapshot):
@@ -4273,7 +4674,7 @@ def validate_development_bundle(
         recheck_site_packages=True,
         recheck_source=True,
     )
-    observe_retired_v1_artifacts()
+    observe_retired_development_attempts()
     capability = _validate_development_bundle_at_path(
         Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH),
         snapshot=snapshot,
@@ -4419,6 +4820,7 @@ def require_validated_artifact_capability(
         raise AuthorityError("artifact capability identity mismatch")
     expected_paths = {
         ARTIFACT_SCHEMAS["context_reference"]: CONTEXT_REFERENCE_CANONICAL_PATH,
+        ARTIFACT_SCHEMAS["development_start"]: DEVELOPMENT_START_CANONICAL_PATH,
         ARTIFACT_SCHEMAS["development_result"]: DEVELOPMENT_RESULT_CANONICAL_PATH,
         ARTIFACT_SCHEMAS["selected_method_freeze"]: (
             V3_SOURCE_REPOSITORY / SELECTED_METHOD_FREEZE_REPOSITORY_PATH
@@ -4592,6 +4994,7 @@ def _require_core_development_result_capability(
     parsed: Mapping[str, Any],
     development_bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: DevelopmentStartExecutionCapability,
     development_rng_authority: object,
     validated_context_reference: object,
 ) -> object:
@@ -4615,6 +5018,7 @@ def _require_core_development_result_capability(
         context_reference,
         expected_schema=ARTIFACT_SCHEMAS["context_reference"],
     )
+    start = require_development_start_execution_capability(development_start)
     authority = require_development_rng_authority(development_rng_authority)
     reference_proof = require_validated_context_reference(
         validated_context_reference,
@@ -4641,6 +5045,9 @@ def _require_core_development_result_capability(
         "context_reference_schema": parsed["context_reference_schema"],
         "context_reference_payload_sha256": parsed["context_reference_payload_sha256"],
         "context_reference_file_sha256": parsed["context_reference_file_sha256"],
+        "development_start_schema": parsed["development_start_schema"],
+        "development_start_payload_sha256": parsed["development_start_payload_sha256"],
+        "development_start_file_sha256": parsed["development_start_file_sha256"],
         "development_rng_primitive_schema": parsed["development_rng_primitive_schema"],
         "development_root_seed": parsed["development_root_seed"],
         "participant_count": parsed["participant_count"],
@@ -4734,6 +5141,12 @@ def _require_core_development_result_capability(
         or capability.rng_key_map_sha256 != authority.key_map_sha256
         or capability.context_reference_payload_sha256 != reference_artifact.payload_sha256
         or capability.context_reference_file_sha256 != reference_artifact.file_sha256
+        or authority.development_start_schema != start.receipt_schema
+        or authority.development_start_payload_sha256 != start.receipt_payload_sha256
+        or authority.development_start_file_sha256 != start.receipt_file_sha256
+        or parsed["development_start_schema"] != start.receipt_schema
+        or parsed["development_start_payload_sha256"] != start.receipt_payload_sha256
+        or parsed["development_start_file_sha256"] != start.receipt_file_sha256
         or capability.validated_context_reference_semantic_binding_sha256
         != reference_proof.semantic_binding_sha256
         or reference_proof.development_bundle_payload_sha256 != bundle.payload_sha256
@@ -4904,10 +5317,10 @@ def publish_context_reference(
         require_mutation_role=True,
     )
     data = artifact_bytes(value)
-    retired_v1 = observe_retired_v1_artifacts()
+    retired_v1, _ = observe_retired_development_attempts()
     if data != retired_v1_context_reference_bytes(retired_v1):
         raise AuthorityError(
-            "development-v2 must adopt the exact retired development-v1 context bytes"
+            "development-v3 must adopt the exact retired development-v1 context bytes"
         )
     _validate_context_reference_bytes(
         value,
@@ -4984,10 +5397,10 @@ def _validate_context_reference_at_path(
         ),
     )
     if scope == "canonical":
-        retired_v1 = observe_retired_v1_artifacts()
+        retired_v1, _ = observe_retired_development_attempts()
         if file_bytes != retired_v1_context_reference_bytes(retired_v1):
             raise AuthorityError(
-                "development-v2 context differs from the exact retired V1 reference"
+                "development-v3 context differs from the exact retired V1 reference"
             )
     parsed = _validate_context_reference_bytes(
         parsed,
@@ -5045,15 +5458,136 @@ def validate_context_reference(
     return capability
 
 
-def require_development_rng_prerequisites(
+_DEVELOPMENT_START_FIELDS = frozenset(
+    {
+        "schema",
+        "candidate_id",
+        "protocol_revision",
+        "development_attempt_id",
+        "started_at_UTC",
+        "canonical_path",
+        "creator_process_id",
+        "creator_executable_file_sha256",
+        "clean_git_commit",
+        "clean_git_tree",
+        "development_bundle_schema",
+        "development_bundle_payload_sha256",
+        "development_bundle_file_sha256",
+        "development_bundle_source_bundle_sha256",
+        "numerical_runtime_fingerprint_sha256",
+        "context_reference_schema",
+        "context_reference_payload_sha256",
+        "context_reference_file_sha256",
+        "development_rng_primitive_schema",
+        "development_root_seed",
+        "development_result_schema",
+        "development_result_canonical_path",
+        "development_rng_authority_issued_before_receipt",
+        "development_seedsequence_created_before_receipt",
+        "development_DGP_executed_before_receipt",
+        "presence_without_result_terminal",
+        "scientific_lockbox_authorized",
+        "human_EEG_outcome_authorized",
+        "payload_sha256",
+    }
+)
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class DevelopmentStartExecutionCapability:
+    """Creator-process-only authority proving the durable development boundary."""
+
+    schema: str
+    candidate_id: str
+    receipt_schema: str
+    receipt_payload_sha256: str
+    receipt_file_sha256: str
+    development_bundle_payload_sha256: str
+    development_bundle_file_sha256: str
+    context_reference_payload_sha256: str
+    context_reference_file_sha256: str
+    clean_commit: str
+    clean_tree: str
+    creator_process_id: int
+    semantic_binding_sha256: str
+    _bundle: DevelopmentBundleCapability = field(repr=False, compare=False)
+    _context_reference: ValidatedArtifactCapability = field(repr=False, compare=False)
+    _receipt: ValidatedArtifactCapability = field(repr=False, compare=False)
+    _governed_process: GovernedProcessCapability = field(repr=False, compare=False)
+    _instance_identity: object = field(repr=False, compare=False)
+    _validation_marker: object = field(repr=False, compare=False)
+
+    def __new__(  # noqa: PYI034 -- Python 3.10 does not provide typing.Self.
+        cls,
+        *_args: object,
+        **_kwargs: object,
+    ) -> DevelopmentStartExecutionCapability:
+        raise TypeError(
+            "DevelopmentStartExecutionCapability is issued only by the canonical "
+            "write-once start publisher"
+        )
+
+
+_ACTIVE_DEVELOPMENT_START_CAPABILITIES: dict[int, object] = {}
+
+
+def _development_start_execution_binding(
+    *,
+    bundle: DevelopmentBundleCapability,
+    context: ValidatedArtifactCapability,
+    receipt: ValidatedArtifactCapability,
+    process: GovernedProcessCapability,
+) -> Mapping[str, Any]:
+    return MappingProxyType(
+        {
+            "schema": DEVELOPMENT_START_EXECUTION_CAPABILITY_SCHEMA,
+            "candidate_id": CANDIDATE_ID,
+            "receipt_schema": receipt.schema,
+            "receipt_payload_sha256": receipt.payload_sha256,
+            "receipt_file_sha256": receipt.file_sha256,
+            "development_bundle_payload_sha256": bundle.payload_sha256,
+            "development_bundle_file_sha256": bundle.file_sha256,
+            "context_reference_payload_sha256": context.payload_sha256,
+            "context_reference_file_sha256": context.file_sha256,
+            "clean_commit": bundle.clean_commit,
+            "clean_tree": bundle.clean_tree,
+            "creator_process_id": process.process_id,
+        }
+    )
+
+
+def _require_exact_development_attempt_inventory(expected_names: frozenset[str]) -> None:
+    """Reject gaps, aliases, and unplanned files in the active attempt directory."""
+
+    descriptor = _open_absolute_directory(
+        DEVELOPMENT_ROOT,
+        create=False,
+        require_private_final=True,
+    )
+    try:
+        before = os.fstat(descriptor)
+        try:
+            names = frozenset(os.listdir(descriptor))
+        except OSError as exc:
+            raise AuthorityError("active development inventory cannot be enumerated") from exc
+        after = os.fstat(descriptor)
+        if (
+            names != expected_names
+            or _retired_v1_stat_identity(before) != _retired_v1_stat_identity(after)
+            or frozenset(os.listdir(descriptor)) != expected_names
+        ):
+            raise AuthorityError("active development directory inventory is not exact")
+    finally:
+        os.close(descriptor)
+
+
+def _require_development_bundle_and_context(
     development_bundle: object,
     context_reference: object,
     *,
     expected_commit: str,
     expected_tree: str,
 ) -> tuple[DevelopmentBundleCapability, ValidatedArtifactCapability]:
-    """Gate JIT development authority on resume plus the exact adopted reference."""
-
     bundle = require_development_rng_bundle_capability(
         development_bundle,
         expected_commit=expected_commit,
@@ -5067,7 +5601,7 @@ def require_development_rng_prerequisites(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired = observe_retired_v1_artifacts()
+    retired, _ = observe_retired_development_attempts()
     parsed = parse_artifact_bytes(
         data,
         ArtifactSpec(
@@ -5082,9 +5616,323 @@ def require_development_rng_prerequisites(
         or canonical_json_bytes(context._validated_payload) != canonical_json_bytes(parsed)
     ):
         raise AuthorityError(
-            "development RNG requires the exact validated development-v2 reference"
+            "development RNG requires the exact validated development-v3 reference"
         )
     return bundle, context
+
+
+def _development_start_bindings(
+    bundle: DevelopmentBundleCapability,
+    context: ValidatedArtifactCapability,
+) -> Mapping[str, Any]:
+    return MappingProxyType(
+        {
+            "protocol_revision": PROTOCOL_REVISION,
+            "development_attempt_id": DEVELOPMENT_ATTEMPT_ID,
+            "canonical_path": os.fspath(DEVELOPMENT_START_CANONICAL_PATH),
+            "clean_git_commit": bundle.clean_commit,
+            "clean_git_tree": bundle.clean_tree,
+            "development_bundle_schema": bundle.schema,
+            "development_bundle_payload_sha256": bundle.payload_sha256,
+            "development_bundle_file_sha256": bundle.file_sha256,
+            "development_bundle_source_bundle_sha256": bundle.source_bundle_sha256,
+            "numerical_runtime_fingerprint_sha256": (bundle.numerical_runtime_fingerprint_sha256),
+            "context_reference_schema": context.schema,
+            "context_reference_payload_sha256": context.payload_sha256,
+            "context_reference_file_sha256": context.file_sha256,
+            "development_rng_primitive_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
+            ),
+            "development_root_seed": 20_260_909,
+            "development_result_schema": ARTIFACT_SCHEMAS["development_result"],
+            "development_result_canonical_path": os.fspath(DEVELOPMENT_RESULT_CANONICAL_PATH),
+            "development_rng_authority_issued_before_receipt": False,
+            "development_seedsequence_created_before_receipt": False,
+            "development_DGP_executed_before_receipt": False,
+            "presence_without_result_terminal": True,
+            "scientific_lockbox_authorized": False,
+            "human_EEG_outcome_authorized": False,
+        }
+    )
+
+
+def _validate_development_start_content(
+    value: Mapping[str, Any],
+    *,
+    bundle: DevelopmentBundleCapability,
+    context: ValidatedArtifactCapability,
+) -> Mapping[str, Any]:
+    _require_exact_keys(value, _DEVELOPMENT_START_FIELDS, "development start receipt")
+    if (
+        value.get("schema") != ARTIFACT_SCHEMAS["development_start"]
+        or value.get("candidate_id") != CANDIDATE_ID
+    ):
+        raise ValidationError("development start receipt identity mismatch")
+    _parse_rfc3339_seconds(value.get("started_at_UTC"), "development start time")
+    process_id = value.get("creator_process_id")
+    if not isinstance(process_id, int) or isinstance(process_id, bool) or process_id <= 0:
+        raise ValidationError("development start creator PID is invalid")
+    _require_sha256(
+        value.get("creator_executable_file_sha256"),
+        "development start creator executable",
+    )
+    bindings = _development_start_bindings(bundle, context)
+    for name, expected in bindings.items():
+        if _plain_json(value.get(name)) != _plain_json(expected):
+            raise ValidationError(f"development start binding mismatch: {name}")
+    python_runtime = bundle.numerical_runtime_inventory.get("python")
+    if not isinstance(python_runtime, Mapping) or value[
+        "creator_executable_file_sha256"
+    ] != python_runtime.get("executable_file_sha256"):
+        raise AuthorityError("development start creator executable differs from the bundle")
+    validate_payload_hash(value)
+    return value
+
+
+def _validate_development_start_bytes(
+    data: bytes,
+    *,
+    bundle: DevelopmentBundleCapability,
+    context: ValidatedArtifactCapability,
+) -> ValidatedArtifactCapability:
+    parsed = parse_artifact_bytes(
+        data,
+        ArtifactSpec(
+            schema=ARTIFACT_SCHEMAS["development_start"],
+            exact_fields=_DEVELOPMENT_START_FIELDS,
+        ),
+    )
+    _validate_development_start_content(parsed, bundle=bundle, context=context)
+    bindings = {
+        **dict(_development_start_bindings(bundle, context)),
+        "creator_process_id": parsed["creator_process_id"],
+        "creator_executable_file_sha256": parsed["creator_executable_file_sha256"],
+        "started_at_UTC": parsed["started_at_UTC"],
+    }
+    return _validate_schema_artifact(
+        parsed,
+        file_bytes=data,
+        schema=ARTIFACT_SCHEMAS["development_start"],
+        exact_fields=_DEVELOPMENT_START_FIELDS,
+        expected_bindings=bindings,
+        canonical_path=DEVELOPMENT_START_CANONICAL_PATH,
+        scope="canonical-publication",
+        _observer=_CAPABILITY_ISSUER,
+    )
+
+
+def reopen_development_start_receipt(
+    *,
+    development_bundle: DevelopmentBundleCapability,
+    context_reference: ValidatedArtifactCapability,
+) -> ValidatedArtifactCapability:
+    """Reopen receipt evidence without reconstructing execution authority."""
+
+    _require_active_governed_process(recheck_site_packages=True, recheck_source=True)
+    bundle = require_development_recovery_bundle_capability(
+        development_bundle,
+        expected_commit=development_bundle.clean_commit,
+        expected_tree=development_bundle.clean_tree,
+    )
+    context = require_validated_artifact_capability(
+        context_reference,
+        expected_schema=ARTIFACT_SCHEMAS["context_reference"],
+    )
+    data = load_exact_artifact_bytes(
+        [DEVELOPMENT_START_CANONICAL_PATH],
+        declared_paths=[DEVELOPMENT_START_CANONICAL_PATH],
+    )[os.fspath(DEVELOPMENT_START_CANONICAL_PATH)]
+    return _validate_development_start_bytes(data, bundle=bundle, context=context)
+
+
+def publish_development_start(
+    *,
+    development_bundle: DevelopmentBundleCapability,
+    context_reference: ValidatedArtifactCapability,
+    started_at_UTC: str,
+) -> DevelopmentStartExecutionCapability:
+    """Consume the attempt immediately before any development authority or RNG."""
+
+    process = _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+        require_mutation_role=True,
+    )
+    if process.role != "runner_resume":
+        raise AuthorityError("development start requires the exact runner-resume role")
+    bundle, context = _require_development_bundle_and_context(
+        development_bundle,
+        context_reference,
+        expected_commit=development_bundle.clean_commit,
+        expected_tree=development_bundle.clean_tree,
+    )
+    _require_exact_development_attempt_inventory(
+        frozenset({"development-bundle.json", "context-reference.json"})
+    )
+    _parse_rfc3339_seconds(started_at_UTC, "development start time")
+    content = {
+        **dict(_development_start_bindings(bundle, context)),
+        "started_at_UTC": started_at_UTC,
+        "creator_process_id": process.process_id,
+        "creator_executable_file_sha256": process.executable_file_sha256,
+    }
+    value = _seal_schema_artifact(ARTIFACT_SCHEMAS["development_start"], content)
+    _validate_development_start_content(value, bundle=bundle, context=context)
+    data = artifact_bytes(value)
+    _publish_write_once(
+        DEVELOPMENT_ROOT,
+        DEVELOPMENT_START_CANONICAL_PATH.name,
+        data,
+        _publisher=_PUBLICATION_ISSUER,
+    )
+    _require_exact_development_attempt_inventory(
+        frozenset({"development-bundle.json", "context-reference.json", "development-start.json"})
+    )
+    observed = load_exact_artifact_bytes(
+        [DEVELOPMENT_START_CANONICAL_PATH],
+        declared_paths=[DEVELOPMENT_START_CANONICAL_PATH],
+    )[os.fspath(DEVELOPMENT_START_CANONICAL_PATH)]
+    if observed != data:
+        raise AuthorityError("development start receipt differs after write-once publication")
+    receipt = _validate_development_start_bytes(observed, bundle=bundle, context=context)
+    binding = _development_start_execution_binding(
+        bundle=bundle,
+        context=context,
+        receipt=receipt,
+        process=process,
+    )
+    capability = object.__new__(DevelopmentStartExecutionCapability)
+    for name, item in binding.items():
+        object.__setattr__(capability, name, item)
+    identity = object()
+    object.__setattr__(capability, "semantic_binding_sha256", _artifact_binding_sha256(binding))
+    object.__setattr__(capability, "_bundle", bundle)
+    object.__setattr__(capability, "_context_reference", context)
+    object.__setattr__(capability, "_receipt", receipt)
+    object.__setattr__(capability, "_governed_process", process)
+    object.__setattr__(capability, "_instance_identity", identity)
+    object.__setattr__(
+        capability,
+        "_validation_marker",
+        _DEVELOPMENT_START_EXECUTION_ISSUER,
+    )
+    _ACTIVE_DEVELOPMENT_START_CAPABILITIES[id(capability)] = identity
+    return require_development_start_execution_capability(capability)
+
+
+def require_development_start_execution_capability(
+    value: object,
+) -> DevelopmentStartExecutionCapability:
+    """Validate the unique live creator-process authority and exact receipt bytes."""
+
+    if type(value) is not DevelopmentStartExecutionCapability:
+        raise AuthorityError("exact DevelopmentStartExecutionCapability required")
+    capability = value
+    try:
+        marker = capability._validation_marker
+        instance_identity = capability._instance_identity
+    except AttributeError as exc:
+        raise AuthorityError("development start capability is incomplete") from exc
+    if (
+        marker is not _DEVELOPMENT_START_EXECUTION_ISSUER
+        or _ACTIVE_DEVELOPMENT_START_CAPABILITIES.get(id(capability)) is not instance_identity
+        or capability.creator_process_id != os.getpid()
+    ):
+        raise AuthorityError("development start capability is not the live creator instance")
+    process = require_governed_process_capability(
+        capability._governed_process,
+        expected_role="runner_resume",
+    )
+    bundle = require_development_rng_bundle_capability(
+        capability._bundle,
+        expected_commit=capability.clean_commit,
+        expected_tree=capability.clean_tree,
+    )
+    context = require_validated_artifact_capability(
+        capability._context_reference,
+        expected_schema=ARTIFACT_SCHEMAS["context_reference"],
+    )
+    data = load_exact_artifact_bytes(
+        [DEVELOPMENT_START_CANONICAL_PATH],
+        declared_paths=[DEVELOPMENT_START_CANONICAL_PATH],
+    )[os.fspath(DEVELOPMENT_START_CANONICAL_PATH)]
+    receipt = _validate_development_start_bytes(data, bundle=bundle, context=context)
+    binding = _development_start_execution_binding(
+        bundle=bundle,
+        context=context,
+        receipt=receipt,
+        process=process,
+    )
+    if (
+        any(getattr(capability, name) != expected for name, expected in binding.items())
+        or capability.semantic_binding_sha256 != _artifact_binding_sha256(binding)
+        or capability._receipt is not receipt
+        and (
+            capability._receipt.payload_sha256 != receipt.payload_sha256
+            or capability._receipt.file_sha256 != receipt.file_sha256
+        )
+    ):
+        raise AuthorityError("development start capability binding changed")
+    return capability
+
+
+def require_development_rng_prerequisites(
+    development_bundle: object,
+    context_reference: object,
+    development_start: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> tuple[
+    DevelopmentBundleCapability,
+    ValidatedArtifactCapability,
+    DevelopmentStartExecutionCapability,
+]:
+    """Gate initial JIT development authority on the just-created durable receipt."""
+
+    bundle, context = _require_development_bundle_and_context(
+        development_bundle,
+        context_reference,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+    )
+    start = require_development_start_execution_capability(development_start)
+    if start._bundle is not bundle or start._context_reference is not context:
+        raise AuthorityError("development start does not bind the exact prerequisite instances")
+    _require_exact_development_attempt_inventory(
+        frozenset({"development-bundle.json", "context-reference.json", "development-start.json"})
+    )
+    return bundle, context, start
+
+
+def revalidate_development_rng_prerequisites(
+    development_bundle: object,
+    context_reference: object,
+    development_start: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> tuple[
+    DevelopmentBundleCapability,
+    ValidatedArtifactCapability,
+    DevelopmentStartExecutionCapability,
+]:
+    """Revalidate live development authority before or after result publication."""
+
+    bundle, context = _require_development_bundle_and_context(
+        development_bundle,
+        context_reference,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+    )
+    start = require_development_start_execution_capability(development_start)
+    if start._bundle is not bundle or start._context_reference is not context:
+        raise AuthorityError("development start does not bind the exact prerequisite instances")
+    names = {"development-bundle.json", "context-reference.json", "development-start.json"}
+    if os.path.lexists(DEVELOPMENT_RESULT_CANONICAL_PATH):
+        names.add("development-result.json")
+    _require_exact_development_attempt_inventory(frozenset(names))
+    return bundle, context, start
 
 
 def _validate_context_reference_under_test_root(
@@ -5211,6 +6059,9 @@ _DEVELOPMENT_RESULT_FIELDS = frozenset(
         "context_reference_schema",
         "context_reference_payload_sha256",
         "context_reference_file_sha256",
+        "development_start_schema",
+        "development_start_payload_sha256",
+        "development_start_file_sha256",
         "development_rng_primitive_schema",
         "development_root_seed",
         "participant_count",
@@ -5248,12 +6099,15 @@ def _validate_development_result_content(value: Mapping[str, Any]) -> None:
         value["generator_revision"] != "v1_single_insertion_context_trust"
         or value["master_plan_file_sha256"] != FROZEN_FILE_SHA256[MASTER_PLAN_PATH]
         or value["synthetic_plan_file_sha256"] != FROZEN_FILE_SHA256[SYNTHETIC_PLAN_PATH]
+        or value["development_start_schema"] != ARTIFACT_SCHEMAS["development_start"]
         or value["development_rng_primitive_schema"]
         != "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
         or value["development_root_seed"] != 20_260_909
         or value["participant_count"] != 48
     ):
         raise ValidationError("development-result frozen execution constants changed")
+    _require_sha256(value["development_start_payload_sha256"], "development start payload")
+    _require_sha256(value["development_start_file_sha256"], "development start file")
     _validate_grid_cells(value["grid_cells"])
     stress = value["B4_source_range_stress_participant_indices"]
     if (
@@ -5303,6 +6157,7 @@ def _validate_development_result_bytes(
     file_bytes: bytes,
     development_bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: DevelopmentStartExecutionCapability,
     development_rng_authority: object,
     validated_context_reference: object,
     core_capability: object,
@@ -5322,6 +6177,7 @@ def _validate_development_result_bytes(
         parsed=parsed,
         development_bundle=development_bundle,
         context_reference=context_reference,
+        development_start=development_start,
         development_rng_authority=development_rng_authority,
         validated_context_reference=validated_context_reference,
     )
@@ -5334,6 +6190,7 @@ def _validate_development_result_bytes(
         context_reference,
         expected_schema=ARTIFACT_SCHEMAS["context_reference"],
     )
+    development_start = require_development_start_execution_capability(development_start)
     bindings = {
         "master_plan_file_sha256": FROZEN_FILE_SHA256[MASTER_PLAN_PATH],
         "synthetic_plan_file_sha256": FROZEN_FILE_SHA256[SYNTHETIC_PLAN_PATH],
@@ -5343,6 +6200,9 @@ def _validate_development_result_bytes(
         "context_reference_schema": context_reference.schema,
         "context_reference_payload_sha256": context_reference.payload_sha256,
         "context_reference_file_sha256": context_reference.file_sha256,
+        "development_start_schema": development_start.receipt_schema,
+        "development_start_payload_sha256": development_start.receipt_payload_sha256,
+        "development_start_file_sha256": development_start.receipt_file_sha256,
         "development_root_seed": 20_260_909,
     }
     for key, expected in bindings.items():
@@ -5356,6 +6216,7 @@ def publish_development_result(
     *,
     development_bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: DevelopmentStartExecutionCapability,
     development_rng_authority: object,
     validated_context_reference: object,
     core_capability: object,
@@ -5373,6 +6234,7 @@ def publish_development_result(
         file_bytes=data,
         development_bundle=development_bundle,
         context_reference=context_reference,
+        development_start=development_start,
         development_rng_authority=development_rng_authority,
         validated_context_reference=validated_context_reference,
         core_capability=core_capability,
@@ -5381,6 +6243,10 @@ def publish_development_result(
         development_bundle,
         expected_commit=development_bundle.clean_commit,
         expected_tree=development_bundle.clean_tree,
+    )
+    require_development_start_execution_capability(development_start)
+    _require_exact_development_attempt_inventory(
+        frozenset({"development-bundle.json", "context-reference.json", "development-start.json"})
     )
     return _publish_write_once(
         DEVELOPMENT_RESULT_CANONICAL_PATH.parent,
@@ -5395,6 +6261,7 @@ def validate_development_result(
     *,
     development_bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: DevelopmentStartExecutionCapability,
     development_rng_authority: object,
     validated_context_reference: object,
     core_capability: object,
@@ -5423,9 +6290,20 @@ def validate_development_result(
         file_bytes=data,
         development_bundle=development_bundle,
         context_reference=context_reference,
+        development_start=development_start,
         development_rng_authority=development_rng_authority,
         validated_context_reference=validated_context_reference,
         core_capability=core_capability,
+    )
+    _require_exact_development_attempt_inventory(
+        frozenset(
+            {
+                "development-bundle.json",
+                "context-reference.json",
+                "development-start.json",
+                "development-result.json",
+            }
+        )
     )
     return _validate_schema_artifact(
         parsed,
@@ -5457,6 +6335,9 @@ class CanonicalDevelopmentResultRecoveryCapability:
     context_reference_schema: str
     context_reference_payload_sha256: str
     context_reference_file_sha256: str
+    development_start_schema: str
+    development_start_payload_sha256: str
+    development_start_file_sha256: str
     development_result_schema: str
     development_result_payload_sha256: str
     development_result_file_sha256: str
@@ -5465,6 +6346,7 @@ class CanonicalDevelopmentResultRecoveryCapability:
     semantic_binding_sha256: str
     _bundle: DevelopmentBundleCapability = field(repr=False, compare=False)
     _context_reference: ValidatedArtifactCapability = field(repr=False, compare=False)
+    _development_start: ValidatedArtifactCapability = field(repr=False, compare=False)
     _validated_payload: Mapping[str, Any] = field(repr=False, compare=False)
     _snapshot: CleanSourceSnapshot = field(repr=False, compare=False)
     _validation_marker: object = field(repr=False, compare=False)
@@ -5484,6 +6366,7 @@ def _canonical_development_result_recovery_binding(
     *,
     bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: ValidatedArtifactCapability,
     result: Mapping[str, Any],
     result_file_bytes: bytes,
 ) -> Mapping[str, Any]:
@@ -5498,6 +6381,9 @@ def _canonical_development_result_recovery_binding(
             "context_reference_schema": context_reference.schema,
             "context_reference_payload_sha256": context_reference.payload_sha256,
             "context_reference_file_sha256": context_reference.file_sha256,
+            "development_start_schema": development_start.schema,
+            "development_start_payload_sha256": development_start.payload_sha256,
+            "development_start_file_sha256": development_start.file_sha256,
             "development_result_schema": ARTIFACT_SCHEMAS["development_result"],
             "development_result_payload_sha256": result["payload_sha256"],
             "development_result_file_sha256": file_sha256(result_file_bytes),
@@ -5511,6 +6397,7 @@ def _issue_canonical_development_result_recovery_capability(
     *,
     bundle: DevelopmentBundleCapability,
     context_reference: ValidatedArtifactCapability,
+    development_start: ValidatedArtifactCapability,
     result: Mapping[str, Any],
     result_file_bytes: bytes,
     snapshot: CleanSourceSnapshot,
@@ -5525,6 +6412,7 @@ def _issue_canonical_development_result_recovery_capability(
     binding = _canonical_development_result_recovery_binding(
         bundle=bundle,
         context_reference=context_reference,
+        development_start=development_start,
         result=result,
         result_file_bytes=result_file_bytes,
     )
@@ -5538,6 +6426,7 @@ def _issue_canonical_development_result_recovery_capability(
     )
     object.__setattr__(capability, "_bundle", bundle)
     object.__setattr__(capability, "_context_reference", context_reference)
+    object.__setattr__(capability, "_development_start", development_start)
     object.__setattr__(capability, "_validated_payload", _freeze_json(result))
     object.__setattr__(capability, "_snapshot", snapshot)
     object.__setattr__(capability, "_validation_marker", _CAPABILITY_ISSUER)
@@ -5550,6 +6439,7 @@ def _load_canonical_development_result_for_a_recovery(
     context_reference: ValidatedArtifactCapability,
 ) -> tuple[
     DevelopmentBundleCapability,
+    ValidatedArtifactCapability,
     ValidatedArtifactCapability,
     CleanSourceSnapshot,
     Mapping[str, Any],
@@ -5570,11 +6460,9 @@ def _load_canonical_development_result_for_a_recovery(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired_v1 = observe_retired_v1_artifacts()
+    retired_v1, _ = observe_retired_development_attempts()
     if context_data != retired_v1_context_reference_bytes(retired_v1):
-        raise AuthorityError(
-            "A-stage development recovery context differs from retired V1 bytes"
-        )
+        raise AuthorityError("A-stage development recovery context differs from retired V1 bytes")
     context_payload = parse_artifact_bytes(
         context_data,
         ArtifactSpec(
@@ -5588,6 +6476,15 @@ def _load_canonical_development_result_for_a_recovery(
         or canonical_json_bytes(context._validated_payload) != canonical_json_bytes(context_payload)
     ):
         raise AuthorityError("A-stage development recovery context differs from canonical bytes")
+    start_data = load_exact_artifact_bytes(
+        [DEVELOPMENT_START_CANONICAL_PATH],
+        declared_paths=[DEVELOPMENT_START_CANONICAL_PATH],
+    )[os.fspath(DEVELOPMENT_START_CANONICAL_PATH)]
+    development_start = _validate_development_start_bytes(
+        start_data,
+        bundle=bundle,
+        context=context,
+    )
     result_data = load_exact_artifact_bytes(
         [DEVELOPMENT_RESULT_CANONICAL_PATH],
         declared_paths=[DEVELOPMENT_RESULT_CANONICAL_PATH],
@@ -5610,6 +6507,9 @@ def _load_canonical_development_result_for_a_recovery(
         "context_reference_schema": context.schema,
         "context_reference_payload_sha256": context.payload_sha256,
         "context_reference_file_sha256": context.file_sha256,
+        "development_start_schema": development_start.schema,
+        "development_start_payload_sha256": development_start.payload_sha256,
+        "development_start_file_sha256": development_start.file_sha256,
         "development_root_seed": 20_260_909,
     }
     if any(_plain_json(result[key]) != _plain_json(value) for key, value in bindings.items()):
@@ -5623,7 +6523,17 @@ def _load_canonical_development_result_for_a_recovery(
     ):
         raise AuthorityError("development-result recovery requires exact bundle A")
     _require_loaded_governance_source_at_snapshot(snapshot)
-    return bundle, context, snapshot, result, result_data
+    _require_exact_development_attempt_inventory(
+        frozenset(
+            {
+                "development-bundle.json",
+                "context-reference.json",
+                "development-start.json",
+                "development-result.json",
+            }
+        )
+    )
+    return bundle, context, development_start, snapshot, result, result_data
 
 
 def observe_canonical_development_result_for_a_recovery(
@@ -5637,7 +6547,7 @@ def observe_canonical_development_result_for_a_recovery(
         recheck_site_packages=True,
         recheck_source=True,
     )
-    bundle, context, snapshot, result, result_data = (
+    bundle, context, development_start, snapshot, result, result_data = (
         _load_canonical_development_result_for_a_recovery(
             development_bundle=development_bundle,
             context_reference=context_reference,
@@ -5646,6 +6556,7 @@ def observe_canonical_development_result_for_a_recovery(
     return _issue_canonical_development_result_recovery_capability(
         bundle=bundle,
         context_reference=context,
+        development_start=development_start,
         result=result,
         result_file_bytes=result_data,
         snapshot=snapshot,
@@ -5670,9 +6581,14 @@ def _require_canonical_development_result_recovery_seal(
         capability._context_reference,
         expected_schema=ARTIFACT_SCHEMAS["context_reference"],
     )
+    development_start = require_validated_artifact_capability(
+        capability._development_start,
+        expected_schema=ARTIFACT_SCHEMAS["development_start"],
+    )
     binding = _canonical_development_result_recovery_binding(
         bundle=bundle,
         context_reference=context,
+        development_start=development_start,
         result=capability._validated_payload,
         result_file_bytes=artifact_bytes(capability._validated_payload),
     )
@@ -5689,7 +6605,7 @@ def require_canonical_development_result_recovery_capability(
     """Revalidate an A recovery capability against source, runtime, and disk."""
 
     capability = _require_canonical_development_result_recovery_seal(value)
-    bundle, context, snapshot, result, result_data = (
+    bundle, context, development_start, snapshot, result, result_data = (
         _load_canonical_development_result_for_a_recovery(
             development_bundle=capability._bundle,
             context_reference=capability._context_reference,
@@ -5698,6 +6614,7 @@ def require_canonical_development_result_recovery_capability(
     binding = _canonical_development_result_recovery_binding(
         bundle=bundle,
         context_reference=context,
+        development_start=development_start,
         result=result,
         result_file_bytes=result_data,
     )
@@ -6519,10 +7436,10 @@ def reopen_context_reference(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired_v1 = observe_retired_v1_artifacts()
+    retired_v1, _ = observe_retired_development_attempts()
     if reference_data != retired_v1_context_reference_bytes(retired_v1):
         raise AuthorityError(
-            "durable development-v2 context differs from the exact retired V1 bytes"
+            "durable development-v3 context differs from the exact retired V1 bytes"
         )
     reference = parse_artifact_bytes(
         reference_data,
@@ -6596,6 +7513,16 @@ def reopen_development_result(
         context_reference,
         expected_schema=ARTIFACT_SCHEMAS["context_reference"],
     )
+    development_start = reopen_development_start_receipt(
+        development_bundle=bundle,
+        context_reference=reference,
+    )
+    if (
+        result["development_start_schema"] != development_start.schema
+        or result["development_start_payload_sha256"] != development_start.payload_sha256
+        or result["development_start_file_sha256"] != development_start.file_sha256
+    ):
+        raise AuthorityError("durable development result differs from its start receipt")
     try:
         from cfeg.analysis.metadata_calibration_v3_synthetic import (
             validate_development_result_for_audit,
@@ -6619,6 +7546,9 @@ def reopen_development_result(
         "context_reference_schema": reference.schema,
         "context_reference_payload_sha256": reference.payload_sha256,
         "context_reference_file_sha256": reference.file_sha256,
+        "development_start_schema": development_start.schema,
+        "development_start_payload_sha256": development_start.payload_sha256,
+        "development_start_file_sha256": development_start.file_sha256,
         "development_root_seed": 20_260_909,
     }
     return _validate_schema_artifact(

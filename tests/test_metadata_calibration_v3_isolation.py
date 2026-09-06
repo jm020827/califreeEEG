@@ -282,9 +282,19 @@ def test_ordinary_python_cannot_enter_production_authority_gateways(
             rng_authority=probe,
             core_capability=probe,
         ),
+        lambda: gov.publish_development_start(
+            development_bundle=probe,  # type: ignore[arg-type]
+            context_reference=probe,  # type: ignore[arg-type]
+            started_at_UTC="2026-09-07T00:00:00Z",
+        ),
+        lambda: gov.reopen_development_start_receipt(
+            development_bundle=probe,  # type: ignore[arg-type]
+            context_reference=probe,  # type: ignore[arg-type]
+        ),
         lambda: gov.validate_development_result(
             development_bundle=probe,  # type: ignore[arg-type]
             context_reference=probe,  # type: ignore[arg-type]
+            development_start=probe,  # type: ignore[arg-type]
             development_rng_authority=probe,
             validated_context_reference=probe,
             core_capability=probe,
@@ -352,7 +362,7 @@ def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production
 
     resolved_alias = private_test_path / "resolved-home-alias"
     resolved_alias.symlink_to("/home/whwovy", target_is_directory=True)
-    for attempt in ("development-v1", "development-v2"):
+    for attempt in ("development-v1", "development-v2", "development-v3"):
         with pytest.raises(gov.AuthorityError, match="production namespace"):
             gov._publish_write_once_under_test_root(
                 resolved_alias,

@@ -151,10 +151,10 @@ def test_recovery_amendment_is_semantically_exact_and_duplicate_safe() -> None:
     assert parsed["recorded_at_is_amendment_time_not_incident_timestamp"] is True
 
     altered = json.loads(data)
-    altered["retired_development_attempt"]["execution_observations"][
-        "development_v1_governed_execution_network_access_count"
+    altered["retired_development_v2"]["execution_observations"][
+        "development_v2_governed_execution_network_access_count"
     ] = 1
-    with pytest.raises(gov.ValidationError, match="frozen V3.1 facts"):
+    with pytest.raises(gov.ValidationError, match="frozen V3.2 facts"):
         gov._validate_recovery_amendment_bytes(
             json.dumps(altered, separators=(",", ":")).encode("utf-8")
         )
@@ -226,6 +226,75 @@ def test_retired_v1_capability_is_nominal_and_cannot_be_forged() -> None:
         gov.require_retired_v1_artifacts_capability(
             {"schema": gov.RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA}
         )
+    with pytest.raises(gov.AuthorityError, match="marker"):
+        gov.require_retired_v1_artifacts_capability(
+            object.__new__(gov.RetiredV1ArtifactsCapability)
+        )
+
+
+def test_retired_v2_directory_loader_rejects_inventory_and_inode_drift(
+    private_test_path: Path,
+) -> None:
+    root = private_test_path / "development-v2"
+    root.mkdir(mode=0o700)
+    bundle = root / "development-bundle.json"
+    bundle.write_bytes(b"retired V2 bundle bytes")
+    bundle.chmod(0o400)
+    assert gov._load_exact_retired_v2_directory_bytes(root) == {
+        "development-bundle.json": b"retired V2 bundle bytes"
+    }
+
+    extra = root / "context-reference.json"
+    extra.write_bytes(b"forbidden V2 context")
+    extra.chmod(0o400)
+    with pytest.raises(gov.AuthorityError, match="exact one-file inventory"):
+        gov._load_exact_retired_v2_directory_bytes(root)
+    extra.unlink()
+
+    bundle.chmod(0o600)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular file"):
+        gov._load_exact_retired_v2_directory_bytes(root)
+    bundle.chmod(0o400)
+
+    linked = root.parent / "linked-v2-bundle.json"
+    os.link(bundle, linked)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular file"):
+        gov._load_exact_retired_v2_directory_bytes(root)
+    linked.unlink()
+
+    bundle.unlink()
+    target = root.parent / "v2-target.json"
+    target.write_bytes(b"target")
+    target.chmod(0o400)
+    bundle.symlink_to(target)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular file"):
+        gov._load_exact_retired_v2_directory_bytes(root)
+    bundle.unlink()
+    with pytest.raises(gov.AuthorityError, match="exact one-file inventory"):
+        gov._load_exact_retired_v2_directory_bytes(root)
+
+
+def test_retired_v2_capability_is_nominal_and_reviewer_digest_is_executable() -> None:
+    assert (
+        gov.retired_v2_artifact_inventory_sha256()
+        == gov.RETIRED_V2_ARTIFACT_INVENTORY_SHA256
+        == "7ae6a99b7ec2033b2ce0cdfbfedc05851b77d9e5dfeb21b485ebe4215f18c865"
+    )
+    with pytest.raises(TypeError):
+        gov.RetiredV2ArtifactsCapability()  # type: ignore[call-arg]
+    with pytest.raises(gov.AuthorityError, match="no valid issuer"):
+        gov.RetiredV2ArtifactsCapability(
+            development_bundle_bytes=b"retired V2 bundle\n",
+            _issuer=object(),
+        )
+    with pytest.raises(gov.AuthorityError, match="exact RetiredV2ArtifactsCapability"):
+        gov.require_retired_v2_artifacts_capability(
+            {"schema": gov.RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA}
+        )
+    with pytest.raises(gov.AuthorityError, match="marker"):
+        gov.require_retired_v2_artifacts_capability(
+            object.__new__(gov.RetiredV2ArtifactsCapability)
+        )
 
 
 def test_context_and_recovery_bundle_roles_are_read_only_but_development_is_resume_only(
@@ -251,7 +320,7 @@ def test_context_and_recovery_bundle_roles_are_read_only_but_development_is_resu
     monkeypatch.setattr(gov, "require_current_numerical_runtime_fingerprint", lambda value: value)
     monkeypatch.setattr(gov, "capture_clean_source_snapshot", lambda _root: snapshot)
     monkeypatch.setattr(gov, "_require_loaded_governance_source_identity", lambda _value: None)
-    monkeypatch.setattr(gov, "observe_retired_v1_artifacts", lambda: object())
+    monkeypatch.setattr(gov, "observe_retired_development_attempts", lambda: (object(), object()))
 
     assert (
         gov.require_context_reference_rng_bundle_capability(
@@ -653,17 +722,15 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["focused_test_process_id"] == observed.process_id
     assert value["artifact_schemas"] == dict(gov.ARTIFACT_SCHEMAS)
     assert frozenset(value) == gov._DEVELOPMENT_BUNDLE_FIELDS
-    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
-    assert value["protocol_revision"] == "V3.1"
-    assert value["development_attempt_id"] == "development-v2"
+    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+    assert value["protocol_revision"] == "V3.2"
+    assert value["development_attempt_id"] == "development-v3"
     assert value["retired_v1_source_commit"] == gov.RETIRED_V1_SOURCE_COMMIT
     assert value["retired_v1_source_tree"] == gov.RETIRED_V1_SOURCE_TREE
     assert value["retired_v1_development_bundle_payload_sha256"] == (
         gov.RETIRED_V1_BUNDLE_PAYLOAD_SHA256
     )
-    assert value["retired_v1_context_reference_file_sha256"] == (
-        gov.RETIRED_V1_CONTEXT_FILE_SHA256
-    )
+    assert value["retired_v1_context_reference_file_sha256"] == (gov.RETIRED_V1_CONTEXT_FILE_SHA256)
     assert value["retired_v1_incident_message"] == gov.RETIRED_V1_INCIDENT_MESSAGE
     assert value["retired_v1_development_seedsequence_created"] is False
     assert value["retired_v1_development_DGP_executed"] is False
@@ -671,6 +738,24 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["retired_v1_experimental_outcome_observed"] is False
     assert value["retired_v1_governed_network_accessed"] is False
     assert value["retired_v1_continuation_authorized"] is False
+    assert value["retired_v2_source_commit"] == gov.RETIRED_V2_SOURCE_COMMIT
+    assert value["retired_v2_source_tree"] == gov.RETIRED_V2_SOURCE_TREE
+    assert value["retired_v2_source_bundle_sha256"] == gov.RETIRED_V2_SOURCE_BUNDLE_SHA256
+    assert value["retired_v2_artifact_inventory_sha256"] == (
+        gov.RETIRED_V2_ARTIFACT_INVENTORY_SHA256
+    )
+    assert value["retired_v2_development_bundle_payload_sha256"] == (
+        gov.RETIRED_V2_BUNDLE_PAYLOAD_SHA256
+    )
+    assert value["retired_v2_context_reference_replay_count"] == 2
+    assert value["retired_v2_context_reference_present"] is False
+    assert value["retired_v2_development_rng_authority_issued"] is False
+    assert value["retired_v2_development_seedsequence_created"] is False
+    assert value["retired_v2_development_DGP_executed"] is False
+    assert value["retired_v2_development_result_present"] is False
+    assert value["retired_v2_experimental_outcome_observed"] is False
+    assert value["retired_v2_governed_network_accessed"] is False
+    assert value["retired_v2_continuation_authorized"] is False
     with pytest.raises(gov.AuthorityError, match="DevelopmentBundleCapability"):
         gov.require_development_bundle_capability(
             receipt,
@@ -705,6 +790,14 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
             gov.ArtifactSpec(
                 schema=gov.RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA,
                 exact_fields=gov._RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS,
+            ),
+        )
+    with pytest.raises(gov.ValidationError, match="schema|key mismatch"):
+        gov.parse_artifact_bytes(
+            gov.artifact_bytes(value),
+            gov.ArtifactSpec(
+                schema=gov.RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA,
+                exact_fields=gov._RETIRED_V2_DEVELOPMENT_BUNDLE_FIELDS,
             ),
         )
 
@@ -1105,6 +1198,7 @@ def test_test_and_result_publishers_repeat_guards_before_o_excl(
                 clean_tree="2" * 40,
             ),
             context_reference=object(),  # type: ignore[arg-type]
+            development_start=object(),  # type: ignore[arg-type]
             development_rng_authority=object(),
             validated_context_reference=object(),
             core_capability=object(),
@@ -1424,6 +1518,9 @@ def test_fabricated_development_summary_cannot_mint_authority() -> None:
         "context_reference_schema": gov.ARTIFACT_SCHEMAS["context_reference"],
         "context_reference_payload_sha256": "3" * 64,
         "context_reference_file_sha256": "4" * 64,
+        "development_start_schema": gov.ARTIFACT_SCHEMAS["development_start"],
+        "development_start_payload_sha256": "5" * 64,
+        "development_start_file_sha256": "6" * 64,
         "development_rng_primitive_schema": (
             "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
         ),
@@ -1703,12 +1800,25 @@ def test_lifecycle_cannot_be_constructed_at_arbitrary_state_or_use_mappings() ->
 
 
 def test_tokenless_internal_issuers_cannot_mint_production_authority() -> None:
+    with pytest.raises(TypeError, match="canonical write-once start publisher"):
+        gov.DevelopmentStartExecutionCapability()
+    with pytest.raises(gov.AuthorityError, match="incomplete"):
+        gov.require_development_start_execution_capability(
+            object.__new__(gov.DevelopmentStartExecutionCapability)
+        )
+    copied_row = object.__new__(gov.DevelopmentStartExecutionCapability)
+    object.__setattr__(copied_row, "_validation_marker", gov._DEVELOPMENT_START_EXECUTION_ISSUER)
+    object.__setattr__(copied_row, "_instance_identity", object())
+    object.__setattr__(copied_row, "creator_process_id", os.getpid())
+    with pytest.raises(gov.AuthorityError, match="live creator instance"):
+        gov.require_development_start_execution_capability(copied_row)
     with pytest.raises(TypeError, match="canonical A-stage disk observation"):
         gov.CanonicalDevelopmentResultRecoveryCapability()
     with pytest.raises(TypeError):
         gov._issue_canonical_development_result_recovery_capability(  # type: ignore[call-arg]
             bundle=object(),
             context_reference=object(),
+            development_start=object(),
             result={},
             result_file_bytes=b"{}\n",
             snapshot=object(),
@@ -1717,6 +1827,7 @@ def test_tokenless_internal_issuers_cannot_mint_production_authority() -> None:
         gov._issue_canonical_development_result_recovery_capability(
             bundle=object(),  # type: ignore[arg-type]
             context_reference=object(),  # type: ignore[arg-type]
+            development_start=object(),  # type: ignore[arg-type]
             result={},
             result_file_bytes=b"{}\n",
             snapshot=object(),  # type: ignore[arg-type]

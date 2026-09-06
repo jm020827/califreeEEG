@@ -14,7 +14,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 
 import pytest
 
@@ -33,6 +33,7 @@ from cfeg.metadata_calibration_v3_runner import (
     _capture_python_record,
     _capture_python_site_inventory,
     _capture_source_facts,
+    _detach_retired_v1_context_payload,
     _PreflightConfig,
     _rfc3339_now_after,
     _validate_existing_bundle,
@@ -181,6 +182,160 @@ def _seal(value: dict[str, object]) -> dict[str, object]:
     return sealed
 
 
+def _frozen_context_transport_fixture():
+    from cfeg import metadata_calibration_v3_governance as governance
+
+    plain = _seal(
+        {
+            "schema": "cfeg.test.context-reference.v1",
+            "nested": {"values": [1, 2, {"label": "covariate-only"}]},
+        }
+    )
+    exact_bytes = _canonical_json_bytes(plain) + b"\n"
+    frozen = governance.parse_artifact_bytes(
+        exact_bytes,
+        governance.ArtifactSpec(
+            schema="cfeg.test.context-reference.v1",
+            exact_fields=frozenset(plain),
+        ),
+    )
+    return plain, frozen, exact_bytes
+
+
+def test_frozen_context_transport_detaches_deeply_without_byte_drift() -> None:
+    plain, frozen, exact_bytes = _frozen_context_transport_fixture()
+    retired_v1 = object()
+    governance = SimpleNamespace(
+        retired_v1_context_reference_payload=lambda value: (
+            frozen if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
+        ),
+        retired_v1_context_reference_bytes=lambda value: (
+            exact_bytes if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
+        ),
+    )
+
+    assert type(frozen) is MappingProxyType
+    assert type(frozen["nested"]) is MappingProxyType
+    assert type(frozen["nested"]["values"]) is tuple
+    detached = _detach_retired_v1_context_payload(governance, retired_v1)
+    assert detached == plain
+    assert type(detached) is dict
+    assert type(detached["nested"]) is dict
+    assert type(detached["nested"]["values"]) is list
+    assert type(detached["nested"]["values"][2]) is dict
+    assert _canonical_json_bytes(detached) + b"\n" == exact_bytes
+
+
+def test_context_resume_transports_real_frozen_payload_before_publication() -> None:
+    plain, frozen, exact_bytes = _frozen_context_transport_fixture()
+    retired_v1 = object()
+    bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
+    reference_rng = object()
+    proof = object()
+    events: list[str] = []
+
+    def require_plain(value):
+        assert value == plain
+        assert type(value) is dict
+        assert type(value["nested"]) is dict
+        assert type(value["nested"]["values"]) is list
+
+    def issue_reference(*_args, **_kwargs):
+        events.append("reference-only-authority")
+        return reference_rng
+
+    def validate_for_publication(value, *, rng_authority):
+        require_plain(value)
+        assert rng_authority is reference_rng
+        events.append("core-proof")
+        return proof
+
+    def publish(value, **bindings):
+        require_plain(value)
+        assert bindings == {
+            "development_bundle": bundle,
+            "rng_authority": reference_rng,
+            "core_capability": proof,
+        }
+        events.append("context-publication")
+
+    governance = SimpleNamespace(
+        retired_v1_context_reference_payload=lambda value: (
+            frozen if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
+        ),
+        retired_v1_context_reference_bytes=lambda value: (
+            exact_bytes if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
+        ),
+        publish_context_reference=publish,
+        validate_context_reference=lambda **_kwargs: events.append("context-reopen"),
+    )
+    facade = object.__new__(ProductionFacade)
+    facade._governance = governance
+    facade._model = SimpleNamespace(
+        issue_bundle_bound_context_reference_rng_authority=issue_reference,
+        issue_bundle_bound_development_rng_authority=lambda *_args, **_kwargs: (
+            _ for _ in ()
+        ).throw(AssertionError("context phase minted development authority")),
+        validate_context_reference_for_publication=validate_for_publication,
+    )
+    facade._synthetic = SimpleNamespace(
+        replay_context_reference_payload=lambda *, rng_authority: (
+            dict(plain)
+            if rng_authority is reference_rng
+            else (_ for _ in ()).throw(AssertionError())
+        ),
+        execute_complete_development=lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("context phase executed development DGP")
+        ),
+    )
+
+    facade._publish_context_reference(SimpleNamespace(bundle=bundle, retired_v1=retired_v1))
+    assert events == [
+        "reference-only-authority",
+        "core-proof",
+        "context-publication",
+        "context-reopen",
+    ]
+
+
+def test_context_transport_failure_stops_before_publication_and_development() -> None:
+    _, frozen, _ = _frozen_context_transport_fixture()
+    retired_v1 = object()
+    reached: list[str] = []
+
+    def forbidden(name: str):
+        return lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError(f"context transport failure reached {name}")
+        )
+
+    facade = object.__new__(ProductionFacade)
+    facade._governance = SimpleNamespace(
+        retired_v1_context_reference_payload=lambda _value: frozen,
+        retired_v1_context_reference_bytes=lambda _value: b"{}\n",
+        publish_context_reference=forbidden("context publication"),
+        validate_context_reference=forbidden("context validation"),
+    )
+    facade._model = SimpleNamespace(
+        issue_bundle_bound_context_reference_rng_authority=lambda *_args, **_kwargs: (
+            reached.append("reference-only-authority") or object()
+        ),
+        issue_bundle_bound_development_rng_authority=forbidden("development RNG authority"),
+        validate_context_reference_for_publication=forbidden("core proof"),
+    )
+    facade._synthetic = SimpleNamespace(
+        replay_context_reference_payload=forbidden("reference replay"),
+        execute_complete_development=forbidden("development DGP"),
+    )
+    graph = SimpleNamespace(
+        bundle=SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40),
+        retired_v1=retired_v1,
+    )
+
+    with pytest.raises(RunnerError, match="differs from its immutable bytes"):
+        facade._publish_context_reference(graph)
+    assert reached == ["reference-only-authority"]
+
+
 def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
     config = _test_preflight_config(repository, site, bundle)
     source = _capture_source_facts(config, executing_file=_RUNNER)
@@ -210,7 +365,17 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
             "clean_git_commit": source.commit,
             "clean_git_tree": source.tree,
             "created_at_UTC": "2026-09-06T12:00:00Z",
-            "development_attempt_id": "development-v2",
+            "development_attempt_id": "development-v3",
+            "development_start_receipt_path": (
+                "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+                "development-v3/development-start.json"
+            ),
+            "development_start_receipt_policy": (
+                "O_EXCL_before_development_authority_and_first_RNG_draw_creator_process_only"
+            ),
+            "development_start_receipt_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
+            ),
             "focused_test_argv": ["test"],
             "focused_test_collected_tests": 1,
             "focused_test_environment_sha256": "b" * 64,
@@ -244,12 +409,18 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
                 "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
             ),
             "preoutcome_amendment_file_sha256": (
-                "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
+                "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
             ),
             "preoutcome_amendment_path": (
+                "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+            ),
+            "prior_recovery_amendment_file_sha256": (
+                "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
+            ),
+            "prior_recovery_amendment_path": (
                 "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
             ),
-            "protocol_revision": "V3.1",
+            "protocol_revision": "V3.2",
             "owner_authority_public_key_file_sha256": "2" * 64,
             "owner_authority_public_key_path": "configs/governance/owner.pub",
             "owner_authority_ssh_fingerprint": "SHA256:test",
@@ -302,6 +473,46 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
             ),
             "retired_v1_source_commit": "569394da6894a2efed37b9dde162cbe4fe60534d",
             "retired_v1_source_tree": "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd",
+            "retired_v2_artifact_inventory_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v2"
+            ),
+            "retired_v2_artifact_inventory_sha256": (
+                "7ae6a99b7ec2033b2ce0cdfbfedc05851b77d9e5dfeb21b485ebe4215f18c865"
+            ),
+            "retired_v2_context_reference_present": False,
+            "retired_v2_context_reference_replay_count": 2,
+            "retired_v2_context_reference_root_seed": 20_260_910,
+            "retired_v2_continuation_authorized": False,
+            "retired_v2_development_DGP_executed": False,
+            "retired_v2_development_bundle_file_sha256": (
+                "a616945040ea45a78c2eed58bf251f1f379f9a82a320ed4f39c26f5efb073cac"
+            ),
+            "retired_v2_development_bundle_path": (
+                "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+                "development-v2/development-bundle.json"
+            ),
+            "retired_v2_development_bundle_payload_sha256": (
+                "ce9628ecc5a2b000aa1ce370bba540e6d0fa2d46d3ae068cbcc5b43f089ba312"
+            ),
+            "retired_v2_development_bundle_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+            ),
+            "retired_v2_development_result_present": False,
+            "retired_v2_development_rng_authority_issued": False,
+            "retired_v2_development_root_seed": 20_260_909,
+            "retired_v2_development_seedsequence_created": False,
+            "retired_v2_experimental_outcome_observed": False,
+            "retired_v2_governed_network_accessed": False,
+            "retired_v2_incident_error": "TypeError",
+            "retired_v2_incident_message": ("Object of type mappingproxy is not JSON serializable"),
+            "retired_v2_incident_output_sha256": (
+                "5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c"
+            ),
+            "retired_v2_source_bundle_sha256": (
+                "a74d3a86f207520fd97c746809378146d75614fe287b1eaab96e50b15da3dbc0"
+            ),
+            "retired_v2_source_commit": "82e26d60fd17464380697126bb64ad73b36708a2",
+            "retired_v2_source_tree": "f7f59bda48610aeaa5bd1b6ffd288a7b56a4bb85",
             "schema": _DEVELOPMENT_BUNDLE_SCHEMA,
             "scientific_contract_projection_sha256": (
                 "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
@@ -322,7 +533,7 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
     bundle.chmod(0o400)
 
 
-def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_v1(
+def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_retired_versions(
     tmp_path: Path,
 ) -> None:
     from cfeg import metadata_calibration_v3_governance as governance
@@ -348,19 +559,36 @@ def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_v1(
             site_inventory=site_inventory,
         )
 
-    retired_schema = dict(payload)
-    retired_schema["schema"] = (
-        "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
-    )
-    retired_schema.pop("payload_sha256")
-    with pytest.raises(RunnerError, match="recovery identity differs: schema"):
-        _validate_existing_bundle(
-            config,
-            _canonical_json_bytes(_seal(retired_schema)) + b"\n",
-            source=source,
-            python=python,
-            site_inventory=site_inventory,
+    for retired_version in ("v1", "v2"):
+        retired_schema = dict(payload)
+        retired_schema["schema"] = (
+            f"cfeg.metadata-calibration-efficiency-v3.development-bundle.{retired_version}"
         )
+        retired_schema.pop("payload_sha256")
+        with pytest.raises(RunnerError, match="recovery identity differs: schema"):
+            _validate_existing_bundle(
+                config,
+                _canonical_json_bytes(_seal(retired_schema)) + b"\n",
+                source=source,
+                python=python,
+                site_inventory=site_inventory,
+            )
+
+    for retired_attempt in ("development-v1", "development-v2"):
+        retired_path = dict(payload)
+        retired_path["canonical_path"] = (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            f"{retired_attempt}/development-bundle.json"
+        )
+        retired_path.pop("payload_sha256")
+        with pytest.raises(RunnerError, match="recovery identity differs: canonical_path"):
+            _validate_existing_bundle(
+                config,
+                _canonical_json_bytes(_seal(retired_path)) + b"\n",
+                source=source,
+                python=python,
+                site_inventory=site_inventory,
+            )
 
 
 def test_post_context_status_reopens_reference_without_development_or_mutation(
@@ -368,18 +596,22 @@ def test_post_context_status_reopens_reference_without_development_or_mutation(
 ) -> None:
     events: list[str] = []
     bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
-    retired = object()
+    retired_v1 = object()
+    retired_v2 = object()
     reference_rng = object()
     reference_value = object()
     reference_proof = object()
     context_artifact = object()
-    payload = {"schema": "context", "payload_sha256": "c" * 64}
+    payload, frozen_payload, exact_bytes = _frozen_context_transport_fixture()
 
     governance = SimpleNamespace(
-        observe_retired_v1_artifacts=lambda: retired,
+        observe_retired_development_attempts=lambda: (retired_v1, retired_v2),
         reopen_development_bundle=lambda: bundle,
         retired_v1_context_reference_payload=lambda value: (
-            payload if value is retired else (_ for _ in ()).throw(AssertionError())
+            frozen_payload if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
+        ),
+        retired_v1_context_reference_bytes=lambda value: (
+            exact_bytes if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
         ),
         validate_context_reference=lambda **_kwargs: context_artifact,
     )
@@ -390,28 +622,35 @@ def test_post_context_status_reopens_reference_without_development_or_mutation(
         events.append("reference-only-authority")
         return reference_rng
 
+    def validate_reference(value):
+        assert value == payload
+        assert type(value) is dict
+        assert type(value["nested"]) is dict
+        assert type(value["nested"]["values"]) is list
+        return reference_value
+
+    def validate_reference_for_publication(value, *, rng_authority):
+        assert value == payload
+        assert type(value["nested"]["values"][2]) is dict
+        assert rng_authority is reference_rng
+        return reference_proof
+
     model = SimpleNamespace(
         issue_bundle_bound_context_reference_rng_authority=reference_issuer,
         issue_bundle_bound_development_rng_authority=lambda *_args, **_kwargs: (
-            (_ for _ in ()).throw(AssertionError("status minted development RNG authority"))
-        ),
-        validate_context_reference_payload=lambda value: (
-            reference_value if value is payload else (_ for _ in ()).throw(AssertionError())
-        ),
-        validate_context_reference_for_publication=lambda value, *, rng_authority: (
-            reference_proof
-            if value is payload and rng_authority is reference_rng
-            else (_ for _ in ()).throw(AssertionError())
-        ),
+            _ for _ in ()
+        ).throw(AssertionError("status minted development RNG authority")),
+        validate_context_reference_payload=validate_reference,
+        validate_context_reference_for_publication=validate_reference_for_publication,
     )
     synthetic = SimpleNamespace(
         replay_context_reference_payload=lambda *, rng_authority: (
-            payload
+            dict(payload)
             if rng_authority is reference_rng
             else (_ for _ in ()).throw(AssertionError())
         ),
-        execute_complete_development=lambda *_args, **_kwargs: (
-            (_ for _ in ()).throw(AssertionError("status executed development DGP"))
+        execute_complete_development=lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("status executed development DGP")
         ),
     )
     facade = object.__new__(ProductionFacade)
@@ -442,13 +681,18 @@ def test_post_context_status_reopens_reference_without_development_or_mutation(
             ),
         )
 
-    observed = facade.inspect()
-    assert observed.stage is RunStage.DEVELOPMENT_PENDING
+    observed = status_report(facade)
+    assert observed["stage"] == RunStage.DEVELOPMENT_PENDING.value
+    assert observed["durable_phases_advanced"] == 0
     assert events == ["reference-only-authority"]
     assert facade._graph.context_reference is context_artifact
 
 
-def test_development_pending_resume_issues_development_authority_just_in_time() -> None:
+def test_development_pending_resume_issues_development_authority_just_in_time(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import cfeg.metadata_calibration_v3_runner as runner_module
+
     events: list[str] = []
     bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
     context_artifact = SimpleNamespace(file_sha256="c" * 64)
@@ -458,10 +702,12 @@ def test_development_pending_resume_issues_development_authority_just_in_time() 
     contract = object()
     payload = {"schema": "development-result"}
     result_proof = object()
+    start = object()
 
-    def issue_development(value, context, *, expected_commit, expected_tree):
+    def issue_development(value, context, start_value, *, expected_commit, expected_tree):
         assert value is bundle
         assert context is context_artifact
+        assert start_value is start
         assert (expected_commit, expected_tree) == (bundle.clean_commit, bundle.clean_tree)
         events.append("jit-development-authority")
         return development_rng
@@ -483,12 +729,20 @@ def test_development_pending_resume_issues_development_authority_just_in_time() 
         assert rng_authority is development_rng
         assert validated_reference is reference_proof
         assert context_reference_file_sha256 == context_artifact.file_sha256
-        events.append("development-execution")
+        events.extend(("first-development-rng-draw", "development-DGP-and-core-validation"))
         return payload, result_proof
 
+    def validate_contract():
+        events.append("synthetic-contract-load")
+        return contract
+
+    def validate_development(value):
+        assert value is contract
+        events.append("development-contract-validation")
+
     synthetic = SimpleNamespace(
-        validate_synthetic_contract=lambda: contract,
-        validate_development_contract=lambda value: value is contract,
+        validate_synthetic_contract=validate_contract,
+        validate_development_contract=validate_development,
         execute_complete_development=execute,
     )
 
@@ -496,12 +750,23 @@ def test_development_pending_resume_issues_development_authority_just_in_time() 
         assert value is payload
         assert bindings["development_bundle"] is bundle
         assert bindings["context_reference"] is context_artifact
+        assert bindings["development_start"] is start
         assert bindings["development_rng_authority"] is development_rng
         assert bindings["validated_context_reference"] is reference_proof
         assert bindings["core_capability"] is result_proof
         events.append("result-publication")
 
+    def publish_start(**bindings):
+        assert bindings == {
+            "development_bundle": bundle,
+            "context_reference": context_artifact,
+            "started_at_UTC": "2026-09-07T00:00:00Z",
+        }
+        events.append("development-start-O_EXCL-readback")
+        return start
+
     governance = SimpleNamespace(
+        publish_development_start=publish_start,
         publish_development_result=publish,
         validate_development_result=lambda **_kwargs: events.append("result-validation"),
     )
@@ -509,6 +774,13 @@ def test_development_pending_resume_issues_development_authority_just_in_time() 
     facade._model = model
     facade._synthetic = synthetic
     facade._governance = governance
+    facade._preflight = object()
+    monkeypatch.setattr(runner_module, "_require_preflight_unchanged", lambda _value: None)
+    monkeypatch.setattr(
+        runner_module,
+        "_rfc3339_now_after",
+        lambda _previous=None: "2026-09-07T00:00:00Z",
+    )
     graph = SimpleNamespace(
         bundle=bundle,
         reference_value=reference_value,
@@ -518,11 +790,235 @@ def test_development_pending_resume_issues_development_authority_just_in_time() 
 
     facade._publish_development_result(graph)
     assert events == [
+        "synthetic-contract-load",
+        "development-contract-validation",
+        "development-start-O_EXCL-readback",
         "jit-development-authority",
-        "development-execution",
+        "first-development-rng-draw",
+        "development-DGP-and-core-validation",
         "result-publication",
         "result-validation",
     ]
+
+
+@pytest.mark.parametrize("failure_point", ("load", "validation"))
+def test_development_contract_failure_precedes_all_rng_and_dgp_calls(
+    failure_point: str,
+) -> None:
+    events: list[str] = []
+    contract = object()
+
+    def load_contract():
+        events.append("load")
+        if failure_point == "load":
+            raise ValueError("contract rejected")
+        return contract
+
+    def validate_contract(value):
+        assert value is contract
+        events.append("validation")
+        raise ValueError("contract rejected")
+
+    def forbidden(name: str):
+        return lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError(f"contract failure reached {name}")
+        )
+
+    facade = object.__new__(ProductionFacade)
+    facade._synthetic = SimpleNamespace(
+        validate_synthetic_contract=load_contract,
+        validate_development_contract=validate_contract,
+        execute_complete_development=forbidden("development seed or DGP"),
+    )
+    facade._model = SimpleNamespace(
+        issue_bundle_bound_development_rng_authority=forbidden("development RNG authority")
+    )
+    facade._governance = SimpleNamespace(
+        publish_development_start=forbidden("development start receipt"),
+        publish_development_result=forbidden("result publication"),
+        validate_development_result=forbidden("result validation"),
+    )
+    graph = SimpleNamespace(
+        bundle=SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40),
+        reference_value=object(),
+        reference_proof=object(),
+        context_reference=SimpleNamespace(file_sha256="c" * 64),
+    )
+
+    with pytest.raises(ValueError, match="contract rejected"):
+        facade._publish_development_result(graph)
+    assert events == (["load"] if failure_point == "load" else ["load", "validation"])
+
+
+@pytest.mark.parametrize("failure_point", ("before_authority", "before_first_draw"))
+def test_failure_after_start_receipt_consumes_attempt_before_result(
+    failure_point: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import cfeg.metadata_calibration_v3_runner as runner_module
+
+    events: list[str] = []
+    bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
+    context = SimpleNamespace(file_sha256="c" * 64)
+    start = object()
+    development_rng = object()
+    contract = object()
+
+    def publish_start(**_kwargs):
+        events.append("development-start-O_EXCL-readback")
+        return start
+
+    def issue_development(*args, **kwargs):
+        assert args == (bundle, context, start)
+        assert kwargs == {
+            "expected_commit": bundle.clean_commit,
+            "expected_tree": bundle.clean_tree,
+        }
+        events.append("development-authority-boundary")
+        if failure_point == "before_authority":
+            raise RuntimeError("injected after receipt before authority")
+        return development_rng
+
+    def execute(*_args, **_kwargs):
+        events.append("executor-entered-before-first-draw")
+        raise RuntimeError("injected before first development draw")
+
+    def forbidden_result(*_args, **_kwargs):
+        raise AssertionError("consumed attempt reached result publication")
+
+    facade = object.__new__(ProductionFacade)
+    facade._preflight = object()
+    facade._synthetic = SimpleNamespace(
+        validate_synthetic_contract=lambda: contract,
+        validate_development_contract=lambda value: value is contract,
+        execute_complete_development=execute,
+    )
+    facade._model = SimpleNamespace(
+        issue_bundle_bound_development_rng_authority=issue_development,
+    )
+    facade._governance = SimpleNamespace(
+        publish_development_start=publish_start,
+        publish_development_result=forbidden_result,
+        validate_development_result=forbidden_result,
+    )
+    graph = SimpleNamespace(
+        bundle=bundle,
+        reference_value=object(),
+        reference_proof=object(),
+        context_reference=context,
+        development_start=None,
+    )
+    monkeypatch.setattr(runner_module, "_require_preflight_unchanged", lambda _value: None)
+    monkeypatch.setattr(
+        runner_module,
+        "_rfc3339_now_after",
+        lambda _previous=None: "2026-09-07T00:00:00Z",
+    )
+
+    with pytest.raises(RuntimeError, match="injected"):
+        facade._publish_development_result(graph)
+    assert graph.development_start is start
+    assert events[:2] == [
+        "development-start-O_EXCL-readback",
+        "development-authority-boundary",
+    ]
+    if failure_point == "before_authority":
+        assert events == events[:2]
+    else:
+        assert events == [*events[:2], "executor-entered-before-first-draw"]
+
+
+def test_fresh_receipt_without_result_is_terminal_and_never_resumes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
+    context = object()
+    start = object()
+    events: list[str] = []
+
+    def forbidden(name: str):
+        return lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError(f"receipt-only restart reached {name}")
+        )
+
+    governance = SimpleNamespace(
+        observe_retired_development_attempts=lambda: (object(), object()),
+        reopen_development_bundle=lambda: bundle,
+        reopen_development_start_receipt=lambda **_kwargs: (
+            events.append("read-only-start-reopen") or start
+        ),
+        recover_canonical_development_result_at_bundle_source=forbidden("development recovery"),
+        publish_development_start=forbidden("start republish"),
+        publish_development_result=forbidden("result publication"),
+    )
+    facade = object.__new__(ProductionFacade)
+    facade._governance = governance
+    facade._inspection = None
+    facade._graph = None
+    presence = {name: False for name in ProductionFacade._ARTIFACT_ORDER}
+    presence.update(
+        {
+            "bundle": True,
+            "context_reference": True,
+            "development_start": True,
+        }
+    )
+    monkeypatch.setattr(ProductionFacade, "_presence", lambda _self: presence)
+    monkeypatch.setattr(
+        ProductionFacade,
+        "_require_bundle_matches_preflight",
+        lambda _self, _bundle: None,
+    )
+
+    def reopen_context(_self, graph):
+        events.append("read-only-context-reopen")
+        graph.context_reference = context
+
+    monkeypatch.setattr(ProductionFacade, "_reopen_a_context", reopen_context)
+
+    report = resume_once(facade)
+    assert report == {
+        "command": "resume",
+        "stage_before": "DEVELOPMENT_ATTEMPT_CONSUMED",
+        "stage": "DEVELOPMENT_ATTEMPT_CONSUMED",
+        "terminal": True,
+        "selection_status": None,
+        "selected_grid_cell_id": None,
+        "next_command": None,
+        "durable_phases_advanced": 0,
+    }
+    assert events == ["read-only-context-reopen", "read-only-start-reopen"]
+
+
+def test_result_without_start_receipt_is_a_durable_prefix_gap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
+    governance = SimpleNamespace(
+        observe_retired_development_attempts=lambda: (object(), object()),
+        reopen_development_bundle=lambda: bundle,
+    )
+    facade = object.__new__(ProductionFacade)
+    facade._governance = governance
+    facade._inspection = None
+    facade._graph = None
+    presence = {name: False for name in ProductionFacade._ARTIFACT_ORDER}
+    presence.update(
+        {
+            "bundle": True,
+            "context_reference": True,
+            "development_result": True,
+        }
+    )
+    monkeypatch.setattr(ProductionFacade, "_presence", lambda _self: presence)
+    monkeypatch.setattr(
+        ProductionFacade,
+        "_require_bundle_matches_preflight",
+        lambda _self, _bundle: None,
+    )
+
+    with pytest.raises(RunnerError, match="gap before development_start"):
+        facade.inspect()
 
 
 def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
@@ -530,8 +1026,10 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
 ) -> None:
     events: list[str] = []
     bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
-    retired = object()
+    retired_v1 = object()
+    retired_v2 = object()
     context = object()
+    start = object()
     result = object()
     audited = SimpleNamespace(
         selection_status="SELECTED_METHOD_PROPOSED",
@@ -550,8 +1048,11 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
         )
 
     governance = SimpleNamespace(
-        observe_retired_v1_artifacts=lambda: retired,
+        observe_retired_development_attempts=lambda: (retired_v1, retired_v2),
         reopen_development_bundle=lambda: bundle,
+        reopen_development_start_receipt=lambda **_kwargs: (
+            events.append("read-only-start-reopen") or start
+        ),
         recover_canonical_development_result_at_bundle_source=recover,
         publish_development_bundle=forbidden("bundle publication"),
         publish_context_reference=forbidden("context publication"),
@@ -560,13 +1061,9 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
     facade = object.__new__(ProductionFacade)
     facade._governance = governance
     facade._model = SimpleNamespace(
-        issue_bundle_bound_development_rng_authority=forbidden(
-            "development RNG authority"
-        )
+        issue_bundle_bound_development_rng_authority=forbidden("development RNG authority")
     )
-    facade._synthetic = SimpleNamespace(
-        execute_complete_development=forbidden("development DGP")
-    )
+    facade._synthetic = SimpleNamespace(execute_complete_development=forbidden("development DGP"))
     facade._inspection = None
     facade._graph = None
     presence = {name: False for name in ProductionFacade._ARTIFACT_ORDER}
@@ -574,6 +1071,7 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
         {
             "bundle": True,
             "context_reference": True,
+            "development_start": True,
             "development_result": True,
         }
     )
@@ -594,7 +1092,11 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
     assert observed.stage is RunStage.SELECTION_HANDOFF
     assert observed.selection_status == "SELECTED_METHOD_PROPOSED"
     assert observed.selected_grid_cell_id == "nu-01_lambda-010"
-    assert events == ["reference-only-replay", "read-only-development-recovery"]
+    assert events == [
+        "reference-only-replay",
+        "read-only-start-reopen",
+        "read-only-development-recovery",
+    ]
 
 
 def test_bad_recovery_binding_is_rejected_before_bundle_publication(
@@ -644,7 +1146,9 @@ def test_bad_recovery_binding_is_rejected_before_bundle_publication(
         "_require_snapshot_matches_preflight",
         lambda _self, _snapshot: None,
     )
-    monkeypatch.setattr(runner_module, "_require_preflight_unchanged", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        runner_module, "_require_preflight_unchanged", lambda *_args, **_kwargs: None
+    )
 
     with pytest.raises(
         RunnerError,
@@ -699,7 +1203,9 @@ def test_bad_bundle_self_hash_is_rejected_before_publication(
         "_require_snapshot_matches_preflight",
         lambda _self, _snapshot: None,
     )
-    monkeypatch.setattr(runner_module, "_require_preflight_unchanged", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        runner_module, "_require_preflight_unchanged", lambda *_args, **_kwargs: None
+    )
 
     with pytest.raises(RunnerError, match="built development bundle payload self-hash differs"):
         facade._publish_bundle(SimpleNamespace())
