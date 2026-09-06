@@ -83,10 +83,10 @@ _IMPORTED_FBCCA_NUMPY_MODULE = _fbcca_module.np
 _IMPORTED_FBCCA_SCIPY_SIGNAL_MODULE = _fbcca_module.signal
 
 EXPECTED_SYNTHETIC_PLAN_SHA256 = (
-    "172de79a5315ef6daba9d623f05ee6ebe37595fc8f9dc3c913b6f63c8119f693"
+    "b1bb5f6f47a4a5e433101608488007a4d72c312978c4a302cb87ec742b219a5a"
 )
 EXPECTED_MASTER_PLAN_SHA256 = (
-    "ff82c78ab6765c2bf58062195d246df7eb1654cabd1eb413fa4c40ca1f461446"
+    "cbde65a85856e3fbeb832e0621363f96a033c24df93b6e9705b41f41624420a8"
 )
 EXPECTED_FILTERBANK_SHA256 = v3.FILTERBANK_SHA256
 SYNTHETIC_PLAN_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1"
@@ -169,6 +169,7 @@ _RESERVED_RNG_ROOT_SEEDS = frozenset(
         20_260_906,
         20_260_907,
         20_260_908,
+        20_260_909,
         v3.DEVELOPMENT_ROOT_SEED,
         v3.CONTEXT_REFERENCE_ROOT_SEED,
         8812983586834372979543294859684702645563544465387352627235733726918051280063,
@@ -870,7 +871,7 @@ def validate_synthetic_contract(
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != v3.CANDIDATE_ID
         or plan.get("generator_revision") != "v1_single_insertion_context_trust"
-        or plan.get("status") != "V3_2_recovery_development_v3_not_yet_bundle_frozen_or_executable"
+        or plan.get("status") != "V3_3_recovery_development_v4_not_yet_bundle_frozen_or_executable"
     ):
         raise ValueError("synthetic plan identity/status is invalid.")
     master_section = plan.get("master_plan")
@@ -4251,7 +4252,7 @@ def _build_development_result_payload_from_rows_for_test(
     bundle = _artifact_reference(
         development_bundle_reference,
         "development bundle reference",
-        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v3",
+        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v4",
     )
     start = _artifact_reference(
         development_start_reference,
@@ -4285,7 +4286,7 @@ def _build_development_result_payload_from_rows_for_test(
         "development_start_payload_sha256": start["payload_sha256"],
         "development_start_file_sha256": start["file_sha256"],
         "development_rng_primitive_schema": DEVELOPMENT_RNG_PRIMITIVE_SCHEMA,
-        "development_root_seed": 20260909,
+        "development_root_seed": 3156745110,
         "participant_count": DEVELOPMENT_PARTICIPANTS,
         "B4_source_range_stress_participant_indices": list(
             expected_stress_participant_indices
@@ -4419,12 +4420,12 @@ def validate_development_result_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
         or payload["context_reference_schema"] != v3.CONTEXT_REFERENCE_SCHEMA
         or payload["development_start_schema"]
         != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
         or payload["development_rng_primitive_schema"] != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
-        or payload["development_root_seed"] != 20260909
+        or payload["development_root_seed"] != 3156745110
         or payload["participant_count"] != DEVELOPMENT_PARTICIPANTS
     ):
         raise ValueError("development result identity/bindings are invalid.")
@@ -4833,12 +4834,12 @@ def _require_validated_development_result(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
         or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
         or value.development_rng_primitive_schema != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
         or value.development_start_schema
         != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
-        or value.development_root_seed != 20260909
+        or value.development_root_seed != 3156745110
         or value.development_rng_authority_schema
         != v3.DEVELOPMENT_RNG_AUTHORITY_SCHEMA
         or value.rng_key_map_sha256 != v3.rng_key_map_sha256()
@@ -5068,7 +5069,7 @@ def validate_selected_method_freeze_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
         or payload["development_result_schema"] != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("selected-method freeze identity is invalid.")
@@ -6033,7 +6034,7 @@ def _require_selected_method_proposal(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
         or value.development_result_schema != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("SelectedMethodProposal identity/bindings are invalid.")
@@ -7146,7 +7147,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
     if (
         rng.get("bit_generator") != "numpy.random.PCG64DXSM"
         or rng.get("construction") != "numpy.random.SeedSequence"
-        or rng.get("development_root_seed") != 20260909
+        or rng.get("development_root_seed") != 3156745110
         or rng.get("key_order")
         != [
             "root_seed",
@@ -7241,38 +7242,48 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         raise ValueError("synthetic complete-grid arithmetic is not exact.")
     amendment = _mapping(plan, "preoutcome_amendment")
     if amendment != {
-        "path": "configs/governance/metadata_calibration_v3_2_recovery_amendment.json",
-        "file_sha256": ("1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"),
-        "protocol_revision": "V3.2",
-        "development_attempt_id": "development-v3",
+        "path": "configs/governance/metadata_calibration_v3_3_recovery_amendment.json",
+        "file_sha256": ("d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"),
+        "protocol_revision": "V3.3",
+        "development_attempt_id": "development-v4",
         "original_path": ("configs/governance/metadata_calibration_v3_preoutcome_amendment.json"),
-        "prior_recovery_file_sha256": (
+        "prior_recovery_v1_file_sha256": (
             "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
         ),
-        "prior_recovery_path": (
+        "prior_recovery_v1_path": (
             "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
+        ),
+        "prior_recovery_v2_file_sha256": (
+            "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
+        ),
+        "prior_recovery_v2_path": (
+            "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
         ),
         "original_file_sha256": (
             "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202"
         ),
-        "scientific_contract_projection_sha256": (
+        "retired_scientific_contract_projection_sha256": (
             "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
         ),
+        "scientific_contract_projection_sha256": (
+            "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
+        ),
     }:
-        raise ValueError("V3.2 recovery amendment binding is not exact.")
+        raise ValueError("V3.3 recovery amendment binding is not exact.")
     bundle = _mapping(plan, "development_bundle")
     if (
         bundle.get("current_status") != "absent"
-        or bundle.get("protocol_revision") != "V3.2"
-        or bundle.get("development_attempt_id") != "development-v3"
+        or bundle.get("required_before_any_seed_3156745110_generation") is not True
+        or bundle.get("protocol_revision") != "V3.3"
+        or bundle.get("development_attempt_id") != "development-v4"
         or bundle.get("schema")
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
         or bundle.get("canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/development-bundle.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-bundle.json"
         or bundle.get("context_reference_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/context-reference.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/context-reference.json"
         or bundle.get("development_result_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/development-result.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-result.json"
     ):
         raise ValueError("development bundle must remain absent in the frozen plan.")
     start = _mapping(bundle, "development_start_receipt")
@@ -7280,7 +7291,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         "schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
         "canonical_path": (
             "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-            "development-v3/development-start.json"
+            "development-v4/development-start.json"
         ),
         "creation": "O_EXCL_after_contract_validation_before_development_authority_or_RNG",
         "execution_capability": "private_and_creator_process_only",
@@ -7296,7 +7307,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
     recovery = _mapping(bundle, "recovery_prerequisite")
     if (
         recovery.get("amendment")
-        != "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+        != "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
         or recovery.get("retired_v1_attempt_id") != "development-v1"
         or recovery.get("retired_v1_exact_file_count") != 2
         or recovery.get("retired_v1_bundle_file_sha256")
@@ -7311,10 +7322,23 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         or recovery.get("retired_v2_context_reference_seedsequence_and_replay_executed") is not True
         or recovery.get("retired_v2_context_reference_replay_count") != 2
         or recovery.get("retired_v2_development_seedsequence_created") is not False
-        or recovery.get("retired_v1_and_v2_continuation_authorized") is not False
-        or recovery.get("adopt_retired_context_exact_bytes") is not True
+        or recovery.get("retired_v3_attempt_id") != "development-v3"
+        or recovery.get("retired_v3_exact_file_count") != 3
+        or recovery.get("retired_v3_bundle_file_sha256")
+        != "dee4068d2fdce5ec1031de17bf9e004f0a4629f88bfcc0f13c39211d4383d741"
+        or recovery.get("retired_v3_context_file_sha256")
+        != "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
+        or recovery.get("retired_v3_start_file_sha256")
+        != "2183cc2506cbf4b7d6b62bf442c2a03a89fbbdaace5d66e5e73afb5869fd87ff"
+        or recovery.get("retired_v3_failure_envelope_sha256")
+        != "5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c"
+        or recovery.get("retired_v3_development_seed_consumed") is not True
+        or recovery.get("retired_v3_result_artifact_count") != 0
+        or recovery.get("retired_v1_v2_and_v3_continuation_authorized") is not False
+        or recovery.get("adopt_retired_v1_context_exact_bytes") is not True
+        or recovery.get("retired_v3_context_must_be_byte_identical_to_retired_v1") is not True
     ):
-        raise ValueError("V3.2 recovery prerequisite is not exact.")
+        raise ValueError("V3.3 recovery prerequisite is not exact.")
     lockbox = _mapping(plan, "scientific_lockbox")
     if lockbox.get("current_authority") is not False or lockbox.get("future_beacon_selected") is not False:
         raise ValueError("scientific lockbox authority must be false.")

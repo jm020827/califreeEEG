@@ -144,29 +144,49 @@ def test_canonical_payload_and_file_hashes_are_distinct_and_strict() -> None:
         gov._ascii_lines(("safe", "injected\nfield"))
 
 
-def test_recovery_amendment_is_semantically_exact_and_duplicate_safe() -> None:
+def test_recovery_amendment_is_semantically_exact_and_duplicate_safe(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     data = (_REPOSITORY / gov.PREOUTCOME_AMENDMENT_PATH).read_bytes()
     parsed = gov._validate_recovery_amendment_bytes(data)
     assert parsed["schema"] == gov.RECOVERY_AMENDMENT_SCHEMA
     assert parsed["recorded_at_is_amendment_time_not_incident_timestamp"] is True
+    assert parsed["replacement_development_seed"]["selected_seed"] == 3_156_745_110
 
     altered = json.loads(data)
-    altered["retired_development_v2"]["execution_observations"][
-        "development_v2_governed_execution_network_access_count"
+    altered["retired_development_v3"]["durable_execution_facts"][
+        "development_result_artifact_count"
     ] = 1
-    with pytest.raises(gov.ValidationError, match="frozen V3.2 facts"):
-        gov._validate_recovery_amendment_bytes(
-            json.dumps(altered, separators=(",", ":")).encode("utf-8")
-        )
+    altered_bytes = json.dumps(altered, separators=(",", ":")).encode("utf-8")
+    with pytest.raises(gov.ValidationError, match="file hash mismatch"):
+        gov._validate_recovery_amendment_bytes(altered_bytes)
+    monkeypatch.setattr(
+        gov,
+        "FROZEN_FILE_SHA256",
+        {**gov.FROZEN_FILE_SHA256, gov.PREOUTCOME_AMENDMENT_PATH: gov.file_sha256(altered_bytes)},
+    )
+    with pytest.raises(gov.ValidationError, match="frozen V3.3 facts"):
+        gov._validate_recovery_amendment_bytes(altered_bytes)
 
     extra = json.loads(data)
     extra["unreviewed"] = True
-    with pytest.raises(gov.ValidationError, match="field inventory"):
-        gov._validate_recovery_amendment_bytes(
-            json.dumps(extra, separators=(",", ":")).encode("utf-8")
-        )
+    extra_bytes = json.dumps(extra, separators=(",", ":")).encode("utf-8")
+    monkeypatch.setattr(
+        gov,
+        "FROZEN_FILE_SHA256",
+        {**gov.FROZEN_FILE_SHA256, gov.PREOUTCOME_AMENDMENT_PATH: gov.file_sha256(extra_bytes)},
+    )
+    with pytest.raises(gov.ValidationError, match="key mismatch"):
+        gov._validate_recovery_amendment_bytes(extra_bytes)
+
+    duplicate = b'{"schema":"a","schema":"b"}'
+    monkeypatch.setattr(
+        gov,
+        "FROZEN_FILE_SHA256",
+        {**gov.FROZEN_FILE_SHA256, gov.PREOUTCOME_AMENDMENT_PATH: gov.file_sha256(duplicate)},
+    )
     with pytest.raises(gov.ValidationError, match="duplicate JSON key"):
-        gov._validate_recovery_amendment_bytes(b'{"schema":"a","schema":"b"}')
+        gov._validate_recovery_amendment_bytes(duplicate)
 
 
 def test_retired_v1_directory_loader_rejects_every_inventory_extension(
@@ -229,6 +249,63 @@ def test_retired_v1_capability_is_nominal_and_cannot_be_forged() -> None:
     with pytest.raises(gov.AuthorityError, match="marker"):
         gov.require_retired_v1_artifacts_capability(
             object.__new__(gov.RetiredV1ArtifactsCapability)
+        )
+
+
+def test_retired_v3_inventory_is_exact_three_file_nofollow_and_nominal(
+    private_test_path: Path,
+) -> None:
+    assert gov.retired_v3_artifact_inventory_sha256() == (
+        "59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7"
+    )
+    root = private_test_path / "development-v3"
+    root.mkdir(mode=0o700)
+    for name in (
+        "development-bundle.json",
+        "context-reference.json",
+        "development-start.json",
+    ):
+        path = root / name
+        path.write_bytes(name.encode("ascii"))
+        path.chmod(0o400)
+    loaded = gov._load_exact_retired_v3_directory_bytes(root)
+    assert tuple(loaded) == (
+        "context-reference.json",
+        "development-bundle.json",
+        "development-start.json",
+    )
+
+    extra = root / "development-result.json"
+    extra.write_bytes(b"forbidden")
+    extra.chmod(0o400)
+    with pytest.raises(gov.AuthorityError, match="exact three-file inventory"):
+        gov._load_exact_retired_v3_directory_bytes(root)
+    extra.unlink()
+
+    start = root / "development-start.json"
+    start.chmod(0o600)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular files"):
+        gov._load_exact_retired_v3_directory_bytes(root)
+    start.chmod(0o400)
+    start.unlink()
+    start.symlink_to(root / "context-reference.json")
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular files"):
+        gov._load_exact_retired_v3_directory_bytes(root)
+
+    with pytest.raises(TypeError):
+        gov.RetiredV3ArtifactsCapability()  # type: ignore[call-arg]
+    with pytest.raises(gov.AuthorityError, match="no valid issuer"):
+        gov.RetiredV3ArtifactsCapability(
+            development_bundle_bytes=b"bundle\n",
+            context_reference_bytes=b"context\n",
+            development_start_bytes=b"start\n",
+            _issuer=object(),
+        )
+    with pytest.raises(gov.AuthorityError, match="exact RetiredV3ArtifactsCapability"):
+        gov.require_retired_v3_artifacts_capability({"attempt_id": "development-v3"})
+    with pytest.raises(gov.AuthorityError, match="marker"):
+        gov.require_retired_v3_artifacts_capability(
+            object.__new__(gov.RetiredV3ArtifactsCapability)
         )
 
 
@@ -320,7 +397,11 @@ def test_context_and_recovery_bundle_roles_are_read_only_but_development_is_resu
     monkeypatch.setattr(gov, "require_current_numerical_runtime_fingerprint", lambda value: value)
     monkeypatch.setattr(gov, "capture_clean_source_snapshot", lambda _root: snapshot)
     monkeypatch.setattr(gov, "_require_loaded_governance_source_identity", lambda _value: None)
-    monkeypatch.setattr(gov, "observe_retired_development_attempts", lambda: (object(), object()))
+    monkeypatch.setattr(
+        gov,
+        "observe_retired_development_attempts",
+        lambda: (object(), object(), object()),
+    )
 
     assert (
         gov.require_context_reference_rng_bundle_capability(
@@ -722,9 +803,9 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["focused_test_process_id"] == observed.process_id
     assert value["artifact_schemas"] == dict(gov.ARTIFACT_SCHEMAS)
     assert frozenset(value) == gov._DEVELOPMENT_BUNDLE_FIELDS
-    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
-    assert value["protocol_revision"] == "V3.2"
-    assert value["development_attempt_id"] == "development-v3"
+    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+    assert value["protocol_revision"] == "V3.3"
+    assert value["development_attempt_id"] == "development-v4"
     assert value["retired_v1_source_commit"] == gov.RETIRED_V1_SOURCE_COMMIT
     assert value["retired_v1_source_tree"] == gov.RETIRED_V1_SOURCE_TREE
     assert value["retired_v1_development_bundle_payload_sha256"] == (
@@ -756,6 +837,24 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["retired_v2_experimental_outcome_observed"] is False
     assert value["retired_v2_governed_network_accessed"] is False
     assert value["retired_v2_continuation_authorized"] is False
+    assert value["retired_v3_source_commit"] == gov.RETIRED_V3_SOURCE_COMMIT
+    assert value["retired_v3_source_tree"] == gov.RETIRED_V3_SOURCE_TREE
+    assert value["retired_v3_artifact_inventory_sha256"] == (
+        gov.RETIRED_V3_ARTIFACT_INVENTORY_SHA256
+    )
+    assert value["retired_v3_development_seed_consumed"] is True
+    assert value["retired_v3_development_result_present"] is False
+    assert value["retired_v3_experimental_outcome_observed"] is False
+    assert value["retired_v3_continuation_authorized"] is False
+    assert value["retired_scientific_contract_projection_sha256"] == (
+        gov.RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+    )
+    assert value["scientific_contract_projection_sha256"] == (
+        gov.SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+    )
+    assert value["replacement_seed_preimage_sha256"] == gov.REPLACEMENT_SEED_PREIMAGE_SHA256
+    assert value["replacement_development_root_seed"] == 3_156_745_110
+    assert value["replacement_seed_outcome_used"] is False
     with pytest.raises(gov.AuthorityError, match="DevelopmentBundleCapability"):
         gov.require_development_bundle_capability(
             receipt,
@@ -1389,15 +1488,27 @@ def test_selected_reopen_uses_only_durable_b_audit_not_ephemeral_a_proposal(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result_data = b"durable development result bytes"
-    result_payload_sha256 = "1" * 64
+    result = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+                "complete_grid_gate_report": [],
+                "nested": {"rows": [{"value": 1}]},
+            }
+        )
+    )
+    result_data = gov.artifact_bytes(result)
+    result_payload_sha256 = result["payload_sha256"]
     result_file_sha256 = gov.file_sha256(result_data)
-    result = {
-        "payload_sha256": result_payload_sha256,
-        "complete_grid_gate_report": [],
-    }
-    selected = {"payload_sha256": "2" * 64}
-    selected_data = b"committed selected freeze bytes"
+    selected = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
+                "nested": {"tokens": ["a", {"b": 2}]},
+            }
+        )
+    )
+    selected_data = gov.artifact_bytes(selected)
     recovery = SimpleNamespace(
         bundle_commit="7" * 40,
         bundle_tree="8" * 40,
@@ -1455,8 +1566,15 @@ def test_selected_reopen_uses_only_durable_b_audit_not_ephemeral_a_proposal(
         development_result_file_sha256: str,
         recovery_capability: object,
     ) -> object:
-        assert value is selected
-        assert development_result is result
+        assert value == gov._plain_json(selected)
+        assert type(value) is dict
+        assert type(value["nested"]) is dict
+        assert type(value["nested"]["tokens"]) is list
+        assert development_result == gov._plain_json(result)
+        assert type(development_result) is dict
+        assert type(development_result["nested"]["rows"][0]) is dict
+        assert gov.canonical_json_bytes(value) + b"\n" == selected_data
+        assert gov.canonical_json_bytes(development_result) + b"\n" == result_data
         assert development_result_file_sha256 == result_file_sha256
         assert recovery_capability is recovery
         observed.append("durable-core-audit")
@@ -1483,6 +1601,147 @@ def test_selected_reopen_uses_only_durable_b_audit_not_ephemeral_a_proposal(
         is expected
     )
     assert observed == ["durable-core-audit"]
+
+
+def test_b_context_and_result_reopen_detach_frozen_json_at_core_boundaries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class BoundaryObserved(RuntimeError):
+        pass
+
+    monkeypatch.setattr(gov, "_require_active_governed_process", lambda **_kwargs: object())
+    core = ModuleType("cfeg.analysis.metadata_calibration_v3_synthetic")
+    monkeypatch.setitem(sys.modules, "cfeg.analysis.metadata_calibration_v3_synthetic", core)
+    reference = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
+                "nested": {"channels": ["O1", {"name": "Oz"}]},
+            }
+        )
+    )
+    start = SimpleNamespace(schema="start.v1", payload_sha256="7" * 64, file_sha256="8" * 64)
+    result = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+                "development_start_schema": start.schema,
+                "development_start_payload_sha256": start.payload_sha256,
+                "development_start_file_sha256": start.file_sha256,
+                "nested": {"rows": [{"score": 0.25}]},
+            }
+        )
+    )
+    selected = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
+                "nested": {"tokens": ["a", {"b": 2}]},
+            }
+        )
+    )
+    reference_data = gov.artifact_bytes(reference)
+    result_data = gov.artifact_bytes(result)
+    selected_data = gov.artifact_bytes(selected)
+    bundle = SimpleNamespace(
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        source_bundle_sha256="3" * 64,
+        clean_commit="4" * 40,
+        clean_tree="5" * 40,
+    )
+    recovery = SimpleNamespace(
+        development_bundle_payload_sha256=bundle.payload_sha256,
+        development_bundle_file_sha256=bundle.file_sha256,
+        development_bundle_source_bundle_sha256=bundle.source_bundle_sha256,
+        bundle_commit=bundle.clean_commit,
+        bundle_tree=bundle.clean_tree,
+    )
+    monkeypatch.setattr(
+        gov,
+        "_load_durable_development_selection_graph",
+        lambda _value: (recovery, selected, selected_data, result, result_data),
+    )
+    monkeypatch.setattr(
+        gov,
+        "require_development_bundle_capability",
+        lambda *_args, **_kwargs: bundle,
+    )
+    monkeypatch.setattr(
+        gov,
+        "load_exact_artifact_bytes",
+        lambda *_args, **_kwargs: {os.fspath(gov.CONTEXT_REFERENCE_CANONICAL_PATH): reference_data},
+    )
+    retired_v1 = object()
+    monkeypatch.setattr(
+        gov,
+        "observe_retired_development_attempts",
+        lambda: (retired_v1, object(), object()),
+    )
+    monkeypatch.setattr(
+        gov,
+        "retired_v1_context_reference_bytes",
+        lambda value: reference_data if value is retired_v1 else b"",
+    )
+    monkeypatch.setattr(gov, "parse_artifact_bytes", lambda *_args, **_kwargs: reference)
+
+    def context_audit(
+        value: object,
+        *,
+        development_result: object,
+        selected_method_freeze: object,
+        **_kwargs: object,
+    ) -> object:
+        assert value == gov._plain_json(reference)
+        assert development_result == gov._plain_json(result)
+        assert selected_method_freeze == gov._plain_json(selected)
+        assert type(value) is dict and type(value["nested"]["channels"]) is list
+        assert type(development_result) is dict
+        assert type(development_result["nested"]["rows"][0]) is dict
+        assert type(selected_method_freeze) is dict
+        assert type(selected_method_freeze["nested"]["tokens"][1]) is dict
+        assert gov.canonical_json_bytes(value) + b"\n" == reference_data
+        assert gov.canonical_json_bytes(development_result) + b"\n" == result_data
+        assert gov.canonical_json_bytes(selected_method_freeze) + b"\n" == selected_data
+        raise BoundaryObserved("context boundary observed")
+
+    monkeypatch.setattr(core, "validate_context_reference_for_audit", context_audit, raising=False)
+    with pytest.raises(BoundaryObserved, match="context boundary observed"):
+        gov.reopen_context_reference(
+            development_bundle=bundle,  # type: ignore[arg-type]
+            recovery_capability=recovery,  # type: ignore[arg-type]
+        )
+
+    reference_capability = object()
+    monkeypatch.setattr(
+        gov,
+        "require_validated_artifact_capability",
+        lambda *_args, **_kwargs: reference_capability,
+    )
+    monkeypatch.setattr(gov, "reopen_development_start_receipt", lambda **_kwargs: start)
+
+    def result_audit(
+        value: object,
+        *,
+        selected_method_freeze: object,
+        **_kwargs: object,
+    ) -> object:
+        assert value == gov._plain_json(result)
+        assert selected_method_freeze == gov._plain_json(selected)
+        assert type(value) is dict and type(value["nested"]["rows"]) is list
+        assert type(selected_method_freeze) is dict
+        assert type(selected_method_freeze["nested"]["tokens"][1]) is dict
+        assert gov.canonical_json_bytes(value) + b"\n" == result_data
+        assert gov.canonical_json_bytes(selected_method_freeze) + b"\n" == selected_data
+        raise BoundaryObserved("result boundary observed")
+
+    monkeypatch.setattr(core, "validate_development_result_for_audit", result_audit, raising=False)
+    with pytest.raises(BoundaryObserved, match="result boundary observed"):
+        gov.reopen_development_result(
+            development_bundle=bundle,  # type: ignore[arg-type]
+            context_reference=reference_capability,  # type: ignore[arg-type]
+            recovery_capability=recovery,  # type: ignore[arg-type]
+        )
 
 
 def test_context_authority_requires_exact_core_nominal_capability() -> None:
@@ -1524,7 +1783,7 @@ def test_fabricated_development_summary_cannot_mint_authority() -> None:
         "development_rng_primitive_schema": (
             "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
         ),
-        "development_root_seed": 20_260_909,
+        "development_root_seed": gov.REPLACEMENT_DEVELOPMENT_ROOT_SEED,
         "participant_count": 48,
         "B4_source_range_stress_participant_indices": [0, 1, 2, 3, 4],
         "grid_cells": [
@@ -1538,6 +1797,98 @@ def test_fabricated_development_summary_cannot_mint_authority() -> None:
     }
     with pytest.raises(gov.ValidationError, match="89,082 exact rows"):
         gov.seal_development_result(content)
+
+
+def test_initial_development_result_validation_detaches_frozen_json_for_core(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = SimpleNamespace(
+        schema=gov.DEVELOPMENT_BUNDLE_SCHEMA,
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        clean_commit="3" * 40,
+        clean_tree="4" * 40,
+    )
+    context = SimpleNamespace(
+        schema=gov.ARTIFACT_SCHEMAS["context_reference"],
+        payload_sha256="5" * 64,
+        file_sha256="6" * 64,
+    )
+    start = SimpleNamespace(
+        receipt_schema=gov.ARTIFACT_SCHEMAS["development_start"],
+        receipt_payload_sha256="7" * 64,
+        receipt_file_sha256="8" * 64,
+    )
+    frozen = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+                "master_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.MASTER_PLAN_PATH],
+                "synthetic_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.SYNTHETIC_PLAN_PATH],
+                "development_bundle_schema": bundle.schema,
+                "development_bundle_payload_sha256": bundle.payload_sha256,
+                "development_bundle_file_sha256": bundle.file_sha256,
+                "context_reference_schema": context.schema,
+                "context_reference_payload_sha256": context.payload_sha256,
+                "context_reference_file_sha256": context.file_sha256,
+                "development_start_schema": start.receipt_schema,
+                "development_start_payload_sha256": start.receipt_payload_sha256,
+                "development_start_file_sha256": start.receipt_file_sha256,
+                "development_root_seed": gov.REPLACEMENT_DEVELOPMENT_ROOT_SEED,
+                "nested": {"rows": [{"score": 0.75}]},
+            }
+        )
+    )
+    exact_bytes = gov.artifact_bytes(frozen)
+    observed: list[object] = []
+    monkeypatch.setattr(gov, "_validate_development_result_content", lambda _value: None)
+    monkeypatch.setattr(gov, "parse_artifact_bytes", lambda *_args, **_kwargs: frozen)
+
+    def require_core(_value: object, *, parsed: object, **_kwargs: object) -> object:
+        assert parsed == gov._plain_json(frozen)
+        assert type(parsed) is dict
+        assert type(parsed["nested"]) is dict
+        assert type(parsed["nested"]["rows"]) is list
+        assert type(parsed["nested"]["rows"][0]) is dict
+        assert gov.canonical_json_bytes(parsed) + b"\n" == exact_bytes
+        observed.append(parsed)
+        return object()
+
+    monkeypatch.setattr(gov, "_require_core_development_result_capability", require_core)
+    monkeypatch.setattr(
+        gov,
+        "require_development_rng_bundle_capability",
+        lambda value, **_kwargs: value,
+    )
+    monkeypatch.setattr(
+        gov,
+        "require_validated_artifact_capability",
+        lambda value, **_kwargs: value,
+    )
+    monkeypatch.setattr(
+        gov,
+        "require_development_start_execution_capability",
+        lambda value: value,
+    )
+    parsed, _bindings = gov._validate_development_result_bytes(
+        frozen,
+        file_bytes=exact_bytes,
+        development_bundle=bundle,  # type: ignore[arg-type]
+        context_reference=context,  # type: ignore[arg-type]
+        development_start=start,  # type: ignore[arg-type]
+        development_rng_authority=object(),
+        validated_context_reference=object(),
+        core_capability=object(),
+    )
+    assert parsed is frozen
+    assert len(observed) == 1
+
+    with pytest.raises(gov.ValidationError, match="differs from its exact source bytes"):
+        gov._detach_frozen_artifact_for_core(
+            frozen,
+            exact_source_bytes=exact_bytes + b" ",
+            label="drift probe",
+        )
 
 
 def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
@@ -1554,8 +1905,22 @@ def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result = dict(gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["development_result"]}))
-    context_payload = dict(gov.seal_payload({"schema": gov.ARTIFACT_SCHEMAS["context_reference"]}))
+    result = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+                "nested": {"rows": [{"score": 0.25}]},
+            }
+        )
+    )
+    context_payload = gov._freeze_json(
+        gov.seal_payload(
+            {
+                "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
+                "nested": {"channels": ["O1", {"name": "Oz"}]},
+            }
+        )
+    )
     context = SimpleNamespace(_validated_payload=context_payload)
     bundle = SimpleNamespace(schema=gov.DEVELOPMENT_BUNDLE_SCHEMA)
     audited_proof = SimpleNamespace(selection_status="DEVELOPMENT_NO_GO")
@@ -1588,8 +1953,17 @@ def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
         context_reference: object,
         recovery_capability: object,
     ) -> object:
-        assert value is result
-        assert context_reference is context._validated_payload
+        assert value == gov._plain_json(result)
+        assert context_reference == gov._plain_json(context._validated_payload)
+        assert type(value) is dict
+        assert type(value["nested"]["rows"]) is list
+        assert type(value["nested"]["rows"][0]) is dict
+        assert type(context_reference) is dict
+        assert type(context_reference["nested"]["channels"]) is list
+        assert gov.canonical_json_bytes(value) + b"\n" == gov.artifact_bytes(result)
+        assert gov.canonical_json_bytes(context_reference) + b"\n" == gov.artifact_bytes(
+            context._validated_payload
+        )
         assert recovery_capability is recovery
         observed.append("A-canonical-audit")
         return audited_proof
@@ -1642,12 +2016,13 @@ def test_a_selection_recovery_requires_the_sealed_core_audit(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result_payload = dict(
+    result_payload = gov._freeze_json(
         gov.seal_payload(
             {
                 "schema": gov.ARTIFACT_SCHEMAS["development_result"],
                 "complete_grid_gate_report": [],
                 "selected_grid_cell_id": "p3-nu_4-lambda_0p20",
+                "nested": {"rows": [{"score": 0.5}]},
             }
         )
     )
@@ -1706,7 +2081,12 @@ def test_a_selection_recovery_requires_the_sealed_core_audit(
         return value
 
     def build(value: object, *, audited_development_result: object) -> object:
-        assert value is result_payload
+        assert value == gov._plain_json(result_payload)
+        assert type(value) is dict
+        assert type(value["nested"]) is dict
+        assert type(value["nested"]["rows"]) is list
+        assert type(value["nested"]["rows"][0]) is dict
+        assert gov.canonical_json_bytes(value) + b"\n" == gov.artifact_bytes(result_payload)
         assert audited_development_result is audited
         return selected
 
@@ -1892,7 +2272,7 @@ def test_start_receipt_reopen_rejects_unknown_active_root_entry(
     private_test_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = private_test_path / "development-v3"
+    root = private_test_path / "development-v4"
     root.mkdir(mode=0o700)
     for name in (
         "development-bundle.json",
@@ -1914,7 +2294,7 @@ def test_start_receipt_reopen_accepts_exact_post_result_inventory(
     private_test_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = private_test_path / "development-v3"
+    root = private_test_path / "development-v4"
     root.mkdir(mode=0o700)
     for name in (
         "development-bundle.json",

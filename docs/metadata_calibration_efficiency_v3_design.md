@@ -1,15 +1,15 @@
 # Metadata-assisted low-calibration SSVEP — V3 pre-outcome design
 
-상태: **V3.2 pre-outcome infrastructure recovery / development-v1·v2 영구 은퇴 /
-development-v3 bundle 전 / development seed 미실행 / scientific lockbox·외부 EEG·wearable
-EEG outcome 미승인**
+상태: **V3.3 pre-outcome infrastructure recovery / development-v1·v2·v3 영구 은퇴 /
+development-v4 bundle 전 / replacement development seed 3156745110 미실행 /
+scientific lockbox·외부 EEG·wearable EEG outcome 미승인**
 
 기준 후보는 `metadata-calibration-efficiency-v3`, 결정 ID는 `DEC-20260906-024`다.
 기계 판독 기준원은
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`, synthetic 기준원은
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 최초 경계는 byte-identical
 `configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 현재 recovery 경계는
-`configs/governance/metadata_calibration_v3_2_recovery_amendment.json`이다.
+`configs/governance/metadata_calibration_v3_3_recovery_amendment.json`이다.
 
 ## 결론부터 말하면
 
@@ -306,42 +306,60 @@ file SHA를 함께 묶어야 한다. Manifest는 strict RFC3339 UTC 생성시각
 그 시각보다 뒤이면서 target보다 엄격히 앞이어야 한다. Filesystem mtime은 이 판단에 쓰지 않는다.
 
 Development-v1의 외부 write-once root는 bundle과 covariate-only context reference 두 파일,
-development-v2 root는 bundle 한 파일만 가진 채 영구 은퇴한다. 새 terminal 파일을 소급해
-만들거나 기존 파일을 수정·삭제·확장하지 않는다. V2 `resume`은 context seed `20260910`의
-SeedSequence와 covariate-only deterministic reference replay를 두 번 메모리에서 수행했지만,
-frozen `mappingproxy`를 JSON transport 경계에 그대로 넘겨 publication 전에 실패했다. 따라서
-V2 context artifact와 development RNG authority는 없고, development seed `20260909`의
-SeedSequence·DGP·result·selection·outcome은 실행되지 않았다.
+development-v2 root는 bundle 한 파일, development-v3 root는 bundle·context reference·
+development start 세 파일만 가진 채 영구 은퇴한다. 어느 old root에도 terminal이나 result를
+소급 생성하지 않으며 기존 파일을 수정·삭제·확장하지 않는다. V2에서는 context seed
+`20260910` reference replay만 메모리에서 두 번 실행됐고 development seed는 실행되지 않았다.
+V3에서는 같은 V1 context bytes를 채택한 뒤 `development-start.json`을 기록했고, 그 단회
+receipt가 old development seed `20260909`를 소비한다.
+
+V3 `resume`은 `execute_complete_development`가 반환한 뒤 governance가 frozen
+`mappingproxy` result를 synthetic publication validator로 넘기는 transport 경계에서
+TypeError로 끝났다. 따라서 seed authority·SeedSequence·DGP·complete grid와 selection이
+메모리에서 완료됐다는 것은 control flow에 따른 강한 추론이지만, result/selection 파일이나
+caller에게 노출된 metric·outcome은 없다. 이를 과학적 PASS/FAIL 또는 내구성 있는 outcome
+attestation으로 취급하거나 재구성하지 않는다. Exact V3 inventory SHA-256은
+`59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7`, 실패 line
+SHA-256은 `5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c`다.
 
 계속할 수 있는 유일한 attempt는
-`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3/`이며 bundle schema는
-`cfeg.metadata-calibration-efficiency-v3.development-bundle.v3`다. 새 bundle은 V1의 exact 두
-파일과 V2의 exact 한 파일 inventory, 두 recovery amendment, incident output digest, clean A3
-source/runtime/tests를 모두 묶는다. V3 context는 retired-v1 context의 exact bytes를 채택하며,
-runner transport 경계에서만 평범한 dict/list로 deep-detach한 뒤 byte equality를 다시 확인한다.
+`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/`이며 bundle
+schema는 `cfeg.metadata-calibration-efficiency-v3.development-bundle.v4`다. 새 bundle은
+V1/V2/V3의 exact 2/1/3-file inventory, 세 recovery amendment, incident identities,
+clean A4 source/runtime/tests를 모두 묶는다. Context는 계속 retired-v1의 exact bytes를
+복사·재검증하고 retired-v3 context와도 byte-identical임을 확인한다. V3를 scientific parent로
+삼거나 context를 refit하지 않는다.
 
-Development-v3의 네 canonical 파일은 `development-bundle.json`, `context-reference.json`,
-`development-start.json`, `development-result.json`이다. `resume`은 scientific contract와
-bundle/context를 모두 검증한 직후, development authority나 첫 RNG draw보다 먼저
-`development-start.json`을 `O_EXCL`로 기록한다. 같은 creator process가 받은 private nominal
-capability만 그 한 실행에서 계속할 수 있다. 새 process가 start receipt만 발견하면
-`DEVELOPMENT_ATTEMPT_CONSUMED`로 영구 중단하고 replay하지 않으며, receipt와 result가 함께
-있으면 read-only audit만 허용한다. Result는 receipt의 schema·payload SHA·file SHA를 묶는다.
-Historical-pulse canary는 selected freeze 뒤에만 실행하며 scientific lockbox, external/human
-EEG outcome, network와 future beacon은 여전히 미승인이다.
-Post-result restart는 read-only recovery capability로 저장된 rows·gate·sensitivity evidence를
-검산한다. 이때 core가 고정 component-11 sensitivity resampling만 내부 replay하지만,
-DevelopmentRNGAuthority를 발급하거나 participant EEG/DGP를 재생성하지는 않는다.
+Replacement development seed `3156745110`은 outcome이 아닌 V3 bundle/context/start와 실패
+envelope의 immutable pre-result digest만으로 사전 결정했다. Canonical preimage SHA-256
+`bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897`을 여덟 개 big-endian
+uint32로 나눈 뒤 forbidden seed를 제외한 첫 nonzero word(index 0)를 쓴다. 이 변경으로
+scientific projection은 old `0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79`에서
+new `5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`로 바뀌며, 허용된
+유일한 leaf는 `synthetic.rng.development_root_seed`다. 새 synthetic evidence는 투명한
+development/model-selection evidence이지 human confirmatory evidence가 아니다.
+
+Development-v4의 네 canonical 파일은 `development-bundle.json`, `context-reference.json`,
+`development-start.json`, `development-result.json`이다. Start receipt는 development
+authority/첫 RNG draw 전에 `O_EXCL`로 기록되고, 그 creator process의 private nominal
+capability만 같은 호출에서 계속할 수 있다. Fresh process에서 receipt만 있으면
+`DEVELOPMENT_ATTEMPT_CONSUMED` terminal이며 replay하지 않는다. Receipt와 result가 함께
+있으면 read-only audit만 허용하고 result가 receipt schema·payload SHA·file SHA를 묶는다.
+
+Transport 수정은 governance parser나 global serializer를 느슨하게 만들지 않는다. Frozen
+context/result/selected payload를 core에 넘기는 여섯 경계—최초 result validation, clean-A
+result recovery, selected-freeze recovery build, B context/result/selected reopen—에서만
+ordinary dict/list로 deep-detach하고 LF-종료 canonical bytes가 원문과 정확히 같은지 확인한다.
+Post-result audit은 development RNG authority나 participant DGP를 다시 실행하지 않는다.
 Selected freeze는 repository의
 `configs/governance/metadata_calibration_v3_selected_method_freeze.json`, full test evidence는
 canary root의 `test-evidence.json`이다.
-
 Scientific execution authorization의 trust root는 repository에 고정한 workspace-owner
 RSA-4096 공개키(fingerprint `SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g`)다.
 임의 runtime key는 거부한다. 향후 exact attempt manifest가 생긴 뒤 target 전에 대응 개인키로
 RSA-PSS/SHA-256 detached 서명을 받아야 하며, 현재 대화의 일반 승인은 그 target-bound 서명을 대신하지 않는다.
 
-## 구현 준비 상태 (2026-09-07 implementation A 직전)
+## 역사 기록: 구현 준비 상태 (2026-09-07 implementation A 직전)
 
 V3 scientific core, governance와 3-command restartable runner를 구현하고 독립 exact-commit
 감사를 통과했다. Core 기준 commit은 `a3573876eae97b6aaabcd959d08bec541438e773`, 최종

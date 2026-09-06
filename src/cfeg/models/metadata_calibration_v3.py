@@ -58,7 +58,7 @@ DEVELOPMENT_RNG_AUTHORITY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-authority.v1"
 )
 DEVELOPMENT_BUNDLE_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
 )
 RNG_PRIMITIVE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
@@ -67,10 +67,10 @@ RNG_PRIMITIVE_SCHEMA = (
 MASTER_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
 MODEL_MODULE_REPOSITORY_PATH = "src/cfeg/models/metadata_calibration_v3.py"
-MASTER_PLAN_SHA256 = "ff82c78ab6765c2bf58062195d246df7eb1654cabd1eb413fa4c40ca1f461446"
-SYNTHETIC_PLAN_SHA256 = "172de79a5315ef6daba9d623f05ee6ebe37595fc8f9dc3c913b6f63c8119f693"
+MASTER_PLAN_SHA256 = "cbde65a85856e3fbeb832e0621363f96a033c24df93b6e9705b41f41624420a8"
+SYNTHETIC_PLAN_SHA256 = "b1bb5f6f47a4a5e433101608488007a4d72c312978c4a302cb87ec742b219a5a"
 CONTEXT_REFERENCE_ROOT_SEED = 20_260_910
-DEVELOPMENT_ROOT_SEED = 20_260_909
+DEVELOPMENT_ROOT_SEED = 3_156_745_110
 RNG_KEY_ORDER = (
     "root_seed",
     "family_code",
@@ -229,7 +229,7 @@ class ContextReferenceRNGAuthority:
 
 @dataclass(frozen=True, slots=True, init=False)
 class DevelopmentRNGAuthority:
-    """Nominal bundle-bound authority for development seed 20260909 only."""
+    """Nominal bundle-bound authority for the frozen V3.3 development seed only."""
 
     schema: str
     candidate_id: str
@@ -426,7 +426,7 @@ def issue_bundle_bound_rng_authorities(
 
     del development_bundle_capability, expected_commit, expected_tree
     raise RuntimeError(
-        "paired RNG authority issuance retired by V3.2; use the role-specific JIT issuers"
+        "paired RNG authority issuance retired in V3.3; use role-specific JIT issuers"
     )
 
 

@@ -362,7 +362,7 @@ def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production
 
     resolved_alias = private_test_path / "resolved-home-alias"
     resolved_alias.symlink_to("/home/whwovy", target_is_directory=True)
-    for attempt in ("development-v1", "development-v2", "development-v3"):
+    for attempt in ("development-v1", "development-v2", "development-v3", "development-v4"):
         with pytest.raises(gov.AuthorityError, match="production namespace"):
             gov._publish_write_once_under_test_root(
                 resolved_alias,

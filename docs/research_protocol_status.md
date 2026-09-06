@@ -1,7 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3.2 pre-outcome infrastructure recovery 구현·검증 중 / development-v1·v2 영구 은퇴 / development-v3 bundle 전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+현재 상태: **V3.3 pre-outcome infrastructure recovery 구현·검증 중 / development-v1·v2·v3 영구 은퇴 / development-v4 bundle 전 / replacement seed 3156745110 미실행 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
 현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
@@ -59,15 +59,47 @@ robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰�
 없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
 **해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
 
-현재는 V3.2 recovery 코드·unit test와 clean hash-pinned development-v3 bundle을 만드는
+현재는 V3.3 recovery 코드·unit test와 clean hash-pinned development-v4 bundle을 만드는
 단계다. Bundle은
 git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
 implementation commit/tree를 묶는다. Root seed
-`20260909`의 nonreserved synthetic development는 bundle validator 뒤에만 가능하고 public
+`3156745110`의 replacement synthetic development는 bundle validator 뒤에만 가능하고 public
 historical-pulse governance canary는 selected-method freeze와 state engine 뒤에만 가능하다.
 V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
 external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
+
+### V3.3 pre-outcome consumed-development recovery
+
+Development-v3의 write-once root에는 bundle·retired-v1과 byte-identical한 context·start receipt
+세 파일만 있다. Bundle/source/runtime와 세 artifact의 exact hashes는 새 tracked
+`configs/governance/metadata_calibration_v3_3_recovery_amendment.json`에 고정한다. Start는
+`2026-09-06T21:06:11Z`, creator PID 550174이고 그 뒤 `resume`은 frozen `mappingproxy`를 core
+publication validator로 넘기는 transport 경계에서 LF-종료 TypeError line SHA-256
+`5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c`를 냈다.
+
+Start receipt 정책상 development seed `20260909`는 소비됐다. `execute_complete_development`
+반환 뒤의 late failure이므로 RNG authority, SeedSequence, DGP, grid report와 selection이
+메모리에서 완료됐다는 강한 control-flow inference는 가능하지만, durable result·selection·
+test/canary 파일과 caller가 관측한 metric/outcome은 0이다. 이를 과학적 PASS/FAIL이나 outcome
+attestation으로 쓰거나 old seed를 replay/reconstruct하지 않는다. Development-v3은 exact
+three-file inventory SHA-256
+`59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7` 그대로 은퇴한다.
+
+유일한 새 attempt는 `development-v4`, bundle schema는
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v4`다. Replacement development seed
+`3156745110`은 V3의 pre-result file identities와 failure envelope만 넣은 canonical preimage
+SHA-256 `bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897`을 여덟
+big-endian uint32로 분할해 첫 eligible word(index 0)를 고른 값이다. Outcome은 derivation에
+쓰지 않았다. Scientific projection은 seed 한 leaf만 바뀌어 old `0702d01b...`에서 new
+`5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`가 됐다. Objective,
+operator, DGP, grid, gate, threshold, rank, context seed와 evidence role은 그대로다.
+
+Context는 V1의 exact bytes를 계속 복사·재검증하고 V3 context와 byte equality를 요구한다.
+Frozen JSON transport는 parser나 serializer 전체를 바꾸지 않고, 최초 result validation,
+clean-A recovery, selected build, B context/result/selected reopen의 여섯 core 경계에서만 plain
+dict/list로 deep-detach한 뒤 LF canonical bytes를 원문과 비교한다. V4 bundle은 아직 없고 새
+seed/DGP도 실행되지 않았다. Future beacon/scientific/human/network authorization은 모두 false다.
 
 ### V3.2 pre-outcome infrastructure recovery
 

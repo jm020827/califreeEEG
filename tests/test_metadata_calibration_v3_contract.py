@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import copy
 import hashlib
 import json
 import subprocess
@@ -15,11 +16,14 @@ _SYNTHETIC = _REPOSITORY / "configs/analysis/metadata_calibration_v3_synthetic.y
 _ORIGINAL_AMENDMENT = (
     _REPOSITORY / "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
 )
-_PRIOR_RECOVERY_AMENDMENT = (
+_EARLIER_RECOVERY_AMENDMENT = (
     _REPOSITORY / "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
 )
-_RECOVERY_AMENDMENT = (
+_PRIOR_RECOVERY_AMENDMENT = (
     _REPOSITORY / "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+)
+_RECOVERY_AMENDMENT = (
+    _REPOSITORY / "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
 )
 _OWNER_KEY = _REPOSITORY / "configs/governance/metadata_calibration_v3_owner_authority.pub"
 _V2_DENY = _REPOSITORY / "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json"
@@ -59,6 +63,7 @@ def test_v3_contract_hash_links_and_frozen_trust_roots() -> None:
     master = _load_yaml(_MASTER)
     synthetic = _load_yaml(_SYNTHETIC)
     original = json.loads(_ORIGINAL_AMENDMENT.read_text(encoding="utf-8"))
+    earlier_recovery = json.loads(_EARLIER_RECOVERY_AMENDMENT.read_text(encoding="utf-8"))
     prior_recovery = json.loads(_PRIOR_RECOVERY_AMENDMENT.read_text(encoding="utf-8"))
     recovery = json.loads(_RECOVERY_AMENDMENT.read_text(encoding="utf-8"))
 
@@ -71,12 +76,18 @@ def test_v3_contract_hash_links_and_frozen_trust_roots() -> None:
         "file_sha256": _file_sha256(_ORIGINAL_AMENDMENT),
         "must_remain_byte_identical": True,
     }
-    assert recovery["prior_recovery_amendment"] == {
+    assert recovery["prior_recovery_amendment_v1"] == {
         "path": "configs/governance/metadata_calibration_v3_1_recovery_amendment.json",
+        "file_sha256": _file_sha256(_EARLIER_RECOVERY_AMENDMENT),
+        "must_remain_byte_identical": True,
+    }
+    assert recovery["prior_recovery_amendment_v2"] == {
+        "path": "configs/governance/metadata_calibration_v3_2_recovery_amendment.json",
         "file_sha256": _file_sha256(_PRIOR_RECOVERY_AMENDMENT),
         "must_remain_byte_identical": True,
     }
-    assert prior_recovery["protocol_revision"] == "V3.1"
+    assert earlier_recovery["protocol_revision"] == "V3.1"
+    assert prior_recovery["protocol_revision"] == "V3.2"
     assert _file_sha256(_V2_DENY) == _EXPECTED_V2_DENY_SHA256
     assert original["retired_ancestor"]["deny_overlay_file_sha256"] == _EXPECTED_V2_DENY_SHA256
 
@@ -97,79 +108,91 @@ def test_v3_contract_hash_links_and_frozen_trust_roots() -> None:
     )
 
 
-def test_v3_2_recovery_receipt_and_scientific_projection_are_exact() -> None:
+def test_v3_3_recovery_receipt_seed_and_one_leaf_projection_are_exact() -> None:
     master = _load_yaml(_MASTER)
     synthetic = _load_yaml(_SYNTHETIC)
     recovery = json.loads(_RECOVERY_AMENDMENT.read_text(encoding="utf-8"))
-    retired_v1 = recovery["retired_development_v1"]
-    retired_v2 = recovery["retired_development_v2"]
-    failure = retired_v2["observed_resume_failure"]
-    observations = retired_v2["execution_observations"]
+    retired_v3 = recovery["retired_development_v3"]
+    failure = retired_v3["observed_resume_failure"]
+    durable = retired_v3["durable_execution_facts"]
+    inference = retired_v3["control_flow_inference"]
 
-    assert recovery["protocol_revision"] == "V3.2"
-    assert recovery["recorded_at_is_amendment_time_not_incident_timestamp"] is True
+    assert recovery["protocol_revision"] == "V3.3"
     assert recovery["scientific_objective_changed"] is False
+    assert recovery["scientific_contract_delta"] == "synthetic.rng.development_root_seed_only"
     assert recovery["owner_approval"]["approved_by"] == "active_workspace_owner"
     assert "not a cryptographic signature" in recovery["owner_approval"]["attestation_note"]
-    assert retired_v1["source_commit"] == "569394da6894a2efed37b9dde162cbe4fe60534d"
-    assert retired_v1["source_tree"] == "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd"
-    assert retired_v2["source_commit"] == "82e26d60fd17464380697126bb64ad73b36708a2"
-    assert retired_v2["source_tree"] == "f7f59bda48610aeaa5bd1b6ffd288a7b56a4bb85"
-    for retired in (retired_v1, retired_v2):
-        observed_tree = subprocess.check_output(
-            [
-                "/usr/bin/git",
-                "-C",
-                _REPOSITORY,
-                "show",
-                "-s",
-                "--format=%T",
-                retired["source_commit"],
-            ],
-            text=True,
-        ).strip()
-        assert observed_tree == retired["source_tree"]
+    assert "given_before_development_v3_incident" in recovery["owner_approval"]["approval_basis"]
+    assert retired_v3["source_commit"] == "adab7acda840c5e6ed9a994d82c8098094284c6b"
+    assert retired_v3["source_tree"] == "b06b43a130f599e0b85b4ee91856954f6061bea7"
+    assert retired_v3["source_bundle_sha256"] == (
+        "5e7ff5ad96c010d73870857caf6f3544e227e49099fbb0c1ad839649e30cd609"
+    )
+
     emitted = base64.b64decode(failure["emitted_json_line_utf8_base64"], validate=True)
     assert emitted == (
         b'{"command":"resume","error":"TypeError","message":"Object of type mappingproxy '
         b'is not JSON serializable","status":"FAIL_CLOSED"}\n'
     )
     assert hashlib.sha256(emitted).hexdigest() == failure["emitted_json_line_sha256"]
-    assert observations["context_reference_seed"] == 20_260_910
-    assert observations["context_reference_seedsequence_and_covariate_only_replay_executed"] is True
-    assert observations["context_reference_replay_count"] == 2
-    assert observations["context_reference_artifact_count"] == 0
-    assert observations["development_rng_authority_object_instantiated_in_memory"] is False
-    assert observations["development_seed"] == 20_260_909
-    assert observations["development_seedsequence_created"] is False
-    assert observations["development_DGP_executed"] is False
-    assert observations["development_result_artifact_count"] == 0
-    assert observations["development_v2_experimental_workflow_outcome_observation_count"] == 0
-    assert observations["development_v2_governed_execution_network_access_count"] == 0
+    assert durable["context_reference_artifact_count"] == 1
+    assert durable["development_start_artifact_count"] == 1
+    assert durable["development_result_artifact_count"] == 0
+    assert durable["development_seed"] == 20_260_909
+    assert durable["development_seed_consumed_by_terminal_start_receipt_policy"] is True
+    assert durable["experimental_workflow_outcome_observation_count"] == 0
+    assert inference["classification"] == (
+        "strong_control_flow_inference_not_observed_outcome_or_durable_attestation"
+    )
+    assert inference["development_seedsequence_and_DGP_executed"] is True
+    assert inference["must_not_be_reconstructed_or_used_as_evidence"] is True
 
     inventory_preimage = {
-        "schema": retired_v2["artifact_inventory_schema"],
-        "attempt": retired_v2["attempt_id"],
+        "schema": retired_v3["artifact_inventory_schema"],
+        "attempt": retired_v3["attempt_id"],
         "artifacts": [
+            {"name": "development_bundle", **retired_v3["development_bundle"]},
+            {"name": "context_reference", **retired_v3["context_reference"]},
             {
-                "name": "development_bundle",
-                **retired_v2["development_bundle"],
-            }
+                "name": "development_start",
+                **{
+                    key: retired_v3["development_start"][key]
+                    for key in ("path", "schema", "payload_sha256", "file_sha256")
+                },
+            },
         ],
     }
-    assert (
-        hashlib.sha256(
-            json.dumps(
-                inventory_preimage,
-                sort_keys=True,
-                separators=(",", ":"),
-                ensure_ascii=True,
-                allow_nan=False,
-            ).encode("utf-8")
-        ).hexdigest()
-        == retired_v2["artifact_inventory_sha256"]
-        == "7ae6a99b7ec2033b2ce0cdfbfedc05851b77d9e5dfeb21b485ebe4215f18c865"
+    inventory_digest = hashlib.sha256(
+        json.dumps(
+            inventory_preimage,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    assert inventory_digest == retired_v3["artifact_inventory_sha256"]
+    assert inventory_digest == "59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7"
+
+    replacement = recovery["replacement_development_seed"]
+    preimage_bytes = json.dumps(
+        replacement["preimage"],
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("utf-8")
+    digest = hashlib.sha256(preimage_bytes).digest()
+    words = [int.from_bytes(digest[index : index + 4], "big") for index in range(0, 32, 4)]
+    forbidden = set(replacement["preimage"]["forbidden_seed_values"])
+    eligible = [(index, word) for index, word in enumerate(words) if word and word not in forbidden]
+    assert hashlib.sha256(preimage_bytes).hexdigest() == replacement["preimage_sha256"]
+    assert replacement["preimage_sha256"] == (
+        "bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897"
     )
+    assert eligible[0] == (replacement["selected_word_index"], replacement["selected_seed"])
+    assert eligible[0] == (0, 3_156_745_110)
+    assert replacement["outcome_used_in_derivation"] is False
 
     projection = recovery["scientific_contract_projection"]
 
@@ -188,62 +211,73 @@ def test_v3_2_recovery_receipt_and_scientific_projection_are_exact() -> None:
             allow_nan=False,
         ).encode("utf-8")
 
+    baseline_master = yaml.safe_load(
+        subprocess.check_output(
+            [
+                "/usr/bin/git",
+                "-C",
+                _REPOSITORY,
+                "show",
+                (
+                    "adab7acda840c5e6ed9a994d82c8098094284c6b:"
+                    "configs/analysis/metadata_calibration_efficiency_v3.yaml"
+                ),
+            ]
+        )
+    )
+    baseline_synthetic = yaml.safe_load(
+        subprocess.check_output(
+            [
+                "/usr/bin/git",
+                "-C",
+                _REPOSITORY,
+                "show",
+                (
+                    "adab7acda840c5e6ed9a994d82c8098094284c6b:"
+                    "configs/analysis/metadata_calibration_v3_synthetic.yaml"
+                ),
+            ]
+        )
+    )
     current_projection = projection_bytes(master, synthetic)
+    baseline_projection = projection_bytes(baseline_master, baseline_synthetic)
+    assert len(current_projection) == projection["canonical_byte_length"] == 59_154
     assert hashlib.sha256(current_projection).hexdigest() == projection["sha256"]
-    for retired in (retired_v1, retired_v2):
-        old_master = yaml.safe_load(
-            subprocess.check_output(
-                [
-                    "/usr/bin/git",
-                    "-C",
-                    _REPOSITORY,
-                    "show",
-                    f"{retired['source_commit']}:configs/analysis/metadata_calibration_efficiency_v3.yaml",
-                ]
-            )
-        )
-        old_synthetic = yaml.safe_load(
-            subprocess.check_output(
-                [
-                    "/usr/bin/git",
-                    "-C",
-                    _REPOSITORY,
-                    "show",
-                    f"{retired['source_commit']}:configs/analysis/metadata_calibration_v3_synthetic.yaml",
-                ]
-            )
-        )
-        assert current_projection == projection_bytes(old_master, old_synthetic)
+    assert projection["sha256"] == (
+        "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
+    )
+    assert hashlib.sha256(baseline_projection).hexdigest() == projection["retired_baseline_sha256"]
+    assert projection["retired_baseline_sha256"] == (
+        "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
+    )
+    normalized = copy.deepcopy(synthetic)
+    normalized["rng"]["development_root_seed"] = 20_260_909
+    assert projection_bytes(master, normalized) == baseline_projection
+    assert synthetic["rng"]["development_root_seed"] == 3_156_745_110
+
     for plan in (master, synthetic):
         link = plan["preoutcome_amendment"]
         assert link["path"] == _RECOVERY_AMENDMENT.relative_to(_REPOSITORY).as_posix()
         assert link["file_sha256"] == _file_sha256(_RECOVERY_AMENDMENT)
-        assert link["protocol_revision"] == "V3.2"
-        assert link["development_attempt_id"] == "development-v3"
-        assert link["original_path"] == _ORIGINAL_AMENDMENT.relative_to(_REPOSITORY).as_posix()
+        assert link["protocol_revision"] == "V3.3"
+        assert link["development_attempt_id"] == "development-v4"
         assert link["original_file_sha256"] == _file_sha256(_ORIGINAL_AMENDMENT)
+        assert link["prior_recovery_v1_file_sha256"] == _file_sha256(_EARLIER_RECOVERY_AMENDMENT)
+        assert link["prior_recovery_v2_file_sha256"] == _file_sha256(_PRIOR_RECOVERY_AMENDMENT)
         assert (
-            link["prior_recovery_path"]
-            == _PRIOR_RECOVERY_AMENDMENT.relative_to(_REPOSITORY).as_posix()
+            link["retired_scientific_contract_projection_sha256"]
+            == (projection["retired_baseline_sha256"])
         )
-        assert link["prior_recovery_file_sha256"] == _file_sha256(_PRIOR_RECOVERY_AMENDMENT)
         assert link["scientific_contract_projection_sha256"] == projection["sha256"]
 
     prerequisite = synthetic["development_bundle"]["recovery_prerequisite"]
-    assert (
-        prerequisite["retired_v1_bundle_file_sha256"]
-        == retired_v1["development_bundle"]["file_sha256"]
-    )
-    assert (
-        prerequisite["retired_v1_context_file_sha256"]
-        == retired_v1["context_reference"]["file_sha256"]
-    )
-    assert prerequisite["retired_v1_exact_file_count"] == len(retired_v1["exact_file_names"]) == 2
-    assert (
-        prerequisite["retired_v2_bundle_file_sha256"]
-        == retired_v2["development_bundle"]["file_sha256"]
-    )
-    assert prerequisite["retired_v2_exact_file_count"] == len(retired_v2["exact_file_names"]) == 1
+    assert prerequisite["retired_v1_exact_file_count"] == 2
+    assert prerequisite["retired_v2_exact_file_count"] == 1
+    assert prerequisite["retired_v3_exact_file_count"] == 3
+    assert prerequisite["retired_v3_development_seed_consumed"] is True
+    assert prerequisite["retired_v3_result_artifact_count"] == 0
+    assert prerequisite["adopt_retired_v1_context_exact_bytes"] is True
+    assert prerequisite["retired_v3_context_must_be_byte_identical_to_retired_v1"] is True
 
 
 def test_v3_exact_operator_grid_ids_tokens_and_digests() -> None:
@@ -362,7 +396,7 @@ def test_v3_state_domains_authority_and_order_fail_closed() -> None:
     bundle_path = Path(synthetic["development_bundle"]["canonical_path"])
     assert bundle_path.is_absolute()
     assert bundle_path.is_relative_to(
-        Path("/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3")
+        Path("/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4")
     )
     retired_root = Path(master["governance"]["canonical_paths"]["retired_development_v1"])
     assert retired_root == Path(
@@ -370,6 +404,9 @@ def test_v3_state_domains_authority_and_order_fail_closed() -> None:
     )
     assert master["governance"]["canonical_paths"]["retired_development_v2"] == (
         "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2"
+    )
+    assert master["governance"]["canonical_paths"]["retired_development_v3"] == (
+        "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3"
     )
     assert not bundle_path.is_relative_to(_REPOSITORY)
 

@@ -513,7 +513,7 @@ def test_bundle_rng_authorities_are_role_separated_and_mutation_detected(
     assert type(reference_authority) is v3.ContextReferenceRNGAuthority
     assert type(development_authority) is v3.DevelopmentRNGAuthority
     assert reference_authority.root_seed == 20_260_910
-    assert development_authority.root_seed == 20_260_909
+    assert development_authority.root_seed == 3_156_745_110
     assert development_authority.context_reference_schema == v3.CONTEXT_REFERENCE_SCHEMA
     assert development_authority.context_reference_payload_sha256 == "7" * 64
     assert development_authority.context_reference_file_sha256 == "8" * 64
