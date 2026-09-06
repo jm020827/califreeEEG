@@ -1217,6 +1217,14 @@ def _path_parts(path: Path) -> tuple[str, ...]:
     return tuple(parts[1:])
 
 
+def _is_same_or_descendant(path: Path, boundary: Path) -> bool:
+    try:
+        path.relative_to(boundary)
+    except ValueError:
+        return False
+    return True
+
+
 def _relative_parts(path: str | PurePosixPath) -> tuple[str, ...]:
     if not isinstance(path, (str, PurePosixPath)):
         raise ValidationError("publication path must be canonical POSIX text")
@@ -1741,15 +1749,35 @@ def _publish_write_once_under_test_root(
     """Exercise the filesystem primitive without granting canonical publication access."""
 
     root = _canonical_absolute_path(test_root)
+    _reject_prohibited_artifact_root(root)
+    parts = _relative_parts(relative_path)
+    destination = root.joinpath(*parts)
+    try:
+        resolved_root = root.resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise AuthorityError("test-only publication root cannot be resolved safely") from exc
+    resolved_destination = resolved_root.joinpath(*parts)
     for protected in (V3_CANONICAL_ROOT, V3_SOURCE_REPOSITORY):
-        try:
-            root.relative_to(protected)
-        except ValueError:
-            continue
-        raise AuthorityError("test-only publisher cannot target a production namespace")
+        resolved_protected = protected.resolve(strict=False)
+        if any(
+            _is_same_or_descendant(candidate, boundary)
+            for candidate in (root, destination, resolved_root, resolved_destination)
+            for boundary in (protected, resolved_protected)
+        ):
+            raise AuthorityError(
+                "test-only publisher cannot target a production namespace"
+            )
+    temporary_root = Path("/tmp").resolve(strict=True)
+    if resolved_root == temporary_root or not _is_same_or_descendant(
+        resolved_root,
+        temporary_root,
+    ):
+        raise AuthorityError(
+            "test-only publication root must be an owner-private namespace below /tmp"
+        )
     return _publish_write_once(
         root,
-        relative_path,
+        PurePosixPath(*parts),
         data,
         create_root=create_root,
         _publisher=_PUBLICATION_ISSUER,
@@ -1896,6 +1924,148 @@ def _run_git(repository: Path, arguments: Sequence[str]) -> bytes:
     return completed.stdout
 
 
+def _require_nonsparse_unmodified_index(repository: Path) -> tuple[str, ...]:
+    """Reject index hints that can hide working-tree bytes from Git status."""
+
+    raw_config = _run_git(repository, ("config", "--local", "--null", "--list"))
+    for raw_record in raw_config.split(b"\x00"):
+        if not raw_record:
+            continue
+        raw_key, separator, raw_value = raw_record.partition(b"\n")
+        try:
+            key = raw_key.decode("utf-8").casefold()
+            value = raw_value.decode("utf-8").casefold()
+        except UnicodeDecodeError as exc:
+            raise ValidationError("local Git configuration is not UTF-8") from exc
+        if key not in {"core.sparsecheckout", "core.sparsecheckoutcone"}:
+            continue
+        if not separator or value not in {"true", "false", "yes", "no", "on", "off", "1", "0"}:
+            raise ValidationError("sparse-checkout Git configuration is not canonical boolean")
+        if value in {"true", "yes", "on", "1"}:
+            raise AuthorityError("sparse checkout is prohibited for source authority")
+
+    sparse_patterns = repository / ".git/info/sparse-checkout"
+    try:
+        os.lstat(sparse_patterns)
+    except FileNotFoundError:
+        pass
+    else:
+        raise AuthorityError("sparse-checkout pattern state is prohibited for source authority")
+
+    raw_index = _run_git(repository, ("ls-files", "-v", "-z"))
+    paths: list[str] = []
+    for raw_record in raw_index.split(b"\x00"):
+        if not raw_record:
+            continue
+        if len(raw_record) < 3 or raw_record[1:2] != b" ":
+            raise ValidationError("Git index emitted a malformed tracked-path record")
+        if raw_record[:1] != b"H":
+            raise AuthorityError(
+                "assume-unchanged, skip-worktree, or special Git index state is prohibited"
+            )
+        try:
+            path = raw_record[2:].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError("Git index contains a non-UTF-8 tracked path") from exc
+        # Reuse the canonical path validation without trusting an index hash.
+        TrackedSourceFile(path=path, kind="regular_file", file_sha256="0" * 64)
+        paths.append(path)
+    if tuple(paths) != tuple(sorted(paths)) or len(paths) != len(set(paths)):
+        raise ValidationError("Git index paths must be unique and sorted")
+    return tuple(paths)
+
+
+def _tracked_worktree_file_sha256(
+    root_descriptor: int,
+    entry: TrackedSourceFile,
+) -> str:
+    """Hash one tracked disk file through no-follow directory descriptors."""
+
+    descriptor = os.dup(root_descriptor)
+    file_descriptor: int | None = None
+    try:
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        for component in PurePosixPath(entry.path).parts[:-1]:
+            child = os.open(component, flags, dir_fd=descriptor)
+            _validate_directory_fd(child, exact_private_mode=False)
+            os.close(descriptor)
+            descriptor = child
+        file_descriptor = os.open(
+            PurePosixPath(entry.path).parts[-1],
+            os.O_RDONLY | os.O_NOFOLLOW,
+            dir_fd=descriptor,
+        )
+        before = os.fstat(file_descriptor)
+        observed_mode = stat.S_IMODE(before.st_mode)
+        expected_executable = entry.kind == "executable_file"
+        observed_executable = (observed_mode & 0o111) == 0o111
+        if (
+            not stat.S_ISREG(before.st_mode)
+            or before.st_uid != os.geteuid()
+            or before.st_nlink != 1
+            or not observed_mode & stat.S_IRUSR
+            or observed_mode & 0o7000
+            or observed_mode & stat.S_IWOTH
+            or observed_executable != expected_executable
+            or (not expected_executable and observed_mode & 0o111)
+        ):
+            raise AuthorityError(
+                "tracked working-tree file type, owner, link count, or Git mode is unsafe"
+            )
+        data = _read_all(file_descriptor, maximum_bytes=512 * 1024 * 1024)
+        after = os.fstat(file_descriptor)
+        before_identity = (
+            before.st_dev,
+            before.st_ino,
+            before.st_size,
+            before.st_mtime_ns,
+            before.st_ctime_ns,
+            before.st_mode,
+            before.st_uid,
+            before.st_nlink,
+        )
+        after_identity = (
+            after.st_dev,
+            after.st_ino,
+            after.st_size,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+            after.st_mode,
+            after.st_uid,
+            after.st_nlink,
+        )
+        if before_identity != after_identity:
+            raise AuthorityError("tracked working-tree file changed while it was hashed")
+        return file_sha256(data)
+    except OSError as exc:
+        raise AuthorityError(
+            f"tracked working-tree path could not be opened safely: {entry.path}"
+        ) from exc
+    finally:
+        if file_descriptor is not None:
+            os.close(file_descriptor)
+        os.close(descriptor)
+
+
+def _require_worktree_matches_committed_inventory(
+    repository: Path,
+    entries: Sequence[TrackedSourceFile],
+) -> None:
+    root_descriptor = _open_absolute_directory(
+        repository,
+        create=False,
+        require_private_final=False,
+    )
+    try:
+        for entry in entries:
+            if _tracked_worktree_file_sha256(root_descriptor, entry) != entry.file_sha256:
+                raise AuthorityError(
+                    f"tracked working-tree bytes differ from committed blob: {entry.path}"
+                )
+    finally:
+        os.close(root_descriptor)
+
+
 def _validate_git_repository_root(repository: Path) -> Path:
     _require_pinned_git_executable()
     root = _canonical_absolute_path(repository)
@@ -1930,11 +2100,14 @@ def _validate_git_repository_root(repository: Path) -> Path:
 def capture_clean_source_snapshot(repository: str | Path) -> CleanSourceSnapshot:
     """Capture every tracked blob from an already-clean git commit.
 
-    Blob bytes come from the committed object database, so the inventory binds
-    the clean commit rather than a race-prone working-tree reread.
+    The inventory comes from committed objects, then every corresponding disk
+    file is independently opened without following symlinks and byte-compared.
+    This prevents assume-unchanged, skip-worktree, and sparse-index state from
+    hiding source drift from the otherwise clean Git porcelain report.
     """
 
     root = _validate_git_repository_root(_canonical_absolute_path(repository))
+    index_paths = _require_nonsparse_unmodified_index(root)
     status = _run_git(root, ("status", "--porcelain=v1", "--untracked-files=all", "-z"))
     if status:
         raise ValidationError("development bundle requires an already-clean worktree")
@@ -1969,17 +2142,27 @@ def capture_clean_source_snapshot(repository: str | Path) -> CleanSourceSnapshot
                 file_sha256=file_sha256(blob),
             )
         )
+    entries.sort(key=lambda item: item.path)
+    if tuple(entry.path for entry in entries) != index_paths:
+        raise AuthorityError("Git index path set differs from the committed source tree")
+    _require_worktree_matches_committed_inventory(root, entries)
+    post_index_paths = _require_nonsparse_unmodified_index(root)
     post_commit = _run_git(root, ("rev-parse", "--verify", "HEAD^{commit}"))
     post_tree = _run_git(root, ("rev-parse", "--verify", "HEAD^{tree}"))
     post_status = _run_git(
         root,
         ("status", "--porcelain=v1", "--untracked-files=all", "-z"),
     )
-    if post_commit != commit or post_tree != tree or post_status:
+    if (
+        post_commit != commit
+        or post_tree != tree
+        or post_status
+        or post_index_paths != index_paths
+    ):
         raise ValidationError("git identity or worktree changed during source capture")
     return CleanSourceSnapshot(
         identity=identity,
-        tracked_files=tuple(sorted(entries, key=lambda x: x.path)),
+        tracked_files=tuple(entries),
         _issuer=_CAPABILITY_ISSUER,
     )
 
@@ -2125,6 +2308,50 @@ def _validate_frozen_bundle_files(files: Mapping[str, bytes]) -> None:
     _validate_owner_public_key_bytes(files[OWNER_AUTHORITY_PUBLIC_KEY_PATH])
 
 
+def _require_frozen_files_in_source_snapshot(
+    snapshot: CleanSourceSnapshot,
+    frozen_file_bytes: Mapping[str, bytes],
+) -> None:
+    """Bind caller bytes to the exact frozen records in a validated commit."""
+
+    snapshot = _require_clean_source_snapshot(snapshot)
+    _validate_frozen_bundle_files(frozen_file_bytes)
+    records = {entry.path: entry for entry in snapshot.tracked_files}
+    for path, expected_sha256 in FROZEN_FILE_SHA256.items():
+        record = records.get(path)
+        if (
+            record is None
+            or record.kind != "regular_file"
+            or record.file_sha256 != expected_sha256
+            or file_sha256(frozen_file_bytes[path]) != record.file_sha256
+        ):
+            raise AuthorityError(
+                f"frozen file is not the exact regular blob in the source snapshot: {path}"
+            )
+
+
+def _require_frozen_files_in_current_repository(
+    snapshot: CleanSourceSnapshot,
+    frozen_file_bytes: Mapping[str, bytes],
+) -> None:
+    """Byte-compare frozen inputs with canonical Git objects before authority use."""
+
+    _require_frozen_files_in_source_snapshot(snapshot, frozen_file_bytes)
+    before = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
+    if not _same_source_snapshot(before, snapshot):
+        raise AuthorityError("canonical repository differs from the frozen source snapshot")
+    for path in FROZEN_FILE_SHA256:
+        committed = _run_git(
+            V3_SOURCE_REPOSITORY,
+            ("show", f"{snapshot.identity.commit}:{path}"),
+        )
+        if committed != frozen_file_bytes[path]:
+            raise AuthorityError(f"caller frozen bytes differ from committed blob: {path}")
+    after = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
+    if not _same_source_snapshot(after, snapshot):
+        raise AuthorityError("canonical repository changed during frozen-file validation")
+
+
 _DEVELOPMENT_BUNDLE_FIELDS = frozenset(
     {
         "schema",
@@ -2202,7 +2429,7 @@ def _build_development_bundle(
         expected_scope=expected_test_scope,
         expected_environment_sha256=runtime_fingerprint,
     )
-    _validate_frozen_bundle_files(frozen_file_bytes)
+    _require_frozen_files_in_source_snapshot(snapshot, frozen_file_bytes)
     records = [entry.as_record() for entry in snapshot.tracked_files]
     bundle = {
         "schema": DEVELOPMENT_BUNDLE_SCHEMA,
@@ -2268,13 +2495,15 @@ def build_development_bundle(
 ) -> Mapping[str, Any]:
     """Build the production bundle from a canonical observed test receipt."""
 
-    return _build_development_bundle(
+    value = _build_development_bundle(
         snapshot=snapshot,
         frozen_file_bytes=frozen_file_bytes,
         created_at_UTC=created_at_UTC,
         focused_test_run=focused_test_run,
         expected_test_scope="canonical",
     )
+    _require_frozen_files_in_current_repository(snapshot, frozen_file_bytes)
+    return value
 
 
 def _validate_development_bundle_bytes(
@@ -2485,6 +2714,7 @@ def publish_development_bundle(
         focused_test_run=focused_test_run,
     )
     _require_prepublication_current_source(snapshot)
+    _require_frozen_files_in_current_repository(snapshot, frozen_file_bytes)
     return _publish_write_once(
         V3_CANONICAL_ROOT / "development-v1",
         "development-bundle.json",
@@ -2525,10 +2755,18 @@ def _validate_development_bundle_at_path(
     focused_test_run: ObservedTestRunCapability,
     scope: str,
 ) -> DevelopmentBundleCapability | TestOnlyArtifactReceipt:
+    path = _canonical_absolute_path(path)
+    if scope not in {"canonical", "test-only"}:
+        raise AuthorityError("development-bundle validation scope is not recognized")
+    if scope == "canonical" and path != Path(DEVELOPMENT_BUNDLE_CANONICAL_PATH):
+        raise AuthorityError(
+            "canonical development-bundle authority requires the exact canonical path"
+        )
     if scope == "canonical":
         current = capture_clean_source_snapshot(V3_SOURCE_REPOSITORY)
         if not _same_source_snapshot(current, snapshot):
             raise AuthorityError("canonical repository differs from bundle source snapshot")
+        _require_frozen_files_in_current_repository(snapshot, frozen_file_bytes)
     loaded = load_exact_artifact_bytes([path], declared_paths=[path])
     file_bytes = loaded[os.fspath(path)]
     parsed = parse_artifact_bytes(
@@ -3258,6 +3496,13 @@ def _validate_context_reference_at_path(
     core_capability: object,
     scope: str,
 ) -> ValidatedArtifactCapability | TestOnlyArtifactReceipt:
+    path = _canonical_absolute_path(path)
+    if scope not in {"canonical", "test-only"}:
+        raise AuthorityError("context-reference validation scope is not recognized")
+    if scope == "canonical" and path != CONTEXT_REFERENCE_CANONICAL_PATH:
+        raise AuthorityError(
+            "canonical context-reference authority requires the exact canonical path"
+        )
     file_bytes = load_exact_artifact_bytes([path], declared_paths=[path])[os.fspath(path)]
     parsed = parse_artifact_bytes(
         file_bytes,

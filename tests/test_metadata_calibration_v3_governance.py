@@ -5,6 +5,8 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
@@ -16,14 +18,31 @@ _REPOSITORY = Path(__file__).resolve().parents[1]
 _FIXTURE = _REPOSITORY / "tests/fixtures/nist_beacon_v2_20260905T180000Z.json"
 
 
+@pytest.fixture
+def private_test_path() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(prefix="cfeg-v3-test-", dir="/tmp") as raw:
+        path = Path(raw)
+        path.chmod(0o700)
+        yield path
+
+
 def _frozen_file_bytes() -> dict[str, bytes]:
     return {path: (_REPOSITORY / path).read_bytes() for path in gov.FROZEN_FILE_SHA256}
 
 
-def _commit_tiny_repository(root: Path) -> gov.CleanSourceSnapshot:
+def _commit_tiny_repository(
+    root: Path,
+    *,
+    include_frozen_files: bool = False,
+) -> gov.CleanSourceSnapshot:
     module = root / "src/cfeg/metadata_calibration_v3_governance.py"
     module.parent.mkdir(parents=True)
     module.write_text("# immutable test source\n", encoding="utf-8")
+    if include_frozen_files:
+        for relative_path, data in _frozen_file_bytes().items():
+            path = root / relative_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
     subprocess.run(["git", "init", "-q", os.fspath(root)], check=True)
     subprocess.run(["git", "-C", os.fspath(root), "add", "."], check=True)
     subprocess.run(
@@ -177,16 +196,16 @@ def test_development_result_size_ceiling_covers_exact_verbose_row_shape() -> Non
 
 
 def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
-    tmp_path: Path,
+    private_test_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    repository = tmp_path / "tiny-repository"
+    repository = private_test_path / "tiny-repository"
     repository.mkdir()
     (repository / "test_sample.py").write_text(
         "def test_sample():\n    assert 1 + 1 == 2\n",
         encoding="utf-8",
     )
-    snapshot = _commit_tiny_repository(repository)
+    snapshot = _commit_tiny_repository(repository, include_frozen_files=True)
     command = (
         os.fspath(gov.V3_PYTHON_EXECUTABLE),
         "-I",
@@ -226,7 +245,7 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
             expected_test_scope="test-only",
         )
     )
-    publication_root = tmp_path / "published-bundle"
+    publication_root = private_test_path / "published-bundle"
     gov._publish_development_bundle_under_test_root(
         publication_root,
         snapshot=snapshot,
@@ -240,6 +259,14 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
         frozen_file_bytes=_frozen_file_bytes(),
         focused_test_run=observed,
     )
+    with pytest.raises(gov.AuthorityError, match="exact canonical path"):
+        gov._validate_development_bundle_at_path(
+            publication_root / "development-bundle.json",
+            snapshot=snapshot,
+            frozen_file_bytes=_frozen_file_bytes(),
+            focused_test_run=observed,
+            scope="canonical",
+        )
     assert receipt.file_sha256 == gov.file_sha256(gov.artifact_bytes(value))
     assert value["tracked_source_file_inventory"] == [
         item.as_record() for item in snapshot.tracked_files
@@ -252,6 +279,68 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
             expected_commit=snapshot.identity.commit,
             expected_tree=snapshot.identity.tree,
         )
+
+
+def test_committed_frozen_file_drift_cannot_consume_bundle_path(
+    private_test_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = private_test_path / "frozen-drift-repository"
+    repository.mkdir()
+    (repository / "test_sample.py").write_text(
+        "def test_sample():\n    assert True\n",
+        encoding="utf-8",
+    )
+    _commit_tiny_repository(repository, include_frozen_files=True)
+    drifted = repository / gov.MASTER_PLAN_PATH
+    drifted.write_bytes(drifted.read_bytes() + b"\n# committed hostile drift\n")
+    subprocess.run(["git", "-C", os.fspath(repository), "add", gov.MASTER_PLAN_PATH], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            os.fspath(repository),
+            "-c",
+            "user.name=V3 Test",
+            "-c",
+            "user.email=v3-test@example.invalid",
+            "commit",
+            "-q",
+            "-m",
+            "drift frozen plan",
+        ],
+        check=True,
+    )
+    snapshot = gov.capture_clean_source_snapshot(repository)
+    command = (
+        os.fspath(gov.V3_PYTHON_EXECUTABLE),
+        "-I",
+        "-B",
+        "-c",
+        gov._PYTEST_ISOLATED_BOOTSTRAP,
+        "-q",
+        "-o",
+        "xfail_strict=true",
+        "-p",
+        "no:cacheprovider",
+        "test_sample.py",
+    )
+    monkeypatch.setattr(gov, "_TEST_COMMANDS", {"focused_v3": command})
+    observed = gov._run_observed_test_under_test_root(
+        "focused_v3",
+        repository=repository,
+        snapshot=snapshot,
+    )
+    publication_root = private_test_path / "must-remain-absent"
+    with pytest.raises(gov.AuthorityError, match="frozen file is not the exact regular blob"):
+        gov._publish_development_bundle_under_test_root(
+            publication_root,
+            snapshot=snapshot,
+            frozen_file_bytes=_frozen_file_bytes(),
+            created_at_UTC="2026-09-06T12:00:00Z",
+            focused_test_run=observed,
+        )
+    assert not publication_root.exists()
 
 
 def test_git_snapshot_ignores_hostile_process_environment(
@@ -281,6 +370,101 @@ def test_git_snapshot_ignores_hostile_process_environment(
     assert observed.identity == expected.identity
     assert observed.tracked_files == expected.tracked_files
     assert not marker.exists()
+
+
+@pytest.mark.parametrize(
+    ("set_flag", "clear_flag"),
+    (
+        ("--assume-unchanged", "--no-assume-unchanged"),
+        ("--skip-worktree", "--no-skip-worktree"),
+    ),
+)
+def test_git_index_hints_cannot_hide_tracked_disk_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    set_flag: str,
+    clear_flag: str,
+) -> None:
+    repository = tmp_path / "hidden-drift"
+    repository.mkdir()
+    snapshot = _commit_tiny_repository(repository)
+    relative_path = "src/cfeg/metadata_calibration_v3_governance.py"
+    source_path = repository / relative_path
+    original = source_path.read_bytes()
+    subprocess.run(
+        ["git", "-C", os.fspath(repository), "update-index", set_flag, relative_path],
+        check=True,
+    )
+    source_path.write_bytes(b"# drift hidden from porcelain status\n")
+    try:
+        status = subprocess.run(
+            [
+                "git",
+                "-C",
+                os.fspath(repository),
+                "status",
+                "--porcelain=v1",
+                "--untracked-files=all",
+                "-z",
+            ],
+            check=True,
+            capture_output=True,
+        )
+        assert status.stdout == b""
+        with pytest.raises(gov.AuthorityError, match="special Git index state"):
+            gov.capture_clean_source_snapshot(repository)
+        monkeypatch.setattr(gov, "V3_SOURCE_REPOSITORY", repository)
+        with pytest.raises(gov.AuthorityError, match="special Git index state"):
+            gov._require_prepublication_current_source(snapshot)
+    finally:
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                os.fspath(repository),
+                "update-index",
+                clear_flag,
+                relative_path,
+            ],
+            check=True,
+        )
+        source_path.write_bytes(original)
+    assert gov.capture_clean_source_snapshot(repository).identity == snapshot.identity
+
+
+def test_sparse_checkout_state_cannot_enter_source_authority(tmp_path: Path) -> None:
+    repository = tmp_path / "sparse-source"
+    repository.mkdir()
+    snapshot = _commit_tiny_repository(repository)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            os.fspath(repository),
+            "config",
+            "--local",
+            "core.sparseCheckout",
+            "true",
+        ],
+        check=True,
+    )
+    try:
+        with pytest.raises(gov.AuthorityError, match="sparse checkout"):
+            gov.capture_clean_source_snapshot(repository)
+    finally:
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                os.fspath(repository),
+                "config",
+                "--local",
+                "--unset",
+                "core.sparseCheckout",
+            ],
+            check=True,
+        )
+    assert gov.capture_clean_source_snapshot(repository).identity == snapshot.identity
 
 
 def test_loaded_governance_source_cannot_be_stale_even_when_git_is_clean(

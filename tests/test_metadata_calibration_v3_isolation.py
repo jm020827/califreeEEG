@@ -4,12 +4,22 @@ import builtins
 import os
 import stat
 import subprocess
+import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 import cfeg.metadata_calibration_v3_governance as gov
+
+
+@pytest.fixture
+def private_test_path() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(prefix="cfeg-v3-test-", dir="/tmp") as raw:
+        path = Path(raw)
+        path.chmod(0o700)
+        yield path
 
 
 def test_pure_parser_uses_only_supplied_immutable_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -81,8 +91,10 @@ def test_exact_loader_rejects_normalized_aliases_and_weak_file_modes(tmp_path: P
         gov.load_exact_artifact_bytes([artifact], declared_paths=[artifact])
 
 
-def test_write_once_publication_uses_private_modes_and_candidate_wide_path(tmp_path: Path) -> None:
-    root = tmp_path / "v3-artifacts"
+def test_write_once_publication_uses_private_modes_and_candidate_wide_path(
+    private_test_path: Path,
+) -> None:
+    root = private_test_path / "v3-artifacts"
     first = gov.seal_payload(
         {
             "schema": gov.GLOBAL_CLAIM_SCHEMA,
@@ -131,10 +143,12 @@ def test_write_once_publication_uses_private_modes_and_candidate_wide_path(tmp_p
     assert published.path.read_bytes() == first_bytes
 
 
-def test_symlinked_parent_and_nonprivate_root_fail_closed(tmp_path: Path) -> None:
-    outside = tmp_path / "outside"
+def test_symlinked_parent_and_nonprivate_root_fail_closed(
+    private_test_path: Path,
+) -> None:
+    outside = private_test_path / "outside"
     outside.mkdir(mode=0o700)
-    root = tmp_path / "root"
+    root = private_test_path / "root"
     root.mkdir(mode=0o700)
     (root / "scientific").symlink_to(outside, target_is_directory=True)
     with pytest.raises(OSError):
@@ -143,7 +157,7 @@ def test_symlinked_parent_and_nonprivate_root_fail_closed(tmp_path: Path) -> Non
         )
     assert not (outside / "global-claim.json").exists()
 
-    weak_root = tmp_path / "weak-root"
+    weak_root = private_test_path / "weak-root"
     weak_root.mkdir(mode=0o755)
     with pytest.raises(gov.PublicationError, match="mode must be 0700"):
         gov._publish_write_once_under_test_root(weak_root, "artifact.json", b"payload")
@@ -157,10 +171,10 @@ def test_symlinked_parent_and_nonprivate_root_fail_closed(tmp_path: Path) -> Non
 
 
 def test_partial_write_consumes_path_and_cannot_be_retried(
-    tmp_path: Path,
+    private_test_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    root = tmp_path / "partial-root"
+    root = private_test_path / "partial-root"
     root.mkdir(mode=0o700)
     real_write = os.write
 
@@ -183,7 +197,7 @@ def test_partial_write_consumes_path_and_cannot_be_retried(
 
 
 def test_low_level_publication_cannot_consume_production_or_alias_paths(
-    tmp_path: Path,
+    private_test_path: Path,
 ) -> None:
     assert not hasattr(gov, "publish_write_once")
     with pytest.raises(gov.AuthorityError, match="production namespace"):
@@ -195,7 +209,7 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
         )
     with pytest.raises(gov.AuthorityError, match="validated publisher"):
         gov._publish_write_once(
-            tmp_path,
+            private_test_path,
             "artifact.json",
             b"hostile",
             create_root=True,
@@ -204,9 +218,80 @@ def test_low_level_publication_cannot_consume_production_or_alias_paths(
     for alias in ("a//b.json", "a/./b.json", "a/b.json/"):
         with pytest.raises(gov.ValidationError, match="canonical nonempty relative"):
             gov._publish_write_once_under_test_root(
-                tmp_path / "aliases",
+                private_test_path / "aliases",
                 alias,
                 b"hostile",
                 create_root=True,
             )
-    assert not (tmp_path / "aliases").exists()
+    assert not (private_test_path / "aliases").exists()
+    with pytest.raises(gov.AuthorityError, match="exact canonical path"):
+        gov._validate_context_reference_at_path(
+            private_test_path / "context-reference.json",
+            development_bundle=object(),  # type: ignore[arg-type]
+            rng_authority=object(),
+            core_capability=object(),
+            scope="canonical",
+        )
+    with pytest.raises(gov.AuthorityError, match="scope is not recognized"):
+        gov._validate_development_bundle_at_path(
+            private_test_path / "development-bundle.json",
+            snapshot=object(),  # type: ignore[arg-type]
+            frozen_file_bytes={},
+            focused_test_run=object(),  # type: ignore[arg-type]
+            scope="caller-selected",
+        )
+
+
+def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production(
+    private_test_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reached_writer = False
+
+    def forbidden_writer(*_args: object, **_kwargs: object) -> None:
+        nonlocal reached_writer
+        reached_writer = True
+
+    monkeypatch.setattr(gov, "_publish_write_once", forbidden_writer)
+    attacks = (
+        (
+            Path("/home/whwovy"),
+            (
+                "v3-artifacts/metadata-calibration-efficiency-v3/"
+                "governance-canary-v1/result.json"
+            ),
+        ),
+        (
+            Path("/home/whwovy"),
+            "califreeEEG/src/cfeg/metadata_calibration_v3_governance.py",
+        ),
+    )
+    for root, relative in attacks:
+        with pytest.raises(gov.AuthorityError, match="production namespace"):
+            gov._publish_write_once_under_test_root(
+                root,
+                relative,
+                b"must not reach writer",
+                create_root=True,
+            )
+    assert not reached_writer
+
+    resolved_alias = private_test_path / "resolved-home-alias"
+    resolved_alias.symlink_to("/home/whwovy", target_is_directory=True)
+    with pytest.raises(gov.AuthorityError, match="production namespace"):
+        gov._publish_write_once_under_test_root(
+            resolved_alias,
+            "v3-artifacts/metadata-calibration-efficiency-v3/development-v1/"
+            "development-result.json",
+            b"must not reach writer",
+        )
+    assert not reached_writer
+
+    with pytest.raises(gov.AuthorityError, match="owner-private namespace below /tmp"):
+        gov._publish_write_once_under_test_root(
+            "/var/tmp/cfeg-v3-governance-test",
+            "artifact.json",
+            b"must not reach writer",
+            create_root=True,
+        )
+    assert not reached_writer
