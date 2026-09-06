@@ -253,6 +253,110 @@ def test_k1_weight_is_one_and_uniform_sensitivity_changes_corrupt_block_mix() ->
     assert not np.array_equal(uniform, product.support_probabilities)
 
 
+def test_uniform_sensitivity_uses_one_over_k_for_both_p3_and_context() -> None:
+    reference = _reference()
+    preflight = _preflight(
+        reference,
+        query_z=-0.5,
+        support_z=(-0.5, 0.5, 2.0),
+    )
+    query, support, labels = _score_fixture(3)
+    weighted = v3.blockwise_p3_support(
+        query,
+        support,
+        labels,
+        query_key="query",
+        ordered_support_block_keys=("block01", "block02", "block03"),
+        support_eeg_label_manifest_sha256=_HASH_A,
+        config=_config(),
+    )
+    uniform = v3.blockwise_p3_support_uniform_sensitivity(
+        query,
+        support,
+        labels,
+        query_key="query",
+        ordered_support_block_keys=("block01", "block02", "block03"),
+        support_eeg_label_manifest_sha256=_HASH_A,
+        config=_config(),
+    )
+    weighted_trust = v3.finalize_context_trust(
+        preflight,
+        weighted.reliability_capability,
+    )
+    uniform_trust = v3.finalize_context_trust_uniform_sensitivity(
+        preflight,
+        uniform,
+    )
+    assert np.array_equal(
+        uniform.normalized_block_weights,
+        np.full(3, 1.0 / 3.0),
+    )
+    assert np.allclose(
+        uniform.support_probabilities,
+        np.mean(uniform.per_block_support_probabilities, axis=0),
+        rtol=0.0,
+        atol=1.0e-16,
+    )
+    assert uniform_trust.g_M_by_query == pytest.approx(
+        np.mean(preflight.affinity_by_support_block)
+    )
+    assert weighted_trust.g_M_by_query == pytest.approx(
+        np.dot(
+            weighted.normalized_block_weights,
+            preflight.affinity_by_support_block,
+        )
+    )
+    assert weighted_trust.g_M_by_query != uniform_trust.g_M_by_query
+
+
+def test_support_capabilities_are_nominal_and_detect_buffer_mutation_before_use() -> None:
+    product = _support_product(1)
+    with pytest.raises(TypeError, match="no public constructor"):
+        v3.MFreeSupportReliabilityCapability()
+    with pytest.raises(TypeError, match="no public constructor"):
+        v3.V3SupportProduct()
+    with pytest.raises(TypeError, match="exact V3SupportProduct"):
+        v3.require_v3_support_product({"payload_sha256": product.payload_sha256})
+
+    product.support_probabilities.setflags(write=True)
+    product.support_probabilities[0, 0] += 0.125
+    calls = 0
+
+    def mutated_loader() -> v3.V3SupportProduct:
+        nonlocal calls
+        calls += 1
+        return product
+
+    preflight = _preflight(_reference(), query_z=0.0, support_z=(0.5,))
+    output = None
+    with pytest.raises(ValueError, match="immutable|mixture|hash|sum to one"):
+        output = v3.apply_v3_after_preflight(
+            _score_fixture(1)[0],
+            query_key="query",
+            budget=1,
+            config=_config(),
+            preflight=preflight,
+            expected_ordered_support_block_keys=("block01",),
+            expected_pairing_sha256=preflight.pairing_sha256,
+            support_loader=mutated_loader,
+        )
+    assert output is None
+    assert calls == 1
+
+
+def test_low_level_capability_issuers_reject_missing_or_arbitrary_tokens() -> None:
+    with pytest.raises(TypeError, match="issuer token"):
+        v3._issue_support_product({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        v3._issue_support_reliability({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        v3._issue_context_preflight({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        v3._issue_context_trust({}, _issuer=object())
+    with pytest.raises(TypeError):
+        v3._issue_support_product({})
+
+
 def test_context_reference_uses_pairwise_interface_then_pooled_fallback() -> None:
     reference = _reference()
     payload = v3.context_reference_payload(reference)
@@ -272,6 +376,25 @@ def test_context_reference_uses_pairwise_interface_then_pooled_fallback() -> Non
     sparse_reference = v3.fit_context_reference(sparse, domain="unit-sparse")
     assert sparse_reference.interface_tables[0].centers == (None,) * 8
     assert sparse_reference.pooled_table.centers == (None,) * 8
+
+    with pytest.raises(ValueError, match="reserved"):
+        v3.fit_context_reference(
+            [{**sparse[0], "interface": "__pooled__"}] * 256,
+            domain="unit-reserved",
+        )
+
+    malformed = v3.context_reference_payload(_reference())
+    malformed["interface_tables"][0]["centers"][0] = None
+    malformed["interface_tables"][0]["scales"][0] = None
+    malformed["payload_sha256"] = v3.canonical_payload_sha256(malformed)
+    with pytest.raises(ValueError, match="count>=128"):
+        v3.validate_context_reference_payload(malformed)
+
+    too_small_scale = v3.context_reference_payload(_reference())
+    too_small_scale["interface_tables"][0]["scales"][0] = 0.049
+    too_small_scale["payload_sha256"] = v3.canonical_payload_sha256(too_small_scale)
+    with pytest.raises(ValueError, match="at least 0.05"):
+        v3.validate_context_reference_payload(too_small_scale)
 
 
 def test_context_publication_capability_is_nominal_exact_and_hash_bound(
@@ -348,6 +471,31 @@ def test_context_publication_capability_is_nominal_exact_and_hash_bound(
             support_packets=(raw_support,),
             pairing_sha256=pairing,
         )
+
+
+def test_bundle_rng_authorities_are_role_separated_and_mutation_detected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reference_authority, development_authority = _bundle_rng_authorities(monkeypatch)
+    assert type(reference_authority) is v3.ContextReferenceRNGAuthority
+    assert type(development_authority) is v3.DevelopmentRNGAuthority
+    assert reference_authority.root_seed == 20_260_910
+    assert development_authority.root_seed == 20_260_909
+    assert reference_authority.semantic_binding_sha256 != (
+        development_authority.semantic_binding_sha256
+    )
+    with pytest.raises(TypeError, match="issued only"):
+        v3.ContextReferenceRNGAuthority()
+    with pytest.raises(TypeError, match="issued only"):
+        v3.DevelopmentRNGAuthority()
+    with pytest.raises(TypeError, match="exact ContextReferenceRNGAuthority"):
+        v3.require_context_reference_rng_authority(development_authority)
+    with pytest.raises(TypeError, match="exact DevelopmentRNGAuthority"):
+        v3.require_development_rng_authority(reference_authority)
+
+    object.__setattr__(development_authority, "root_seed", 1)
+    with pytest.raises(ValueError, match="identity, role, seed, or key map"):
+        v3.require_development_rng_authority(development_authority)
 
 
 def test_preflight_pairing_changes_gM_but_not_M_free_reliability() -> None:

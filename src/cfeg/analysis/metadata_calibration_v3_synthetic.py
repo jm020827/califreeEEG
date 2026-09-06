@@ -3811,6 +3811,7 @@ def execute_complete_development(
     stress_set = set(stress_indices)
     primary_rows: list[dict[str, Any]] = []
     uniform_rows: list[dict[str, Any]] = []
+    progress_events: list[Mapping[str, Any]] = []
     for family in FAMILY_NAMES:
         for participant_index in range(DEVELOPMENT_PARTICIPANTS):
             participant = _generate_synthetic_participant_with_rng_factory(
@@ -3880,7 +3881,7 @@ def execute_complete_development(
                     )
                 )
             if progress_callback is not None:
-                progress_callback(
+                progress_events.append(
                     MappingProxyType(
                         {
                             "stage": "participant_complete",
@@ -3917,6 +3918,16 @@ def execute_complete_development(
         rng_authority=authority,
         _issuer=_SYNTHETIC_RNG_PRODUCER_ISSUER,
     )
+    # A long execution may outlive a source/runtime checkout.  Revalidate the
+    # exact current-A governance authority and both loaded module byte images
+    # immediately before assembling or issuing the authoritative proof.
+    authority = v3.require_development_rng_authority(authority)
+    _require_loaded_synthetic_source(authority)
+    proof = v3.require_validated_context_reference(
+        proof,
+        expected_payload_sha256=reference.payload_sha256,
+    )
+    _require_shared_bundle_provenance(authority, proof)
     payload = _assemble_development_result_payload(
         contract,
         metric_rows=metric_rows,
@@ -3934,6 +3945,11 @@ def execute_complete_development(
         validated_reference=proof,
         _issuer=_VALIDATED_DEVELOPMENT_RESULT_ISSUER,
     )
+    # Callbacks are delayed until every result byte and nominal proof is fixed;
+    # arbitrary callback behavior therefore cannot affect computation.
+    if progress_callback is not None:
+        for event in progress_events:
+            progress_callback(event)
     return payload, result_proof
 
 
@@ -4834,6 +4850,135 @@ def validate_selected_method_freeze_payload(
         ):
             raise ValueError("selected-method freeze rank/gate-report binding is invalid.")
     return dict(payload)
+
+
+def _require_bundle_selected_delta_recovery(value: object) -> object:
+    """Lazily validate governance's exact B=A+selected-only audit receipt."""
+
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            require_bundle_selected_delta_recovery_capability,
+        )
+    except ImportError as error:  # pragma: no cover - integration install failure
+        raise RuntimeError("V3 governance recovery validator is unavailable.") from error
+    return require_bundle_selected_delta_recovery_capability(value)
+
+
+def _crosscheck_recovery_selected_and_result(
+    development_result: Mapping[str, Any],
+    *,
+    development_result_file_sha256: str,
+    selected_method_freeze: Mapping[str, Any],
+    recovery_capability: object,
+) -> tuple[dict[str, Any], dict[str, Any], object]:
+    """Pure B-audit cross-check; deliberately issues no scientific authority."""
+
+    recovery = _require_bundle_selected_delta_recovery(recovery_capability)
+    result_file_sha256 = _sha256(
+        development_result_file_sha256,
+        "development_result_file_sha256",
+    )
+    result = validate_development_result_payload(development_result)
+    selected = validate_selected_method_freeze_payload(
+        selected_method_freeze,
+        development_result=result,
+    )
+    if (
+        recovery.candidate_id != v3.CANDIDATE_ID
+        or recovery.development_bundle_payload_sha256
+        != result["development_bundle_payload_sha256"]
+        or recovery.development_bundle_file_sha256
+        != result["development_bundle_file_sha256"]
+        or selected["development_bundle_payload_sha256"]
+        != recovery.development_bundle_payload_sha256
+        or selected["development_bundle_file_sha256"]
+        != recovery.development_bundle_file_sha256
+        or selected["development_result_payload_sha256"]
+        != result["payload_sha256"]
+        or selected["development_result_file_sha256"] != result_file_sha256
+        or selected["payload_sha256"]
+        != recovery.selected_method_freeze_payload_sha256
+        or selected["clean_commit"] != recovery.bundle_commit
+        or selected["clean_tree"] != recovery.bundle_tree
+    ):
+        raise ValueError(
+            "B-audit recovery, development result, and selected freeze differ."
+        )
+    return result, selected, recovery
+
+
+def validate_development_result_for_audit(
+    payload: Mapping[str, Any],
+    *,
+    development_result_file_sha256: str,
+    selected_method_freeze: Mapping[str, Any],
+    recovery_capability: object,
+) -> dict[str, Any]:
+    """Validate canonical development bytes at B without recreating RNG authority."""
+
+    result, _, _ = _crosscheck_recovery_selected_and_result(
+        payload,
+        development_result_file_sha256=development_result_file_sha256,
+        selected_method_freeze=selected_method_freeze,
+        recovery_capability=recovery_capability,
+    )
+    return result
+
+
+def validate_context_reference_for_audit(
+    payload: Mapping[str, Any],
+    *,
+    context_reference_file_sha256: str,
+    development_result: Mapping[str, Any],
+    development_result_file_sha256: str,
+    selected_method_freeze: Mapping[str, Any],
+    recovery_capability: object,
+) -> v3.ContextReference:
+    """Validate the canonical reference through its durable dev/selected chain."""
+
+    result, _, _ = _crosscheck_recovery_selected_and_result(
+        development_result,
+        development_result_file_sha256=development_result_file_sha256,
+        selected_method_freeze=selected_method_freeze,
+        recovery_capability=recovery_capability,
+    )
+    reference_file_sha256 = _sha256(
+        context_reference_file_sha256,
+        "context_reference_file_sha256",
+    )
+    reference = v3.validate_context_reference_payload(payload)
+    if (
+        reference.domain != "synthetic_development_and_future_synthetic"
+        or tuple(
+            table.interface_lookup_key for table in reference.interface_tables
+        )
+        != CONTEXT_REFERENCE_INTERFACES
+        or reference.canonical_channels != v3.CANONICAL_CHANNELS
+        or reference.payload_sha256 != result["context_reference_payload_sha256"]
+        or reference_file_sha256 != result["context_reference_file_sha256"]
+    ):
+        raise ValueError(
+            "B-audit context reference differs from the durable development chain."
+        )
+    return reference
+
+
+def validate_selected_method_freeze_for_audit(
+    payload: Mapping[str, Any],
+    *,
+    development_result: Mapping[str, Any],
+    development_result_file_sha256: str,
+    recovery_capability: object,
+) -> dict[str, Any]:
+    """Recompute selection at B without issuing/requiring an A-only proposal."""
+
+    _, selected, _ = _crosscheck_recovery_selected_and_result(
+        development_result,
+        development_result_file_sha256=development_result_file_sha256,
+        selected_method_freeze=payload,
+        recovery_capability=recovery_capability,
+    )
+    return selected
 
 
 def _selected_method_proposal_binding(

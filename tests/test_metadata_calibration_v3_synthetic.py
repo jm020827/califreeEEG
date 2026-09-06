@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import inspect
+import sys
+from types import ModuleType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -35,6 +37,55 @@ def _install_fake_scorer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(synthetic, "_score_strict_fbcca_blocks", fake_score)
 
 
+def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
+    bundle = SimpleNamespace(
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        source_bundle_sha256="3" * 64,
+        numerical_runtime_fingerprint_sha256="4" * 64,
+        clean_commit="5" * 40,
+        clean_tree="6" * 40,
+        tracked_source_files=(
+            SimpleNamespace(
+                path=v3.MASTER_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.MASTER_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.SYNTHETIC_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.SYNTHETIC_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.MODEL_MODULE_REPOSITORY_PATH,
+                file_sha256=v3._IMPORTED_MODEL_MODULE_SHA256,
+            ),
+            SimpleNamespace(
+                path=synthetic.SYNTHETIC_MODULE_REPOSITORY_PATH,
+                file_sha256=synthetic._IMPORTED_SYNTHETIC_MODULE_SHA256,
+            ),
+        ),
+    )
+    governance = ModuleType("cfeg.metadata_calibration_v3_governance")
+
+    def require_bundle(value, *, expected_commit, expected_tree):
+        assert value is bundle
+        assert expected_commit == bundle.clean_commit
+        assert expected_tree == bundle.clean_tree
+        return bundle
+
+    governance.require_development_rng_bundle_capability = require_bundle
+    monkeypatch.setitem(
+        sys.modules,
+        "cfeg.metadata_calibration_v3_governance",
+        governance,
+    )
+    reference, development = v3.issue_bundle_bound_rng_authorities(
+        bundle,
+        expected_commit=bundle.clean_commit,
+        expected_tree=bundle.clean_tree,
+    )
+    return bundle, reference, development
+
+
 def test_contract_hashes_counts_and_no_public_raw_seed_runner(
     contract: synthetic.SyntheticV3Contract,
 ) -> None:
@@ -54,6 +105,120 @@ def test_contract_hashes_counts_and_no_public_raw_seed_runner(
     assert "root_seed" not in inspect.signature(
         synthetic.generate_synthetic_participant
     ).parameters
+
+
+@pytest.mark.parametrize(
+    "root_seed",
+    (
+        v3.DEVELOPMENT_ROOT_SEED,
+        v3.CONTEXT_REFERENCE_ROOT_SEED,
+        8812983586834372979543294859684702645563544465387352627235733726918051280063,
+    ),
+)
+def test_unit_rng_rejects_every_governed_root_before_rng_construction(
+    monkeypatch: pytest.MonkeyPatch,
+    root_seed: int,
+) -> None:
+    calls = {"seed_sequence": 0, "bit_generator": 0, "generator": 0}
+
+    def forbidden(name):
+        def fail(*args, **kwargs):
+            del args, kwargs
+            calls[name] += 1
+            raise AssertionError("RNG construction occurred before seed rejection")
+
+        return fail
+
+    monkeypatch.setattr(np.random, "SeedSequence", forbidden("seed_sequence"))
+    monkeypatch.setattr(np.random, "PCG64DXSM", forbidden("bit_generator"))
+    monkeypatch.setattr(np.random, "Generator", forbidden("generator"))
+    with pytest.raises(ValueError, match="reserved"):
+        synthetic._issue_unit_test_rng_authority(root_seed)
+    assert calls == {"seed_sequence": 0, "bit_generator": 0, "generator": 0}
+
+
+def test_production_generators_reject_unit_or_callable_authority_before_rng_use(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+    unit_rng,
+) -> None:
+    calls = 0
+
+    def forbidden_seed_sequence(*args, **kwargs):
+        nonlocal calls
+        del args, kwargs
+        calls += 1
+        raise AssertionError("production rejection happened after RNG construction")
+
+    monkeypatch.setattr(np.random, "SeedSequence", forbidden_seed_sequence)
+    with pytest.raises(TypeError, match="ContextReferenceRNGAuthority"):
+        synthetic.generate_covariate_reference_packets(rng_authority=unit_rng)
+    with pytest.raises(TypeError, match="ContextReferenceRNGAuthority"):
+        synthetic.generate_covariate_reference_packets(rng_authority=lambda *_: None)
+    with pytest.raises(TypeError, match="DevelopmentRNGAuthority"):
+        synthetic.generate_synthetic_participant(
+            contract,
+            family="N1_clean_anchor",
+            participant_index=0,
+            rng_authority=unit_rng,
+        )
+    with pytest.raises(TypeError, match="DevelopmentRNGAuthority"):
+        synthetic.sensitivity_resampling_report(
+            {"B1_AQ_minus_A0_eAUC": np.ones(4)},
+            grid_cell_index=1,
+            rng_authority=unit_rng,
+        )
+    with pytest.raises(TypeError, match="DevelopmentRNGAuthority"):
+        synthetic.execute_complete_development(
+            contract,
+            reference,
+            rng_authority=unit_rng,
+            validated_reference=reference,
+            context_reference_file_sha256="a" * 64,
+        )
+    assert calls == 0
+
+
+def test_loaded_source_and_runtime_drift_fail_before_production_rng_use(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle, reference_authority, development_authority = _bundle_rng_authorities(
+        monkeypatch
+    )
+    calls = 0
+
+    def forbidden_seed_sequence(*args, **kwargs):
+        nonlocal calls
+        del args, kwargs
+        calls += 1
+        raise AssertionError("RNG constructed before provenance rejection")
+
+    monkeypatch.setattr(np.random, "SeedSequence", forbidden_seed_sequence)
+    monkeypatch.setattr(
+        synthetic,
+        "_IMPORTED_SYNTHETIC_MODULE_SHA256",
+        "0" * 64,
+    )
+    with pytest.raises(RuntimeError, match="loaded V3 synthetic code"):
+        synthetic.generate_covariate_reference_packets(
+            rng_authority=reference_authority
+        )
+    assert calls == 0
+
+    monkeypatch.setattr(
+        synthetic,
+        "_IMPORTED_SYNTHETIC_MODULE_SHA256",
+        next(
+            entry.file_sha256
+            for entry in bundle.tracked_source_files
+            if entry.path == synthetic.SYNTHETIC_MODULE_REPOSITORY_PATH
+        ),
+    )
+    bundle.numerical_runtime_fingerprint_sha256 = "f" * 64
+    with pytest.raises(ValueError, match="revalidated development bundle"):
+        v3.require_development_rng_authority(development_authority)
+    assert calls == 0
 
 
 def test_exact_identity_blueprint_has_89082_unique_nonoutcome_rows() -> None:
@@ -195,6 +360,60 @@ def test_family_specific_waveform_and_label_contracts(
     assert np.array_equal(n3.generated_target_classes[5], np.arange(12))
 
 
+def test_dgp_applies_channel_gain_only_to_target_not_confuser(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+    unit_rng,
+) -> None:
+    monkeypatch.setattr(
+        synthetic,
+        "_oscillation",
+        lambda frequency_hz, phase, drift, timeline: np.full(
+            timeline.shape,
+            frequency_hz,
+            dtype=np.float64,
+        ),
+    )
+    monkeypatch.setattr(
+        synthetic,
+        "_stationary_ar1",
+        lambda standard_normal, *, innovation_sd, rho: np.zeros_like(
+            standard_normal,
+            dtype=np.float64,
+        ),
+    )
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="B1_participant_class_confusion",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    factory = synthetic._unit_test_rng_factory(unit_rng)
+    spatial = synthetic._rng(
+        factory,
+        "B1_participant_class_confusion",
+        0,
+        0,
+        0,
+        "spatial_signature",
+    ).standard_normal(8)
+    spatial /= np.linalg.norm(spatial)
+    gains = synthetic._rng(
+        factory,
+        "B1_participant_class_confusion",
+        0,
+        1,
+        0,
+        "channel_gain",
+    ).lognormal(mean=0.0, sigma=0.12, size=8)
+    target = spatial[:, None] * 8.0
+    confuser = 0.90 * spatial[:, None] * 8.4
+    expected = gains[:, None] * target + confuser
+    old_wrong_equation = gains[:, None] * (target + confuser)
+    assert np.array_equal(participant.signals[0, 0], np.broadcast_to(expected, (8, 500)))
+    assert not np.allclose(participant.signals[0, 0], old_wrong_equation)
+
+
 def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
     contract: synthetic.SyntheticV3Contract,
     reference: v3.ContextReference,
@@ -233,6 +452,36 @@ def test_B4_source_stress_keeps_EEG_and_forces_every_query_to_OOD(
                 pairing_sha256=pairing,
             )
             assert preflight.decision_reason == "query_context_OOD_exact_A0"
+
+
+def test_B4_source_stress_uses_exact_pooled_fallback_for_sparse_interface_channel(
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+    unit_rng,
+) -> None:
+    payload = v3.context_reference_payload(reference)
+    wet = payload["interface_tables"][1]
+    assert wet["interface_lookup_key"] == "wet"
+    wet["centers"][0] = None
+    wet["scales"][0] = None
+    wet["observed_counts"][0] = 127
+    payload["payload_sha256"] = v3.canonical_payload_sha256(payload)
+    sparse_wet = v3.validate_context_reference_payload(payload)
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="B4_interface_calibrated_impedance_shift",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    stressed = synthetic._apply_source_range_stress_for_test(participant, sparse_wet)
+    pooled_center = sparse_wet.pooled_table.centers[0]
+    pooled_scale = sparse_wet.pooled_table.scales[0]
+    assert pooled_center is not None and pooled_scale is not None
+    expected = float(np.expm1(pooled_center + 10.0 * pooled_scale))
+    for block in synthetic.QUERY_BLOCKS:
+        packet = stressed.context_packets("wet")[block - 1]
+        assert packet.channel_availability[0] is True
+        assert packet.impedance_kohm_by_channel[0] == expected
 
 
 def test_rejected_synthetic_preflight_makes_zero_support_producer_calls(
@@ -429,6 +678,72 @@ def test_strict_fbcca_producer_binds_frozen_shape_without_persisting_subbands(
     assert not support.recorded_support_labels.flags.writeable
 
 
+def test_strict_products_are_nominal_and_query_mutation_fails_before_support(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+    unit_rng,
+) -> None:
+    _install_fake_scorer(monkeypatch)
+    participant = synthetic._generate_synthetic_participant_for_test(
+        contract,
+        family="N1_clean_anchor",
+        participant_index=0,
+        rng_authority=unit_rng,
+    )
+    query = synthetic.produce_strict_fbcca(contract, participant)
+    with pytest.raises(TypeError, match="no public constructor"):
+        synthetic.StrictFBCCAProduct()
+    with pytest.raises(TypeError, match="no public constructor"):
+        synthetic.StrictFBCCASupportProduct()
+    with pytest.raises(TypeError, match="exact StrictFBCCAProduct"):
+        synthetic.require_strict_fbcca_product({"producer_sha256": query.producer_sha256})
+
+    query.scores.setflags(write=True)
+    query.scores[0, 0, 0] += 0.5
+    support_calls = 0
+
+    def forbidden_support(_budget: int) -> synthetic.StrictFBCCASupportProduct:
+        nonlocal support_calls
+        support_calls += 1
+        raise AssertionError("support loaded before query-product mutation rejection")
+
+    with pytest.raises(ValueError, match="immutable|score bytes"):
+        synthetic._evaluate_synthetic_participant_for_test(
+            contract,
+            participant,
+            query,
+            reference,
+            v3.canonical_operator_grid()[0],
+            support_loader=forbidden_support,
+        )
+    assert support_calls == 0
+
+
+def test_low_level_synthetic_issuers_require_private_tokens() -> None:
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_synthetic_participant({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_strict_fbcca_product({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_strict_fbcca_support_product({}, _issuer=object())
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_validated_development_result(
+            {},
+            rng_authority=object(),
+            validated_reference=object(),
+            _issuer=object(),
+        )
+    with pytest.raises(TypeError, match="issuer token"):
+        synthetic._issue_selected_method_proposal(
+            {},
+            validated_development_result=object(),
+            _issuer=object(),
+        )
+    with pytest.raises(TypeError):
+        synthetic._issue_strict_fbcca_product({})
+
+
 def _gate_report(cell: v3.V3GridCell, *, eligible: bool, mean: float, lcb: float):
     components = {
         "invariant_suite": eligible,
@@ -488,6 +803,85 @@ def test_selector_uses_gain_lcb_lambda_nu_then_index_without_rounding() -> None:
     assert synthetic.select_grid_cell(
         [_gate_report(cell, eligible=False, mean=0.0, lcb=0.0) for cell in cells]
     ) is None
+
+
+def test_holm_step_down_is_deterministic_and_stops_after_first_nonrejection() -> None:
+    corrected = synthetic.holm_step_down(
+        {"B4": 0.04, "B3": 0.01, "other": 0.001},
+        familywise_alpha=0.05,
+    )
+    assert corrected["other"] == {
+        "raw_p_value": 0.001,
+        "holm_rank": 1,
+        "holm_threshold": pytest.approx(0.05 / 3.0),
+        "holm_adjusted_p_value": pytest.approx(0.003),
+        "holm_reject": True,
+    }
+    assert corrected["B3"]["holm_rank"] == 2
+    assert corrected["B3"]["holm_reject"] is True
+    assert corrected["B4"]["holm_rank"] == 3
+    assert corrected["B4"]["holm_reject"] is True
+
+    stopped = synthetic.holm_step_down({"a": 0.03, "b": 0.031})
+    assert stopped["a"]["holm_reject"] is False
+    assert stopped["b"]["holm_reject"] is False
+
+
+def test_sensitivity_resampling_uses_exact_keys_counts_and_is_deterministic(unit_rng) -> None:
+    vector = np.asarray([0.04, -0.01, 0.02, 0.03, -0.02, 0.01], dtype=np.float64)
+    kwargs = {
+        "paired_vectors": {"B3_A_QM_minus_A_Q_eAUC": vector},
+        "grid_cell_index": 2,
+        "rng_authority": unit_rng,
+        "sign_flip_draws": 257,
+        "participant_bootstrap_draws": 113,
+    }
+    first = synthetic._sensitivity_resampling_report_for_test(**kwargs)
+    second = synthetic._sensitivity_resampling_report_for_test(**kwargs)
+    assert first == second
+    assert first["promotion_or_selection_use"] is False
+    endpoint = first["endpoints"]["B3_A_QM_minus_A_Q_eAUC"]
+    assert endpoint["sign_flip_draws"] == 257
+    assert endpoint["participant_bootstrap_draws"] == 113
+    assert endpoint["sign_flip_rng_key"]["component"] == "sensitivity_resampling"
+    assert (
+        endpoint["participant_bootstrap_rng_key"]["component"]
+        == "sensitivity_resampling"
+    )
+    assert endpoint["sign_flip_rng_key"] != endpoint["participant_bootstrap_rng_key"]
+
+    other_cell = synthetic._sensitivity_resampling_report_for_test(
+        **{**kwargs, "grid_cell_index": 3}
+    )
+    assert (
+        endpoint["sign_flip_rng_key"]
+        != other_cell["endpoints"]["B3_A_QM_minus_A_Q_eAUC"]["sign_flip_rng_key"]
+    )
+    assert synthetic.SENSITIVITY_SIGN_FLIP_DRAWS == 100_000
+    assert synthetic.SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS == 10_000
+
+
+def test_unit_orchestration_smoke_runs_same_scoring_grid_and_serialization_path(
+    monkeypatch: pytest.MonkeyPatch,
+    contract: synthetic.SyntheticV3Contract,
+    reference: v3.ContextReference,
+    unit_rng,
+) -> None:
+    _install_fake_scorer(monkeypatch)
+    kwargs = {
+        "rng_authority": unit_rng,
+        "families": ("N1_clean_anchor",),
+        "participant_count": 1,
+        "grid_cell_indices": (1,),
+    }
+    first = synthetic._execute_development_smoke_for_test(contract, reference, **kwargs)
+    second = synthetic._execute_development_smoke_for_test(contract, reference, **kwargs)
+    assert first == second
+    assert first["primary_row_count"] == 16
+    assert first["uniform_sensitivity_row_count"] == 16
+    assert first["selection_status"] == "FORBIDDEN_IN_UNIT_SMOKE"
+    assert first["nominal_development_proof_issued"] is False
+    assert first["root_seed"] == _UNIT_ROOT
 
 
 @pytest.mark.parametrize(
