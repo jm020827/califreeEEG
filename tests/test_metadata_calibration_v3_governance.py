@@ -144,6 +144,139 @@ def test_canonical_payload_and_file_hashes_are_distinct_and_strict() -> None:
         gov._ascii_lines(("safe", "injected\nfield"))
 
 
+def test_recovery_amendment_is_semantically_exact_and_duplicate_safe() -> None:
+    data = (_REPOSITORY / gov.PREOUTCOME_AMENDMENT_PATH).read_bytes()
+    parsed = gov._validate_recovery_amendment_bytes(data)
+    assert parsed["schema"] == gov.RECOVERY_AMENDMENT_SCHEMA
+    assert parsed["recorded_at_is_amendment_time_not_incident_timestamp"] is True
+
+    altered = json.loads(data)
+    altered["retired_development_attempt"]["execution_observations"][
+        "development_v1_governed_execution_network_access_count"
+    ] = 1
+    with pytest.raises(gov.ValidationError, match="frozen V3.1 facts"):
+        gov._validate_recovery_amendment_bytes(
+            json.dumps(altered, separators=(",", ":")).encode("utf-8")
+        )
+
+    extra = json.loads(data)
+    extra["unreviewed"] = True
+    with pytest.raises(gov.ValidationError, match="field inventory"):
+        gov._validate_recovery_amendment_bytes(
+            json.dumps(extra, separators=(",", ":")).encode("utf-8")
+        )
+    with pytest.raises(gov.ValidationError, match="duplicate JSON key"):
+        gov._validate_recovery_amendment_bytes(b'{"schema":"a","schema":"b"}')
+
+
+def test_retired_v1_directory_loader_rejects_every_inventory_extension(
+    private_test_path: Path,
+) -> None:
+    root = private_test_path / "development-v1"
+    root.mkdir(mode=0o700)
+    bundle = root / "development-bundle.json"
+    context = root / "context-reference.json"
+    bundle.write_bytes(b"retired bundle bytes")
+    context.write_bytes(b"retired context bytes")
+    bundle.chmod(0o400)
+    context.chmod(0o400)
+    loaded = gov._load_exact_retired_v1_directory_bytes(root)
+    assert loaded == {
+        "context-reference.json": b"retired context bytes",
+        "development-bundle.json": b"retired bundle bytes",
+    }
+
+    extra = root / "attempt-terminal.json"
+    extra.write_bytes(b"forbidden extension")
+    extra.chmod(0o400)
+    with pytest.raises(gov.AuthorityError, match="exact two-file inventory"):
+        gov._load_exact_retired_v1_directory_bytes(root)
+    extra.unlink()
+
+    context.unlink()
+    with pytest.raises(gov.AuthorityError, match="exact two-file inventory"):
+        gov._load_exact_retired_v1_directory_bytes(root)
+    context.write_bytes(b"retired context bytes")
+    context.chmod(0o600)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular files"):
+        gov._load_exact_retired_v1_directory_bytes(root)
+
+    context.chmod(0o400)
+    context.unlink()
+    os.link(bundle, context)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular files"):
+        gov._load_exact_retired_v1_directory_bytes(root)
+
+    context.unlink()
+    context.symlink_to(bundle)
+    with pytest.raises(gov.AuthorityError, match="mode-0400 regular files"):
+        gov._load_exact_retired_v1_directory_bytes(root)
+
+
+def test_retired_v1_capability_is_nominal_and_cannot_be_forged() -> None:
+    with pytest.raises(TypeError):
+        gov.RetiredV1ArtifactsCapability()  # type: ignore[call-arg]
+    with pytest.raises(gov.AuthorityError, match="no valid issuer"):
+        gov.RetiredV1ArtifactsCapability(
+            development_bundle_bytes=b"retired bundle\n",
+            context_reference_bytes=b"retired context\n",
+            _issuer=object(),
+        )
+    with pytest.raises(gov.AuthorityError, match="exact RetiredV1ArtifactsCapability"):
+        gov.require_retired_v1_artifacts_capability(
+            {"schema": gov.RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA}
+        )
+
+
+def test_context_and_recovery_bundle_roles_are_read_only_but_development_is_resume_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = SimpleNamespace(
+        clean_commit="1" * 40,
+        clean_tree="2" * 40,
+        source_bundle_sha256="3" * 64,
+        tracked_source_files=("tracked",),
+    )
+    snapshot = SimpleNamespace(
+        identity=SimpleNamespace(commit=bundle.clean_commit, tree=bundle.clean_tree),
+        source_bundle_sha256=bundle.source_bundle_sha256,
+        tracked_files=bundle.tracked_source_files,
+    )
+    monkeypatch.setattr(
+        gov,
+        "_require_active_governed_process",
+        lambda **_kwargs: SimpleNamespace(role="runner_status"),
+    )
+    monkeypatch.setattr(gov, "_require_frozen_numerical_executor_environment", lambda: None)
+    monkeypatch.setattr(gov, "require_current_numerical_runtime_fingerprint", lambda value: value)
+    monkeypatch.setattr(gov, "capture_clean_source_snapshot", lambda _root: snapshot)
+    monkeypatch.setattr(gov, "_require_loaded_governance_source_identity", lambda _value: None)
+    monkeypatch.setattr(gov, "observe_retired_v1_artifacts", lambda: object())
+
+    assert (
+        gov.require_context_reference_rng_bundle_capability(
+            bundle,
+            expected_commit=bundle.clean_commit,
+            expected_tree=bundle.clean_tree,
+        )
+        is bundle
+    )
+    assert (
+        gov.require_development_recovery_bundle_capability(
+            bundle,
+            expected_commit=bundle.clean_commit,
+            expected_tree=bundle.clean_tree,
+        )
+        is bundle
+    )
+    with pytest.raises(gov.AuthorityError, match="cannot use the requested bundle authority"):
+        gov.require_development_rng_bundle_capability(
+            bundle,
+            expected_commit=bundle.clean_commit,
+            expected_tree=bundle.clean_tree,
+        )
+
+
 def test_runtime_inventory_hashes_all_distribution_files_and_rejects_drift(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -519,11 +652,60 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     ]
     assert value["focused_test_process_id"] == observed.process_id
     assert value["artifact_schemas"] == dict(gov.ARTIFACT_SCHEMAS)
+    assert frozenset(value) == gov._DEVELOPMENT_BUNDLE_FIELDS
+    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+    assert value["protocol_revision"] == "V3.1"
+    assert value["development_attempt_id"] == "development-v2"
+    assert value["retired_v1_source_commit"] == gov.RETIRED_V1_SOURCE_COMMIT
+    assert value["retired_v1_source_tree"] == gov.RETIRED_V1_SOURCE_TREE
+    assert value["retired_v1_development_bundle_payload_sha256"] == (
+        gov.RETIRED_V1_BUNDLE_PAYLOAD_SHA256
+    )
+    assert value["retired_v1_context_reference_file_sha256"] == (
+        gov.RETIRED_V1_CONTEXT_FILE_SHA256
+    )
+    assert value["retired_v1_incident_message"] == gov.RETIRED_V1_INCIDENT_MESSAGE
+    assert value["retired_v1_development_seedsequence_created"] is False
+    assert value["retired_v1_development_DGP_executed"] is False
+    assert value["retired_v1_development_result_present"] is False
+    assert value["retired_v1_experimental_outcome_observed"] is False
+    assert value["retired_v1_governed_network_accessed"] is False
+    assert value["retired_v1_continuation_authorized"] is False
     with pytest.raises(gov.AuthorityError, match="DevelopmentBundleCapability"):
         gov.require_development_bundle_capability(
             receipt,
             expected_commit=snapshot.identity.commit,
             expected_tree=snapshot.identity.tree,
+        )
+    retired_capability = gov.DevelopmentBundleCapability(
+        schema=gov.RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA,
+        candidate_id=gov.CANDIDATE_ID,
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        clean_commit=snapshot.identity.commit,
+        clean_tree=snapshot.identity.tree,
+        source_bundle_sha256=snapshot.source_bundle_sha256,
+        tracked_source_files=snapshot.tracked_files,
+        numerical_runtime_fingerprint_sha256="3" * 64,
+        numerical_runtime_inventory={},
+        canonical_path=Path(gov.DEVELOPMENT_BUNDLE_CANONICAL_PATH),
+        scope="canonical",
+        validated_payload={},
+        _issuer=gov._CAPABILITY_ISSUER,
+    )
+    with pytest.raises(gov.AuthorityError, match="identity mismatch"):
+        gov.require_development_bundle_capability(
+            retired_capability,
+            expected_commit=snapshot.identity.commit,
+            expected_tree=snapshot.identity.tree,
+        )
+    with pytest.raises(gov.ValidationError, match="schema|key mismatch"):
+        gov.parse_artifact_bytes(
+            gov.artifact_bytes(value),
+            gov.ArtifactSpec(
+                schema=gov.RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA,
+                exact_fields=gov._RETIRED_V1_DEVELOPMENT_BUNDLE_FIELDS,
+            ),
         )
 
 

@@ -1,15 +1,21 @@
 schema: cfeg.metadata-calibration-efficiency-plan.v3
 candidate_id: metadata-calibration-efficiency-v3
 decision_id: DEC-20260906-024
-status: declared_development_contract_not_yet_bundle_frozen
+status: V3_1_preoutcome_recovery_development_v2_not_yet_bundle_frozen
 contract_stage: development_selection_only
 scientific_candidate_id: null
 scientific_candidate_id_template: metadata-calibration-efficiency-v3-p3-nu_{nu_token}-lambda_{lambda_token}
 
 preoutcome_amendment:
-  path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
-  file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
+  path: configs/governance/metadata_calibration_v3_1_recovery_amendment.json
+  file_sha256: deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238
+  protocol_revision: V3.1
+  development_attempt_id: development-v2
+  original_path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
+  original_file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
   v2_is_retired_ancestor_not_execution_parent: true
+  development_v1_is_infrastructure_retired_not_scientifically_adjudicated: true
+  scientific_contract_projection_sha256: 0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79
 
 objective: >-
   Test whether pre-query acquisition context reduces labeled target-user
@@ -390,8 +396,10 @@ factor_ablation:
 
 development_contract_bundle:
   current_status: not_created
-  required_schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
-  planned_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
+  protocol_revision: V3.1
+  development_attempt_id: development-v2
+  required_schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v2
+  planned_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-bundle.json
   storage: external_write_once_receipt_not_part_of_the_bound_git_tree
   must_bind:
     - master_plan_file_sha256
@@ -402,6 +410,12 @@ development_contract_bundle:
     - artifact_schema_inventory_sha256
     - owner_authority_public_key_file_sha256_and_fingerprint
     - V2_terminal_audit_and_deny_overlay_sha256
+    - retired_development_v1_bundle_schema_payload_and_file_sha256
+    - retired_development_v1_context_schema_payload_and_file_sha256
+    - retired_development_v1_clean_commit_tree_and_two_file_inventory_sha256
+    - retired_development_v1_exact_status_failure_digest
+    - retired_development_v1_no_result_no_outcome_no_network_facts
+    - unchanged_scientific_contract_projection_sha256
   creation_preconditions: [V3_implementation_complete, focused_tests_pass, clean_commit]
   source_identity_rule: bundle_binds_the_already_clean_commit_and_tree_and_is_never_a_source_cleanliness_exception
   nonreserved_development_before_valid_bundle: forbidden
@@ -430,6 +444,10 @@ selected_method_transition:
   after_selection: regenerate_full_test_evidence_and_canary_on_the_selected_clean_freeze
 
 development_sequence:
+  - phase: retired_development_v1_inventory_validation
+    exact_file_count: 2
+    continuation_authorized: false
+    scientific_adjudication: none
   - phase: unit_and_invariant
     outcome_scope: generated_fixtures_only
   - phase: development_bundle_freeze
@@ -558,6 +576,7 @@ governance:
         direct_reverse_or_duplicate_bridge: forbidden
   required_order:
     - plan_and_live_snapshot
+    - exact_retired_development_v1_two_file_inventory_and_recovery_amendment
     - clean_implementation_commit_and_development_bundle
     - source_covariate_only_context_reference
     - nonreserved_development
@@ -607,7 +626,7 @@ governance:
   skipped_reversed_or_duplicate_transition: reject_before_downstream_artifact_access
   terminal_retry: forbidden
   artifact_schemas:
-    development_bundle: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
+    development_bundle: cfeg.metadata-calibration-efficiency-v3.development-bundle.v2
     context_reference: cfeg.metadata-calibration-efficiency-v3.context-reference.v1
     development_result: cfeg.metadata-calibration-efficiency-v3.development-result.v1
     selected_method_freeze: cfeg.metadata-calibration-efficiency-v3.selected-method-freeze.v1
@@ -638,10 +657,13 @@ governance:
     every_artifact_reference_binds_schema_payload_sha256_and_file_sha256_when_file_backed: true
   canonical_paths:
     root: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3
-    development: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1
-    development_bundle: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
-    development_context_reference: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json
-    development_result: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-result.json
+    retired_development_v1: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1
+    retired_development_v1_bundle: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
+    retired_development_v1_context_reference: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json
+    development: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2
+    development_bundle: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-bundle.json
+    development_context_reference: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/context-reference.json
+    development_result: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-result.json
     selected_method_freeze: /home/whwovy/califreeEEG/configs/governance/metadata_calibration_v3_selected_method_freeze.json
     canary: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1
     canary_test_evidence: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/governance-canary-v1/test-evidence.json

@@ -1,13 +1,15 @@
 # Metadata-assisted low-calibration SSVEP — V3 pre-outcome design
 
-상태: **개발 계약 선언 / hash-pinned implementation bundle 전에는 nonreserved synthetic도
-미실행 / scientific lockbox·외부 EEG·wearable EEG outcome 미승인**
+상태: **V3.1 pre-outcome infrastructure recovery / development-v1은 bundle+context 두 파일로
+은퇴 / development-v2 bundle 전에는 development seed 미실행 / scientific lockbox·외부
+EEG·wearable EEG outcome 미승인**
 
 기준 후보는 `metadata-calibration-efficiency-v3`, 결정 ID는 `DEC-20260906-024`다.
 기계 판독 기준원은
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`, synthetic 기준원은
-`configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 경계는
-`configs/governance/metadata_calibration_v3_preoutcome_amendment.json`이다.
+`configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 최초 경계는 byte-identical
+`configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 현재 recovery 경계는
+`configs/governance/metadata_calibration_v3_1_recovery_amendment.json`이다.
 
 ## 결론부터 말하면
 
@@ -303,18 +305,29 @@ Manifest는 selected freeze, development bundle, test evidence, canary result와
 file SHA를 함께 묶어야 한다. Manifest는 strict RFC3339 UTC 생성시각을 포함하고, signed-at은
 그 시각보다 뒤이면서 target보다 엄격히 앞이어야 한다. Filesystem mtime은 이 판단에 쓰지 않는다.
 
-Development bundle은 자신이 묶는 git commit 안에 둘 수 없으므로
-`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/` 아래 외부 write-once
-receipt로 만들고, 이미 clean한 implementation commit/tree를 묶는다. 현재 허용된 것은
-코드·문서·unit test와 이 clean implementation/development bundle을 만드는
-작업뿐이다. Root seed 20260909의 nonreserved development도 exact bundle validator가 생기기
-전에는 실행하지 않는다. Historical-pulse canary도 state engine과 selected freeze 뒤에만
-실행한다. 새 scientific synthetic lockbox, BETA/Dong/Choi outcome, wearable source·held
-outcome, 외부 저자에게 실제 메시지 전송은 아직 허용되지 않았다. 새 future beacon도
-선택하지 않았다.
+Development-v1의 외부 write-once root에는 bundle과 covariate-only context reference 두 파일만
+존재하며 이 inventory를 영구 은퇴한다. 새 terminal 파일을 소급해 만들거나 기존 두 파일을
+수정·삭제·확장하지 않는다. 계속할 수 있는 유일한 attempt는
+`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/`이고 새 bundle은
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v2` schema로 clean A2
+commit/tree, recovery amendment, retired-v1 exact triplet·inventory, runtime과 tests를 묶는다.
+현재 허용된 것은 코드·문서·unit test와 이 clean implementation/development-v2 bundle을
+만드는 작업뿐이다. Root seed 20260909의 nonreserved development도 exact v2 bundle과 adopted
+context validator 전에는 실행하지 않는다. Historical-pulse canary도 state engine과 selected
+freeze 뒤에만 실행한다. 새 scientific synthetic lockbox, BETA/Dong/Choi outcome, wearable
+source·held outcome, 외부 저자에게 실제 메시지 전송은 아직 허용되지 않았다. 새 future
+beacon도 선택하지 않았다.
 
-Development bundle, context reference, development result는 같은 development root의
+Development-v2 bundle, context reference, development result는 같은 v2 root의
 `development-bundle.json`, `context-reference.json`, `development-result.json`으로 고정한다.
+Development-v2 context file은 retired-v1 context와 byte-for-byte 같아야 하며 seed `20260910`으로 deterministic
+replay해 검증할 뿐 refit·reselection하지 않는다. Read-only `status`와 `emit-selection`은 이
+reference를 위한 별도 context-reference-only authority를 받고 development authority나 mutation
+authority를 받지 않는다. `resume`만 `DEVELOPMENT_PENDING`에서 exact bundle/context를 확인한 뒤
+development-only authority를 JIT 발급한다.
+Post-result restart는 read-only recovery capability로 저장된 rows·gate·sensitivity evidence를
+검산한다. 이때 core가 고정 component-11 sensitivity resampling만 내부 replay하지만,
+DevelopmentRNGAuthority를 발급하거나 participant EEG/DGP를 재생성하지는 않는다.
 Selected freeze는 repository의
 `configs/governance/metadata_calibration_v3_selected_method_freeze.json`, full test evidence는
 canary root의 `test-evidence.json`이다.

@@ -9,6 +9,7 @@ This makes the ``M`` insertion point inspectable rather than conventional.
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import math
 from collections.abc import Callable, Mapping, Sequence
@@ -57,7 +58,7 @@ DEVELOPMENT_RNG_AUTHORITY_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-authority.v1"
 )
 DEVELOPMENT_BUNDLE_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
 )
 RNG_PRIMITIVE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-rng-binding.v1"
@@ -66,8 +67,8 @@ RNG_PRIMITIVE_SCHEMA = (
 MASTER_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_REPOSITORY_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
 MODEL_MODULE_REPOSITORY_PATH = "src/cfeg/models/metadata_calibration_v3.py"
-MASTER_PLAN_SHA256 = "29de9a4772da34769806ee4f1633f0cbe50d088945a1205507f43c2befa143db"
-SYNTHETIC_PLAN_SHA256 = "df676c0b38b65450a611ab652567531df8818aa83223d0aebd314ca3759a971f"
+MASTER_PLAN_SHA256 = "c4cdc38aacb03059e9f80ea3809cd84b196f557898a82627407423fc67691aab"
+SYNTHETIC_PLAN_SHA256 = "0d51e184a34f4947c2b44503e6841056048129edb4faff3b40929b996ccf370f"
 CONTEXT_REFERENCE_ROOT_SEED = 20_260_910
 DEVELOPMENT_ROOT_SEED = 20_260_909
 RNG_KEY_ORDER = (
@@ -242,6 +243,9 @@ class DevelopmentRNGAuthority:
     clean_tree: str
     master_plan_file_sha256: str
     synthetic_plan_file_sha256: str
+    context_reference_schema: str
+    context_reference_payload_sha256: str
+    context_reference_file_sha256: str
     rng_primitive_schema: str
     root_seed: int
     key_order: tuple[str, ...]
@@ -250,6 +254,7 @@ class DevelopmentRNGAuthority:
     key_map_sha256: str
     semantic_binding_sha256: str
     _bundle_capability: object = dataclass_field(repr=False, compare=False)
+    _context_reference_capability: object = dataclass_field(repr=False, compare=False)
     _issuer: object = dataclass_field(repr=False, compare=False)
 
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -257,7 +262,7 @@ class DevelopmentRNGAuthority:
 
 
 def _rng_authority_binding(value: ContextReferenceRNGAuthority | DevelopmentRNGAuthority) -> dict[str, Any]:
-    return {
+    binding = {
         "schema": value.schema,
         "candidate_id": value.candidate_id,
         "role": value.role,
@@ -281,29 +286,18 @@ def _rng_authority_binding(value: ContextReferenceRNGAuthority | DevelopmentRNGA
         "component_codes": [[name, code] for name, code in value.component_codes],
         "key_map_sha256": value.key_map_sha256,
     }
-
-
-def issue_bundle_bound_rng_authorities(
-    development_bundle_capability: object,
-    *,
-    expected_commit: str,
-    expected_tree: str,
-) -> tuple[ContextReferenceRNGAuthority, DevelopmentRNGAuthority]:
-    """Issue the two disjoint RNG roles after canonical bundle revalidation."""
-
-    _git_object_id(expected_commit, "expected_commit")
-    _git_object_id(expected_tree, "expected_tree")
-    try:
-        from cfeg.metadata_calibration_v3_governance import (
-            require_development_rng_bundle_capability,
+    if type(value) is DevelopmentRNGAuthority:
+        binding.update(
+            {
+                "context_reference_schema": value.context_reference_schema,
+                "context_reference_payload_sha256": value.context_reference_payload_sha256,
+                "context_reference_file_sha256": value.context_reference_file_sha256,
+            }
         )
-    except ImportError as error:  # pragma: no cover - integration installation failure
-        raise RuntimeError("V3 governance bundle validator is unavailable.") from error
-    bundle = require_development_rng_bundle_capability(
-        development_bundle_capability,
-        expected_commit=expected_commit,
-        expected_tree=expected_tree,
-    )
+    return binding
+
+
+def _bundle_bound_rng_common(bundle: object) -> dict[str, Any]:
     inventory = {
         entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
     }
@@ -332,6 +326,31 @@ def issue_bundle_bound_rng_authorities(
         "key_map_sha256": rng_key_map_sha256(),
         "_bundle_capability": bundle,
     }
+    return common
+
+
+def issue_bundle_bound_context_reference_rng_authority(
+    development_bundle_capability: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> ContextReferenceRNGAuthority:
+    """Issue only the covariate-reference role; never materialize development authority."""
+
+    _git_object_id(expected_commit, "expected_commit")
+    _git_object_id(expected_tree, "expected_tree")
+    try:
+        from cfeg.metadata_calibration_v3_governance import (
+            require_context_reference_rng_bundle_capability,
+        )
+    except ImportError as error:  # pragma: no cover - integration installation failure
+        raise RuntimeError("V3 governance bundle validator is unavailable.") from error
+    bundle = require_context_reference_rng_bundle_capability(
+        development_bundle_capability,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+    )
+    common = _bundle_bound_rng_common(bundle)
     reference = _issue_rng_authority(
         ContextReferenceRNGAuthority,
         schema=CONTEXT_REFERENCE_RNG_AUTHORITY_SCHEMA,
@@ -339,6 +358,39 @@ def issue_bundle_bound_rng_authorities(
         root_seed=CONTEXT_REFERENCE_ROOT_SEED,
         issuer=_CONTEXT_REFERENCE_RNG_AUTHORITY_ISSUER,
         common=common,
+    )
+    return require_context_reference_rng_authority(reference)
+
+
+def issue_bundle_bound_development_rng_authority(
+    development_bundle_capability: object,
+    context_reference_capability: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> DevelopmentRNGAuthority:
+    """Issue only development seed authority, just in time under a mutation role."""
+
+    _git_object_id(expected_commit, "expected_commit")
+    _git_object_id(expected_tree, "expected_tree")
+    try:
+        from cfeg.metadata_calibration_v3_governance import require_development_rng_prerequisites
+    except ImportError as error:  # pragma: no cover - integration installation failure
+        raise RuntimeError("V3 governance bundle validator is unavailable.") from error
+    bundle, context_reference = require_development_rng_prerequisites(
+        development_bundle_capability,
+        context_reference_capability,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+    )
+    common = _bundle_bound_rng_common(bundle)
+    common.update(
+        {
+            "context_reference_schema": context_reference.schema,
+            "context_reference_payload_sha256": context_reference.payload_sha256,
+            "context_reference_file_sha256": context_reference.file_sha256,
+            "_context_reference_capability": context_reference,
+        }
     )
     development = _issue_rng_authority(
         DevelopmentRNGAuthority,
@@ -348,9 +400,20 @@ def issue_bundle_bound_rng_authorities(
         issuer=_DEVELOPMENT_RNG_AUTHORITY_ISSUER,
         common=common,
     )
-    return (
-        require_context_reference_rng_authority(reference),
-        require_development_rng_authority(development),
+    return require_development_rng_authority(development)
+
+
+def issue_bundle_bound_rng_authorities(
+    development_bundle_capability: object,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+) -> tuple[ContextReferenceRNGAuthority, DevelopmentRNGAuthority]:
+    """Reject the retired paired issuer so reference work cannot mint development authority."""
+
+    del development_bundle_capability, expected_commit, expected_tree
+    raise RuntimeError(
+        "paired RNG authority issuance retired by V3.1; use the role-specific JIT issuers"
     )
 
 
@@ -461,6 +524,11 @@ def _require_rng_authority(
         "semantic_binding_sha256",
     ):
         _sha256(getattr(value, name), name)
+    if type(value) is DevelopmentRNGAuthority:
+        if value.context_reference_schema != CONTEXT_REFERENCE_SCHEMA:
+            raise ValueError("development RNG context-reference schema is invalid.")
+        _sha256(value.context_reference_payload_sha256, "context_reference_payload_sha256")
+        _sha256(value.context_reference_file_sha256, "context_reference_file_sha256")
     _git_object_id(value.clean_commit, "clean_commit")
     _git_object_id(value.clean_tree, "clean_tree")
     if value.semantic_binding_sha256 != _canonical_plain_sha256(
@@ -470,16 +538,28 @@ def _require_rng_authority(
     if not revalidate_bundle:
         return
     try:
-        from cfeg.metadata_calibration_v3_governance import (
-            require_development_rng_bundle_capability,
-        )
+        governance = importlib.import_module("cfeg.metadata_calibration_v3_governance")
     except ImportError as error:  # pragma: no cover - integration installation failure
         raise RuntimeError("V3 governance bundle validator is unavailable.") from error
-    bundle = require_development_rng_bundle_capability(
-        value._bundle_capability,
-        expected_commit=value.clean_commit,
-        expected_tree=value.clean_tree,
-    )
+    if role == "context_reference":
+        bundle = governance.require_context_reference_rng_bundle_capability(
+            value._bundle_capability,
+            expected_commit=value.clean_commit,
+            expected_tree=value.clean_tree,
+        )
+    else:
+        bundle, context_reference = governance.require_development_rng_prerequisites(
+            value._bundle_capability,
+            value._context_reference_capability,
+            expected_commit=value.clean_commit,
+            expected_tree=value.clean_tree,
+        )
+        if (
+            context_reference.schema != value.context_reference_schema
+            or context_reference.payload_sha256 != value.context_reference_payload_sha256
+            or context_reference.file_sha256 != value.context_reference_file_sha256
+        ):
+            raise ValueError("development RNG context-reference binding changed.")
     inventory = {
         entry.path: entry.file_sha256 for entry in bundle.tracked_source_files
     }

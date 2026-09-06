@@ -1,0 +1,160 @@
+{
+  "schema": "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v1",
+  "candidate_id": "metadata-calibration-efficiency-v3",
+  "decision_id": "COR-20260907-029",
+  "recorded_at_utc": "2026-09-06T17:45:14Z",
+  "recorded_at_is_amendment_time_not_incident_timestamp": true,
+  "protocol_revision": "V3.1",
+  "status": "preoutcome_infrastructure_recovery_only",
+  "scientific_objective_changed": false,
+  "scientific_contract_projection": {
+    "schema": "cfeg.metadata-calibration-efficiency-v3.scientific-contract-projection.v1",
+    "sha256": "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79",
+    "canonical_preimage_definition": {
+      "top_level_keys": [
+        "candidate_id",
+        "master",
+        "schema",
+        "synthetic"
+      ],
+      "candidate_id_value": "metadata-calibration-efficiency-v3",
+      "master_value": "mapping_of_the_exact_master_keys_below_to_their_parsed_YAML_values",
+      "synthetic_value": "mapping_of_the_exact_synthetic_keys_below_to_their_parsed_YAML_values",
+      "serialization": "UTF-8_JSON_sort_keys_true_separators_comma_colon_ensure_ascii_true_allow_nan_false_without_trailing_newline"
+    },
+    "master_keys": [
+      "candidate_id",
+      "scientific_candidate_id_template",
+      "objective",
+      "research_question",
+      "claim_order",
+      "interpretation_boundary",
+      "information_rights",
+      "roles",
+      "anchor",
+      "score_normalization",
+      "support_residual",
+      "fusion",
+      "metadata_trust",
+      "target_local_gate",
+      "calibration_contract",
+      "factor_ablation",
+      "data_roles",
+      "estimands",
+      "promotion_logic",
+      "stopping_rules"
+    ],
+    "synthetic_keys": [
+      "candidate_id",
+      "generator_revision",
+      "purpose",
+      "disclosed_prior_seed_exposure",
+      "rng",
+      "population",
+      "waveform",
+      "operator_grid",
+      "context_reference",
+      "families",
+      "context_controls",
+      "invariants",
+      "complete_grid",
+      "metrics",
+      "promotion_requirements",
+      "development_selection",
+      "governance_canary",
+      "scientific_lockbox",
+      "stopping_rules"
+    ],
+    "unchanged_components": [
+      "objective",
+      "operator_equations",
+      "DGP",
+      "three_by_three_grid",
+      "thresholds",
+      "promotion_gates",
+      "selection_rank",
+      "context_reference_root_seed_20260910",
+      "development_root_seed_20260909",
+      "evidence_roles_and_cohorts"
+    ]
+  },
+  "original_preoutcome_amendment": {
+    "path": "configs/governance/metadata_calibration_v3_preoutcome_amendment.json",
+    "file_sha256": "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202",
+    "must_remain_byte_identical": true
+  },
+  "retired_development_attempt": {
+    "attempt_id": "development-v1",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1",
+    "source_commit": "569394da6894a2efed37b9dde162cbe4fe60534d",
+    "source_tree": "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd",
+    "artifact_inventory_schema": "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v1",
+    "artifact_inventory_sha256": "ece2fc0822fc33d952b926efacb076586d90a74e1bb5132b110789359837055b",
+    "exact_file_names": [
+      "context-reference.json",
+      "development-bundle.json"
+    ],
+    "development_bundle": {
+      "path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1",
+      "payload_sha256": "959ce56a97e3ece034b52c44a993d393ef168bbb1bdbad9a72dee86cdf3430b3",
+      "file_sha256": "9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a"
+    },
+    "context_reference": {
+      "path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.context-reference.v1",
+      "payload_sha256": "c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253",
+      "file_sha256": "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8",
+      "root_seed": 20260910,
+      "role": "covariate_only_reference",
+      "adopt_exact_bytes_in_development_v2": true,
+      "refit_or_reselection": "forbidden"
+    },
+    "observed_status_failure": {
+      "argv": [
+        "scripts/run_metadata_calibration_v3",
+        "status"
+      ],
+      "exit_code": 2,
+      "exception_type": "AuthorityError",
+      "message": "this governed process role cannot mutate canonical state",
+      "emitted_json_line_utf8_base64": "eyJjb21tYW5kIjoic3RhdHVzIiwiZXJyb3IiOiJBdXRob3JpdHlFcnJvciIsIm1lc3NhZ2UiOiJ0aGlzIGdvdmVybmVkIHByb2Nlc3Mgcm9sZSBjYW5ub3QgbXV0YXRlIGNhbm9uaWNhbCBzdGF0ZSIsInN0YXR1cyI6IkZBSUxfQ0xPU0VEIn0K",
+      "emitted_json_line_sha256": "8cdcfe3961979b2d691d4a241878abbf68aa743d8dd08ccbf01ffe1ec03a796a",
+      "intended_stage": "post_context_pre_development"
+    },
+    "execution_observations": {
+      "context_reference_seedsequence_and_covariate_only_generation_executed": true,
+      "paired_development_rng_authority_object_instantiated_in_memory": true,
+      "development_seed": 20260909,
+      "development_seedsequence_created": false,
+      "development_DGP_executed": false,
+      "development_result_artifact_count": 0,
+      "selection_artifact_count": 0,
+      "canary_artifact_count": 0,
+      "development_v1_experimental_workflow_outcome_observation_count": 0,
+      "development_v1_governed_execution_network_access_count": 0
+    },
+    "scientific_interpretation": "infrastructure_no_go_pre_development_not_a_scientific_pass_or_fail",
+    "continuation_authorized": false,
+    "exact_directory_inventory_must_remain_two_files": true
+  },
+  "authorized_recovery": {
+    "attempt_id": "development-v2",
+    "development_bundle_schema": "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2",
+    "only_authorized_development_attempt": true,
+    "requires_exact_retired_v1_two_file_inventory": true,
+    "context_reference_policy": "copy_and_revalidate_exact_development_v1_context_bytes_without_refit",
+    "context_reference_authority_policy": "issue_reference_only_authority_for_status_and_context_publication",
+    "development_authority_policy": "issue_development_only_authority_just_in_time_during_DEVELOPMENT_PENDING_resume",
+    "scientific_lockbox_authorized": false,
+    "human_EEG_outcome_authorized": false,
+    "network_access_authorized": false
+  },
+  "immutability": {
+    "development_v1_files_may_not_be_modified_deleted_or_extended": true,
+    "development_v1_schema_may_not_be_reinterpreted_as_v2": true,
+    "original_preoutcome_amendment_may_not_be_modified": true,
+    "operator_DGP_grid_threshold_gate_rank_seed_or_evidence_change_requires_new_scientific_revision": true
+  }
+}

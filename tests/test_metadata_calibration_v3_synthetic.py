@@ -73,6 +73,11 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
             ),
         ),
     )
+    context = SimpleNamespace(
+        schema=v3.CONTEXT_REFERENCE_SCHEMA,
+        payload_sha256="7" * 64,
+        file_sha256="8" * 64,
+    )
     governance = ModuleType("cfeg.metadata_calibration_v3_governance")
 
     def require_bundle(value, *, expected_commit, expected_tree):
@@ -81,14 +86,31 @@ def _bundle_rng_authorities(monkeypatch: pytest.MonkeyPatch):
         assert expected_tree == bundle.clean_tree
         return bundle
 
-    governance.require_development_rng_bundle_capability = require_bundle
+    def require_development_prerequisites(
+        value, context_value, *, expected_commit, expected_tree
+    ):
+        assert context_value is context
+        return require_bundle(
+            value,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+        ), context
+
+    governance.require_context_reference_rng_bundle_capability = require_bundle
+    governance.require_development_rng_prerequisites = require_development_prerequisites
     monkeypatch.setitem(
         sys.modules,
         "cfeg.metadata_calibration_v3_governance",
         governance,
     )
-    reference, development = v3.issue_bundle_bound_rng_authorities(
+    reference = v3.issue_bundle_bound_context_reference_rng_authority(
         bundle,
+        expected_commit=bundle.clean_commit,
+        expected_tree=bundle.clean_tree,
+    )
+    development = v3.issue_bundle_bound_development_rng_authority(
+        bundle,
+        context,
         expected_commit=bundle.clean_commit,
         expected_tree=bundle.clean_tree,
     )

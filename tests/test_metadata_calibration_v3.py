@@ -93,6 +93,11 @@ def _bundle_rng_authorities(
             ),
         ),
     )
+    context = SimpleNamespace(
+        schema=v3.CONTEXT_REFERENCE_SCHEMA,
+        payload_sha256="7" * 64,
+        file_sha256="8" * 64,
+    )
     governance = ModuleType("cfeg.metadata_calibration_v3_governance")
 
     def require_bundle(value, *, expected_commit, expected_tree):
@@ -101,17 +106,35 @@ def _bundle_rng_authorities(
         assert expected_tree == bundle.clean_tree
         return bundle
 
-    governance.require_development_rng_bundle_capability = require_bundle
+    def require_development_prerequisites(
+        value, context_value, *, expected_commit, expected_tree
+    ):
+        assert context_value is context
+        return require_bundle(
+            value,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+        ), context
+
+    governance.require_context_reference_rng_bundle_capability = require_bundle
+    governance.require_development_rng_prerequisites = require_development_prerequisites
     monkeypatch.setitem(
         sys.modules,
         "cfeg.metadata_calibration_v3_governance",
         governance,
     )
-    return v3.issue_bundle_bound_rng_authorities(
+    reference = v3.issue_bundle_bound_context_reference_rng_authority(
         bundle,
         expected_commit=bundle.clean_commit,
         expected_tree=bundle.clean_tree,
     )
+    development = v3.issue_bundle_bound_development_rng_authority(
+        bundle,
+        context,
+        expected_commit=bundle.clean_commit,
+        expected_tree=bundle.clean_tree,
+    )
+    return reference, development
 
 
 def _raw_packet(key: str, *, z: float, reference: v3.ContextReference) -> dict[str, object]:
@@ -479,6 +502,9 @@ def test_bundle_rng_authorities_are_role_separated_and_mutation_detected(
     assert type(development_authority) is v3.DevelopmentRNGAuthority
     assert reference_authority.root_seed == 20_260_910
     assert development_authority.root_seed == 20_260_909
+    assert development_authority.context_reference_schema == v3.CONTEXT_REFERENCE_SCHEMA
+    assert development_authority.context_reference_payload_sha256 == "7" * 64
+    assert development_authority.context_reference_file_sha256 == "8" * 64
     assert reference_authority.semantic_binding_sha256 != (
         development_authority.semantic_binding_sha256
     )
@@ -490,10 +516,66 @@ def test_bundle_rng_authorities_are_role_separated_and_mutation_detected(
         v3.require_context_reference_rng_authority(development_authority)
     with pytest.raises(TypeError, match="exact DevelopmentRNGAuthority"):
         v3.require_development_rng_authority(reference_authority)
+    with pytest.raises(RuntimeError, match="paired RNG authority issuance retired"):
+        v3.issue_bundle_bound_rng_authorities(
+            object(),
+            expected_commit="5" * 40,
+            expected_tree="6" * 40,
+        )
 
     object.__setattr__(development_authority, "root_seed", 1)
     with pytest.raises(ValueError, match="identity, role, seed, or key map"):
         v3.require_development_rng_authority(development_authority)
+
+
+def test_reference_only_issuer_never_touches_development_prerequisites(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = SimpleNamespace(
+        payload_sha256="1" * 64,
+        file_sha256="2" * 64,
+        source_bundle_sha256="3" * 64,
+        numerical_runtime_fingerprint_sha256="4" * 64,
+        clean_commit="5" * 40,
+        clean_tree="6" * 40,
+        tracked_source_files=(
+            SimpleNamespace(
+                path=v3.MASTER_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.MASTER_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.SYNTHETIC_PLAN_REPOSITORY_PATH,
+                file_sha256=v3.SYNTHETIC_PLAN_SHA256,
+            ),
+            SimpleNamespace(
+                path=v3.MODEL_MODULE_REPOSITORY_PATH,
+                file_sha256=v3._IMPORTED_MODEL_MODULE_SHA256,
+            ),
+        ),
+    )
+    calls = {"reference": 0, "development": 0}
+    governance = ModuleType("cfeg.metadata_calibration_v3_governance")
+
+    def require_reference(value, *, expected_commit, expected_tree):
+        calls["reference"] += 1
+        assert value is bundle
+        assert (expected_commit, expected_tree) == (bundle.clean_commit, bundle.clean_tree)
+        return bundle
+
+    def forbidden_development(*_args, **_kwargs):
+        calls["development"] += 1
+        raise AssertionError("reference-only issuance touched development prerequisites")
+
+    governance.require_context_reference_rng_bundle_capability = require_reference
+    governance.require_development_rng_prerequisites = forbidden_development
+    monkeypatch.setitem(sys.modules, "cfeg.metadata_calibration_v3_governance", governance)
+    authority = v3.issue_bundle_bound_context_reference_rng_authority(
+        bundle,
+        expected_commit=bundle.clean_commit,
+        expected_tree=bundle.clean_tree,
+    )
+    assert authority.root_seed == 20_260_910
+    assert calls == {"reference": 2, "development": 0}
 
 
 def test_preflight_pairing_changes_gM_but_not_M_free_reliability() -> None:

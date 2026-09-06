@@ -1,23 +1,38 @@
 schema: cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v3
 generator_revision: v1_single_insertion_context_trust
-status: declared_development_contract_not_yet_bundle_frozen_or_executable
+status: V3_1_recovery_development_v2_not_yet_bundle_frozen_or_executable
 
 master_plan:
   path: configs/analysis/metadata_calibration_efficiency_v3.yaml
-  file_sha256: 29de9a4772da34769806ee4f1633f0cbe50d088945a1205507f43c2befa143db
+  file_sha256: c4cdc38aacb03059e9f80ea3809cd84b196f557898a82627407423fc67691aab
 preoutcome_amendment:
-  path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
-  file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
+  path: configs/governance/metadata_calibration_v3_1_recovery_amendment.json
+  file_sha256: deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238
+  protocol_revision: V3.1
+  development_attempt_id: development-v2
+  original_path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
+  original_file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
+  scientific_contract_projection_sha256: 0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79
 
 development_bundle:
   required_before_any_seed_20260909_generation: true
   current_status: absent
-  schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v1
-  canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-bundle.json
-  context_reference_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/context-reference.json
-  development_result_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1/development-result.json
+  protocol_revision: V3.1
+  development_attempt_id: development-v2
+  schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v2
+  canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-bundle.json
+  context_reference_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/context-reference.json
+  development_result_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2/development-result.json
   storage: external_write_once_receipt_not_part_of_the_bound_git_tree
+  recovery_prerequisite:
+    amendment: configs/governance/metadata_calibration_v3_1_recovery_amendment.json
+    retired_attempt_id: development-v1
+    retired_exact_file_count: 2
+    retired_bundle_file_sha256: 9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a
+    retired_context_file_sha256: 7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8
+    retired_continuation_authorized: false
+    adopt_retired_context_exact_bytes: true
 
 purpose: >-
   Validate implementation, support utility, context-pairing mechanism,

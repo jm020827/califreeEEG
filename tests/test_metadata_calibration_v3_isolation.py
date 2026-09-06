@@ -352,13 +352,14 @@ def test_test_root_ancestor_and_resolved_destination_cannot_escape_to_production
 
     resolved_alias = private_test_path / "resolved-home-alias"
     resolved_alias.symlink_to("/home/whwovy", target_is_directory=True)
-    with pytest.raises(gov.AuthorityError, match="production namespace"):
-        gov._publish_write_once_under_test_root(
-            resolved_alias,
-            "v3-artifacts/metadata-calibration-efficiency-v3/development-v1/"
-            "development-result.json",
-            b"must not reach writer",
-        )
+    for attempt in ("development-v1", "development-v2"):
+        with pytest.raises(gov.AuthorityError, match="production namespace"):
+            gov._publish_write_once_under_test_root(
+                resolved_alias,
+                f"v3-artifacts/metadata-calibration-efficiency-v3/{attempt}/"
+                "development-result.json",
+                b"must not reach writer",
+            )
     assert not reached_writer
 
     with pytest.raises(gov.AuthorityError, match="owner-private namespace below /tmp"):

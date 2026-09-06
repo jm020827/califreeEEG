@@ -1,7 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3 clean implementation CODE-GO·development bundle 생성 직전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+현재 상태: **V3.1 pre-outcome infrastructure recovery 구현·검증 중 / development-v1은 bundle+context 두 파일로 영구 은퇴 / development-v2 bundle 전 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
 현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
@@ -59,7 +59,8 @@ robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰�
 없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
 **해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
 
-현재는 코드·unit test와 clean hash-pinned development bundle을 만드는 단계다. Bundle은
+현재는 V3.1 recovery 코드·unit test와 clean hash-pinned development-v2 bundle을 만드는
+단계다. Bundle은
 git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
 implementation commit/tree를 묶는다. Root seed
 `20260909`의 nonreserved synthetic development는 bundle validator 뒤에만 가능하고 public
@@ -67,6 +68,42 @@ historical-pulse governance canary는 selected-method freeze와 state engine 뒤
 V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
 external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
+
+### V3.1 pre-outcome infrastructure recovery
+
+Development-v1에서는 clean A commit
+`569394da6894a2efed37b9dde162cbe4fe60534d`와 tree
+`fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd`를 묶은 bundle과 covariate-only
+context reference까지만 외부 write-once로 생성됐다. 그 뒤 read-only `status`가
+`AuthorityError: this governed process role cannot mutate canonical state`로 종료됐다. 이때
+reference seed `20260910`의 SeedSequence와 covariate-only 생성은 실행됐고, 당시 구현 특성상
+paired development RNG authority 객체도 메모리에 만들어졌다. 그러나 development seed
+`20260909`의 SeedSequence, synthetic DGP, development result, selection, canary, scientific 또는
+human outcome은 전혀 실행·관측되지 않았고 governed development-v1 execution의 network
+access count도 0이다. 이 기록은 과학적 PASS/FAIL이 아니라
+post-context/pre-development 인프라 no-go다.
+
+새 tracked recovery amendment
+`configs/governance/metadata_calibration_v3_1_recovery_amendment.json`은 이 사실과 exact 오류
+line, old bundle/context schema·payload/file hash, old A commit/tree 및 v1의 정확한 두 파일
+inventory를 묶는다. Development-v1 디렉터리는 두 파일 그대로 수정·삭제·추가 없이 은퇴하며,
+별도 terminal 파일을 소급 생성하지 않는다. 계속할 수 있는 유일한 개발 attempt는
+`development-v2`, bundle schema는
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v2`다. Development-v2 bundle은 recovery
+amendment, retired-v1 triplet과 inventory, 새 clean A2 source/runtime/tests를 함께 묶는다.
+
+Development-v2 context reference는 refit하거나 다시 선택하지 않고 retired-v1 context의 exact bytes를
+복사해 재검증한다. Status/emit-selection은 bundle과 reference를 읽고 replay할 수 있는
+reference-only 권한만 받으며 development RNG 또는 canonical mutation 권한은 받지 않는다.
+`resume`은 `DEVELOPMENT_PENDING`에서 v2 bundle과 exact adopted context를 다시 확인한 직후에만
+development-only 권한을 JIT 발급한다. 연구목표, operator 식, DGP, 3×3 grid, threshold,
+promotion gate, selection rank와 두 seed는 바뀌지 않았고, 그 exact scientific-contract
+projection SHA-256은
+`0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79`다.
+이미 publish된 development result를 status에서 여는 경우에는 별도 read-only recovery
+capability로 canonical rows·gate·sensitivity evidence를 재검증한다. 그 감사 내부의 고정
+component-11 sensitivity resampling replay는 DevelopmentRNGAuthority를 발급하거나 EEG/DGP를
+다시 생성하는 경로가 아니다.
 
 ### 2026-09-07 implementation A 직전 상태
 

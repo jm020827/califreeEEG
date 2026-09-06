@@ -34,7 +34,7 @@ V3_RUNNER_PATH = V3_REPOSITORY_SRC / "cfeg/metadata_calibration_v3_runner.py"
 V3_GIT_EXECUTABLE = Path("/usr/bin/git")
 V3_DEVELOPMENT_BUNDLE_PATH = Path(
     "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-    "development-v1/development-bundle.json"
+    "development-v2/development-bundle.json"
 )
 
 _EXPECTED_STANDARD_LIBRARY_PATH = (
@@ -48,7 +48,123 @@ EXPECTED_RUNNER_SYS_PATH = (
     os.fspath(V3_SITE_PACKAGES),
 )
 
-_DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+_DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v2"
+_DEVELOPMENT_BUNDLE_FIELDS = frozenset(
+    {
+        "artifact_schema_inventory_sha256",
+        "artifact_schemas",
+        "candidate_id",
+        "canonical_path",
+        "clean_git_commit",
+        "clean_git_tree",
+        "created_at_UTC",
+        "development_attempt_id",
+        "focused_test_argv",
+        "focused_test_collected_tests",
+        "focused_test_environment_sha256",
+        "focused_test_error_tests",
+        "focused_test_executable_file_sha256",
+        "focused_test_failed_tests",
+        "focused_test_junit_report_base64",
+        "focused_test_junit_report_file_sha256",
+        "focused_test_junit_report_path",
+        "focused_test_passed_tests",
+        "focused_test_process_id",
+        "focused_test_scope",
+        "focused_test_skipped_tests",
+        "focused_test_stderr_sha256",
+        "focused_test_stdout_sha256",
+        "focused_test_working_directory",
+        "focused_test_xfailed_tests",
+        "focused_test_xpassed_tests",
+        "focused_tests_passed",
+        "human_EEG_outcome_authorized",
+        "master_plan_file_sha256",
+        "master_plan_path",
+        "numerical_runtime_fingerprint_sha256",
+        "numerical_runtime_inventory",
+        "original_preoutcome_amendment_file_sha256",
+        "original_preoutcome_amendment_path",
+        "owner_authority_public_key_file_sha256",
+        "owner_authority_public_key_path",
+        "owner_authority_ssh_fingerprint",
+        "payload_sha256",
+        "preoutcome_amendment_file_sha256",
+        "preoutcome_amendment_path",
+        "protocol_revision",
+        "retired_v1_artifact_inventory_schema",
+        "retired_v1_artifact_inventory_sha256",
+        "retired_v1_context_reference_file_sha256",
+        "retired_v1_context_reference_path",
+        "retired_v1_context_reference_payload_sha256",
+        "retired_v1_context_reference_root_seed",
+        "retired_v1_context_reference_schema",
+        "retired_v1_continuation_authorized",
+        "retired_v1_development_DGP_executed",
+        "retired_v1_development_bundle_file_sha256",
+        "retired_v1_development_bundle_path",
+        "retired_v1_development_bundle_payload_sha256",
+        "retired_v1_development_bundle_schema",
+        "retired_v1_development_result_present",
+        "retired_v1_development_root_seed",
+        "retired_v1_development_seedsequence_created",
+        "retired_v1_experimental_outcome_observed",
+        "retired_v1_governed_network_accessed",
+        "retired_v1_incident_error",
+        "retired_v1_incident_message",
+        "retired_v1_incident_output_sha256",
+        "retired_v1_source_commit",
+        "retired_v1_source_tree",
+        "schema",
+        "scientific_contract_projection_sha256",
+        "scientific_lockbox_authorized",
+        "source_bundle_sha256",
+        "synthetic_plan_file_sha256",
+        "synthetic_plan_path",
+        "tracked_source_file_inventory",
+        "v2_deny_overlay_file_sha256",
+        "v2_deny_overlay_path",
+        "v2_terminal_audit_file_sha256",
+        "v2_terminal_audit_path",
+    }
+)
+_PROTOCOL_REVISION = "V3.1"
+_DEVELOPMENT_ATTEMPT_ID = "development-v2"
+_RECOVERY_AMENDMENT_PATH = (
+    "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
+)
+_RECOVERY_AMENDMENT_SHA256 = (
+    "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
+)
+_ORIGINAL_AMENDMENT_PATH = (
+    "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
+)
+_ORIGINAL_AMENDMENT_SHA256 = (
+    "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202"
+)
+_RETIRED_V1_COMMIT = "569394da6894a2efed37b9dde162cbe4fe60534d"
+_RETIRED_V1_TREE = "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd"
+_RETIRED_V1_INVENTORY_SHA256 = (
+    "ece2fc0822fc33d952b926efacb076586d90a74e1bb5132b110789359837055b"
+)
+_RETIRED_V1_BUNDLE_PAYLOAD_SHA256 = (
+    "959ce56a97e3ece034b52c44a993d393ef168bbb1bdbad9a72dee86cdf3430b3"
+)
+_RETIRED_V1_BUNDLE_FILE_SHA256 = (
+    "9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a"
+)
+_RETIRED_V1_CONTEXT_PAYLOAD_SHA256 = (
+    "c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253"
+)
+_RETIRED_V1_CONTEXT_FILE_SHA256 = (
+    "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
+)
+_RETIRED_V1_INCIDENT_OUTPUT_SHA256 = (
+    "8cdcfe3961979b2d691d4a241878abbf68aa743d8dd08ccbf01ffe1ec03a796a"
+)
+_SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
+    "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
+)
 _PYTHON_SITE_INVENTORY_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.python-site-inventory.v1"
 _CANDIDATE_ID = "metadata-calibration-efficiency-v3"
 _SELECTED_METHOD_RELATIVE_PATH = (
@@ -1068,6 +1184,78 @@ def _require_current_source_compatible_with_bundle(
     )
 
 
+def _require_v3_1_bundle_recovery_identity(
+    payload: Mapping[str, Any],
+    *,
+    canonical_path: Path,
+) -> None:
+    expected: dict[str, Any] = {
+        "schema": _DEVELOPMENT_BUNDLE_SCHEMA,
+        "candidate_id": _CANDIDATE_ID,
+        "protocol_revision": _PROTOCOL_REVISION,
+        "development_attempt_id": _DEVELOPMENT_ATTEMPT_ID,
+        "canonical_path": os.fspath(canonical_path),
+        "preoutcome_amendment_path": _RECOVERY_AMENDMENT_PATH,
+        "preoutcome_amendment_file_sha256": _RECOVERY_AMENDMENT_SHA256,
+        "original_preoutcome_amendment_path": _ORIGINAL_AMENDMENT_PATH,
+        "original_preoutcome_amendment_file_sha256": _ORIGINAL_AMENDMENT_SHA256,
+        "retired_v1_source_commit": _RETIRED_V1_COMMIT,
+        "retired_v1_source_tree": _RETIRED_V1_TREE,
+        "retired_v1_artifact_inventory_schema": (
+            "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v1"
+        ),
+        "retired_v1_artifact_inventory_sha256": _RETIRED_V1_INVENTORY_SHA256,
+        "retired_v1_development_bundle_path": (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            "development-v1/development-bundle.json"
+        ),
+        "retired_v1_development_bundle_schema": (
+            "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+        ),
+        "retired_v1_development_bundle_payload_sha256": (
+            _RETIRED_V1_BUNDLE_PAYLOAD_SHA256
+        ),
+        "retired_v1_development_bundle_file_sha256": _RETIRED_V1_BUNDLE_FILE_SHA256,
+        "retired_v1_context_reference_path": (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            "development-v1/context-reference.json"
+        ),
+        "retired_v1_context_reference_schema": (
+            "cfeg.metadata-calibration-efficiency-v3.context-reference.v1"
+        ),
+        "retired_v1_context_reference_payload_sha256": (
+            _RETIRED_V1_CONTEXT_PAYLOAD_SHA256
+        ),
+        "retired_v1_context_reference_file_sha256": _RETIRED_V1_CONTEXT_FILE_SHA256,
+        "retired_v1_context_reference_root_seed": 20_260_910,
+        "retired_v1_development_root_seed": 20_260_909,
+        "retired_v1_incident_error": "AuthorityError",
+        "retired_v1_incident_message": (
+            "this governed process role cannot mutate canonical state"
+        ),
+        "retired_v1_incident_output_sha256": _RETIRED_V1_INCIDENT_OUTPUT_SHA256,
+        "retired_v1_development_seedsequence_created": False,
+        "retired_v1_development_DGP_executed": False,
+        "retired_v1_development_result_present": False,
+        "retired_v1_experimental_outcome_observed": False,
+        "retired_v1_governed_network_accessed": False,
+        "retired_v1_continuation_authorized": False,
+        "scientific_contract_projection_sha256": (
+            _SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        ),
+        "scientific_lockbox_authorized": False,
+        "human_EEG_outcome_authorized": False,
+    }
+    if frozenset(payload) != _DEVELOPMENT_BUNDLE_FIELDS:
+        raise RunnerError("development bundle field inventory differs before import")
+    for name, expected_value in expected.items():
+        observed = payload.get(name)
+        if (type(expected_value) is bool and observed is not expected_value) or (
+            type(expected_value) is not bool and observed != expected_value
+        ):
+            raise RunnerError(f"development bundle recovery identity differs: {name}")
+
+
 def _validate_existing_bundle(
     config: _PreflightConfig,
     data: bytes,
@@ -1078,26 +1266,61 @@ def _validate_existing_bundle(
 ) -> Mapping[str, Any]:
     payload = _strict_json_object(data, label="development bundle")
     _validate_payload_self_hash(payload, label="development bundle")
-    required = {
-        "candidate_id",
-        "canonical_path",
-        "clean_git_commit",
-        "clean_git_tree",
-        "human_EEG_outcome_authorized",
-        "numerical_runtime_fingerprint_sha256",
-        "numerical_runtime_inventory",
-        "payload_sha256",
-        "schema",
-        "scientific_lockbox_authorized",
-        "source_bundle_sha256",
-        "tracked_source_file_inventory",
-    }
-    if not required.issubset(payload):
-        raise RunnerError("development bundle lacks required pre-import bindings")
+    _require_v3_1_bundle_recovery_identity(payload, canonical_path=config.bundle_path)
     if (
         payload["schema"] != _DEVELOPMENT_BUNDLE_SCHEMA
         or payload["candidate_id"] != _CANDIDATE_ID
+        or payload["protocol_revision"] != _PROTOCOL_REVISION
+        or payload["development_attempt_id"] != _DEVELOPMENT_ATTEMPT_ID
         or payload["canonical_path"] != os.fspath(config.bundle_path)
+        or payload["preoutcome_amendment_path"] != _RECOVERY_AMENDMENT_PATH
+        or payload["preoutcome_amendment_file_sha256"] != _RECOVERY_AMENDMENT_SHA256
+        or payload["original_preoutcome_amendment_path"] != _ORIGINAL_AMENDMENT_PATH
+        or payload["original_preoutcome_amendment_file_sha256"]
+        != _ORIGINAL_AMENDMENT_SHA256
+        or payload["retired_v1_source_commit"] != _RETIRED_V1_COMMIT
+        or payload["retired_v1_source_tree"] != _RETIRED_V1_TREE
+        or payload["retired_v1_artifact_inventory_schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v1"
+        or payload["retired_v1_artifact_inventory_sha256"]
+        != _RETIRED_V1_INVENTORY_SHA256
+        or payload["retired_v1_development_bundle_path"]
+        != (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            "development-v1/development-bundle.json"
+        )
+        or payload["retired_v1_development_bundle_schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
+        or payload["retired_v1_development_bundle_payload_sha256"]
+        != _RETIRED_V1_BUNDLE_PAYLOAD_SHA256
+        or payload["retired_v1_development_bundle_file_sha256"]
+        != _RETIRED_V1_BUNDLE_FILE_SHA256
+        or payload["retired_v1_context_reference_payload_sha256"]
+        != _RETIRED_V1_CONTEXT_PAYLOAD_SHA256
+        or payload["retired_v1_context_reference_file_sha256"]
+        != _RETIRED_V1_CONTEXT_FILE_SHA256
+        or payload["retired_v1_context_reference_path"]
+        != (
+            "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+            "development-v1/context-reference.json"
+        )
+        or payload["retired_v1_context_reference_schema"]
+        != "cfeg.metadata-calibration-efficiency-v3.context-reference.v1"
+        or payload["retired_v1_context_reference_root_seed"] != 20_260_910
+        or payload["retired_v1_development_root_seed"] != 20_260_909
+        or payload["retired_v1_incident_error"] != "AuthorityError"
+        or payload["retired_v1_incident_message"]
+        != "this governed process role cannot mutate canonical state"
+        or payload["retired_v1_incident_output_sha256"]
+        != _RETIRED_V1_INCIDENT_OUTPUT_SHA256
+        or payload["retired_v1_development_seedsequence_created"] is not False
+        or payload["retired_v1_development_DGP_executed"] is not False
+        or payload["retired_v1_development_result_present"] is not False
+        or payload["retired_v1_experimental_outcome_observed"] is not False
+        or payload["retired_v1_governed_network_accessed"] is not False
+        or payload["retired_v1_continuation_authorized"] is not False
+        or payload["scientific_contract_projection_sha256"]
+        != _SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or payload["scientific_lockbox_authorized"] is not False
         or payload["human_EEG_outcome_authorized"] is not False
     ):
@@ -1415,10 +1638,10 @@ class WorkflowFacade(Protocol):
 @dataclass(slots=True)
 class _ValidatedGraph:
     presence: Mapping[str, bool]
+    retired_v1: Any | None = None
     bundle: Any | None = None
     snapshot: Any | None = None
     reference_rng: Any | None = None
-    development_rng: Any | None = None
     reference_value: Any | None = None
     reference_proof: Any | None = None
     context_reference: Any | None = None
@@ -1617,6 +1840,11 @@ class ProductionFacade:
         facts = self._preflight
         if facts.bundle_payload is not None:
             raise RunnerError("cannot build a replacement for an existing development bundle")
+        _validate_payload_self_hash(value, label="built development bundle")
+        _require_v3_1_bundle_recovery_identity(
+            value,
+            canonical_path=facts.config.bundle_path,
+        )
         required_source = [item.record() for item in facts.source.tracked_files]
         runtime = value.get("numerical_runtime_inventory")
         fingerprint = value.get("numerical_runtime_fingerprint_sha256")
@@ -1721,12 +1949,17 @@ class ProductionFacade:
         model = self._model
         synthetic = self._synthetic
         governance = self._governance
-        reference_rng, development_rng = model.issue_bundle_bound_rng_authorities(
+        if graph.retired_v1 is None:
+            raise RunnerError("context reopen lacks the exact retired V1 inventory")
+        reference_rng = model.issue_bundle_bound_context_reference_rng_authority(
             graph.bundle,
             expected_commit=graph.bundle.clean_commit,
             expected_tree=graph.bundle.clean_tree,
         )
-        payload = synthetic.replay_context_reference_payload(rng_authority=reference_rng)
+        payload = governance.retired_v1_context_reference_payload(graph.retired_v1)
+        replayed = synthetic.replay_context_reference_payload(rng_authority=reference_rng)
+        if _canonical_json_bytes(replayed) != _canonical_json_bytes(payload):
+            raise RunnerError("development-v2 reference differs from deterministic V1 replay")
         reference = model.validate_context_reference_payload(payload)
         proof = model.validate_context_reference_for_publication(
             payload,
@@ -1738,7 +1971,6 @@ class ProductionFacade:
             core_capability=proof,
         )
         graph.reference_rng = reference_rng
-        graph.development_rng = development_rng
         graph.reference_value = reference
         graph.reference_proof = proof
         graph.context_reference = artifact
@@ -1852,6 +2084,7 @@ class ProductionFacade:
         governance = self._governance
         presence = self._presence()
         graph = _ValidatedGraph(presence=presence)
+        graph.retired_v1 = governance.observe_retired_v1_artifacts()
 
         if not presence["bundle"]:
             self._require_no_gap_before(presence, "bundle")
@@ -2049,17 +2282,20 @@ class ProductionFacade:
         _require_preflight_unchanged(self._preflight)
 
     def _publish_context_reference(self, graph: _ValidatedGraph) -> None:
-        if graph.bundle is None:
-            raise RunnerError("context-reference phase lacks development bundle")
+        if graph.bundle is None or graph.retired_v1 is None:
+            raise RunnerError("context-reference phase lacks bundle or retired V1 receipt")
         model = self._model
         synthetic = self._synthetic
         governance = self._governance
-        reference_rng, _ = model.issue_bundle_bound_rng_authorities(
+        reference_rng = model.issue_bundle_bound_context_reference_rng_authority(
             graph.bundle,
             expected_commit=graph.bundle.clean_commit,
             expected_tree=graph.bundle.clean_tree,
         )
-        payload = synthetic.replay_context_reference_payload(rng_authority=reference_rng)
+        payload = governance.retired_v1_context_reference_payload(graph.retired_v1)
+        replayed = synthetic.replay_context_reference_payload(rng_authority=reference_rng)
+        if _canonical_json_bytes(replayed) != _canonical_json_bytes(payload):
+            raise RunnerError("retired V1 reference is not the exact deterministic replay")
         proof = model.validate_context_reference_for_publication(
             payload,
             rng_authority=reference_rng,
@@ -2081,7 +2317,6 @@ class ProductionFacade:
             item is None
             for item in (
                 graph.bundle,
-                graph.development_rng,
                 graph.reference_value,
                 graph.reference_proof,
                 graph.context_reference,
@@ -2089,13 +2324,20 @@ class ProductionFacade:
         ):
             raise RunnerError("development phase lacks an exact validated A graph")
         synthetic = self._synthetic
+        model = self._model
         governance = self._governance
+        development_rng = model.issue_bundle_bound_development_rng_authority(
+            graph.bundle,
+            graph.context_reference,
+            expected_commit=graph.bundle.clean_commit,
+            expected_tree=graph.bundle.clean_tree,
+        )
         contract = synthetic.validate_synthetic_contract()
         synthetic.validate_development_contract(contract)
         payload, proof = synthetic.execute_complete_development(
             contract,
             graph.reference_value,
-            rng_authority=graph.development_rng,
+            rng_authority=development_rng,
             validated_reference=graph.reference_proof,
             context_reference_file_sha256=graph.context_reference.file_sha256,
         )
@@ -2103,14 +2345,14 @@ class ProductionFacade:
             payload,
             development_bundle=graph.bundle,
             context_reference=graph.context_reference,
-            development_rng_authority=graph.development_rng,
+            development_rng_authority=development_rng,
             validated_context_reference=graph.reference_proof,
             core_capability=proof,
         )
         governance.validate_development_result(
             development_bundle=graph.bundle,
             context_reference=graph.context_reference,
-            development_rng_authority=graph.development_rng,
+            development_rng_authority=development_rng,
             validated_context_reference=graph.reference_proof,
             core_capability=proof,
         )
