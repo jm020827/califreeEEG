@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-08 현재 준비: [Known-zero v1](native_subset_known_zero_v1_design.md)의 단일 추론 수정과 독립 scalar 검산기를 구현했다. 신규97/전체1442tests PASS. FULL 동일답의 gain만0, 다른 gain/계수/학습/조건은 그대로이며 corrected-Q를 모든 결측 fallback에 사용한다. 이 단계의 실제 input 접근·수정 후 outcome은0이다. 새 결과 게시/감사까지의 연결은 다음 단계이며, 이전 실험을 재개하지 않는다. 수정후보1개 고정·실제 수정평가0회, held60 미개봉. 아래는 불변인 수정 전 결과다.
+
 > 현재 결과: [envelope-r1 직접 M 평가](native_subset_m_envelope_r1_results.md) 개발39명/4680행 단회 완료·독립 검산 PASS. Primary QM3−Q3=0pp, QM5−Q5=+0.00534pp(기술적95% CI −0.00547~+0.01616)이며 Q/QM의 최초80% 도달 k는 전부 같다. Q3/5는 FULL보다 +2.35/+2.69pp지만 이를 M 효과로 부르지 않는다. 입력 복구 완료·고정 M 효능평가1회·기작수정0회이며 추가 보정비용 절감은 미확립이다. 원 과학계획/SHAM/held60 경계 불변, 전체1345tests PASS. 아래 ‘현재/최신/다음/미실행’은 해당 이전 단계의 역사적 표기다.
 
 > 현재: [native-subset-m-source39-v1 입력 검증 중단](native_subset_m_source39_v1_results.md). 단회 시작 후 원본metadata11-key envelope를6개로 가정한 구현 오류로 종료했다. Source-only metadata bytes는 읽었지만 EEG/fit/성능outcome은 없다. Start-only 산출물 보존·동일attempt재시도없음. 과학목표/방식은 바꾸지 않으며 다음은 명시적인 새 입력-adapter attempt 검토다. 아래 native 결과는 직전 완료 이력이다.

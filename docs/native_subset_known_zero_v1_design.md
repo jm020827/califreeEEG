@@ -118,3 +118,20 @@ primary **수정 QM3−수정 Q3**, 참고 효과1pp와 기술적CI, conditional
 
 Auditor 경로 `/home/whwovy/califreeEEG-wt-known-zero-audit`, branch `codex/native-known-zero-audit-v1`.
 실제 input/결과 접근0이며 기존 worktree/환경/산출물의 삭제·정리·push는 하지 않는다.
+
+## 완료된 검증 기록
+
+- 계약8ee0f22 → main 구현/설계 b51d251 → auditor068cb4a를 edaa9d2로 통합 → main 연결시험2c385ff.
+  파일 소유 중복0, three-way merge preview 충돌0, 최종 root 통합이다. Auditor worktree는 clean으로 보존했다.
+- Main31tests PASS0.23초, 독립 scalar62tests PASS0.09초. 통합97tests PASS0.28초에는 원본
+  `inputs_for_cell`·`predict_gain`→새 family→독립 scalar를 실제로 호출하는 인공 k3/5 시험도 포함한다.
+  Q/M 배열과 계수는 인공값이며, 실제 raw 전처리나 사람 fit freeze를 읽은 것이 아니다.
+- 읽기전용 reviewer의 별도11,151개 유한 인공 경우에서도 exact action과 분기 불변조건/반복 적용이 일치했다.
+- Clean 코드2c385fff4ad9ac8478e4adfb238bfef36adc4472에서 전체 **1442tests PASS151.48초/기존 Torch warnings68개**,
+  Ruff4files lint/format 및 diff check PASS. Temp `/tmp/cfeg-kz-check.ykeqKj/full` 보존.
+- 순수 모듈 SHA `d9830fe97e358eae7f65305feee5776ac7390b0d8eef7ca67a8c4790fbb952ba`,
+  독립 scalar SHA `5c2bb42d0c04a46d316efb940ce58dcf7c65a45b32b2ce75913f2b6951cb2d7a`.
+  기존 과학 JSON/core/producer/auditor/envelope 파일은 변경0이다.
+- 연구공간 claim:e287f6e9db9486b4(qualified)에 코드·인공 검증과 개선/악화 가능성의 증거를 연결했다.
+  Evidence:f6b551b19368ac42/a12a19b42c425c3f/db355dfa827d08fc. Gap은 다음 실제 산출물 연결 단계로 갱신/render했다.
+  이 claim은 실제 EEG의 M 효능 claim이 아니며, 프로그램 전체 연구 완료를 뜻하지 않는다.
