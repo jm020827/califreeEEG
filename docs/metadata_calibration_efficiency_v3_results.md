@@ -37,6 +37,13 @@ Fresh separate process의 읽기 전용 `status`는 exit 0으로 다음 한 줄�
 {"command":"status","durable_phases_advanced":0,"next_command":null,"selected_grid_cell_id":null,"selection_status":"DEVELOPMENT_NO_GO","stage":"DEVELOPMENT_NO_GO","terminal":true}
 ```
 
+이 fresh-process status audit은 이 post-terminal docs-only closeout보다 먼저, bundle A가 묶은
+exact commit `8b3ace24eb4160aa61f3e7bf2af7dc1b74905699`와 tree
+`04895973c140787546d31a72437d8c90982b698f`에서 실행됐다. 이 문서 커밋은 narrative evidence일
+뿐 selected-freeze 또는 source-B scientific transition이 아니다. Governance가 모든 tracked blob을
+inventory하므로 변경된 docs tree에서 canonical governed `status`를 다시 실행해서는 안 되며,
+그런 post-doc 실행을 했다고 주장하지 않는다.
+
 Canonical development-v5 evidence는 다음과 같다.
 
 | Artifact | File SHA-256 | Payload SHA-256 | 추가 관찰 |
