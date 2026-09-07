@@ -1,6 +1,6 @@
 # califreeEEG 연구 실행 계획
 
-> 2026-09-08 다음 단계: [고정 Known-zero 수정](native_subset_known_zero_v1_design.md)의 인공 선택·대조군 검증은 끝났다(신규97/전체1442tests PASS). 동일답 후보의 이득만0으로 만들며 실제 성능 개선은 아직 미측정이다. 다음은 완료된 parent cache/projection/9개 freeze의 exact SHA 재사용 계약, 새 시작/결과 게시 경로, 독립 실제 결과 감사와 serialized 인공 연결 시험이다. 그 뒤에만 한 번의 수정 후 실제 평가를 수행한다. 재학습·새 decoder/threshold/조건 탐색·held60 접근은 없다. 아래는 이전 단계의 이력이다.
+> 2026-09-08 현재 완료: [Known-zero 단일 수정 실제 결과](native_subset_known_zero_source39_results.md)를 개발39명에서 단회 평가하고 독립 전체 검산을 통과했다. 수정 QM−Q는 k3 **0pp**, k5 **+0.01068pp**이며 80% 최초 도달 보정량은312개 사람×조건 모두 같았다. 수정 자체도 k5 정답을 Q2개/QM1개 줄였다. **추가 M 보정비용 절감 미확립으로 이 구현 탐색을 종료한다.** 직접 M 평가1회+기작수정 평가1회 예산을 사용했으며 새 후보/재학습/held60 자동 개봉은 없다. 연구목표는 유지하고 다음 공백은 독립 paired-acquisition 자료와 사전 가설이다. 전체1520tests PASS, 새 독립M자료·외부요청0. 아래는 보존한 이전 단계의 이력이다.
 
 > 현재 완료: [envelope-r1 결과](native_subset_m_envelope_r1_results.md) 개발39명 단회 실행·독립 검산 PASS. 입력11→6 연결만 복구했고 학습수식/SHAM/평가조건은 그대로다. QM3−Q3=0pp, QM5−Q5=+0.00534pp로 유용한 M 순증분과 추가 보정비용 절감을 입증하지 못했다. 다음은 동일답 후보 중복·known-zero gain이라는 관측된 선택 병목이 기작 수정1회를 정당화하는지 명세하는 단계이며, 아직 새 정책/후속 outcome은 없다. 전체1345tests PASS, held60 미개봉. 아래 ‘현재/최신/다음/미승인’은 보존한 이전 실행 이력이다.
 

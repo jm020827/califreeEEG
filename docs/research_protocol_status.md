@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
-> 2026-09-08 현재 준비: [Known-zero v1](native_subset_known_zero_v1_design.md)의 단일 추론 수정과 독립 scalar 검산기를 구현했다. 신규97/전체1442tests PASS. FULL 동일답의 gain만0, 다른 gain/계수/학습/조건은 그대로이며 corrected-Q를 모든 결측 fallback에 사용한다. 이 단계의 실제 input 접근·수정 후 outcome은0이다. 새 결과 게시/감사까지의 연결은 다음 단계이며, 이전 실험을 재개하지 않는다. 수정후보1개 고정·실제 수정평가0회, held60 미개봉. 아래는 불변인 수정 전 결과다.
+> 2026-09-08 현재 완료: [Known-zero 단일 수정 실제 결과](native_subset_known_zero_source39_results.md)를 개발39명에서 단회 평가하고 독립 전체 검산을 통과했다. 수정 QM−Q는 k3 **0pp**, k5 **+0.01068pp**이며 80% 최초 도달 보정량은312개 사람×조건 모두 같았다. 수정 자체도 k5 정답을 Q2개/QM1개 줄였다. **추가 M 보정비용 절감 미확립으로 이 구현 탐색을 종료한다.** 직접 M 평가1회+기작수정 평가1회 예산을 사용했으며 새 후보/재학습/held60 자동 개봉은 없다. 연구목표는 유지하고 다음 공백은 독립 paired-acquisition 자료와 사전 가설이다. 전체1520tests PASS, 새 독립M자료·외부요청0. 아래는 보존한 이전 단계의 이력이다.
 
 > 현재 결과: [envelope-r1 직접 M 평가](native_subset_m_envelope_r1_results.md) 개발39명/4680행 단회 완료·독립 검산 PASS. Primary QM3−Q3=0pp, QM5−Q5=+0.00534pp(기술적95% CI −0.00547~+0.01616)이며 Q/QM의 최초80% 도달 k는 전부 같다. Q3/5는 FULL보다 +2.35/+2.69pp지만 이를 M 효과로 부르지 않는다. 입력 복구 완료·고정 M 효능평가1회·기작수정0회이며 추가 보정비용 절감은 미확립이다. 원 과학계획/SHAM/held60 경계 불변, 전체1345tests PASS. 아래 ‘현재/최신/다음/미실행’은 해당 이전 단계의 역사적 표기다.
 
