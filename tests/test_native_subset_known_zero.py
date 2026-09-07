@@ -254,3 +254,66 @@ def test_rejects_family_boundary_errors(damage):
         gains["QM"][0, 0] = np.nan
     with pytest.raises(ValueError):
         RULE.route_family(pred, gains, masks, shuffle, shuffle_masks)
+
+
+@pytest.mark.parametrize("k", [3, 5])
+def test_real_parent_feature_gain_helpers_to_family_and_independent_scalar(k):
+    """Synthetic arrays/coefficients: no raw processing or frozen human fits."""
+    oracle = load("audit_native_subset_known_zero")
+    plan = json.loads((ROOT / "configs/analysis/native_subset_m_source39_v1.json").read_text())
+    rng = np.random.default_rng(641 + k)
+    bi, p, i, w, fold = int(k == 5), 0, 1, 2, 0
+    cache = {"q_features": np.zeros((1, 2, 4, 2, 5, 5, 12, 33))}
+    q = rng.normal(size=(k, 60, 33))
+    pred = rng.integers(0, 12, (k + 1, 60))
+    pred[1, ::2] = pred[0, ::2]
+    q[..., 17] = (pred[1:] == pred[0]).astype(float)
+    cache["q_features"][p, i, w, bi, :k] = q.reshape(k, 5, 12, 33)
+    z = rng.uniform(0.0, 80.0, (1, 2, 10, 8))
+    z[p, i, 6] = np.nan  # Exactly one query block requires fallback.
+    scaler = OLD.fit_metadata_scaler(z, [p])
+    models = {}
+    for mode in ("Q", "QM", "SHAM_REFIT"):
+        coef = rng.normal(scale=0.1, size=70)
+        if mode == "Q":
+            coef[34:] = 0.0
+        models[mode] = {
+            "feature_mean": [0.0] * 69,
+            "feature_scale": [1.0] * 69,
+            "coef": coef.tolist(),
+        }
+    model_snapshot = copy.deepcopy(models)
+    gains, fallback = {}, {}
+    for mode in RULE.MODES:
+        x, missing = OLD.inputs_for_cell(cache, z, plan, scaler, p, i, w, bi, mode, fold)
+        gains[mode] = OLD.predict_gain(x, models["QM" if mode == "M_STALE" else mode])
+        if mode != "Q":
+            fallback[mode] = missing
+            assert missing.sum() == 12
+    maps = OLD.support_maps(z[p, i, :k])
+    assert len(maps) == k - 1
+    shuffle_gains, shuffle_fallbacks = [], []
+    for mapping in maps:
+        x, missing = OLD.inputs_for_cell(cache, z, plan, scaler, p, i, w, bi, "QM", fold, mapping)
+        shuffle_gains.append(OLD.predict_gain(x, models["QM"]))
+        shuffle_fallbacks.append(missing)
+    args = pred, gains, fallback, shuffle_gains, shuffle_fallbacks
+    actual, expected = RULE.route_family(*args), oracle.route_family_scalar(*args)
+    for mode in actual["actions"]:
+        np.testing.assert_array_equal(actual["actions"][mode], expected["actions"][mode])
+    for first, second in zip(actual["shuffle_actions"], expected["shuffle_actions"]):
+        np.testing.assert_array_equal(first, second)
+    assert models == model_snapshot
+
+
+@pytest.mark.parametrize("k", [3, 5])
+def test_independent_scalar_exact_match_and_class_relabeling(k):
+    oracle = load("audit_native_subset_known_zero")
+    rng = np.random.default_rng(816 + k)
+    pred = rng.integers(0, 12, (k + 1, 513))
+    pred[1, ::3] = pred[0, ::3]
+    gains = np.round(rng.normal(size=(k, 513)), 10)
+    action = RULE.choose_known_zero(gains, pred)
+    np.testing.assert_array_equal(action, oracle.choose_known_zero_scalar(gains, pred))
+    permutation = rng.permutation(12)
+    np.testing.assert_array_equal(action, RULE.choose_known_zero(gains, permutation[pred]))
