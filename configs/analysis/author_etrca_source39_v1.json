@@ -1,0 +1,360 @@
+{
+  "schema": "cfeg.author-etrca-source.plan.v1",
+  "study_id": "author-etrca-source39-v1",
+  "evidence_role": "previously_exposed_development_author_implementation_compatibility_not_confirmation",
+  "authority": {
+    "basis": "2026-09-07 user: 응 시작.",
+    "scope": "one unchanged toolbox ETRCA family and native SCCA anchor on explicit source39, native-style check and two predefined bridges",
+    "metadata_access": false,
+    "held_access": false,
+    "retired_access": false,
+    "old_runner_or_seal_access": false,
+    "automatic_promotion": false
+  },
+  "source_subject_ids": [
+    4,
+    6,
+    8,
+    11,
+    14,
+    21,
+    22,
+    25,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    37,
+    41,
+    42,
+    43,
+    44,
+    46,
+    54,
+    55,
+    56,
+    61,
+    63,
+    65,
+    67,
+    73,
+    74,
+    77,
+    80,
+    82,
+    83,
+    84,
+    89,
+    92,
+    97,
+    100,
+    102
+  ],
+  "raw_root": "/home/whwovy/eeg-data/raw/wearable",
+  "raw_filename": "S{subject:03d}.mat",
+  "raw_shape": [
+    8,
+    710,
+    2,
+    10,
+    12
+  ],
+  "loader": "scipy.io.loadmat exact non-symlink allowlisted file, variable_names=['data'], squeeze_me=False,mat_dtype=False,verify_compressed_data_integrity=True; no automatic fallback or file search; real numeric finite array; record stored dtype and convert directly to float64, no float32 intermediate",
+  "sfreq": 250,
+  "interfaces": [
+    "dry",
+    "wet"
+  ],
+  "channel_names": [
+    "POz",
+    "PO3",
+    "PO4",
+    "PO5",
+    "PO6",
+    "Oz",
+    "O1",
+    "O2"
+  ],
+  "frequencies": [
+    9.25,
+    11.25,
+    13.25,
+    9.75,
+    11.75,
+    13.75,
+    10.25,
+    12.25,
+    14.25,
+    10.75,
+    12.75,
+    14.75
+  ],
+  "phases_pi": [
+    0,
+    0,
+    0,
+    0.5,
+    0.5,
+    0.5,
+    1,
+    1,
+    1,
+    1.5,
+    1.5,
+    1.5
+  ],
+  "sample_counts": [
+    125,
+    188,
+    250,
+    500
+  ],
+  "budgets": [
+    3,
+    5
+  ],
+  "support_blocks": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "query_blocks": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "preprocessing": {
+    "raw_start": 125,
+    "signal_start": 160,
+    "history_samples": 35,
+    "operator": "for EACH N separately raw[:,125:160+N] -> unchanged native preprocess (47–53Hz Cheby1 bandstop) -> unchanged native filterbank(5) with detrend/ddof1 zscore -> discard35 samples; shape[5,8,N]; no extra filtering/resampling/centering",
+    "bands_hz": [
+      [
+        9,
+        90
+      ],
+      [
+        18,
+        90
+      ],
+      [
+        27,
+        90
+      ],
+      [
+        36,
+        90
+      ],
+      [
+        45,
+        90
+      ]
+    ],
+    "claim_boundary": "query-end bounded and .14s available history, within-window filtfilt, upstream downsampling not independently verified; not full acquisition causality"
+  },
+  "upstream": {
+    "root": "/home/whwovy/ssvep-author-compatibility-20260907/upstream",
+    "revision": "3344bd199daf78888e364d9db00ae7d8128d2b5f",
+    "license": "README CC BY-NC-SA4.0; toolbox-author Python implementation, not original2018authorMATLAB",
+    "pins": {
+      "SSVEPAnalysisToolbox/algorithms/trca.py": "49f67828ff5da4156c0a86d829e9f0dc80d74ba6a4b1c7dcba1e23890dbe342b",
+      "SSVEPAnalysisToolbox/algorithms/cca.py": "acb5434c218a374a6ff4ceb4409c953e1f736efac7ecf01febd605aba08b30ab",
+      "SSVEPAnalysisToolbox/utils/wearablepreprocess.py": "248b40b6a5e8e2e6b55b890a40263549f593ca46ad8bec6accc7b3f1ea2260ac"
+    }
+  },
+  "methods": {
+    "A0_author": "unchanged SCCA_canoncorr(n_component=1,n_jobs=None,force_output_UV=False,update_UV=True); fit(ref_sig) only; native gen_ref_sin(f,250,N,5,phase*pi) starting at t0, no extra latency shift; native sum(weight*rho), NOT rho^2",
+    "ETRCA": "unchanged ETRCA(n_jobs=None); fit first k labeled block trials, or9LOBO blocks; native ensemble Q-normalized classfilters, native sum(weight*r); no ridge/temperature/fusion/update",
+    "weights": {
+      "A0_author": {
+        "dry": [
+          1.25,
+          0.5,
+          0.3611111111111111,
+          0.3125,
+          0.29
+        ],
+        "wet": [
+          1,
+          0.42044820762685725,
+          0.25327856188386416,
+          0.1767766952966369,
+          0.1337480609952844
+        ]
+      },
+      "ETRCA": {
+        "dry": [
+          1.25,
+          0.6704482076268572,
+          0.5032785618838642,
+          0.42677669529663687,
+          0.3837480609952844
+        ],
+        "wet": [
+          1.5,
+          0.7973017787506802,
+          0.6462304458836103,
+          0.5883883476483185,
+          0.5598139512488488
+        ]
+      }
+    },
+    "weight_scope": "native method-specific public presets, not identical A0/ETRCA weights or source39-only tuning; whole-cohort inherited tuning caveat; comparison is pipeline-level practical difference, not calibration-only causal decomposition",
+    "wrong_control": "11 cyclic candidate-score rotations, average BA metrics not posterior; ETRCA ensemble-label equivariance checked on fixture, no human wrong-label refit; diagnostic only"
+  },
+  "stages": [
+    {
+      "id": "native_lobo_2s",
+      "n_samples": 500,
+      "support": "all9blocks except whole queryblock",
+      "query": "all10 heldoutblocks; all12classes; interfacesseparate",
+      "views": [
+        "all10",
+        "last5"
+      ],
+      "interpretation": "native-style offline retrospective cross-validation, not first-user chronological calibration; last5 matches bridge queryIDs"
+    },
+    {
+      "id": "bridge_chronological_2s",
+      "n_samples": 500,
+      "budgets": [
+        3,
+        5
+      ],
+      "query_blocks": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "interpretation": "changes supportcount AND chronology; no single-factor causal attribution"
+    },
+    {
+      "id": "bridge_short_windows",
+      "sample_counts": [
+        125,
+        188,
+        250
+      ],
+      "budgets": [
+        3,
+        5
+      ],
+      "query_blocks": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "interpretation": "same native per-window preprocessing rule, recompute before crop; not2s-filterthenshortcrop; no window winner selection"
+    }
+  ],
+  "cache": {
+    "filename": "correlations.npz",
+    "a0_r": {
+      "shape": [
+        39,
+        2,
+        4,
+        10,
+        12,
+        5,
+        12
+      ],
+      "axes": [
+        "participant",
+        "interface",
+        "window",
+        "block",
+        "true_class",
+        "band",
+        "candidate"
+      ]
+    },
+    "etrca_lobo_r": {
+      "shape": [
+        39,
+        2,
+        10,
+        12,
+        5,
+        12
+      ],
+      "axes": [
+        "participant",
+        "interface",
+        "query_block",
+        "true_class",
+        "band",
+        "candidate"
+      ]
+    },
+    "etrca_chrono_r": {
+      "shape": [
+        39,
+        2,
+        4,
+        2,
+        5,
+        12,
+        5,
+        12
+      ],
+      "axes": [
+        "participant",
+        "interface",
+        "window",
+        "budget",
+        "query_block_position",
+        "true_class",
+        "band",
+        "candidate"
+      ]
+    }
+  },
+  "reporting": {
+    "schema": "cfeg.author-etrca-source.result.v1",
+    "expected_rows": 2028,
+    "rows": "participant,stage,view,interface,n_samples,method,k,ba,query_count,label_count; methods A0_author/ETRCA/ETRCA_rotated; nativeall10,last5 12rows perparticipant; chronology4windows*2interfaces*5method-budgets=40rows",
+    "summaries": "equal participant mean BA and descriptive t95 CI perrowkey; no efficacy PASS gate; report allconditions",
+    "contrasts": "ETRCA3/5-A0 and ETRCA5-3 perchrono cell; nativeETRCA9-A0 perview/interface; chrono3/5-native9 last5 at2s; eachshortN-minus2s perinterface/method-budget",
+    "harm": "perparticipant chrono ETRCA3/5-A0 deltas percell and equalcell mean; report counts no personal guarantee",
+    "attainment": "chronology only first observed0/3/5 >=.8 else null(>5); k0 aliases A0, no inventedk1/no monotonic interpolation; perparticipant cell",
+    "cost": "12klabels and12k*N/250retainedseconds, separate12k*.14history; native9=108labelsperLOBO fit NOT deployablecurve/totalwallclock saving",
+    "status": "COMPATIBILITY_ASSESSMENT_COMPLETE means completed computation only, not efficacy, Mvalue, SOTA or exactpaperreproduction",
+    "no_early_auc": true,
+    "no_efficacy_or_selection_gate": true
+  },
+  "execution": {
+    "python": "/home/whwovy/ssvep-author-compatibility-20260907/.venv/bin/python",
+    "python_version": "3.9.21",
+    "requirements": "configs/environments/ssvep_toolbox_compatibility_requirements.txt",
+    "workers": 4,
+    "blas_threads": 1,
+    "output_root": "/home/whwovy/author-etrca-artifacts/source39-v1",
+    "artifacts": [
+      "start.json",
+      "correlations.npz",
+      "result.json"
+    ],
+    "publication": "new outputdir and exclusive start before raw open; bind clean source/plan/upstream; final readonly artifacts; fail if path exists; failures remain explicit partialattempt, no silentretry or fallback",
+    "resource_budget_bytes": 1073741824,
+    "expected_memory_budget_bytes": 2147483648,
+    "expected_runtime_ceiling_seconds": 1800,
+    "study_rng": "none",
+    "forbidden_imports": [
+      "SSVEPAnalysisToolbox.datasets",
+      "SSVEPAnalysisToolbox.evaluator",
+      "cfeg"
+    ],
+    "failure": "nonfinite/numeric failure -> explicit infrastructure_or_data_inconclusive, keeppartialstart, no silentregularization, skip or bestsubject selection"
+  }
+}
