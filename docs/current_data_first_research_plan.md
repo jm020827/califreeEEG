@@ -28,7 +28,8 @@ acquisition metadata는 이를 위한 수단이다. **새 독립 paired-M 확보
 
 고정 계약: `configs/analysis/native_subset_headroom_source39_v1.json`.
 입력은 완료 envelope-r1 `features.npz`와 known-zero `result.json` 두 SHA고정 파일만이다.
-기존 Q/QM 최종 actions의 BA를 원 결과와 먼저 맞추며, 새 선택 gain/학습/metadata변환은 계산하지 않는다.
+**Known-zero 수정 후** Q/QM 최종 actions의 BA를 해당 결과와 먼저 맞춘다. 원 envelope-r1의
+수정 전 actions와 혼동하지 않으며, 새 선택 gain/학습/metadata변환은 계산하지 않는다.
 기존 signed native 가중치·float64 dot·argmax 동률순서·class/block 순서를 그대로 쓴다.
 k3는 FULL＋3개 omission, k5는 FULL＋5개 omission이며 padding/A0를 후보에 더하지 않는다.
 
