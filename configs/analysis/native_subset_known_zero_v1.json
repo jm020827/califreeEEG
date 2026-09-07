@@ -1,0 +1,106 @@
+{
+  "schema": "cfeg.native-subset-known-zero.mechanism.v1",
+  "revision_id": "native-subset-known-zero-v1",
+  "status": "prospective_mechanism_contract_no_human_execution_entrypoint",
+  "authority": {
+    "basis": "2026-09-08 user 응 계속 그렇게하자 following bounded same-answer mechanism review",
+    "scope": "specify and artificially validate the single inference-only structural-policy revision",
+    "human_outcome_execution": false,
+    "new_raw_or_metadata_access": false,
+    "held_access": false,
+    "retired_access": false,
+    "old_entrypoint_execution": false,
+    "automatic_promotion": false
+  },
+  "parent": {
+    "science_path": "configs/analysis/native_subset_m_source39_v1.json",
+    "science_sha256": "ee9b758f755a18f7540c978e9faf18a5711e652948b94df595377bbfb83cb80a",
+    "core_path": "scripts/native_subset_m_core.py",
+    "core_sha256": "20a3e3e505f00c2c43af51a5166457031838e4140cf7af15cdb2f427df904014",
+    "completed_attempt": "native-subset-m-source39-v1-envelope-r1",
+    "execution_commit": "81ccfa8919391917a9c4870e274b2b9465a48ee7",
+    "result_sha256": "e7ec3e37eab995b8c18da5c390123fb357cf0b3893ee7140427a2af4c07354af",
+    "fit_freezes_sha256": "199feee618c9539cabd8809cd79b9b553066d64160100651a2e5154b9d073eed",
+    "randomization_namespace": "native-subset-m-source39-v1"
+  },
+  "rule": {
+    "gain_input": "unchanged frozen predict_gain output, finite float64 already rounded to10decimals",
+    "prediction_input": "integer native-score argmax class IDs0..11, shape[k+1,queries]; row0 FULL then original omission order",
+    "budgets": [
+      3,
+      5
+    ],
+    "alias_mask": "expert_predictions[1:] == expert_predictions[0]",
+    "projection": "exact+0.0 for FULL-equivalent omissions, unchanged rounded gains elsewhere",
+    "selection": "max among FULL0 then projected omissions; first-index argmax retains FULL on nonpositive and ties",
+    "fallback": "apply after projection; QM/SHAM_REFIT/M_STALE/every shuffle use corrected Q actions wherever their own original fallback is true",
+    "missing": "M_MISSING is exact corrected-Q actions",
+    "controls": "same prediction mask for all methods and each unchanged shuffle map; average shuffle metrics after per-map routing as before",
+    "forbidden": [
+      "truth labels or outcome-dependent inputs",
+      "refitting coefficients/scalers/normalizers",
+      "training only on disagreement rows",
+      "changing features/weights/penalty/precision/folds/namespace",
+      "deduplicating non-FULL-equivalent predictions",
+      "new models/windows/subjects/thresholds",
+      "changing class scores",
+      "old scientific file or attempt mutations"
+    ]
+  },
+  "api": {
+    "module": "scripts/native_subset_known_zero.py",
+    "functions": [
+      "project_gains(rounded_gains, expert_predictions)",
+      "choose_known_zero(rounded_gains, expert_predictions)",
+      "route_family(expert_predictions, gains_by_mode, fallback_by_mode, shuffled_gains, shuffled_fallbacks)"
+    ],
+    "mode_keys": [
+      "Q",
+      "QM",
+      "SHAM_REFIT",
+      "M_STALE"
+    ],
+    "fallback_keys": [
+      "QM",
+      "SHAM_REFIT",
+      "M_STALE"
+    ],
+    "return_keys": [
+      "actions",
+      "shuffle_actions"
+    ],
+    "actions_keys": [
+      "Q",
+      "QM",
+      "SHAM_REFIT",
+      "M_STALE",
+      "M_MISSING"
+    ],
+    "shuffle_identity": "caller supplies at least one intervention; unavailable-map identity evaluation is retained, availability reporting remains caller-owned"
+  },
+  "pre_outcome_checks": [
+    "all12possibletruth labels prove alias correctness gain0 withouttruth input",
+    "artificial repair/harm/wrong-to-wrong demonstrate no monotonic utility promise",
+    "old FULL or nonalias winners retain exact action",
+    "only oldalias winners may change class and only to positive nonalias",
+    "negative aliases become0 but cannot win a FULL tie",
+    "idempotence,inputimmutability,finite/shape/type rejection,query permutation",
+    "allmethods/eachshuffle gated and allfallbacks use correctedQ",
+    "independent scalar oracle matches vectorized selector and family routing",
+    "old scientific files and all old outcomes preserved"
+  ],
+  "future_evaluation": {
+    "required_before_input_access": "separate exact parent-artifact reuse and new output/publication/auditor contract; current module has no human execution entrypoint",
+    "fit_policy": "reuse exact all9 old coefficient/scaler/normalizer freezes without refitting",
+    "endpoints": "retain all120summary/153contrasts/624diagnostics/1248attainment; primary all8equal-weight QM3−Q3; common correctedQ comparator; original1pp and1/60 references;36/60labels unchanged",
+    "new_diagnostics": "permethod oldalias winners, projectedgain changes, actionchanges, predictionchanges, repairs/harms; never use diagnostics to selectconditions",
+    "inference": "repeatedly exposed development only; no independentconfirmation or family-wise error guarantee",
+    "stop": "one completed revised outcome then program review regardless ofsign; no extra structural/model sweep; if only Q improves do not attribute toM"
+  },
+  "budget": {
+    "mechanistic_revision_slots": 1,
+    "selected_revision": 1,
+    "revised_human_outcomes_completed": 0,
+    "additional_scientific_variants": 0
+  }
+}
