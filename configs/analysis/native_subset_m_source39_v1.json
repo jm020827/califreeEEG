@@ -1,0 +1,446 @@
+{
+  "schema": "cfeg.native-subset-m.plan.v1",
+  "study_id": "native-subset-m-source39-v1",
+  "evidence_role": "adaptively_exposed_development_not_confirmation",
+  "authority": {
+    "basis": "2026-09-07 user 시작 after nativecompatibilitycloseout",
+    "metadata_access": true,
+    "source_projection_reuse": true,
+    "baseline_cache_read": true,
+    "held_access": false,
+    "retired_access": false,
+    "manifest_or_full_impedance_access": false,
+    "old_runner_or_seal_access": false,
+    "automatic_promotion": false
+  },
+  "source_subject_ids": [
+    4,
+    6,
+    8,
+    11,
+    14,
+    21,
+    22,
+    25,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    37,
+    41,
+    42,
+    43,
+    44,
+    46,
+    54,
+    55,
+    56,
+    61,
+    63,
+    65,
+    67,
+    73,
+    74,
+    77,
+    80,
+    82,
+    83,
+    84,
+    89,
+    92,
+    97,
+    100,
+    102
+  ],
+  "raw_root": "/home/whwovy/eeg-data/raw/wearable",
+  "raw_filename": "S{subject:03d}.mat",
+  "raw_shape": [
+    8,
+    710,
+    2,
+    10,
+    12
+  ],
+  "source_projection": {
+    "path": "/home/whwovy/context-template-artifacts/source39-v1/source-projection.json",
+    "sha256": "1082a81d23ebffe26e8451a9e99f1a7d4c84d0ba2d9d00c6695b3a5c6a5114d4",
+    "manifest_sha256": "0355cc8d7d9d9e2a8af59b71f8ffdef800d08c6b05339c08487ff19e3e5de71e",
+    "packets": 780,
+    "returned_rows": 9360,
+    "columns": [
+      "subject_id",
+      "electrode_type",
+      "run_id",
+      "impedance_kohm_by_channel",
+      "headband_order",
+      "condition_period"
+    ],
+    "native_channel_ids": [
+      56,
+      55,
+      57,
+      54,
+      58,
+      62,
+      61,
+      63
+    ],
+    "provenance": "previouslyverifiedsource39projection; inherits float32 impedance precision; no freshindependentM; not raw-original-precisionreplay"
+  },
+  "baseline_reference": {
+    "path": "/home/whwovy/author-etrca-artifacts/source39-v1/correlations.npz",
+    "sha256": "5e4197d2de7b05130a36a2bd980d395db1adc62dcec9beca2c1dc7f7cca8b21f",
+    "agreement": "newa0_r equals olda0_r[:,:,:,5:10]; newexpert_r[:,:,:,:,0] equals oldetrca_chrono_r; exactrawIDs/nativeparameters; require maxabs<=1e-12 andexactargmax, nooldrunner"
+  },
+  "sfreq": 250,
+  "interfaces": [
+    "dry",
+    "wet"
+  ],
+  "channel_names": [
+    "POz",
+    "PO3",
+    "PO4",
+    "PO5",
+    "PO6",
+    "Oz",
+    "O1",
+    "O2"
+  ],
+  "frequencies": [
+    9.25,
+    11.25,
+    13.25,
+    9.75,
+    11.75,
+    13.75,
+    10.25,
+    12.25,
+    14.25,
+    10.75,
+    12.75,
+    14.75
+  ],
+  "phases_pi": [
+    0,
+    0,
+    0,
+    0.5,
+    0.5,
+    0.5,
+    1,
+    1,
+    1,
+    1.5,
+    1.5,
+    1.5
+  ],
+  "sample_counts": [
+    125,
+    188,
+    250,
+    500
+  ],
+  "budgets": [
+    3,
+    5
+  ],
+  "query_blocks": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "preprocessing": {
+    "raw_start": 125,
+    "signal_start": 160,
+    "history_samples": 35,
+    "operator": "for EACH N separately raw[:,125:160+N] -> unchanged native preprocess (47–53Hz Cheby1 bandstop) -> unchanged native filterbank(5) with detrend/ddof1 zscore -> discard35 samples; shape[5,8,N]; no extra filtering/resampling/centering",
+    "bands_hz": [
+      [
+        9,
+        90
+      ],
+      [
+        18,
+        90
+      ],
+      [
+        27,
+        90
+      ],
+      [
+        36,
+        90
+      ],
+      [
+        45,
+        90
+      ]
+    ],
+    "claim_boundary": "query-end bounded and .14s available history, within-window filtfilt, upstream downsampling not independently verified; not full acquisition causality"
+  },
+  "upstream": {
+    "root": "/home/whwovy/ssvep-author-compatibility-20260907/upstream",
+    "revision": "3344bd199daf78888e364d9db00ae7d8128d2b5f",
+    "license": "README CC BY-NC-SA4.0; toolbox-author Python implementation, not original2018authorMATLAB",
+    "pins": {
+      "SSVEPAnalysisToolbox/algorithms/trca.py": "49f67828ff5da4156c0a86d829e9f0dc80d74ba6a4b1c7dcba1e23890dbe342b",
+      "SSVEPAnalysisToolbox/algorithms/cca.py": "acb5434c218a374a6ff4ceb4409c953e1f736efac7ecf01febd605aba08b30ab",
+      "SSVEPAnalysisToolbox/utils/wearablepreprocess.py": "248b40b6a5e8e2e6b55b890a40263549f593ca46ad8bec6accc7b3f1ea2260ac"
+    }
+  },
+  "native_weights": {
+    "A0_author": {
+      "dry": [
+        1.25,
+        0.5,
+        0.3611111111111111,
+        0.3125,
+        0.29
+      ],
+      "wet": [
+        1,
+        0.42044820762685725,
+        0.25327856188386416,
+        0.1767766952966369,
+        0.1337480609952844
+      ]
+    },
+    "ETRCA": {
+      "dry": [
+        1.25,
+        0.6704482076268572,
+        0.5032785618838642,
+        0.42677669529663687,
+        0.3837480609952844
+      ],
+      "wet": [
+        1.5,
+        0.7973017787506802,
+        0.6462304458836103,
+        0.5883883476483185,
+        0.5598139512488488
+      ]
+    }
+  },
+  "native_pool": {
+    "order": "expert0=full firstk blocks; expert j+1=firstk excluding blockj; keptblocksascending/class0..11; k3valid4experts,k5valid6; paddedexpert/drop slots exact0",
+    "operation": "unchangednativeETRCA fits/predicts shared byallarms; noMfitweights, templateedits ornewbasefamily; each experttrain2/3/4/5trialsperclass; finalhardselector isNEWwrapper",
+    "scores": "native per-trial weights_row @ r; divide bysumweights ONLY forQfeatures; all emittedclassvectors areoriginalnativeexpert scores; nofusion/temperature",
+    "label_cost": "allacquired12klabels evenwhenoneblockomitted",
+    "a0": "unchangedSCCA_canoncorr(force_output_UV=False,update_UV=True,n_component=1,n_jobs=None),fitrefonly, nativegen_ref_sin5harmonics"
+  },
+  "q_features": {
+    "names": [
+      "wet",
+      "window_n_over_500",
+      "k_over_5",
+      "query_block_over_9",
+      "omitted_block_over_4",
+      "age_over_9",
+      "headband_order_wet",
+      "period_second",
+      "full_max",
+      "full_margin",
+      "full_std",
+      "a0_max",
+      "a0_margin",
+      "full_agrees_a0",
+      "omit_max",
+      "omit_margin",
+      "score_change_rms",
+      "omit_agrees_full",
+      "omit_agrees_a0",
+      "max_delta",
+      "margin_delta",
+      "omitted_true_corr",
+      "retained_true_corr",
+      "omitted_true_margin",
+      "retained_true_margin",
+      "dq_omitted",
+      "dq_retained_mean",
+      "dq_delta",
+      "class_consistency_mean",
+      "class_consistency_min",
+      "margin_delta_squared",
+      "dq_delta_times_consistency",
+      "true_margin_delta_times_margin_delta"
+    ],
+    "dimension": 33,
+    "shared_context": "interface,N,k,currentqueryblock,omissionblock/age,headbandorder/period are identically available toQ/QM/SHAM; not contextblindEEGonly",
+    "score_statistics": "normalizednativeweightedlinearcorrelations; margin=max-secondmax; stdpopulationddof0; rms=sqrt(mean_class((omit-full)^2)); agreementargmax firsttie; deltasomit-full",
+    "support_quality": "nativeSCCAall10blocks: perblock mean12trueclass score and trueclass score-minus-maxother over knownsupportlabels; retainedmeanoverfirstkexceptomitted; noquerylabel",
+    "covariance": "nativefirstband eachtrial timecenter; C=XX.T/(N-1); scale=max(trace(C)/8,1e-12); S=.8C+.2trace(C)/8*I+scale*1e-8*I; eighlog; blockmean12logmatrices; dq_b=log1p(Frobenius(logSquery-blockmean)^2/8); retainedmeanofindividualdq; delta=omitted-retainedmean",
+    "consistency": "for eachknownclass, nativefiltered omittedtrial vs arithmeticmeanretainedtrials: perband globalflatten-center Pearson, zeroifdenominator0; mean5band withnativeETRCA normalizedweights; then mean/min12classes",
+    "interactions": "margin_delta^2; dq_delta*class_consistency_mean; (omitted_true_margin-retained_true_margin)*margin_delta"
+  },
+  "m_features": {
+    "names": [
+      "delta_squared_impedance_distance_ch0",
+      "delta_squared_impedance_distance_ch1",
+      "delta_squared_impedance_distance_ch2",
+      "delta_squared_impedance_distance_ch3",
+      "delta_squared_impedance_distance_ch4",
+      "delta_squared_impedance_distance_ch5",
+      "delta_squared_impedance_distance_ch6",
+      "delta_squared_impedance_distance_ch7",
+      "omitted_minus_retained_logz_ch0",
+      "omitted_minus_retained_logz_ch1",
+      "omitted_minus_retained_logz_ch2",
+      "omitted_minus_retained_logz_ch3",
+      "omitted_minus_retained_logz_ch4",
+      "omitted_minus_retained_logz_ch5",
+      "omitted_minus_retained_logz_ch6",
+      "omitted_minus_retained_logz_ch7",
+      "query_logz_ch0",
+      "query_logz_ch1",
+      "query_logz_ch2",
+      "query_logz_ch3",
+      "query_logz_ch4",
+      "query_logz_ch5",
+      "query_logz_ch6",
+      "query_logz_ch7",
+      "query_valid_fraction",
+      "omitted_valid_fraction",
+      "retained_valid_fraction",
+      "omitted_distance_mean",
+      "retained_distance_mean",
+      "omitted_retained_abs_mean",
+      "margin_delta_times_omitted_distance_mean",
+      "margin_delta_times_retained_distance_mean",
+      "margin_delta_times_omitted_retained_abs_mean",
+      "class_consistency_mean_times_omitted_distance_mean",
+      "class_consistency_mean_times_retained_distance_mean",
+      "class_consistency_mean_times_omitted_retained_abs_mean"
+    ],
+    "dimension": 36,
+    "fit_scale": "perinterface/channel median andIQR(log1p(z)) over unique10blockpackets of fit26; floorIQR.1; nofinitefit=>median0/scale.1/availablefalse",
+    "z": "clip((log1p(z)-median)/IQR,-8,8); validfinitez>=0andfit_available; missingcontribution0",
+    "channel_operations": "omit_sq=valid(query)&valid(omitted)*(zomit-zquery)^2; retained_sq=mean retainedblocks of masked squared distance, denominator k-1 including missingzeros; delta_sq=omit_sq-retained_sq; retained_z=mean validretainedz perchannel else0; omitted_minus_retained masked validboth; query_z maskedvalid",
+    "scalars": "query/omitted/retainedvalidfractions over8channels (retainedover(k-1)*8); mean8omit_sq;mean8retained_sq;mean8abs(omitted_minus_retained)",
+    "interactions": "each of Q margin_delta and class_consistency_mean multiplied byeach final3Mscalars; exactly6",
+    "missing": "ifnocurrentquery/supportcommonvalidfitavailablechannel anywhere inprefix, use fittedQroute EXACTLY; don't merely zeroQMinputs; partialmissing usesmaskedfeatures; zeroimpedancevalid"
+  },
+  "selector": {
+    "kind": "fixed hard relative-utility ridge; onecandidatefamily",
+    "q_dimension": 33,
+    "total_dimension": 69,
+    "coefficient_slots": 70,
+    "objective": "meanweighted(DeltaCorrect-Xbeta)^2 +.1*sum_nonintercept(beta^2); weights equal participant*8cells*2budgets; withinunit equal60queries andkdropcandidates; totalweightsum1",
+    "ridge_lambda": 0.1,
+    "normalization": "fit-only weightedpopulationmean/std percolumn; std<1e-12=>1; clip standardizedinputs[-10,10]; prependintercept1; Q extraMslots exact0; SHAMfullMdimension; nohyperselection orvalidationearlystop",
+    "target": "correct(omissionexpert)-correct(fullprefix), {-1,0,1}; fitparticipantquerylabels only",
+    "route": "round predictedgain to10decimalplaces; fullprefix utility0; argmax([0,g_drop0,...]) firsttie/fullwins; evaluate eachcurrentqueryindependently; entireselectednativeclassscorevector unchanged",
+    "capacity": "samecoefficientstorage/ridge/fitmass, Q lower effectivefeaturedimension explicitly; dimensionmatchedSHAMrefit controls numeric-supportassociation conditionalon genuinequeryM/masks, notpurecapacityorallMnull"
+  },
+  "folds": {
+    "count": 3,
+    "assignment": "sorted39position modulo3; fit26/eval13; samepartitionsallconditions",
+    "freezing": "fitall3 Q/QM/SHAM transforms+coefficients andpublishfold-freezes beforeanyouterBA/diagnostic; nooutertuning",
+    "randomness": "none inlearner/native; deterministicSHAselects shammaps, not an inputfeature; nohumanoracle"
+  },
+  "controls": {
+    "methods": [
+      "A0_author",
+      "FULL",
+      "Q",
+      "QM",
+      "SHAM_REFIT",
+      "M_SHUFFLE",
+      "M_STALE",
+      "M_MISSING"
+    ],
+    "shuffle_family": "withinparticipant/interface firstk supportpackets groupedbyidentical8channelfinite-mask; Cartesianproduct of pergroupcyclicrotations0..size-1 excludingglobalidentity, sortedtuplemaps; singletonfixed; querypacket/missingmask/EEG/Q/order fixed; nofuturepacket",
+    "sham": "samefamily chosen byint(sha256('native-subset-m-source39-v1|fold|subject|interface|k'),16)%n_maps; ifnoneidentitywithunavailableflag; sourcefitandoutertransform usesownparticipantmap; fitSHAM separatelysamebudget",
+    "eval_shuffle": "correcttrainedQM, each admissiblemap independentlyfeatures/route/BA; averageBA anddiagnostics acrossmaps, neveravgutilities/scoresbeforeargmax; nofamily=>identityreportcontrolunavailable; all39retained",
+    "stale": "replacequeryimpedance withlastavailablesupportblock k-1, keeporiginalquerymissingmask (additional missinglastsupport staysmissing); normalfallbackpolicy",
+    "order": "all chronology/headbandorder/period presentinmatchedQ; noadditional Q_no_orderfit oridentityevidence",
+    "missing": "exactQaliasesbothk; nofabricatedM0/k1",
+    "claim_boundary": "shufflingtests numericSUPPORTpacketalignment givenqueryM/masks/context, notmaskinformation/allMrandomization; reportgenuinelychangedassignments/feature/routing/prediction coverage"
+  },
+  "cache": {
+    "a0_r": {
+      "shape": [
+        39,
+        2,
+        4,
+        5,
+        12,
+        5,
+        12
+      ],
+      "dtype": "float64",
+      "axes": "participant,interface,window,queryblock,trueclass,band,candidateclass"
+    },
+    "expert_r": {
+      "shape": [
+        39,
+        2,
+        4,
+        2,
+        6,
+        5,
+        12,
+        5,
+        12
+      ],
+      "dtype": "float64",
+      "axes": "participant,interface,window,budget,expert,queryblock,trueclass,band,candidateclass"
+    },
+    "q_features": {
+      "shape": [
+        39,
+        2,
+        4,
+        2,
+        5,
+        5,
+        12,
+        33
+      ],
+      "dtype": "float64",
+      "axes": "participant,interface,window,budget,omissionblock,queryblock,trueclass,feature"
+    }
+  },
+  "reporting": {
+    "schema": "cfeg.native-subset-m.result.v1",
+    "primary": "pairedparticipant mean overALL8cells ofQM3-Q3 BA; reportdescriptive95tCI, MCID.01; doNOTrequiresmarginalQ>A0first",
+    "rows": "39participants*8cells*(A0k0+7methods*2budgets)=4680; keys participant,interface,n_samples,method,k,ba,query_count60,label_count12k,intervention_count,control_available",
+    "summary": "120cells; meanBA+descriptivet95df38; noadaptivity/multiplicitycorrectedclaim",
+    "contrasts": "percellQM3/5-Q3/5,QM3/5-FULL3/5,QM3/5-A0,QM3/5-SHAM3/5,QM3/5-shuffle3/5,QM3/5-stale3/5,Q3/5-FULL3/5,Q5-Q3,QM3-Q5,QM5-QM3; meanover8cells participantpaired",
+    "diagnostics": "allparticipant/cell/k selectorchangeQvsQM, predictionchange,repaired/damaged, expertpredictiondisagreement; meanridgefitloss/penalty, exactfit/evalids, Mscale, missing/permutationavailability, no-opcounts; nohumanoracle",
+    "cost": "observedgrid0/3/5 firstBA>=.8 forFULL/Q/QM/SHAM; censoredmeansnotobserved, notstrictminimumk>5; pairedQM3-Q5 NIreference-1/60 andpercondition80%target; noemptyfilteredprimary; labels12k, retainedseconds12k*N/250,history12k*.14; impedance/setup/intertrialtimeunknown, NOTtotaluserwallclock",
+    "terminal": "DEVELOPMENT_ASSESSMENT_COMPLETE only; describe effect/uncertainty/assay/utility/costseparately; noautomaticconfirmatorypermission orforcedpositive; oneMmechanism+atmostonepredeclaredmechanismjustifiedrevision beforeprogramcheckpoint"
+  },
+  "execution": {
+    "python": "/home/whwovy/ssvep-author-compatibility-20260907/.venv/bin/python",
+    "python_version": "3.9.21",
+    "dependencies": {
+      "numpy": "1.23.4",
+      "scipy": "1.13.0",
+      "joblib": "1.4.2",
+      "scikit-learn": "1.3.0",
+      "mat73": "0.63",
+      "h5py": "3.11.0",
+      "threadpoolctl": "3.5.0"
+    },
+    "workers": 4,
+    "blas_threads": 1,
+    "output_root": "/home/whwovy/native-subset-m-artifacts/source39-v1",
+    "artifacts": [
+      "start.json",
+      "source-projection.json",
+      "features.npz",
+      "fold-freezes.json",
+      "result.json"
+    ],
+    "resource_budget_bytes": 1073741824,
+    "expected_memory_budget_bytes": 2147483648,
+    "expected_runtime_ceiling_seconds": 1800,
+    "publication": "cleanintegratedmain/plan/upstreampins, exactnewdir/startbeforedata, exclusive0400files fsync, nooverwrite/silentretry; partialfailureretained; noenv/oldrunnerchange"
+  }
+}
