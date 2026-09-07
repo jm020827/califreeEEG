@@ -739,3 +739,12 @@
 - 학습과 fusion 분리: stable pooled template BA k1/3/5=.7875/.9798611111/.9930555556로 파형 평균의 학습 신호는 있다. 반면 AQ=.9840277778로 거의 평평하고 metadata가 추가 BA 이득을 만들지 못했다. Drift k3 M-block과 AQ는 actual prediction flips도 0이다. Stable pooled k5 logp −2.290748 대 A0 −1.214896은 높은 분류순위와 약한 probability scale의 공존을 보여준다. Common temperature만으로 CCA²/template correlation²를 정합화하지 못했을 수 있다는 것은 사후 원인 가설이지 입증된 다음 방법이 아니다.
 - 다음 루프: upper research objective 유지. 별도 development-only 단계에서 A0 headroom/calibration 필요성, 실측 근거가 있는 DGP 범위와 유용한 waveform AQ/score scale을 먼저 고정·검증하고, M−AQ outcome으로 난이도를 고르지 않는다. 이후에만 새 미관측 평가에서 metadata increment를 본다. 이 pilot을 seed/hyperparameter 재시도로 구제하거나 human/scientific lockbox를 열지 않는다.
 - 결과 문서: `docs/metadata_calibration_efficiency_v4_pilot_results.md`. 기존 V5는 여전히 V3 개발 실행 #5의 완료된 0/9 no-go이고, 본 pilot은 새 V4 후보의 별도 exploratory engineering result다.
+
+## PLAN-20260907-037 — V4 후속 metadata-free AQ study001, pre-outcome
+
+- 사용자의 다음 단계 승인을 받아 새 `metadata-calibration-efficiency-v4-aq-study001`을 고정한다. 목표는 실제 calibration need와 유용한 EEG-only comparator 확보이며 metadata arm/human outcome은 이번에 없다. 종료된 V3/V4 candidate·seed·설정은 그대로 보존한다.
+- Source/evaluation 독립 합성 참가자 각24명, 길이75/125/250 samples(.3/.5/1 s)×noise배율1/2/3, stable/drift의 모든18 cells. 같은 참가자의 raw long signal/noise/order를 공유하고 crop 후 filtering한다. Short-window all-class residual Q는 rank 포화 위험으로 제외하고 class-specific support reliability만 block diagnostic에 쓴다.
+- Primary는 pooled waveform의 source-calibrated fixed .5 fusion. Raw/calibrated block fusion과 standalone decoders도 사전에 포함한다. A0 1개, pooled1/3/5, block3/5의6 temperatures를 source 전체 실제 posterior NLL로만 적합한다. Block1=pooled1. Evaluation 정답·family/noise별 oracle temperature·lambda sweep은 금지한다.
+- Source A0만으로 informative stable cells(.55~.90 mean, 절반이상<.8)를 표시하고 evaluation 전에 score cache/temperature/S를 동결한다. Evaluation은 모든 조건을 보며 S를 바꾸지 않는다. Participant당 S 평균 eAUC 차이로 n=24 paired inference; mean>=.01/LCB>0/k1비음수 및 난이도 재현을 확인한다. 성공해도 metadata 기여나 human promotion이 아니다.
+- 근거와 한계: TRCA 원 논문/저자 FBCCA tutorial은 subsecond observation 선택에 연결되고 Guo2017은 confidence temperature scaling의 인접 근거다. Noise/phase/AR grid는 실측 impedance 모델이 아닌 engineering sensitivity 범위다. Probability calibration과 target EEG labeled calibration을 구별한다. 상세 plan/design을 study draws 전에 commit한다.
+- Ownership: main은 contract/docs/log/auditor와 sole literature-workspace writer, isolated 새 worktree는 새 module/runner/tests의 단독 작성자, reviewer는 read-only다. 신규 runtime budget1GB<free300GB, 기존 worktree/자료 삭제나 dependency변경은 없다. Study namespace/source/evaluation draws는 아직 실행하지 않았다.
