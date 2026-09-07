@@ -1,7 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3.3 pre-outcome infrastructure recovery 구현·검증 중 / development-v1·v2·v3 영구 은퇴 / development-v4 bundle 전 / replacement seed 3156745110 미실행 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
+현재 상태: **V3.4 pre-outcome consumed-development recovery 구현·검증 중 / development-v1·v2·v3·v4 영구 은퇴 / development-v5 bundle 전 / replacement seed 301269949 미실행 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
 현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
@@ -59,15 +59,55 @@ robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰�
 없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
 **해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
 
-현재는 V3.3 recovery 코드·unit test와 clean hash-pinned development-v4 bundle을 만드는
+현재는 V3.4 recovery 코드·unit test와 clean hash-pinned development-v5 bundle을 만드는
 단계다. Bundle은
 git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
 implementation commit/tree를 묶는다. Root seed
-`3156745110`의 replacement synthetic development는 bundle validator 뒤에만 가능하고 public
+`301269949`의 replacement synthetic development는 bundle validator 뒤에만 가능하고 public
 historical-pulse governance canary는 selected-method freeze와 state engine 뒤에만 가능하다.
 V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
 external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
+
+### V3.4 pre-outcome consumed-development recovery
+
+Development-v4에는 정확히 bundle·retired-v1과 byte-identical한 context·start receipt 세 파일만
+있고 result는 없다. Bundle file/payload SHA-256은
+`d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9`/
+`0fbb581d320a256c1722f6004810dbfb6f501f5eecf6e95c9264be9657f09e4c`, context file/payload는
+`7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8`/
+`c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253`, start file/payload는
+`1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068`/
+`b33666e840f9a6669713b79b10f75dbf1100d939b2c96e25bce22d7fe60ec8b2`다. Start는
+`2026-09-06T23:35:38Z`, creator PID 1234958이고 exact three-file inventory SHA-256은
+`511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa`다.
+
+`resume`은 complete development가 메모리에서 반환된 뒤 canonical JSON의 `sort_keys`가
+sensitivity endpoint object key 순서를 바꾼 상태를 core validator가 거부하면서 끝났다. Exact
+LF line SHA-256은
+`5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc`다. 이는 명시적
+`endpoint_order`가 있는데도 JSON object insertion order를 권위로 잘못 취급한 transport/validation
+결함이다. 이제 endpoint object는 exact key set만 요구하고 모든 검산·hash iteration은
+`endpoint_order`를 따른다. Canonical round-trip을 거친 initial publication과 clean-A/B reopen
+회귀가 이 경계를 직접 통과한다.
+
+Start receipt 정책상 seed `3156745110`은 소비됐다. Development RNG·SeedSequence·DGP·complete
+grid와 selection이 메모리에서 완료됐다는 것은 late call boundary에 따른 강한 control-flow
+추론일 뿐 durable result나 관측 outcome이 아니다. Caller에게 metric/selection은 노출되지
+않았고 selected freeze·test evidence·canary·scientific/human artifact와 network access도 0이다.
+V4를 PASS/FAIL로 해석하거나 old seed/outcome을 replay·reconstruct하지 않는다.
+
+유일한 다음 attempt는 `development-v5`, bundle schema는
+`cfeg.metadata-calibration-efficiency-v3.development-bundle.v5`다. Seed `301269949`은 V4의
+immutable pre-result file identities와 failure envelope만 담은 799-byte canonical preimage
+SHA-256 `11f503bdca78e8a7d0e853f9a7b484510dd749018c7735bce61ff7965b70b1cb`를 여덟
+big-endian uint32로 나누고 prior/context seeds를 제외한 첫 nonzero word(index 0)를 고른 값이다.
+Outcome은 쓰지 않았다. Scientific projection은 V4의
+`5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`에서
+`670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca`로 바뀌며 유일한
+leaf delta는 `synthetic.rng.development_root_seed`다. Objective, operator, DGP, grid, gates,
+thresholds, rank, context seed와 evidence roles는 그대로다. V5 root/artifact와 seed/DGP는 아직
+생성·실행되지 않았고 모든 future/scientific/human/network authorization은 false다.
 
 ### V3.3 pre-outcome consumed-development recovery
 

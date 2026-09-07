@@ -1,7 +1,7 @@
 # Metadata-assisted low-calibration SSVEP — V3 pre-outcome design
 
-상태: **V3.3 pre-outcome infrastructure recovery / development-v1·v2·v3 영구 은퇴 /
-development-v4 bundle 전 / replacement development seed 3156745110 미실행 /
+상태: **V3.4 pre-outcome consumed-development recovery / development-v1·v2·v3·v4 영구 은퇴 /
+development-v5 bundle 전 / replacement development seed 301269949 미실행 /
 scientific lockbox·외부 EEG·wearable EEG outcome 미승인**
 
 기준 후보는 `metadata-calibration-efficiency-v3`, 결정 ID는 `DEC-20260906-024`다.
@@ -9,7 +9,7 @@ scientific lockbox·외부 EEG·wearable EEG outcome 미승인**
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`, synthetic 기준원은
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 최초 경계는 byte-identical
 `configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 현재 recovery 경계는
-`configs/governance/metadata_calibration_v3_3_recovery_amendment.json`이다.
+`configs/governance/metadata_calibration_v3_4_recovery_amendment.json`이다.
 
 ## 결론부터 말하면
 
@@ -307,7 +307,8 @@ file SHA를 함께 묶어야 한다. Manifest는 strict RFC3339 UTC 생성시각
 
 Development-v1의 외부 write-once root는 bundle과 covariate-only context reference 두 파일,
 development-v2 root는 bundle 한 파일, development-v3 root는 bundle·context reference·
-development start 세 파일만 가진 채 영구 은퇴한다. 어느 old root에도 terminal이나 result를
+development start 세 파일, development-v4 root도 bundle·context reference·development start
+세 파일만 가진 채 영구 은퇴한다. 어느 old root에도 terminal이나 result를
 소급 생성하지 않으며 기존 파일을 수정·삭제·확장하지 않는다. V2에서는 context seed
 `20260910` reference replay만 메모리에서 두 번 실행됐고 development seed는 실행되지 않았다.
 V3에서는 같은 V1 context bytes를 채택한 뒤 `development-start.json`을 기록했고, 그 단회
@@ -322,24 +323,34 @@ attestation으로 취급하거나 재구성하지 않는다. Exact V3 inventory 
 `59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7`, 실패 line
 SHA-256은 `5e21a934ee692d13e3717502442c412d58121547eb2d05ecaf3c1bd827abd04c`다.
 
-계속할 수 있는 유일한 attempt는
-`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/`이며 bundle
-schema는 `cfeg.metadata-calibration-efficiency-v3.development-bundle.v4`다. 새 bundle은
-V1/V2/V3의 exact 2/1/3-file inventory, 세 recovery amendment, incident identities,
-clean A4 source/runtime/tests를 모두 묶는다. Context는 계속 retired-v1의 exact bytes를
-복사·재검증하고 retired-v3 context와도 byte-identical임을 확인한다. V3를 scientific parent로
-삼거나 context를 refit하지 않는다.
+V4는 seed `3156745110`을 쓰는 replacement였지만 다시 result publication 전에 멈췄다. Exact
+bundle/context/start 세 파일만 남았고 inventory SHA-256은
+`511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa`다. `resume`의 exact LF
+failure SHA-256은 `5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc`다.
+Canonical JSON `sort_keys` 뒤 sensitivity endpoint object 순서가 바뀌었는데 core가 이를 exact
+key set이 아니라 insertion order로 판정한 것이 원인이다. V4 seed는 start receipt 때문에
+소비됐고 DGP/grid/selection 완료는 강한 control-flow inference일 뿐 durable·관측 outcome이
+아니다. V4 result를 재구성하거나 seed를 replay하지 않는다.
 
-Replacement development seed `3156745110`은 outcome이 아닌 V3 bundle/context/start와 실패
-envelope의 immutable pre-result digest만으로 사전 결정했다. Canonical preimage SHA-256
-`bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897`을 여덟 개 big-endian
-uint32로 나눈 뒤 forbidden seed를 제외한 첫 nonzero word(index 0)를 쓴다. 이 변경으로
-scientific projection은 old `0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79`에서
-new `5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`로 바뀌며, 허용된
+계속할 수 있는 유일한 attempt는
+`/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/`이며 bundle
+schema는 `cfeg.metadata-calibration-efficiency-v3.development-bundle.v5`다. 새 bundle은
+V1/V2/V3/V4의 exact 2/1/3/3-file inventory, 네 recovery amendment, incident identities,
+clean A5 source/runtime/tests를 모두 묶는다. Context는 retired-v1 exact bytes를 복사·재검증하고
+retired-v3/V4 context와 byte-identical임을 확인한다. V3/V4를 scientific parent로 삼거나
+context를 refit하지 않는다.
+
+Replacement development seed `301269949`은 outcome이 아닌 V4 bundle/context/start와 실패
+envelope의 immutable pre-result digest만으로 사전 결정했다. 799-byte canonical preimage
+SHA-256 `11f503bdca78e8a7d0e853f9a7b484510dd749018c7735bce61ff7965b70b1cb`을 여덟 개
+big-endian uint32로 나눈 뒤 forbidden prior/context seeds 밖의 첫 nonzero word(index 0)를 쓴다.
+Scientific projection은 retired V4
+`5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`에서 new
+`670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca`로 바뀌며 허용된
 유일한 leaf는 `synthetic.rng.development_root_seed`다. 새 synthetic evidence는 투명한
 development/model-selection evidence이지 human confirmatory evidence가 아니다.
 
-Development-v4의 네 canonical 파일은 `development-bundle.json`, `context-reference.json`,
+Development-v5의 네 canonical 파일은 `development-bundle.json`, `context-reference.json`,
 `development-start.json`, `development-result.json`이다. Start receipt는 development
 authority/첫 RNG draw 전에 `O_EXCL`로 기록되고, 그 creator process의 private nominal
 capability만 같은 호출에서 계속할 수 있다. Fresh process에서 receipt만 있으면
@@ -347,9 +358,11 @@ capability만 같은 호출에서 계속할 수 있다. Fresh process에서 rece
 있으면 read-only audit만 허용하고 result가 receipt schema·payload SHA·file SHA를 묶는다.
 
 Transport 수정은 governance parser나 global serializer를 느슨하게 만들지 않는다. Frozen
-context/result/selected payload를 core에 넘기는 여섯 경계—최초 result validation, clean-A
-result recovery, selected-freeze recovery build, B context/result/selected reopen—에서만
-ordinary dict/list로 deep-detach하고 LF-종료 canonical bytes가 원문과 정확히 같은지 확인한다.
+context/result/selected payload는 기존의 제한된 core 경계에서만 ordinary dict/list로
+deep-detach하고 LF-종료 canonical bytes가 원문과 정확히 같은지 확인한다. Sensitivity payload의
+`endpoint_order` 배열이 유일한 순서 권위이며 endpoint object는 exact unordered key set이어야
+하고 검산·hash iteration은 그 배열 순서를 따른다. Initial result publication과 clean-A/B reopen은
+실제 canonical serialize/parse round-trip 회귀를 통과해야 한다.
 Post-result audit은 development RNG authority나 participant DGP를 다시 실행하지 않는다.
 Selected freeze는 repository의
 `configs/governance/metadata_calibration_v3_selected_method_freeze.json`, full test evidence는

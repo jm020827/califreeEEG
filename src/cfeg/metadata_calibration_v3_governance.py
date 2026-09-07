@@ -50,7 +50,7 @@ _GOVERNANCE_IMPORT_SOURCE_FILE_SHA256 = hashlib.sha256(
 CANDIDATE_ID = "metadata-calibration-efficiency-v3"
 CANARY_CANDIDATE_ID = "metadata-calibration-efficiency-v3-governance-canary"
 
-DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+DEVELOPMENT_BUNDLE_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
 RETIRED_V1_DEVELOPMENT_BUNDLE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-bundle.v1"
 )
@@ -60,11 +60,14 @@ RETIRED_V2_DEVELOPMENT_BUNDLE_SCHEMA = (
 RETIRED_V3_DEVELOPMENT_BUNDLE_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.development-bundle.v3"
 )
-RECOVERY_AMENDMENT_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v3"
+RETIRED_V4_DEVELOPMENT_BUNDLE_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
 )
-PROTOCOL_REVISION = "V3.3"
-DEVELOPMENT_ATTEMPT_ID = "development-v4"
+RECOVERY_AMENDMENT_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v4"
+)
+PROTOCOL_REVISION = "V3.4"
+DEVELOPMENT_ATTEMPT_ID = "development-v5"
 CANARY_SEED_CAPABILITY_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-seed-capability.v1"
 FRESH_CANARY_AUDIT_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.canary-fresh-audit.v1"
 FRESH_CANARY_AUDIT_CAPABILITY_SCHEMA = (
@@ -122,11 +125,14 @@ ARTIFACT_SCHEMAS = MappingProxyType(
 
 MASTER_PLAN_PATH = "configs/analysis/metadata_calibration_efficiency_v3.yaml"
 SYNTHETIC_PLAN_PATH = "configs/analysis/metadata_calibration_v3_synthetic.yaml"
-PREOUTCOME_AMENDMENT_PATH = "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
+PREOUTCOME_AMENDMENT_PATH = "configs/governance/metadata_calibration_v3_4_recovery_amendment.json"
 PRIOR_RECOVERY_AMENDMENT_PATH = (
-    "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+    "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
 )
 EARLIER_RECOVERY_AMENDMENT_PATH = (
+    "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+)
+FIRST_RECOVERY_AMENDMENT_PATH = (
     "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
 )
 ORIGINAL_PREOUTCOME_AMENDMENT_PATH = (
@@ -140,15 +146,18 @@ V2_DENY_OVERLAY_PATH = "configs/governance/metadata_calibration_v2_terminal_deny
 
 FROZEN_FILE_SHA256 = MappingProxyType(
     {
-        MASTER_PLAN_PATH: "cbde65a85856e3fbeb832e0621363f96a033c24df93b6e9705b41f41624420a8",
-        SYNTHETIC_PLAN_PATH: "b1bb5f6f47a4a5e433101608488007a4d72c312978c4a302cb87ec742b219a5a",
+        MASTER_PLAN_PATH: "7aab12500451704401dab629254e0dbdb674576594ad8901bea26236f675d00e",
+        SYNTHETIC_PLAN_PATH: "126e18f6756c5569388d036b2fe15e73688aab788bc83706d8141043eb6d1ad4",
         PREOUTCOME_AMENDMENT_PATH: (
-            "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"
+            "129c81f1a806e17d68ced5055d094faf22a9e0f017e834175394c5b40e79ee4e"
         ),
         PRIOR_RECOVERY_AMENDMENT_PATH: (
-            "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
+            "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"
         ),
         EARLIER_RECOVERY_AMENDMENT_PATH: (
+            "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
+        ),
+        FIRST_RECOVERY_AMENDMENT_PATH: (
             "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
         ),
         ORIGINAL_PREOUTCOME_AMENDMENT_PATH: (
@@ -208,6 +217,10 @@ RETIRED_V3_DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / "development-v3"
 RETIRED_V3_DEVELOPMENT_BUNDLE_PATH = RETIRED_V3_DEVELOPMENT_ROOT / "development-bundle.json"
 RETIRED_V3_CONTEXT_REFERENCE_PATH = RETIRED_V3_DEVELOPMENT_ROOT / "context-reference.json"
 RETIRED_V3_DEVELOPMENT_START_PATH = RETIRED_V3_DEVELOPMENT_ROOT / "development-start.json"
+RETIRED_V4_DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / "development-v4"
+RETIRED_V4_DEVELOPMENT_BUNDLE_PATH = RETIRED_V4_DEVELOPMENT_ROOT / "development-bundle.json"
+RETIRED_V4_CONTEXT_REFERENCE_PATH = RETIRED_V4_DEVELOPMENT_ROOT / "context-reference.json"
+RETIRED_V4_DEVELOPMENT_START_PATH = RETIRED_V4_DEVELOPMENT_ROOT / "development-start.json"
 DEVELOPMENT_ROOT = V3_CANONICAL_ROOT / DEVELOPMENT_ATTEMPT_ID
 CONTEXT_REFERENCE_CANONICAL_PATH = DEVELOPMENT_ROOT / "context-reference.json"
 DEVELOPMENT_START_CANONICAL_PATH = DEVELOPMENT_ROOT / "development-start.json"
@@ -268,11 +281,35 @@ RETIRED_V3_ARTIFACT_INVENTORY_SHA256 = (
     "59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7"
 )
 RETIRED_V3_INCIDENT_OUTPUT_SHA256 = RETIRED_V2_INCIDENT_OUTPUT_SHA256
-RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
+RETIRED_V4_SOURCE_COMMIT = "198158663efd1c4481b23dd3d012b9d854ada8d1"
+RETIRED_V4_SOURCE_TREE = "ac7882494955a7abb5046a4dd950bd98d6fdd6b1"
+RETIRED_V4_SOURCE_BUNDLE_SHA256 = "c57c81a2ffae4511e4de6159d11ea5ef482e13b8fdebd916eef98bdf7235250c"
+RETIRED_V4_RUNTIME_FINGERPRINT_SHA256 = RETIRED_V3_RUNTIME_FINGERPRINT_SHA256
+RETIRED_V4_BUNDLE_PAYLOAD_SHA256 = (
+    "0fbb581d320a256c1722f6004810dbfb6f501f5eecf6e95c9264be9657f09e4c"
+)
+RETIRED_V4_BUNDLE_FILE_SHA256 = "d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9"
+RETIRED_V4_CONTEXT_PAYLOAD_SHA256 = RETIRED_V1_CONTEXT_PAYLOAD_SHA256
+RETIRED_V4_CONTEXT_FILE_SHA256 = RETIRED_V1_CONTEXT_FILE_SHA256
+RETIRED_V4_START_PAYLOAD_SHA256 = "b33666e840f9a6669713b79b10f75dbf1100d939b2c96e25bce22d7fe60ec8b2"
+RETIRED_V4_START_FILE_SHA256 = "1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068"
+RETIRED_V4_ARTIFACT_INVENTORY_SCHEMA = (
+    "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v4"
+)
+RETIRED_V4_ARTIFACT_INVENTORY_SHA256 = (
+    "511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa"
+)
+RETIRED_V4_INCIDENT_OUTPUT_SHA256 = (
+    "5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc"
+)
+ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
     "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
 )
-SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
+RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
     "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
+)
+SCIENTIFIC_CONTRACT_PROJECTION_SHA256 = (
+    "670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca"
 )
 SCIENTIFIC_CONTRACT_PROJECTION_SCHEMA = (
     "cfeg.metadata-calibration-efficiency-v3.scientific-contract-projection.v1"
@@ -346,12 +383,20 @@ RETIRED_V2_INCIDENT_OUTPUT_BYTES = (
 RETIRED_V3_INCIDENT_ERROR = RETIRED_V2_INCIDENT_ERROR
 RETIRED_V3_INCIDENT_MESSAGE = RETIRED_V2_INCIDENT_MESSAGE
 RETIRED_V3_INCIDENT_OUTPUT_BYTES = RETIRED_V2_INCIDENT_OUTPUT_BYTES
-REPLACEMENT_DEVELOPMENT_ROOT_SEED = 3_156_745_110
+RETIRED_V4_INCIDENT_ERROR = "TypeError"
+RETIRED_V4_INCIDENT_MESSAGE = (
+    "primary_values_by_endpoint must be an exact endpoint-ordered dictionary."
+)
+RETIRED_V4_INCIDENT_OUTPUT_BYTES = (
+    b'{"command":"resume","error":"TypeError","message":"primary_values_by_endpoint '
+    b'must be an exact endpoint-ordered dictionary.","status":"FAIL_CLOSED"}\n'
+)
+REPLACEMENT_DEVELOPMENT_ROOT_SEED = 301_269_949
 REPLACEMENT_SEED_PREIMAGE_SCHEMA = (
-    "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed-preimage.v1"
+    "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed-preimage.v2"
 )
 REPLACEMENT_SEED_PREIMAGE_SHA256 = (
-    "bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897"
+    "11f503bdca78e8a7d0e853f9a7b484510dd749018c7735bce61ff7965b70b1cb"
 )
 TEST_EVIDENCE_CANONICAL_PATH = CANARY_CANONICAL_ROOT / "test-evidence.json"
 SELECTED_METHOD_FREEZE_REPOSITORY_PATH = PurePosixPath(
@@ -3136,30 +3181,31 @@ def _replacement_seed_preimage() -> Mapping[str, Any]:
     return {
         "candidate_id": CANDIDATE_ID,
         "derivation_rule": "first_nonzero_big_endian_uint32_word_not_in_forbidden_seed_set",
-        "failure_envelope_sha256": RETIRED_V3_INCIDENT_OUTPUT_SHA256,
+        "failure_envelope_sha256": RETIRED_V4_INCIDENT_OUTPUT_SHA256,
         "forbidden_seed_values": [
             20_260_906,
             20_260_907,
             20_260_908,
             20_260_909,
             20_260_910,
+            3_156_745_110,
         ],
-        "prior_attempt_id": "development-v3",
-        "prior_development_bundle_file_sha256": RETIRED_V3_BUNDLE_FILE_SHA256,
-        "prior_development_context_file_sha256": RETIRED_V3_CONTEXT_FILE_SHA256,
-        "prior_development_start_file_sha256": RETIRED_V3_START_FILE_SHA256,
+        "prior_attempt_id": "development-v4",
+        "prior_development_bundle_file_sha256": RETIRED_V4_BUNDLE_FILE_SHA256,
+        "prior_development_context_file_sha256": RETIRED_V4_CONTEXT_FILE_SHA256,
+        "prior_development_start_file_sha256": RETIRED_V4_START_FILE_SHA256,
         "replacement_attempt_id": DEVELOPMENT_ATTEMPT_ID,
         "schema": REPLACEMENT_SEED_PREIMAGE_SCHEMA,
     }
 
 
-def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
-    """Validate the exact V3.3 lineage, incident, and one-shot seed derivation."""
+def _validate_v3_4_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
+    """Validate the hash-pinned V3.4 lineage and outcome-free seed replacement."""
 
     if not isinstance(data, bytes):
         raise ValidationError("recovery amendment must be immutable bytes")
     if file_sha256(data) != FROZEN_FILE_SHA256[PREOUTCOME_AMENDMENT_PATH]:
-        raise ValidationError("V3.3 recovery amendment file hash mismatch")
+        raise ValidationError("V3.4 recovery amendment file hash mismatch")
 
     def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -3194,6 +3240,7 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "owner_approval",
                 "prior_recovery_amendment_v1",
                 "prior_recovery_amendment_v2",
+                "prior_recovery_amendment_v3",
                 "protocol_revision",
                 "recorded_at_is_amendment_time_not_incident_timestamp",
                 "recorded_at_utc",
@@ -3201,6 +3248,7 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "retired_development_v1",
                 "retired_development_v2",
                 "retired_development_v3",
+                "retired_development_v4",
                 "schema",
                 "scientific_contract_changed",
                 "scientific_contract_delta",
@@ -3209,480 +3257,84 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
                 "status",
             }
         ),
-        "V3.3 recovery amendment",
+        "V3.4 recovery amendment",
     )
     projection = value.get("scientific_contract_projection")
-    retired_v3 = value.get("retired_development_v3")
     seed = value.get("replacement_development_seed")
+    retired_v4 = value.get("retired_development_v4")
     recovery = value.get("authorized_recovery")
-    owner = value.get("owner_approval")
-    original = value.get("original_preoutcome_amendment")
-    prior_v1 = value.get("prior_recovery_amendment_v1")
-    prior_v2 = value.get("prior_recovery_amendment_v2")
-    retired_v1 = value.get("retired_development_v1")
-    retired_v2 = value.get("retired_development_v2")
     immutability = value.get("immutability")
+    owner = value.get("owner_approval")
     if not all(
         isinstance(item, Mapping)
-        for item in (
-            projection,
-            retired_v3,
-            seed,
-            recovery,
-            owner,
-            original,
-            prior_v1,
-            prior_v2,
-            retired_v1,
-            retired_v2,
-            immutability,
-        )
+        for item in (projection, seed, retired_v4, recovery, immutability, owner)
     ):
-        raise ValidationError("V3.3 recovery amendment is missing a required object")
+        raise ValidationError("V3.4 recovery amendment is missing a required object")
     assert isinstance(projection, Mapping)
-    assert isinstance(retired_v3, Mapping)
     assert isinstance(seed, Mapping)
+    assert isinstance(retired_v4, Mapping)
     assert isinstance(recovery, Mapping)
-    assert isinstance(owner, Mapping)
-    assert isinstance(original, Mapping)
-    assert isinstance(prior_v1, Mapping)
-    assert isinstance(prior_v2, Mapping)
-    assert isinstance(retired_v1, Mapping)
-    assert isinstance(retired_v2, Mapping)
     assert isinstance(immutability, Mapping)
-    failure = retired_v3.get("observed_resume_failure")
-    durable = retired_v3.get("durable_execution_facts")
-    inference = retired_v3.get("control_flow_inference")
-    retired_bundle = retired_v3.get("development_bundle")
-    retired_context = retired_v3.get("context_reference")
-    retired_start = retired_v3.get("development_start")
-    allowed_delta = projection.get("allowed_delta")
-    projection_preimage = projection.get("canonical_preimage_definition")
+    assert isinstance(owner, Mapping)
+
+    expected_lineage = (
+        (
+            value.get("original_preoutcome_amendment"),
+            ORIGINAL_PREOUTCOME_AMENDMENT_PATH,
+        ),
+        (value.get("prior_recovery_amendment_v1"), FIRST_RECOVERY_AMENDMENT_PATH),
+        (value.get("prior_recovery_amendment_v2"), EARLIER_RECOVERY_AMENDMENT_PATH),
+        (value.get("prior_recovery_amendment_v3"), PRIOR_RECOVERY_AMENDMENT_PATH),
+    )
+    for item, path in expected_lineage:
+        if _plain_json(item) != {
+            "path": path,
+            "file_sha256": FROZEN_FILE_SHA256[path],
+            "must_remain_byte_identical": True,
+        }:
+            raise ValidationError("V3.4 recovery amendment lineage is not exact")
+
+    preimage = seed.get("preimage")
+    if not isinstance(preimage, Mapping):
+        raise ValidationError("V3.4 replacement seed preimage must be an object")
+    preimage_bytes = canonical_json_bytes(preimage)
+    digest = hashlib.sha256(preimage_bytes).digest()
+    words = [int.from_bytes(digest[index : index + 4], "big") for index in range(0, 32, 4)]
+    forbidden = frozenset(_replacement_seed_preimage()["forbidden_seed_values"])
+    eligible = [
+        (index, word) for index, word in enumerate(words) if word != 0 and word not in forbidden
+    ]
+    if not eligible:
+        raise ValidationError("V3.4 seed digest contains no eligible uint32 word")
+
+    failure = retired_v4.get("observed_resume_failure")
+    durable = retired_v4.get("durable_execution_facts")
+    inference = retired_v4.get("control_flow_inference")
+    bundle = retired_v4.get("development_bundle")
+    context = retired_v4.get("context_reference")
+    start = retired_v4.get("development_start")
     if not all(
-        isinstance(item, Mapping)
-        for item in (
-            failure,
-            durable,
-            inference,
-            retired_bundle,
-            retired_context,
-            retired_start,
-            allowed_delta,
-            projection_preimage,
-        )
+        isinstance(item, Mapping) for item in (failure, durable, inference, bundle, context, start)
     ):
-        raise ValidationError("V3.3 retired attempt lacks exact incident classifications")
+        raise ValidationError("V3.4 retired attempt lacks exact incident objects")
     assert isinstance(failure, Mapping)
     assert isinstance(durable, Mapping)
     assert isinstance(inference, Mapping)
-    assert isinstance(retired_bundle, Mapping)
-    assert isinstance(retired_context, Mapping)
-    assert isinstance(retired_start, Mapping)
-    assert isinstance(allowed_delta, Mapping)
-    assert isinstance(projection_preimage, Mapping)
-    exact_key_sets = (
-        (
-            projection,
-            {
-                "allowed_delta",
-                "canonical_byte_length",
-                "canonical_preimage_definition",
-                "master_keys",
-                "retired_baseline_sha256",
-                "schema",
-                "sha256",
-                "synthetic_keys",
-                "unchanged_components",
-            },
-            "V3.3 scientific projection",
-        ),
-        (
-            owner,
-            {"approval_basis", "approval_scope", "approved_by", "attestation_note"},
-            "V3.3 owner approval",
-        ),
-        (
-            retired_v3,
-            {
-                "artifact_inventory_schema",
-                "artifact_inventory_sha256",
-                "attempt_id",
-                "canonical_root",
-                "context_reference",
-                "continuation_authorized",
-                "control_flow_inference",
-                "development_bundle",
-                "development_start",
-                "durable_execution_facts",
-                "exact_directory_inventory_must_remain_three_files",
-                "exact_file_names",
-                "numerical_runtime_fingerprint_sha256",
-                "observed_resume_failure",
-                "scientific_interpretation",
-                "source_bundle_sha256",
-                "source_commit",
-                "source_tree",
-            },
-            "retired development-v3",
-        ),
-        (
-            failure,
-            {
-                "argv",
-                "emitted_json_line_sha256",
-                "emitted_json_line_utf8_base64",
-                "exception_type",
-                "exit_code",
-                "failure_boundary",
-                "message",
-            },
-            "retired development-v3 failure",
-        ),
-        (
-            durable,
-            {
-                "canary_artifact_count",
-                "context_reference_artifact_count",
-                "development_result_artifact_count",
-                "development_seed",
-                "development_seed_consumed_by_terminal_start_receipt_policy",
-                "development_start_artifact_count",
-                "experimental_workflow_outcome_observation_count",
-                "governed_execution_network_access_count",
-                "human_EEG_outcome_access_count",
-                "selected_method_artifact_count",
-                "test_evidence_artifact_count",
-            },
-            "retired development-v3 durable facts",
-        ),
-        (
-            inference,
-            {
-                "basis",
-                "classification",
-                "complete_grid_gate_reports_computed_in_memory",
-                "development_rng_authority_issued_in_memory",
-                "development_seedsequence_and_DGP_executed",
-                "development_selection_computed_in_memory",
-                "must_not_be_reconstructed_or_used_as_evidence",
-            },
-            "retired development-v3 control-flow inference",
-        ),
-        (
-            seed,
-            {
-                "derived_only_from_immutable_pre_result_identities",
-                "digest_split",
-                "outcome_used_in_derivation",
-                "preimage",
-                "preimage_sha256",
-                "schema",
-                "selected_seed",
-                "selected_word_index",
-                "selection_rule",
-            },
-            "V3.3 replacement seed",
-        ),
-        (
-            recovery,
-            {
-                "attempt_id",
-                "canonical_root",
-                "context_reference_policy",
-                "development_bundle_schema",
-                "development_result_must_bind_start_receipt",
-                "development_result_transport_policy",
-                "development_start_receipt_path",
-                "development_start_receipt_policy",
-                "development_start_receipt_schema",
-                "human_EEG_outcome_authorized",
-                "network_access_authorized",
-                "only_authorized_development_attempt",
-                "receipt_with_result_restart_policy",
-                "receipt_without_result_restart_policy",
-                "replacement_development_evidence_role",
-                "requires_exact_retired_v1_two_file_inventory",
-                "requires_exact_retired_v2_one_file_inventory",
-                "requires_exact_retired_v3_three_file_inventory",
-                "scientific_lockbox_authorized",
-            },
-            "V3.3 authorized recovery",
-        ),
-        (
-            immutability,
-            {
-                "any_failure_after_development_start_receipt_consumes_attempt",
-                "development_v1_files_may_not_be_modified_deleted_or_extended",
-                "development_v1_v2_or_v3_schema_may_not_be_reinterpreted_as_v4",
-                "development_v2_files_may_not_be_modified_deleted_or_extended",
-                "development_v3_files_may_not_be_modified_deleted_or_extended",
-                "future_target_bound_RSA_PSS_authorization_remains_separate_and_unissued",
-                "old_amendment_files_may_not_be_modified",
-                "old_development_seed_may_not_be_replayed_or_reconstructed",
-                "operator_DGP_grid_threshold_gate_rank_context_seed_or_evidence_roles_may_not_change",
-            },
-            "V3.3 immutability policy",
-        ),
-    )
-    for item, keys, label in exact_key_sets:
-        _require_exact_keys(item, frozenset(keys), label)
-    for item, label in (
-        (original, "original amendment lineage"),
-        (prior_v1, "V3.1 amendment lineage"),
-        (prior_v2, "V3.2 amendment lineage"),
-    ):
-        _require_exact_keys(
-            item,
-            frozenset({"file_sha256", "must_remain_byte_identical", "path"}),
-            label,
-        )
-    for item, label in (
-        (retired_bundle, "retired development-v3 bundle"),
-        (retired_context, "retired development-v3 context"),
-    ):
-        _require_exact_keys(
-            item,
-            frozenset({"file_sha256", "path", "payload_sha256", "schema"}),
-            label,
-        )
-    _require_exact_keys(
-        retired_start,
-        frozenset(
-            {
-                "creator_process_id",
-                "file_sha256",
-                "path",
-                "payload_sha256",
-                "schema",
-                "started_at_UTC",
-            }
-        ),
-        "retired development-v3 start",
-    )
-    _require_exact_keys(
-        retired_v1,
-        frozenset(
-            {
-                "artifact_inventory_schema",
-                "artifact_inventory_sha256",
-                "attempt_id",
-                "canonical_root",
-                "continuation_authorized",
-                "exact_file_names",
-                "source_commit",
-                "source_tree",
-            }
-        ),
-        "retired development-v1 lineage",
-    )
-    _require_exact_keys(
-        retired_v2,
-        frozenset(
-            {
-                "artifact_inventory_schema",
-                "artifact_inventory_sha256",
-                "attempt_id",
-                "canonical_root",
-                "continuation_authorized",
-                "exact_file_names",
-                "source_bundle_sha256",
-                "source_commit",
-                "source_tree",
-            }
-        ),
-        "retired development-v2 lineage",
-    )
-    _require_exact_keys(
-        allowed_delta,
-        frozenset(
-            {
-                "all_other_leaves_must_be_byte_equivalent",
-                "path",
-                "replacement_value",
-                "retired_value",
-            }
-        ),
-        "V3.3 scientific projection delta",
-    )
-    _require_exact_keys(
-        projection_preimage,
-        frozenset(
-            {
-                "candidate_id_value",
-                "master_value",
-                "serialization",
-                "synthetic_value",
-                "top_level_keys",
-            }
-        ),
-        "V3.3 scientific projection preimage",
-    )
+    assert isinstance(bundle, Mapping)
+    assert isinstance(context, Mapping)
+    assert isinstance(start, Mapping)
     try:
         emitted = base64.b64decode(failure.get("emitted_json_line_utf8_base64"), validate=True)
     except (TypeError, binascii.Error) as exc:
-        raise ValidationError("V3.3 incident output is not canonical base64") from exc
-    preimage = seed.get("preimage")
-    if not isinstance(preimage, Mapping):
-        raise ValidationError("V3.3 replacement seed preimage must be an object")
-    _require_exact_keys(
-        preimage,
-        frozenset(_replacement_seed_preimage()),
-        "V3.3 replacement seed preimage",
-    )
-    preimage_bytes = canonical_json_bytes(preimage)
-    digest = hashlib.sha256(preimage_bytes).digest()
-    words = tuple(int.from_bytes(digest[index : index + 4], "big") for index in range(0, 32, 4))
-    forbidden = frozenset(_replacement_seed_preimage()["forbidden_seed_values"])
-    eligible = tuple(
-        (index, word) for index, word in enumerate(words) if word != 0 and word not in forbidden
-    )
-    if not eligible:
-        raise ValidationError("V3.3 seed digest contains no eligible uint32 word")
-    expected_owner = {
-        "approved_by": "active_workspace_owner",
-        "approval_scope": "tracked_preoutcome_V3_3_development_v4_replacement_only",
-        "approval_basis": (
-            "standing_explicit_user_instruction_to_make_needed_recovery_decisions_and_continue_"
-            "to_experiment_completion_given_before_development_v3_incident_and_before_any_"
-            "development_v4_artifact_or_execution"
-        ),
-        "attestation_note": (
-            "This repository-local hash-bound receipt records the active user's explicit "
-            "approval; it is not a cryptographic signature or a future target-bound execution "
-            "authorization."
-        ),
-    }
-    expected_lineage = (
-        (
-            original,
-            ORIGINAL_PREOUTCOME_AMENDMENT_PATH,
-            FROZEN_FILE_SHA256[ORIGINAL_PREOUTCOME_AMENDMENT_PATH],
-        ),
-        (
-            prior_v1,
-            EARLIER_RECOVERY_AMENDMENT_PATH,
-            FROZEN_FILE_SHA256[EARLIER_RECOVERY_AMENDMENT_PATH],
-        ),
-        (
-            prior_v2,
-            PRIOR_RECOVERY_AMENDMENT_PATH,
-            FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH],
-        ),
-    )
-    lineage_is_exact = all(
-        _plain_json(item)
-        == {
-            "path": path,
-            "file_sha256": digest_value,
-            "must_remain_byte_identical": True,
-        }
-        for item, path, digest_value in expected_lineage
-    )
-    expected_retired_v1 = {
-        "attempt_id": "development-v1",
-        "canonical_root": os.fspath(RETIRED_V1_DEVELOPMENT_ROOT),
-        "source_commit": RETIRED_V1_SOURCE_COMMIT,
-        "source_tree": RETIRED_V1_SOURCE_TREE,
-        "artifact_inventory_schema": RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA,
-        "artifact_inventory_sha256": RETIRED_V1_ARTIFACT_INVENTORY_SHA256,
-        "exact_file_names": ["context-reference.json", "development-bundle.json"],
-        "continuation_authorized": False,
-    }
-    expected_retired_v2 = {
-        "attempt_id": "development-v2",
-        "canonical_root": os.fspath(RETIRED_V2_DEVELOPMENT_ROOT),
-        "source_commit": RETIRED_V2_SOURCE_COMMIT,
-        "source_tree": RETIRED_V2_SOURCE_TREE,
-        "source_bundle_sha256": RETIRED_V2_SOURCE_BUNDLE_SHA256,
-        "artifact_inventory_schema": RETIRED_V2_ARTIFACT_INVENTORY_SCHEMA,
-        "artifact_inventory_sha256": RETIRED_V2_ARTIFACT_INVENTORY_SHA256,
-        "exact_file_names": ["development-bundle.json"],
-        "continuation_authorized": False,
-    }
-    expected_retired_bundle = {
-        "path": os.fspath(RETIRED_V3_DEVELOPMENT_BUNDLE_PATH),
-        "schema": RETIRED_V3_DEVELOPMENT_BUNDLE_SCHEMA,
-        "payload_sha256": RETIRED_V3_BUNDLE_PAYLOAD_SHA256,
-        "file_sha256": RETIRED_V3_BUNDLE_FILE_SHA256,
-    }
-    expected_retired_context = {
-        "path": os.fspath(RETIRED_V3_CONTEXT_REFERENCE_PATH),
-        "schema": ARTIFACT_SCHEMAS["context_reference"],
-        "payload_sha256": RETIRED_V3_CONTEXT_PAYLOAD_SHA256,
-        "file_sha256": RETIRED_V3_CONTEXT_FILE_SHA256,
-    }
-    expected_retired_start = {
-        "path": os.fspath(RETIRED_V3_DEVELOPMENT_START_PATH),
-        "schema": ARTIFACT_SCHEMAS["development_start"],
-        "payload_sha256": RETIRED_V3_START_PAYLOAD_SHA256,
-        "file_sha256": RETIRED_V3_START_FILE_SHA256,
-        "started_at_UTC": "2026-09-06T21:06:11Z",
-        "creator_process_id": 550_174,
-    }
-    expected_failure = {
-        "argv": ["scripts/run_metadata_calibration_v3", "resume"],
-        "exit_code": 2,
-        "exception_type": RETIRED_V3_INCIDENT_ERROR,
-        "message": RETIRED_V3_INCIDENT_MESSAGE,
-        "emitted_json_line_utf8_base64": base64.b64encode(RETIRED_V3_INCIDENT_OUTPUT_BYTES).decode(
-            "ascii"
-        ),
-        "emitted_json_line_sha256": RETIRED_V3_INCIDENT_OUTPUT_SHA256,
-        "failure_boundary": (
-            "after_execute_complete_development_returned_during_governance_frozen_parse_to_"
-            "core_publication_validation_before_result_O_EXCL"
-        ),
-    }
-    expected_durable = {
-        "context_reference_artifact_count": 1,
-        "development_start_artifact_count": 1,
-        "development_result_artifact_count": 0,
-        "selected_method_artifact_count": 0,
-        "test_evidence_artifact_count": 0,
-        "canary_artifact_count": 0,
-        "development_seed": 20_260_909,
-        "development_seed_consumed_by_terminal_start_receipt_policy": True,
-        "experimental_workflow_outcome_observation_count": 0,
-        "governed_execution_network_access_count": 0,
-        "human_EEG_outcome_access_count": 0,
-    }
-    expected_inference = {
-        "classification": (
-            "strong_control_flow_inference_not_observed_outcome_or_durable_attestation"
-        ),
-        "development_rng_authority_issued_in_memory": True,
-        "development_seedsequence_and_DGP_executed": True,
-        "complete_grid_gate_reports_computed_in_memory": True,
-        "development_selection_computed_in_memory": True,
-        "basis": (
-            "late_deterministic_mappingproxy_failure_requires_execute_complete_development_to_"
-            "have_returned_before_real_governance_publication_validation"
-        ),
-        "must_not_be_reconstructed_or_used_as_evidence": True,
-    }
-    expected_allowed_delta = {
-        "path": "synthetic.rng.development_root_seed",
-        "retired_value": 20_260_909,
-        "replacement_value": REPLACEMENT_DEVELOPMENT_ROOT_SEED,
-        "all_other_leaves_must_be_byte_equivalent": True,
-    }
-    expected_projection_preimage = {
-        "top_level_keys": ["candidate_id", "master", "schema", "synthetic"],
-        "candidate_id_value": CANDIDATE_ID,
-        "master_value": "mapping_of_the_exact_master_keys_below_to_their_parsed_YAML_values",
-        "synthetic_value": (
-            "mapping_of_the_exact_synthetic_keys_below_to_their_parsed_YAML_values"
-        ),
-        "serialization": (
-            "UTF-8_JSON_sort_keys_true_separators_comma_colon_ensure_ascii_true_allow_nan_"
-            "false_without_trailing_newline"
-        ),
-    }
-    expected_seed = {
-        "schema": "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed.v1",
+        raise ValidationError("V3.4 incident output is not canonical base64") from exc
+
+    exact_seed = {
+        "schema": "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed.v2",
         "preimage": _replacement_seed_preimage(),
+        "canonical_preimage_byte_length": 799,
         "preimage_sha256": REPLACEMENT_SEED_PREIMAGE_SHA256,
         "digest_split": "eight_big_endian_uint32_words",
+        "digest_words_uint32": words,
         "selection_rule": (
             "first_nonzero_word_outside_forbidden_seed_set_without_reroll_or_counter"
         ),
@@ -3691,7 +3343,21 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         "derived_only_from_immutable_pre_result_identities": True,
         "outcome_used_in_derivation": False,
     }
-    expected_recovery = {
+    exact_owner = {
+        "approved_by": "active_workspace_owner",
+        "approval_scope": "tracked_preoutcome_V3_4_development_v5_replacement_only",
+        "approval_basis": (
+            "standing_explicit_user_instruction_to_make_needed_recovery_decisions_and_continue_"
+            "to_experiment_completion_given_before_development_v4_incident_and_before_any_"
+            "development_v5_artifact_or_execution"
+        ),
+        "attestation_note": (
+            "This repository-local hash-bound receipt records the active user's explicit "
+            "approval; it is not a cryptographic signature or a future target-bound execution "
+            "authorization."
+        ),
+    }
+    exact_recovery = {
         "attempt_id": DEVELOPMENT_ATTEMPT_ID,
         "development_bundle_schema": DEVELOPMENT_BUNDLE_SCHEMA,
         "canonical_root": os.fspath(DEVELOPMENT_ROOT),
@@ -3713,13 +3379,18 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         "requires_exact_retired_v1_two_file_inventory": True,
         "requires_exact_retired_v2_one_file_inventory": True,
         "requires_exact_retired_v3_three_file_inventory": True,
+        "requires_exact_retired_v4_three_file_inventory": True,
         "context_reference_policy": (
             "copy_and_revalidate_exact_retired_development_v1_context_bytes_without_refit_and_"
-            "require_retired_development_v3_context_byte_identity"
+            "require_retired_development_v3_and_v4_context_byte_identity"
         ),
         "development_result_transport_policy": (
             "deep_detach_governance_parsed_frozen_JSON_to_ordinary_dict_list_only_at_core_"
-            "publication_boundary_with_exact_canonical_byte_equality"
+            "boundaries_with_exact_canonical_byte_equality"
+        ),
+        "development_result_endpoint_order_policy": (
+            "endpoint_order_array_is_authoritative_JSON_object_keys_are_an_exact_unordered_set_"
+            "and_all_validation_iteration_uses_endpoint_order"
         ),
         "replacement_development_evidence_role": (
             "transparent_synthetic_development_and_model_selection_not_human_confirmatory_evidence"
@@ -3728,11 +3399,12 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
         "human_EEG_outcome_authorized": False,
         "network_access_authorized": False,
     }
-    expected_immutability = {
+    exact_immutability = {
         "development_v1_files_may_not_be_modified_deleted_or_extended": True,
         "development_v2_files_may_not_be_modified_deleted_or_extended": True,
         "development_v3_files_may_not_be_modified_deleted_or_extended": True,
-        "development_v1_v2_or_v3_schema_may_not_be_reinterpreted_as_v4": True,
+        "development_v4_files_may_not_be_modified_deleted_or_extended": True,
+        "development_v1_v2_v3_or_v4_schema_may_not_be_reinterpreted_as_v5": True,
         "any_failure_after_development_start_receipt_consumes_attempt": True,
         "old_amendment_files_may_not_be_modified": True,
         "old_development_seed_may_not_be_replayed_or_reconstructed": True,
@@ -3744,85 +3416,105 @@ def _validate_v3_3_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
     if (
         value.get("schema") != RECOVERY_AMENDMENT_SCHEMA
         or value.get("candidate_id") != CANDIDATE_ID
-        or value.get("decision_id") != "COR-20260907-031"
+        or value.get("decision_id") != "COR-20260907-032"
         or value.get("protocol_revision") != PROTOCOL_REVISION
         or value.get("recorded_at_is_amendment_time_not_incident_timestamp") is not True
         or value.get("status")
-        != "preoutcome_development_replacement_after_consumed_infrastructure_attempt"
+        != "preoutcome_development_replacement_after_second_consumed_result_validation_attempt"
         or value.get("scientific_objective_changed") is not False
         or value.get("scientific_contract_changed") is not True
         or value.get("scientific_contract_delta") != "synthetic.rng.development_root_seed_only"
-        or owner != expected_owner
-        or not lineage_is_exact
-        or _plain_json(retired_v1) != expected_retired_v1
-        or _plain_json(retired_v2) != expected_retired_v2
+        or owner != exact_owner
         or projection.get("schema") != SCIENTIFIC_CONTRACT_PROJECTION_SCHEMA
         or projection.get("retired_baseline_sha256")
         != RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        or projection.get("original_pre_v3_3_baseline_sha256")
+        != ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or projection.get("sha256") != SCIENTIFIC_CONTRACT_PROJECTION_SHA256
-        or projection.get("canonical_byte_length") != 59_154
+        or projection.get("canonical_byte_length") != 59_153
         or projection.get("master_keys") != list(_SCIENTIFIC_PROJECTION_MASTER_KEYS)
         or projection.get("synthetic_keys") != list(_SCIENTIFIC_PROJECTION_SYNTHETIC_KEYS)
         or projection.get("unchanged_components")
         != list(_SCIENTIFIC_PROJECTION_UNCHANGED_COMPONENTS)
-        or _plain_json(allowed_delta) != expected_allowed_delta
-        or _plain_json(projection_preimage) != expected_projection_preimage
-        or retired_v3.get("attempt_id") != "development-v3"
-        or retired_v3.get("canonical_root") != os.fspath(RETIRED_V3_DEVELOPMENT_ROOT)
-        or retired_v3.get("source_commit") != RETIRED_V3_SOURCE_COMMIT
-        or retired_v3.get("source_tree") != RETIRED_V3_SOURCE_TREE
-        or retired_v3.get("source_bundle_sha256") != RETIRED_V3_SOURCE_BUNDLE_SHA256
-        or retired_v3.get("numerical_runtime_fingerprint_sha256")
-        != RETIRED_V3_RUNTIME_FINGERPRINT_SHA256
-        or retired_v3.get("artifact_inventory_schema") != RETIRED_V3_ARTIFACT_INVENTORY_SCHEMA
-        or retired_v3.get("artifact_inventory_sha256") != RETIRED_V3_ARTIFACT_INVENTORY_SHA256
-        or retired_v3.get("exact_file_names")
+        or projection.get("allowed_delta")
+        != {
+            "path": "synthetic.rng.development_root_seed",
+            "retired_value": 3_156_745_110,
+            "replacement_value": REPLACEMENT_DEVELOPMENT_ROOT_SEED,
+            "all_other_leaves_must_be_byte_equivalent": True,
+        }
+        or retired_v4.get("attempt_id") != "development-v4"
+        or retired_v4.get("canonical_root") != os.fspath(RETIRED_V4_DEVELOPMENT_ROOT)
+        or retired_v4.get("source_commit") != RETIRED_V4_SOURCE_COMMIT
+        or retired_v4.get("source_tree") != RETIRED_V4_SOURCE_TREE
+        or retired_v4.get("source_bundle_sha256") != RETIRED_V4_SOURCE_BUNDLE_SHA256
+        or retired_v4.get("numerical_runtime_fingerprint_sha256")
+        != RETIRED_V4_RUNTIME_FINGERPRINT_SHA256
+        or retired_v4.get("artifact_inventory_schema") != RETIRED_V4_ARTIFACT_INVENTORY_SCHEMA
+        or retired_v4.get("artifact_inventory_sha256") != RETIRED_V4_ARTIFACT_INVENTORY_SHA256
+        or retired_v4.get("exact_file_names")
         != ["context-reference.json", "development-bundle.json", "development-start.json"]
-        or _plain_json(retired_bundle) != expected_retired_bundle
-        or _plain_json(retired_context) != expected_retired_context
-        or _plain_json(retired_start) != expected_retired_start
-        or _plain_json(failure) != expected_failure
-        or _plain_json(durable) != expected_durable
-        or _plain_json(inference) != expected_inference
-        or retired_v3.get("scientific_interpretation")
-        != "infrastructure_no_go_after_consumed_development_seed_not_a_scientific_pass_or_fail"
-        or retired_v3.get("continuation_authorized") is not False
-        or retired_v3.get("exact_directory_inventory_must_remain_three_files") is not True
-        or failure.get("exception_type") != RETIRED_V3_INCIDENT_ERROR
-        or failure.get("message") != RETIRED_V3_INCIDENT_MESSAGE
-        or emitted != RETIRED_V3_INCIDENT_OUTPUT_BYTES
-        or file_sha256(emitted) != RETIRED_V3_INCIDENT_OUTPUT_SHA256
-        or durable.get("development_seed") != 20_260_909
-        or durable.get("development_seed_consumed_by_terminal_start_receipt_policy") is not True
+        or bundle
+        != {
+            "path": os.fspath(RETIRED_V4_DEVELOPMENT_BUNDLE_PATH),
+            "schema": RETIRED_V4_DEVELOPMENT_BUNDLE_SCHEMA,
+            "payload_sha256": RETIRED_V4_BUNDLE_PAYLOAD_SHA256,
+            "file_sha256": RETIRED_V4_BUNDLE_FILE_SHA256,
+        }
+        or context
+        != {
+            "path": os.fspath(RETIRED_V4_CONTEXT_REFERENCE_PATH),
+            "schema": ARTIFACT_SCHEMAS["context_reference"],
+            "payload_sha256": RETIRED_V4_CONTEXT_PAYLOAD_SHA256,
+            "file_sha256": RETIRED_V4_CONTEXT_FILE_SHA256,
+        }
+        or start
+        != {
+            "path": os.fspath(RETIRED_V4_DEVELOPMENT_START_PATH),
+            "schema": ARTIFACT_SCHEMAS["development_start"],
+            "payload_sha256": RETIRED_V4_START_PAYLOAD_SHA256,
+            "file_sha256": RETIRED_V4_START_FILE_SHA256,
+            "started_at_UTC": "2026-09-06T23:35:38Z",
+            "creator_process_id": 1_234_958,
+        }
+        or failure.get("exception_type") != RETIRED_V4_INCIDENT_ERROR
+        or failure.get("message") != RETIRED_V4_INCIDENT_MESSAGE
+        or emitted != RETIRED_V4_INCIDENT_OUTPUT_BYTES
+        or file_sha256(emitted) != RETIRED_V4_INCIDENT_OUTPUT_SHA256
+        or failure.get("failure_boundary")
+        != "after_execute_complete_development_returned_during_governance_canonical_parse_to_core_publication_validation_before_result_O_EXCL"
+        or durable.get("context_reference_artifact_count") != 1
+        or durable.get("development_start_artifact_count") != 1
         or durable.get("development_result_artifact_count") != 0
+        or durable.get("development_seed") != 3_156_745_110
+        or durable.get("development_seed_consumed_by_terminal_start_receipt_policy") is not True
         or durable.get("experimental_workflow_outcome_observation_count") != 0
+        or durable.get("governed_execution_network_access_count") != 0
         or durable.get("human_EEG_outcome_access_count") != 0
         or inference.get("classification")
         != "strong_control_flow_inference_not_observed_outcome_or_durable_attestation"
         or inference.get("must_not_be_reconstructed_or_used_as_evidence") is not True
-        or _plain_json(seed) != expected_seed
-        or _plain_json(preimage) != _replacement_seed_preimage()
+        or retired_v4.get("continuation_authorized") is not False
+        or retired_v4.get("exact_directory_inventory_must_remain_three_files") is not True
+        or seed != exact_seed
+        or len(preimage_bytes) != 799
         or file_sha256(preimage_bytes) != REPLACEMENT_SEED_PREIMAGE_SHA256
-        or seed.get("selected_word_index") != eligible[0][0]
-        or seed.get("selected_seed") != eligible[0][1]
-        or seed.get("selected_word_index") != 0
-        or seed.get("selected_seed") != REPLACEMENT_DEVELOPMENT_ROOT_SEED
-        or seed.get("outcome_used_in_derivation") is not False
-        or _plain_json(recovery) != expected_recovery
-        or _plain_json(immutability) != expected_immutability
+        or eligible[0] != (0, REPLACEMENT_DEVELOPMENT_ROOT_SEED)
+        or recovery != exact_recovery
+        or immutability != exact_immutability
     ):
-        raise ValidationError("recovery amendment differs from the frozen V3.3 facts")
+        raise ValidationError("recovery amendment differs from the frozen V3.4 facts")
     _parse_rfc3339_seconds(value.get("recorded_at_utc"), "recovery recorded_at_utc")
     frozen = _freeze_json(value)
     if not isinstance(frozen, Mapping):
-        raise TypeError("validated V3.3 amendment did not remain a mapping")
+        raise TypeError("validated V3.4 amendment did not remain a mapping")
     return frozen
 
 
 def _validate_recovery_amendment_bytes(data: bytes) -> Mapping[str, Any]:
-    """Validate only the exact hash-pinned current V3.3 recovery record."""
+    """Validate only the exact hash-pinned current V3.4 recovery record."""
 
-    return _validate_v3_3_recovery_amendment_bytes(data)
+    return _validate_v3_4_recovery_amendment_bytes(data)
 
 
 def _scientific_contract_projection_bytes(
@@ -3879,7 +3571,7 @@ def _scientific_contract_projection_bytes(
 def _validate_scientific_contract_projection(
     frozen_file_bytes: Mapping[str, bytes],
 ) -> None:
-    """Prove V3.3 changes exactly one projected leaf: the replacement dev seed."""
+    """Prove V3.4 changes exactly one projected leaf: the replacement dev seed."""
 
     amendment = _validate_recovery_amendment_bytes(frozen_file_bytes[PREOUTCOME_AMENDMENT_PATH])
     current = _scientific_contract_projection_bytes(
@@ -3920,29 +3612,43 @@ def _validate_scientific_contract_projection(
         ),
         amendment=amendment,
     )
+    retired_v4 = _scientific_contract_projection_bytes(
+        master_bytes=_run_git(
+            V3_SOURCE_REPOSITORY,
+            ("show", f"{RETIRED_V4_SOURCE_COMMIT}:{MASTER_PLAN_PATH}"),
+        ),
+        synthetic_bytes=_run_git(
+            V3_SOURCE_REPOSITORY,
+            ("show", f"{RETIRED_V4_SOURCE_COMMIT}:{SYNTHETIC_PLAN_PATH}"),
+        ),
+        amendment=amendment,
+    )
     normalized_current = json.loads(current.decode("utf-8"))
-    normalized_current["synthetic"]["rng"]["development_root_seed"] = 20_260_909
+    normalized_current["synthetic"]["rng"]["development_root_seed"] = 3_156_745_110
     normalized_bytes = canonical_json_bytes(normalized_current)
     projection = amendment["scientific_contract_projection"]
     if (
         retired_v1 != retired_v2
         or retired_v1 != retired_v3
-        or normalized_bytes != retired_v3
-        or current == retired_v3
-        or len(current) != 59_154
-        or file_sha256(retired_v3) != RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        or file_sha256(retired_v3) != ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        or normalized_bytes != retired_v4
+        or current == retired_v4
+        or len(current) != 59_153
+        or file_sha256(retired_v4) != RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or file_sha256(current) != SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        or projection["original_pre_v3_3_baseline_sha256"]
+        != ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or projection["retired_baseline_sha256"] != RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or projection["sha256"] != SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         or projection["allowed_delta"]
         != {
             "path": "synthetic.rng.development_root_seed",
-            "retired_value": 20_260_909,
+            "retired_value": 3_156_745_110,
             "replacement_value": REPLACEMENT_DEVELOPMENT_ROOT_SEED,
             "all_other_leaves_must_be_byte_equivalent": True,
         }
     ):
-        raise AuthorityError("V3.3 scientific-contract projection is not the exact one-seed delta")
+        raise AuthorityError("V3.4 scientific-contract projection is not the exact one-seed delta")
 
 
 def _require_frozen_files_in_current_repository(
@@ -4138,9 +3844,58 @@ _DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V3_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
         "replacement_development_evidence_role",
     }
 )
+_RETIRED_V4_DEVELOPMENT_BUNDLE_FIELDS = _DEVELOPMENT_BUNDLE_FIELDS
+_DEVELOPMENT_BUNDLE_FIELDS = _RETIRED_V4_DEVELOPMENT_BUNDLE_FIELDS | frozenset(
+    {
+        "first_recovery_amendment_path",
+        "first_recovery_amendment_file_sha256",
+        "original_retired_scientific_contract_projection_sha256",
+        "retired_v4_source_commit",
+        "retired_v4_source_tree",
+        "retired_v4_source_bundle_sha256",
+        "retired_v4_numerical_runtime_fingerprint_sha256",
+        "retired_v4_artifact_inventory_schema",
+        "retired_v4_artifact_inventory_sha256",
+        "retired_v4_development_bundle_path",
+        "retired_v4_development_bundle_schema",
+        "retired_v4_development_bundle_payload_sha256",
+        "retired_v4_development_bundle_file_sha256",
+        "retired_v4_context_reference_path",
+        "retired_v4_context_reference_schema",
+        "retired_v4_context_reference_payload_sha256",
+        "retired_v4_context_reference_file_sha256",
+        "retired_v4_development_start_path",
+        "retired_v4_development_start_schema",
+        "retired_v4_development_start_payload_sha256",
+        "retired_v4_development_start_file_sha256",
+        "retired_v4_development_started_at_UTC",
+        "retired_v4_development_start_creator_process_id",
+        "retired_v4_incident_error",
+        "retired_v4_incident_message",
+        "retired_v4_incident_output_sha256",
+        "retired_v4_incident_boundary",
+        "retired_v4_context_reference_root_seed",
+        "retired_v4_development_root_seed",
+        "retired_v4_development_seed_consumed",
+        "retired_v4_control_flow_inference_classification",
+        "retired_v4_development_rng_authority_issued_in_memory",
+        "retired_v4_development_seedsequence_and_DGP_executed",
+        "retired_v4_complete_grid_gate_reports_computed_in_memory",
+        "retired_v4_development_selection_computed_in_memory",
+        "retired_v4_development_result_present",
+        "retired_v4_selected_method_present",
+        "retired_v4_test_evidence_present",
+        "retired_v4_canary_present",
+        "retired_v4_experimental_outcome_observed",
+        "retired_v4_governed_network_accessed",
+        "retired_v4_human_EEG_outcome_accessed",
+        "retired_v4_continuation_authorized",
+        "development_result_endpoint_order_policy",
+    }
+)
 DEVELOPMENT_BUNDLE_CANONICAL_PATH = (
     "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-    "development-v4/development-bundle.json"
+    "development-v5/development-bundle.json"
 )
 
 
@@ -4223,6 +3978,39 @@ def _retired_v3_inventory_preimage() -> Mapping[str, Any]:
 
 def retired_v3_artifact_inventory_sha256() -> str:
     return hashlib.sha256(canonical_json_bytes(_retired_v3_inventory_preimage())).hexdigest()
+
+
+def _retired_v4_inventory_preimage() -> Mapping[str, Any]:
+    return {
+        "schema": RETIRED_V4_ARTIFACT_INVENTORY_SCHEMA,
+        "artifacts": [
+            {
+                "role": "development_bundle",
+                "path": os.fspath(RETIRED_V4_DEVELOPMENT_BUNDLE_PATH),
+                "schema": RETIRED_V4_DEVELOPMENT_BUNDLE_SCHEMA,
+                "payload_sha256": RETIRED_V4_BUNDLE_PAYLOAD_SHA256,
+                "file_sha256": RETIRED_V4_BUNDLE_FILE_SHA256,
+            },
+            {
+                "role": "context_reference",
+                "path": os.fspath(RETIRED_V4_CONTEXT_REFERENCE_PATH),
+                "schema": ARTIFACT_SCHEMAS["context_reference"],
+                "payload_sha256": RETIRED_V4_CONTEXT_PAYLOAD_SHA256,
+                "file_sha256": RETIRED_V4_CONTEXT_FILE_SHA256,
+            },
+            {
+                "role": "development_start",
+                "path": os.fspath(RETIRED_V4_DEVELOPMENT_START_PATH),
+                "schema": ARTIFACT_SCHEMAS["development_start"],
+                "payload_sha256": RETIRED_V4_START_PAYLOAD_SHA256,
+                "file_sha256": RETIRED_V4_START_FILE_SHA256,
+            },
+        ],
+    }
+
+
+def retired_v4_artifact_inventory_sha256() -> str:
+    return hashlib.sha256(canonical_json_bytes(_retired_v4_inventory_preimage())).hexdigest()
 
 
 def _retired_v1_stat_identity(value: os.stat_result) -> tuple[int, ...]:
@@ -4396,6 +4184,12 @@ def _load_exact_retired_v3_directory_bytes(root: Path) -> Mapping[str, bytes]:
     finally:
         os.close(descriptor)
     return MappingProxyType(loaded)
+
+
+def _load_exact_retired_v4_directory_bytes(root: Path) -> Mapping[str, bytes]:
+    """Read the exact three-file V4 terminal prefix without following links."""
+
+    return _load_exact_retired_v3_directory_bytes(root)
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -4685,9 +4479,9 @@ def _observe_retired_v2_artifacts_from_exact_root(root: Path) -> RetiredV2Artifa
         or bundle["source_bundle_sha256"] != RETIRED_V2_SOURCE_BUNDLE_SHA256
         or bundle["protocol_revision"] != "V3.1"
         or bundle["development_attempt_id"] != "development-v2"
-        or bundle["preoutcome_amendment_path"] != EARLIER_RECOVERY_AMENDMENT_PATH
+        or bundle["preoutcome_amendment_path"] != FIRST_RECOVERY_AMENDMENT_PATH
         or bundle["preoutcome_amendment_file_sha256"]
-        != FROZEN_FILE_SHA256[EARLIER_RECOVERY_AMENDMENT_PATH]
+        != FROZEN_FILE_SHA256[FIRST_RECOVERY_AMENDMENT_PATH]
         or bundle["payload_sha256"] != RETIRED_V2_BUNDLE_PAYLOAD_SHA256
         or file_sha256(bundle_bytes) != RETIRED_V2_BUNDLE_FILE_SHA256
     ):
@@ -4831,12 +4625,12 @@ def _observe_retired_v3_artifacts_from_exact_root(root: Path) -> RetiredV3Artifa
         or bundle["numerical_runtime_fingerprint_sha256"] != RETIRED_V3_RUNTIME_FINGERPRINT_SHA256
         or bundle["protocol_revision"] != "V3.2"
         or bundle["development_attempt_id"] != "development-v3"
-        or bundle["preoutcome_amendment_path"] != PRIOR_RECOVERY_AMENDMENT_PATH
+        or bundle["preoutcome_amendment_path"] != EARLIER_RECOVERY_AMENDMENT_PATH
         or bundle["preoutcome_amendment_file_sha256"]
-        != FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH]
-        or bundle["prior_recovery_amendment_path"] != EARLIER_RECOVERY_AMENDMENT_PATH
-        or bundle["prior_recovery_amendment_file_sha256"]
         != FROZEN_FILE_SHA256[EARLIER_RECOVERY_AMENDMENT_PATH]
+        or bundle["prior_recovery_amendment_path"] != FIRST_RECOVERY_AMENDMENT_PATH
+        or bundle["prior_recovery_amendment_file_sha256"]
+        != FROZEN_FILE_SHA256[FIRST_RECOVERY_AMENDMENT_PATH]
         or bundle["payload_sha256"] != RETIRED_V3_BUNDLE_PAYLOAD_SHA256
         or file_sha256(bundle_bytes) != RETIRED_V3_BUNDLE_FILE_SHA256
         or context["payload_sha256"] != RETIRED_V3_CONTEXT_PAYLOAD_SHA256
@@ -4877,17 +4671,191 @@ def observe_retired_v3_artifacts() -> RetiredV3ArtifactsCapability:
     return _observe_retired_v3_artifacts_from_exact_root(RETIRED_V3_DEVELOPMENT_ROOT)
 
 
+@dataclass(frozen=True, slots=True, init=False)
+class RetiredV4ArtifactsCapability:
+    """Read-only proof that consumed V4 remains its exact three-file prefix."""
+
+    schema: str
+    candidate_id: str
+    attempt_id: str
+    source_commit: str
+    source_tree: str
+    source_bundle_sha256: str
+    numerical_runtime_fingerprint_sha256: str
+    artifact_inventory_sha256: str
+    development_bundle_file_sha256: str
+    context_reference_file_sha256: str
+    development_start_file_sha256: str
+    incident_output_sha256: str
+    continuation_authorized: bool
+    binding_sha256: str
+    _development_bundle_bytes: bytes = field(repr=False, compare=False)
+    _context_reference_bytes: bytes = field(repr=False, compare=False)
+    _development_start_bytes: bytes = field(repr=False, compare=False)
+    _validation_marker: object = field(repr=False, compare=False)
+
+    def __init__(
+        self,
+        *,
+        development_bundle_bytes: bytes,
+        context_reference_bytes: bytes,
+        development_start_bytes: bytes,
+        _issuer: object,
+    ) -> None:
+        if _issuer is not _CAPABILITY_ISSUER:
+            raise AuthorityError("RetiredV4ArtifactsCapability has no valid issuer")
+        bindings = _retired_v4_capability_bindings()
+        for name, item in bindings.items():
+            object.__setattr__(self, name, item)
+        object.__setattr__(
+            self,
+            "binding_sha256",
+            hashlib.sha256(canonical_json_bytes(bindings)).hexdigest(),
+        )
+        object.__setattr__(self, "_development_bundle_bytes", bytes(development_bundle_bytes))
+        object.__setattr__(self, "_context_reference_bytes", bytes(context_reference_bytes))
+        object.__setattr__(self, "_development_start_bytes", bytes(development_start_bytes))
+        object.__setattr__(self, "_validation_marker", _issuer)
+
+
+def _retired_v4_capability_bindings() -> Mapping[str, Any]:
+    return {
+        "schema": RETIRED_V4_ARTIFACT_INVENTORY_SCHEMA,
+        "candidate_id": CANDIDATE_ID,
+        "attempt_id": "development-v4",
+        "source_commit": RETIRED_V4_SOURCE_COMMIT,
+        "source_tree": RETIRED_V4_SOURCE_TREE,
+        "source_bundle_sha256": RETIRED_V4_SOURCE_BUNDLE_SHA256,
+        "numerical_runtime_fingerprint_sha256": RETIRED_V4_RUNTIME_FINGERPRINT_SHA256,
+        "artifact_inventory_sha256": RETIRED_V4_ARTIFACT_INVENTORY_SHA256,
+        "development_bundle_file_sha256": RETIRED_V4_BUNDLE_FILE_SHA256,
+        "context_reference_file_sha256": RETIRED_V4_CONTEXT_FILE_SHA256,
+        "development_start_file_sha256": RETIRED_V4_START_FILE_SHA256,
+        "incident_output_sha256": RETIRED_V4_INCIDENT_OUTPUT_SHA256,
+        "continuation_authorized": False,
+    }
+
+
+def require_retired_v4_artifacts_capability(
+    value: object,
+) -> RetiredV4ArtifactsCapability:
+    if type(value) is not RetiredV4ArtifactsCapability:
+        raise AuthorityError("exact RetiredV4ArtifactsCapability required")
+    capability = value
+    if getattr(capability, "_validation_marker", None) is not _CAPABILITY_ISSUER:
+        raise AuthorityError("retired development-v4 capability marker is invalid")
+    expected = _retired_v4_capability_bindings()
+    observed = {name: getattr(capability, name) for name in expected}
+    if (
+        observed != expected
+        or capability.binding_sha256 != hashlib.sha256(canonical_json_bytes(expected)).hexdigest()
+        or retired_v4_artifact_inventory_sha256() != RETIRED_V4_ARTIFACT_INVENTORY_SHA256
+        or file_sha256(capability._development_bundle_bytes) != RETIRED_V4_BUNDLE_FILE_SHA256
+        or file_sha256(capability._context_reference_bytes) != RETIRED_V4_CONTEXT_FILE_SHA256
+        or file_sha256(capability._development_start_bytes) != RETIRED_V4_START_FILE_SHA256
+    ):
+        raise AuthorityError("retired development-v4 capability binding is invalid")
+    return capability
+
+
+def _observe_retired_v4_artifacts_from_exact_root(root: Path) -> RetiredV4ArtifactsCapability:
+    loaded = _load_exact_retired_v4_directory_bytes(root)
+    bundle_bytes = loaded["development-bundle.json"]
+    context_bytes = loaded["context-reference.json"]
+    start_bytes = loaded["development-start.json"]
+    bundle = parse_artifact_bytes(
+        bundle_bytes,
+        ArtifactSpec(
+            schema=RETIRED_V4_DEVELOPMENT_BUNDLE_SCHEMA,
+            exact_fields=_RETIRED_V4_DEVELOPMENT_BUNDLE_FIELDS,
+        ),
+    )
+    context = parse_artifact_bytes(
+        context_bytes,
+        ArtifactSpec(
+            schema=ARTIFACT_SCHEMAS["context_reference"],
+            exact_fields=_CONTEXT_REFERENCE_FIELDS,
+        ),
+    )
+    start = parse_artifact_bytes(
+        start_bytes,
+        ArtifactSpec(
+            schema=ARTIFACT_SCHEMAS["development_start"],
+            exact_fields=_DEVELOPMENT_START_FIELDS,
+        ),
+    )
+    retired_v1 = require_retired_v1_artifacts_capability(
+        _observe_retired_v1_artifacts_from_exact_root(RETIRED_V1_DEVELOPMENT_ROOT)
+    )
+    if (
+        root != RETIRED_V4_DEVELOPMENT_ROOT
+        or bundle["candidate_id"] != CANDIDATE_ID
+        or bundle["canonical_path"] != os.fspath(RETIRED_V4_DEVELOPMENT_BUNDLE_PATH)
+        or bundle["clean_git_commit"] != RETIRED_V4_SOURCE_COMMIT
+        or bundle["clean_git_tree"] != RETIRED_V4_SOURCE_TREE
+        or bundle["source_bundle_sha256"] != RETIRED_V4_SOURCE_BUNDLE_SHA256
+        or bundle["numerical_runtime_fingerprint_sha256"] != RETIRED_V4_RUNTIME_FINGERPRINT_SHA256
+        or bundle["protocol_revision"] != "V3.3"
+        or bundle["development_attempt_id"] != "development-v4"
+        or bundle["preoutcome_amendment_path"] != PRIOR_RECOVERY_AMENDMENT_PATH
+        or bundle["preoutcome_amendment_file_sha256"]
+        != FROZEN_FILE_SHA256[PRIOR_RECOVERY_AMENDMENT_PATH]
+        or bundle["prior_recovery_amendment_path"] != EARLIER_RECOVERY_AMENDMENT_PATH
+        or bundle["prior_recovery_amendment_file_sha256"]
+        != FROZEN_FILE_SHA256[EARLIER_RECOVERY_AMENDMENT_PATH]
+        or bundle["earlier_recovery_amendment_path"] != FIRST_RECOVERY_AMENDMENT_PATH
+        or bundle["earlier_recovery_amendment_file_sha256"]
+        != FROZEN_FILE_SHA256[FIRST_RECOVERY_AMENDMENT_PATH]
+        or bundle["payload_sha256"] != RETIRED_V4_BUNDLE_PAYLOAD_SHA256
+        or file_sha256(bundle_bytes) != RETIRED_V4_BUNDLE_FILE_SHA256
+        or context["payload_sha256"] != RETIRED_V4_CONTEXT_PAYLOAD_SHA256
+        or file_sha256(context_bytes) != RETIRED_V4_CONTEXT_FILE_SHA256
+        or context_bytes != retired_v1._context_reference_bytes
+        or start["canonical_path"] != os.fspath(RETIRED_V4_DEVELOPMENT_START_PATH)
+        or start["protocol_revision"] != "V3.3"
+        or start["development_attempt_id"] != "development-v4"
+        or start["started_at_UTC"] != "2026-09-06T23:35:38Z"
+        or start["creator_process_id"] != 1_234_958
+        or start["development_bundle_payload_sha256"] != RETIRED_V4_BUNDLE_PAYLOAD_SHA256
+        or start["development_bundle_file_sha256"] != RETIRED_V4_BUNDLE_FILE_SHA256
+        or start["context_reference_payload_sha256"] != RETIRED_V4_CONTEXT_PAYLOAD_SHA256
+        or start["context_reference_file_sha256"] != RETIRED_V4_CONTEXT_FILE_SHA256
+        or start["development_root_seed"] != 3_156_745_110
+        or start["payload_sha256"] != RETIRED_V4_START_PAYLOAD_SHA256
+        or file_sha256(start_bytes) != RETIRED_V4_START_FILE_SHA256
+    ):
+        raise AuthorityError("retired development-v4 artifact identity mismatch")
+    return RetiredV4ArtifactsCapability(
+        development_bundle_bytes=bundle_bytes,
+        context_reference_bytes=context_bytes,
+        development_start_bytes=start_bytes,
+        _issuer=_CAPABILITY_ISSUER,
+    )
+
+
+def observe_retired_v4_artifacts() -> RetiredV4ArtifactsCapability:
+    """Observe consumed V4 without granting RNG or mutation authority."""
+
+    _require_active_governed_process(
+        recheck_site_packages=True,
+        recheck_source=True,
+    )
+    return _observe_retired_v4_artifacts_from_exact_root(RETIRED_V4_DEVELOPMENT_ROOT)
+
+
 def observe_retired_development_attempts() -> tuple[
     RetiredV1ArtifactsCapability,
     RetiredV2ArtifactsCapability,
     RetiredV3ArtifactsCapability,
+    RetiredV4ArtifactsCapability,
 ]:
-    """Re-observe all immutable failed prefixes before any V4 authority use."""
+    """Re-observe all immutable failed prefixes before any V5 authority use."""
 
     retired_v1 = observe_retired_v1_artifacts()
     retired_v2 = observe_retired_v2_artifacts()
     retired_v3 = observe_retired_v3_artifacts()
-    return retired_v1, retired_v2, retired_v3
+    retired_v4 = observe_retired_v4_artifacts()
+    return retired_v1, retired_v2, retired_v3, retired_v4
 
 
 def _retired_attempt_bundle_fields() -> Mapping[str, Any]:
@@ -4904,6 +4872,8 @@ def _retired_attempt_bundle_fields() -> Mapping[str, Any]:
         "earlier_recovery_amendment_file_sha256": FROZEN_FILE_SHA256[
             EARLIER_RECOVERY_AMENDMENT_PATH
         ],
+        "first_recovery_amendment_path": FIRST_RECOVERY_AMENDMENT_PATH,
+        "first_recovery_amendment_file_sha256": FROZEN_FILE_SHA256[FIRST_RECOVERY_AMENDMENT_PATH],
         "retired_v1_source_commit": RETIRED_V1_SOURCE_COMMIT,
         "retired_v1_source_tree": RETIRED_V1_SOURCE_TREE,
         "retired_v1_artifact_inventory_schema": RETIRED_V1_ARTIFACT_INVENTORY_SCHEMA,
@@ -4995,6 +4965,54 @@ def _retired_attempt_bundle_fields() -> Mapping[str, Any]:
         "retired_v3_governed_network_accessed": False,
         "retired_v3_human_EEG_outcome_accessed": False,
         "retired_v3_continuation_authorized": False,
+        "retired_v4_source_commit": RETIRED_V4_SOURCE_COMMIT,
+        "retired_v4_source_tree": RETIRED_V4_SOURCE_TREE,
+        "retired_v4_source_bundle_sha256": RETIRED_V4_SOURCE_BUNDLE_SHA256,
+        "retired_v4_numerical_runtime_fingerprint_sha256": (RETIRED_V4_RUNTIME_FINGERPRINT_SHA256),
+        "retired_v4_artifact_inventory_schema": RETIRED_V4_ARTIFACT_INVENTORY_SCHEMA,
+        "retired_v4_artifact_inventory_sha256": RETIRED_V4_ARTIFACT_INVENTORY_SHA256,
+        "retired_v4_development_bundle_path": os.fspath(RETIRED_V4_DEVELOPMENT_BUNDLE_PATH),
+        "retired_v4_development_bundle_schema": RETIRED_V4_DEVELOPMENT_BUNDLE_SCHEMA,
+        "retired_v4_development_bundle_payload_sha256": RETIRED_V4_BUNDLE_PAYLOAD_SHA256,
+        "retired_v4_development_bundle_file_sha256": RETIRED_V4_BUNDLE_FILE_SHA256,
+        "retired_v4_context_reference_path": os.fspath(RETIRED_V4_CONTEXT_REFERENCE_PATH),
+        "retired_v4_context_reference_schema": ARTIFACT_SCHEMAS["context_reference"],
+        "retired_v4_context_reference_payload_sha256": RETIRED_V4_CONTEXT_PAYLOAD_SHA256,
+        "retired_v4_context_reference_file_sha256": RETIRED_V4_CONTEXT_FILE_SHA256,
+        "retired_v4_development_start_path": os.fspath(RETIRED_V4_DEVELOPMENT_START_PATH),
+        "retired_v4_development_start_schema": ARTIFACT_SCHEMAS["development_start"],
+        "retired_v4_development_start_payload_sha256": RETIRED_V4_START_PAYLOAD_SHA256,
+        "retired_v4_development_start_file_sha256": RETIRED_V4_START_FILE_SHA256,
+        "retired_v4_development_started_at_UTC": "2026-09-06T23:35:38Z",
+        "retired_v4_development_start_creator_process_id": 1_234_958,
+        "retired_v4_incident_error": RETIRED_V4_INCIDENT_ERROR,
+        "retired_v4_incident_message": RETIRED_V4_INCIDENT_MESSAGE,
+        "retired_v4_incident_output_sha256": RETIRED_V4_INCIDENT_OUTPUT_SHA256,
+        "retired_v4_incident_boundary": (
+            "after_execute_complete_development_returned_during_governance_canonical_parse_to_"
+            "core_publication_validation_before_result_O_EXCL"
+        ),
+        "retired_v4_context_reference_root_seed": 20_260_910,
+        "retired_v4_development_root_seed": 3_156_745_110,
+        "retired_v4_development_seed_consumed": True,
+        "retired_v4_control_flow_inference_classification": (
+            "strong_control_flow_inference_not_observed_outcome_or_durable_attestation"
+        ),
+        "retired_v4_development_rng_authority_issued_in_memory": True,
+        "retired_v4_development_seedsequence_and_DGP_executed": True,
+        "retired_v4_complete_grid_gate_reports_computed_in_memory": True,
+        "retired_v4_development_selection_computed_in_memory": True,
+        "retired_v4_development_result_present": False,
+        "retired_v4_selected_method_present": False,
+        "retired_v4_test_evidence_present": False,
+        "retired_v4_canary_present": False,
+        "retired_v4_experimental_outcome_observed": False,
+        "retired_v4_governed_network_accessed": False,
+        "retired_v4_human_EEG_outcome_accessed": False,
+        "retired_v4_continuation_authorized": False,
+        "original_retired_scientific_contract_projection_sha256": (
+            ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+        ),
         "retired_scientific_contract_projection_sha256": (
             RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
         ),
@@ -5010,6 +5028,10 @@ def _retired_attempt_bundle_fields() -> Mapping[str, Any]:
         "replacement_seed_outcome_used": False,
         "replacement_development_evidence_role": (
             "transparent_synthetic_development_and_model_selection_not_human_confirmatory_evidence"
+        ),
+        "development_result_endpoint_order_policy": (
+            "endpoint_order_array_is_authoritative_JSON_object_keys_are_an_exact_unordered_set_"
+            "and_all_validation_iteration_uses_endpoint_order"
         ),
         "development_start_receipt_schema": ARTIFACT_SCHEMAS["development_start"],
         "development_start_receipt_path": os.fspath(DEVELOPMENT_START_CANONICAL_PATH),
@@ -6087,10 +6109,10 @@ def publish_context_reference(
         require_mutation_role=True,
     )
     data = artifact_bytes(value)
-    retired_v1, _, _ = observe_retired_development_attempts()
+    retired_v1, _, _, _ = observe_retired_development_attempts()
     if data != retired_v1_context_reference_bytes(retired_v1):
         raise AuthorityError(
-            "development-v4 must adopt the exact retired development-v1 context bytes"
+            "development-v5 must adopt the exact retired development-v1 context bytes"
         )
     _validate_context_reference_bytes(
         value,
@@ -6167,10 +6189,10 @@ def _validate_context_reference_at_path(
         ),
     )
     if scope == "canonical":
-        retired_v1, _, _ = observe_retired_development_attempts()
+        retired_v1, _, _, _ = observe_retired_development_attempts()
         if file_bytes != retired_v1_context_reference_bytes(retired_v1):
             raise AuthorityError(
-                "development-v4 context differs from the exact retired V1 reference"
+                "development-v5 context differs from the exact retired V1 reference"
             )
     parsed = _validate_context_reference_bytes(
         parsed,
@@ -6371,7 +6393,7 @@ def _require_development_bundle_and_context(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired, _, _ = observe_retired_development_attempts()
+    retired, _, _, _ = observe_retired_development_attempts()
     parsed = parse_artifact_bytes(
         data,
         ArtifactSpec(
@@ -6386,7 +6408,7 @@ def _require_development_bundle_and_context(
         or canonical_json_bytes(context._validated_payload) != canonical_json_bytes(parsed)
     ):
         raise AuthorityError(
-            "development RNG requires the exact validated development-v4 reference"
+            "development RNG requires the exact validated development-v5 reference"
         )
     return bundle, context
 
@@ -7239,7 +7261,7 @@ def _load_canonical_development_result_for_a_recovery(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired_v1, _, _ = observe_retired_development_attempts()
+    retired_v1, _, _, _ = observe_retired_development_attempts()
     if context_data != retired_v1_context_reference_bytes(retired_v1):
         raise AuthorityError("A-stage development recovery context differs from retired V1 bytes")
     context_payload = parse_artifact_bytes(
@@ -8230,10 +8252,10 @@ def reopen_context_reference(
         [CONTEXT_REFERENCE_CANONICAL_PATH],
         declared_paths=[CONTEXT_REFERENCE_CANONICAL_PATH],
     )[os.fspath(CONTEXT_REFERENCE_CANONICAL_PATH)]
-    retired_v1, _, _ = observe_retired_development_attempts()
+    retired_v1, _, _, _ = observe_retired_development_attempts()
     if reference_data != retired_v1_context_reference_bytes(retired_v1):
         raise AuthorityError(
-            "durable development-v4 context differs from the exact retired V1 bytes"
+            "durable development-v5 context differs from the exact retired V1 bytes"
         )
     reference = parse_artifact_bytes(
         reference_data,

@@ -1,0 +1,310 @@
+{
+  "schema": "cfeg.metadata-calibration-efficiency-v3.preoutcome-recovery-amendment.v4",
+  "candidate_id": "metadata-calibration-efficiency-v3",
+  "decision_id": "COR-20260907-032",
+  "recorded_at_utc": "2026-09-07T00:30:27Z",
+  "recorded_at_is_amendment_time_not_incident_timestamp": true,
+  "protocol_revision": "V3.4",
+  "status": "preoutcome_development_replacement_after_second_consumed_result_validation_attempt",
+  "scientific_objective_changed": false,
+  "scientific_contract_changed": true,
+  "scientific_contract_delta": "synthetic.rng.development_root_seed_only",
+  "scientific_contract_projection": {
+    "schema": "cfeg.metadata-calibration-efficiency-v3.scientific-contract-projection.v1",
+    "retired_baseline_sha256": "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712",
+    "original_pre_v3_3_baseline_sha256": "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79",
+    "sha256": "670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca",
+    "canonical_byte_length": 59153,
+    "allowed_delta": {
+      "path": "synthetic.rng.development_root_seed",
+      "retired_value": 3156745110,
+      "replacement_value": 301269949,
+      "all_other_leaves_must_be_byte_equivalent": true
+    },
+    "canonical_preimage_definition": {
+      "top_level_keys": [
+        "candidate_id",
+        "master",
+        "schema",
+        "synthetic"
+      ],
+      "candidate_id_value": "metadata-calibration-efficiency-v3",
+      "master_value": "mapping_of_the_exact_master_keys_below_to_their_parsed_YAML_values",
+      "synthetic_value": "mapping_of_the_exact_synthetic_keys_below_to_their_parsed_YAML_values",
+      "serialization": "UTF-8_JSON_sort_keys_true_separators_comma_colon_ensure_ascii_true_allow_nan_false_without_trailing_newline"
+    },
+    "master_keys": [
+      "candidate_id",
+      "scientific_candidate_id_template",
+      "objective",
+      "research_question",
+      "claim_order",
+      "interpretation_boundary",
+      "information_rights",
+      "roles",
+      "anchor",
+      "score_normalization",
+      "support_residual",
+      "fusion",
+      "metadata_trust",
+      "target_local_gate",
+      "calibration_contract",
+      "factor_ablation",
+      "data_roles",
+      "estimands",
+      "promotion_logic",
+      "stopping_rules"
+    ],
+    "synthetic_keys": [
+      "candidate_id",
+      "generator_revision",
+      "purpose",
+      "disclosed_prior_seed_exposure",
+      "rng",
+      "population",
+      "waveform",
+      "operator_grid",
+      "context_reference",
+      "families",
+      "context_controls",
+      "invariants",
+      "complete_grid",
+      "metrics",
+      "promotion_requirements",
+      "development_selection",
+      "governance_canary",
+      "scientific_lockbox",
+      "stopping_rules"
+    ],
+    "unchanged_components": [
+      "objective",
+      "operator_equations",
+      "DGP",
+      "three_by_three_grid",
+      "thresholds",
+      "promotion_gates",
+      "selection_rank",
+      "context_reference_root_seed_20260910",
+      "evidence_roles_and_cohorts"
+    ]
+  },
+  "owner_approval": {
+    "approved_by": "active_workspace_owner",
+    "approval_scope": "tracked_preoutcome_V3_4_development_v5_replacement_only",
+    "approval_basis": "standing_explicit_user_instruction_to_make_needed_recovery_decisions_and_continue_to_experiment_completion_given_before_development_v4_incident_and_before_any_development_v5_artifact_or_execution",
+    "attestation_note": "This repository-local hash-bound receipt records the active user's explicit approval; it is not a cryptographic signature or a future target-bound execution authorization."
+  },
+  "original_preoutcome_amendment": {
+    "path": "configs/governance/metadata_calibration_v3_preoutcome_amendment.json",
+    "file_sha256": "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202",
+    "must_remain_byte_identical": true
+  },
+  "prior_recovery_amendment_v1": {
+    "path": "configs/governance/metadata_calibration_v3_1_recovery_amendment.json",
+    "file_sha256": "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238",
+    "must_remain_byte_identical": true
+  },
+  "prior_recovery_amendment_v2": {
+    "path": "configs/governance/metadata_calibration_v3_2_recovery_amendment.json",
+    "file_sha256": "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb",
+    "must_remain_byte_identical": true
+  },
+  "prior_recovery_amendment_v3": {
+    "path": "configs/governance/metadata_calibration_v3_3_recovery_amendment.json",
+    "file_sha256": "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11",
+    "must_remain_byte_identical": true
+  },
+  "retired_development_v1": {
+    "attempt_id": "development-v1",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v1",
+    "source_commit": "569394da6894a2efed37b9dde162cbe4fe60534d",
+    "source_tree": "fe472b6ae07d2a95d87d8ae5f3ec266a5347e8dd",
+    "artifact_inventory_schema": "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v1",
+    "artifact_inventory_sha256": "ece2fc0822fc33d952b926efacb076586d90a74e1bb5132b110789359837055b",
+    "exact_file_names": [
+      "context-reference.json",
+      "development-bundle.json"
+    ],
+    "continuation_authorized": false
+  },
+  "retired_development_v2": {
+    "attempt_id": "development-v2",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v2",
+    "source_commit": "82e26d60fd17464380697126bb64ad73b36708a2",
+    "source_tree": "f7f59bda48610aeaa5bd1b6ffd288a7b56a4bb85",
+    "source_bundle_sha256": "a74d3a86f207520fd97c746809378146d75614fe287b1eaab96e50b15da3dbc0",
+    "artifact_inventory_schema": "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v2",
+    "artifact_inventory_sha256": "7ae6a99b7ec2033b2ce0cdfbfedc05851b77d9e5dfeb21b485ebe4215f18c865",
+    "exact_file_names": [
+      "development-bundle.json"
+    ],
+    "continuation_authorized": false
+  },
+  "retired_development_v3": {
+    "attempt_id": "development-v3",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v3",
+    "source_commit": "adab7acda840c5e6ed9a994d82c8098094284c6b",
+    "source_tree": "b06b43a130f599e0b85b4ee91856954f6061bea7",
+    "source_bundle_sha256": "5e7ff5ad96c010d73870857caf6f3544e227e49099fbb0c1ad839649e30cd609",
+    "numerical_runtime_fingerprint_sha256": "d68d72b909b5eed289de51464c3b5a6340854ac189fecdc394fc27edaad9d633",
+    "artifact_inventory_schema": "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v3",
+    "artifact_inventory_sha256": "59502b324417c2be6c03aa5483532646fb8630af92de1218e56d862ce72cd6e7",
+    "exact_file_names": [
+      "context-reference.json",
+      "development-bundle.json",
+      "development-start.json"
+    ],
+    "continuation_authorized": false
+  },
+  "retired_development_v4": {
+    "attempt_id": "development-v4",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4",
+    "source_commit": "198158663efd1c4481b23dd3d012b9d854ada8d1",
+    "source_tree": "ac7882494955a7abb5046a4dd950bd98d6fdd6b1",
+    "source_bundle_sha256": "c57c81a2ffae4511e4de6159d11ea5ef482e13b8fdebd916eef98bdf7235250c",
+    "numerical_runtime_fingerprint_sha256": "d68d72b909b5eed289de51464c3b5a6340854ac189fecdc394fc27edaad9d633",
+    "artifact_inventory_schema": "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v4",
+    "artifact_inventory_sha256": "511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa",
+    "exact_file_names": [
+      "context-reference.json",
+      "development-bundle.json",
+      "development-start.json"
+    ],
+    "development_bundle": {
+      "path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-bundle.json",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4",
+      "payload_sha256": "0fbb581d320a256c1722f6004810dbfb6f501f5eecf6e95c9264be9657f09e4c",
+      "file_sha256": "d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9"
+    },
+    "context_reference": {
+      "path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/context-reference.json",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.context-reference.v1",
+      "payload_sha256": "c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253",
+      "file_sha256": "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
+    },
+    "development_start": {
+      "path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-start.json",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
+      "payload_sha256": "b33666e840f9a6669713b79b10f75dbf1100d939b2c96e25bce22d7fe60ec8b2",
+      "file_sha256": "1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068",
+      "started_at_UTC": "2026-09-06T23:35:38Z",
+      "creator_process_id": 1234958
+    },
+    "observed_resume_failure": {
+      "argv": [
+        "scripts/run_metadata_calibration_v3",
+        "resume"
+      ],
+      "exit_code": 2,
+      "exception_type": "TypeError",
+      "message": "primary_values_by_endpoint must be an exact endpoint-ordered dictionary.",
+      "emitted_json_line_utf8_base64": "eyJjb21tYW5kIjoicmVzdW1lIiwiZXJyb3IiOiJUeXBlRXJyb3IiLCJtZXNzYWdlIjoicHJpbWFyeV92YWx1ZXNfYnlfZW5kcG9pbnQgbXVzdCBiZSBhbiBleGFjdCBlbmRwb2ludC1vcmRlcmVkIGRpY3Rpb25hcnkuIiwic3RhdHVzIjoiRkFJTF9DTE9TRUQifQo=",
+      "emitted_json_line_sha256": "5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc",
+      "failure_boundary": "after_execute_complete_development_returned_during_governance_canonical_parse_to_core_publication_validation_before_result_O_EXCL"
+    },
+    "durable_execution_facts": {
+      "context_reference_artifact_count": 1,
+      "development_start_artifact_count": 1,
+      "development_result_artifact_count": 0,
+      "selected_method_artifact_count": 0,
+      "test_evidence_artifact_count": 0,
+      "canary_artifact_count": 0,
+      "development_seed": 3156745110,
+      "development_seed_consumed_by_terminal_start_receipt_policy": true,
+      "experimental_workflow_outcome_observation_count": 0,
+      "governed_execution_network_access_count": 0,
+      "human_EEG_outcome_access_count": 0
+    },
+    "control_flow_inference": {
+      "classification": "strong_control_flow_inference_not_observed_outcome_or_durable_attestation",
+      "development_rng_authority_issued_in_memory": true,
+      "development_seedsequence_and_DGP_executed": true,
+      "complete_grid_gate_reports_computed_in_memory": true,
+      "development_selection_computed_in_memory": true,
+      "basis": "late_deterministic_endpoint_order_failure_requires_execute_complete_development_to_have_returned_before_real_governance_publication_validation",
+      "must_not_be_reconstructed_or_used_as_evidence": true
+    },
+    "scientific_interpretation": "infrastructure_no_go_after_consumed_development_seed_not_a_scientific_pass_or_fail",
+    "continuation_authorized": false,
+    "exact_directory_inventory_must_remain_three_files": true
+  },
+  "replacement_development_seed": {
+    "schema": "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed.v2",
+    "preimage": {
+      "candidate_id": "metadata-calibration-efficiency-v3",
+      "derivation_rule": "first_nonzero_big_endian_uint32_word_not_in_forbidden_seed_set",
+      "failure_envelope_sha256": "5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc",
+      "forbidden_seed_values": [
+        20260906,
+        20260907,
+        20260908,
+        20260909,
+        20260910,
+        3156745110
+      ],
+      "prior_attempt_id": "development-v4",
+      "prior_development_bundle_file_sha256": "d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9",
+      "prior_development_context_file_sha256": "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8",
+      "prior_development_start_file_sha256": "1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068",
+      "replacement_attempt_id": "development-v5",
+      "schema": "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed-preimage.v2"
+    },
+    "canonical_preimage_byte_length": 799,
+    "preimage_sha256": "11f503bdca78e8a7d0e853f9a7b484510dd749018c7735bce61ff7965b70b1cb",
+    "digest_split": "eight_big_endian_uint32_words",
+    "digest_words_uint32": [
+      301269949,
+      3396921511,
+      3504886777,
+      2813625425,
+      232212737,
+      2356622780,
+      3860854678,
+      1534112203
+    ],
+    "selection_rule": "first_nonzero_word_outside_forbidden_seed_set_without_reroll_or_counter",
+    "selected_word_index": 0,
+    "selected_seed": 301269949,
+    "derived_only_from_immutable_pre_result_identities": true,
+    "outcome_used_in_derivation": false
+  },
+  "authorized_recovery": {
+    "attempt_id": "development-v5",
+    "development_bundle_schema": "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5",
+    "canonical_root": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5",
+    "development_start_receipt_schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
+    "development_start_receipt_path": "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-start.json",
+    "development_start_receipt_policy": "O_EXCL_before_development_authority_and_first_RNG_draw_creator_process_only",
+    "receipt_without_result_restart_policy": "terminal_DEVELOPMENT_ATTEMPT_CONSUMED_no_resume",
+    "receipt_with_result_restart_policy": "read_only_reopen_and_audit",
+    "development_result_must_bind_start_receipt": [
+      "schema",
+      "payload_sha256",
+      "file_sha256"
+    ],
+    "only_authorized_development_attempt": true,
+    "requires_exact_retired_v1_two_file_inventory": true,
+    "requires_exact_retired_v2_one_file_inventory": true,
+    "requires_exact_retired_v3_three_file_inventory": true,
+    "requires_exact_retired_v4_three_file_inventory": true,
+    "context_reference_policy": "copy_and_revalidate_exact_retired_development_v1_context_bytes_without_refit_and_require_retired_development_v3_and_v4_context_byte_identity",
+    "development_result_transport_policy": "deep_detach_governance_parsed_frozen_JSON_to_ordinary_dict_list_only_at_core_boundaries_with_exact_canonical_byte_equality",
+    "development_result_endpoint_order_policy": "endpoint_order_array_is_authoritative_JSON_object_keys_are_an_exact_unordered_set_and_all_validation_iteration_uses_endpoint_order",
+    "replacement_development_evidence_role": "transparent_synthetic_development_and_model_selection_not_human_confirmatory_evidence",
+    "scientific_lockbox_authorized": false,
+    "human_EEG_outcome_authorized": false,
+    "network_access_authorized": false
+  },
+  "immutability": {
+    "development_v1_files_may_not_be_modified_deleted_or_extended": true,
+    "development_v2_files_may_not_be_modified_deleted_or_extended": true,
+    "development_v3_files_may_not_be_modified_deleted_or_extended": true,
+    "development_v4_files_may_not_be_modified_deleted_or_extended": true,
+    "development_v1_v2_v3_or_v4_schema_may_not_be_reinterpreted_as_v5": true,
+    "any_failure_after_development_start_receipt_consumes_attempt": true,
+    "old_amendment_files_may_not_be_modified": true,
+    "old_development_seed_may_not_be_replayed_or_reconstructed": true,
+    "future_target_bound_RSA_PSS_authorization_remains_separate_and_unissued": true,
+    "operator_DGP_grid_threshold_gate_rank_context_seed_or_evidence_roles_may_not_change": true
+  }
+}

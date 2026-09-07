@@ -1,45 +1,48 @@
 schema: cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1
 candidate_id: metadata-calibration-efficiency-v3
 generator_revision: v1_single_insertion_context_trust
-status: V3_3_recovery_development_v4_not_yet_bundle_frozen_or_executable
+status: V3_4_recovery_development_v5_not_yet_bundle_frozen_or_executable
 
 master_plan:
   path: configs/analysis/metadata_calibration_efficiency_v3.yaml
-  file_sha256: cbde65a85856e3fbeb832e0621363f96a033c24df93b6e9705b41f41624420a8
+  file_sha256: 7aab12500451704401dab629254e0dbdb674576594ad8901bea26236f675d00e
 preoutcome_amendment:
-  path: configs/governance/metadata_calibration_v3_3_recovery_amendment.json
-  file_sha256: d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11
-  protocol_revision: V3.3
-  development_attempt_id: development-v4
+  path: configs/governance/metadata_calibration_v3_4_recovery_amendment.json
+  file_sha256: 129c81f1a806e17d68ced5055d094faf22a9e0f017e834175394c5b40e79ee4e
+  protocol_revision: V3.4
+  development_attempt_id: development-v5
   original_path: configs/governance/metadata_calibration_v3_preoutcome_amendment.json
   original_file_sha256: 3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202
   prior_recovery_v1_path: configs/governance/metadata_calibration_v3_1_recovery_amendment.json
   prior_recovery_v1_file_sha256: deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238
   prior_recovery_v2_path: configs/governance/metadata_calibration_v3_2_recovery_amendment.json
   prior_recovery_v2_file_sha256: 1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb
-  retired_scientific_contract_projection_sha256: 0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79
-  scientific_contract_projection_sha256: 5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712
+  prior_recovery_v3_path: configs/governance/metadata_calibration_v3_3_recovery_amendment.json
+  prior_recovery_v3_file_sha256: d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11
+  original_scientific_contract_projection_sha256: 0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79
+  retired_scientific_contract_projection_sha256: 5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712
+  scientific_contract_projection_sha256: 670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca
 
 development_bundle:
-  required_before_any_seed_3156745110_generation: true
+  required_before_any_seed_301269949_generation: true
   current_status: absent
-  protocol_revision: V3.3
-  development_attempt_id: development-v4
-  schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v4
-  canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-bundle.json
-  context_reference_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/context-reference.json
+  protocol_revision: V3.4
+  development_attempt_id: development-v5
+  schema: cfeg.metadata-calibration-efficiency-v3.development-bundle.v5
+  canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-bundle.json
+  context_reference_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/context-reference.json
   development_start_receipt:
     schema: cfeg.metadata-calibration-efficiency-v3.development-start.v1
-    canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-start.json
+    canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-start.json
     creation: O_EXCL_after_contract_validation_before_development_authority_or_RNG
     execution_capability: private_and_creator_process_only
     fresh_receipt_without_result: terminal_DEVELOPMENT_ATTEMPT_CONSUMED_no_resume
     fresh_receipt_with_result: read_only_reopen_and_audit
     development_result_must_bind: [schema, payload_sha256, file_sha256]
-  development_result_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-result.json
+  development_result_canonical_path: /home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-result.json
   storage: external_write_once_receipt_not_part_of_the_bound_git_tree
   recovery_prerequisite:
-    amendment: configs/governance/metadata_calibration_v3_3_recovery_amendment.json
+    amendment: configs/governance/metadata_calibration_v3_4_recovery_amendment.json
     retired_v1_attempt_id: development-v1
     retired_v1_exact_file_count: 2
     retired_v1_bundle_file_sha256: 9f6027918110cfd877a1b170f3472d897d4b06f6fca7f0991b9f15f6768c4a1a
@@ -62,6 +65,16 @@ development_bundle:
     retired_v1_v2_and_v3_continuation_authorized: false
     adopt_retired_v1_context_exact_bytes: true
     retired_v3_context_must_be_byte_identical_to_retired_v1: true
+    retired_v4_attempt_id: development-v4
+    retired_v4_exact_file_count: 3
+    retired_v4_bundle_file_sha256: d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9
+    retired_v4_context_file_sha256: 7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8
+    retired_v4_start_file_sha256: 1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068
+    retired_v4_failure_envelope_sha256: 5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc
+    retired_v4_development_seed_consumed: true
+    retired_v4_result_artifact_count: 0
+    retired_v1_v2_v3_and_v4_continuation_authorized: false
+    retired_v4_context_must_be_byte_identical_to_retired_v1: true
 
 purpose: >-
   Validate implementation, support utility, context-pairing mechanism,
@@ -78,7 +91,7 @@ disclosed_prior_seed_exposure:
 rng:
   bit_generator: numpy.random.PCG64DXSM
   construction: numpy.random.SeedSequence
-  development_root_seed: 3156745110
+  development_root_seed: 301269949
   development_outputs_may_be_inspected: true
   scientific_lockbox:
     authorized: false

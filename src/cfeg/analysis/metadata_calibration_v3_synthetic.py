@@ -83,10 +83,10 @@ _IMPORTED_FBCCA_NUMPY_MODULE = _fbcca_module.np
 _IMPORTED_FBCCA_SCIPY_SIGNAL_MODULE = _fbcca_module.signal
 
 EXPECTED_SYNTHETIC_PLAN_SHA256 = (
-    "b1bb5f6f47a4a5e433101608488007a4d72c312978c4a302cb87ec742b219a5a"
+    "126e18f6756c5569388d036b2fe15e73688aab788bc83706d8141043eb6d1ad4"
 )
 EXPECTED_MASTER_PLAN_SHA256 = (
-    "cbde65a85856e3fbeb832e0621363f96a033c24df93b6e9705b41f41624420a8"
+    "7aab12500451704401dab629254e0dbdb674576594ad8901bea26236f675d00e"
 )
 EXPECTED_FILTERBANK_SHA256 = v3.FILTERBANK_SHA256
 SYNTHETIC_PLAN_SCHEMA = "cfeg.metadata-calibration-efficiency-v3.synthetic-plan.v1"
@@ -170,6 +170,7 @@ _RESERVED_RNG_ROOT_SEEDS = frozenset(
         20_260_907,
         20_260_908,
         20_260_909,
+        3_156_745_110,
         v3.DEVELOPMENT_ROOT_SEED,
         v3.CONTEXT_REFERENCE_ROOT_SEED,
         8812983586834372979543294859684702645563544465387352627235733726918051280063,
@@ -871,7 +872,7 @@ def validate_synthetic_contract(
         plan.get("schema") != SYNTHETIC_PLAN_SCHEMA
         or plan.get("candidate_id") != v3.CANDIDATE_ID
         or plan.get("generator_revision") != "v1_single_insertion_context_trust"
-        or plan.get("status") != "V3_3_recovery_development_v4_not_yet_bundle_frozen_or_executable"
+        or plan.get("status") != "V3_4_recovery_development_v5_not_yet_bundle_frozen_or_executable"
     ):
         raise ValueError("synthetic plan identity/status is invalid.")
     master_section = plan.get("master_plan")
@@ -4252,7 +4253,7 @@ def _build_development_result_payload_from_rows_for_test(
     bundle = _artifact_reference(
         development_bundle_reference,
         "development bundle reference",
-        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v4",
+        expected_schema="cfeg.metadata-calibration-efficiency-v3.development-bundle.v5",
     )
     start = _artifact_reference(
         development_start_reference,
@@ -4286,7 +4287,7 @@ def _build_development_result_payload_from_rows_for_test(
         "development_start_payload_sha256": start["payload_sha256"],
         "development_start_file_sha256": start["file_sha256"],
         "development_rng_primitive_schema": DEVELOPMENT_RNG_PRIMITIVE_SCHEMA,
-        "development_root_seed": 3156745110,
+        "development_root_seed": 301269949,
         "participant_count": DEVELOPMENT_PARTICIPANTS,
         "B4_source_range_stress_participant_indices": list(
             expected_stress_participant_indices
@@ -4420,12 +4421,12 @@ def validate_development_result_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
         or payload["context_reference_schema"] != v3.CONTEXT_REFERENCE_SCHEMA
         or payload["development_start_schema"]
         != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
         or payload["development_rng_primitive_schema"] != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
-        or payload["development_root_seed"] != 3156745110
+        or payload["development_root_seed"] != 301269949
         or payload["participant_count"] != DEVELOPMENT_PARTICIPANTS
     ):
         raise ValueError("development result identity/bindings are invalid.")
@@ -4834,12 +4835,12 @@ def _require_validated_development_result(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
         or value.context_reference_schema != v3.CONTEXT_REFERENCE_SCHEMA
         or value.development_rng_primitive_schema != DEVELOPMENT_RNG_PRIMITIVE_SCHEMA
         or value.development_start_schema
         != "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
-        or value.development_root_seed != 3156745110
+        or value.development_root_seed != 301269949
         or value.development_rng_authority_schema
         != v3.DEVELOPMENT_RNG_AUTHORITY_SCHEMA
         or value.rng_key_map_sha256 != v3.rng_key_map_sha256()
@@ -5069,7 +5070,7 @@ def validate_selected_method_freeze_payload(
         or payload["master_plan_file_sha256"] != EXPECTED_MASTER_PLAN_SHA256
         or payload["synthetic_plan_file_sha256"] != EXPECTED_SYNTHETIC_PLAN_SHA256
         or payload["development_bundle_schema"]
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
         or payload["development_result_schema"] != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("selected-method freeze identity is invalid.")
@@ -6034,7 +6035,7 @@ def _require_selected_method_proposal(
         or value.master_plan_file_sha256 != EXPECTED_MASTER_PLAN_SHA256
         or value.synthetic_plan_file_sha256 != EXPECTED_SYNTHETIC_PLAN_SHA256
         or value.development_bundle_schema
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
         or value.development_result_schema != DEVELOPMENT_RESULT_SCHEMA
     ):
         raise ValueError("SelectedMethodProposal identity/bindings are invalid.")
@@ -6430,10 +6431,13 @@ def _validated_sensitivity_participant_vectors(
     for kind in ("primary", "uniform"):
         field = f"{kind}_values_by_endpoint"
         raw_mapping = value[field]
-        if type(raw_mapping) is not dict or tuple(raw_mapping) != SENSITIVITY_ENDPOINT_IDS:
-            raise TypeError(
-                f"{field} must be an exact endpoint-ordered dictionary."
-            )
+        if type(raw_mapping) is not dict:
+            raise TypeError(f"{field} must be an exact dictionary.")
+        _require_exact_keys(
+            raw_mapping,
+            set(SENSITIVITY_ENDPOINT_IDS),
+            field,
+        )
         raw_for_hash: dict[str, list[float]] = {}
         arrays: dict[str, np.ndarray] = {}
         for endpoint in SENSITIVITY_ENDPOINT_IDS:
@@ -6595,8 +6599,11 @@ def _sensitivity_resampling_with_rng_factory(
         "participant_bootstrap_draws",
     )
     if require_complete:
-        if tuple(paired_vectors) != SENSITIVITY_ENDPOINT_IDS:
-            raise ValueError("production sensitivity requires every endpoint in exact order.")
+        _require_exact_keys(
+            paired_vectors,
+            set(SENSITIVITY_ENDPOINT_IDS),
+            "production sensitivity vectors",
+        )
         if (
             sign_draws != SENSITIVITY_SIGN_FLIP_DRAWS
             or bootstrap_draws != SENSITIVITY_PARTICIPANT_BOOTSTRAP_DRAWS
@@ -6606,7 +6613,11 @@ def _sensitivity_resampling_with_rng_factory(
         raise ValueError("unit sensitivity requires at least one named endpoint.")
 
     endpoint_reports: dict[str, Any] = {}
-    for endpoint, raw_vector in paired_vectors.items():
+    endpoint_order = (
+        SENSITIVITY_ENDPOINT_IDS if require_complete else tuple(paired_vectors)
+    )
+    for endpoint in endpoint_order:
+        raw_vector = paired_vectors[endpoint]
         if endpoint not in _SENSITIVITY_ENDPOINT_CODES:
             raise ValueError(f"unknown sensitivity endpoint {endpoint!r}.")
         values = _finite_vector(raw_vector, endpoint)
@@ -6845,10 +6856,15 @@ def _validate_gate_report_sensitivities(
         or uniform["common_weight_rule"]
         != "both_p_support_and_g_M_use_exact_one_over_k"
         or type(uniform["endpoints"]) is not dict
-        or tuple(uniform["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
     ):
-        raise ValueError("uniform block-weight sensitivity identity/order is invalid.")
-    for endpoint, summary in uniform["endpoints"].items():
+        raise ValueError("uniform block-weight sensitivity identity is invalid.")
+    _require_exact_keys(
+        uniform["endpoints"],
+        set(SENSITIVITY_ENDPOINT_IDS),
+        "uniform block-weight sensitivity endpoints",
+    )
+    for endpoint in SENSITIVITY_ENDPOINT_IDS:
+        summary = uniform["endpoints"][endpoint]
         if type(summary) is not dict:
             raise TypeError("uniform sensitivity endpoint summaries must be dictionaries.")
         _require_exact_keys(
@@ -6906,10 +6922,15 @@ def _validate_gate_report_sensitivities(
         or resampling["component"] != "sensitivity_resampling"
         or resampling["promotion_or_selection_use"] is not False
         or type(resampling["endpoints"]) is not dict
-        or tuple(resampling["endpoints"]) != SENSITIVITY_ENDPOINT_IDS
     ):
-        raise ValueError("resampling sensitivity identity/order is invalid.")
-    for endpoint, summary in resampling["endpoints"].items():
+        raise ValueError("resampling sensitivity identity is invalid.")
+    _require_exact_keys(
+        resampling["endpoints"],
+        set(SENSITIVITY_ENDPOINT_IDS),
+        "resampling sensitivity endpoints",
+    )
+    for endpoint in SENSITIVITY_ENDPOINT_IDS:
+        summary = resampling["endpoints"][endpoint]
         if type(summary) is not dict:
             raise TypeError("resampling endpoint summaries must be dictionaries.")
         _require_exact_keys(
@@ -7147,7 +7168,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
     if (
         rng.get("bit_generator") != "numpy.random.PCG64DXSM"
         or rng.get("construction") != "numpy.random.SeedSequence"
-        or rng.get("development_root_seed") != 3156745110
+        or rng.get("development_root_seed") != 301269949
         or rng.get("key_order")
         != [
             "root_seed",
@@ -7242,10 +7263,10 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         raise ValueError("synthetic complete-grid arithmetic is not exact.")
     amendment = _mapping(plan, "preoutcome_amendment")
     if amendment != {
-        "path": "configs/governance/metadata_calibration_v3_3_recovery_amendment.json",
-        "file_sha256": ("d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"),
-        "protocol_revision": "V3.3",
-        "development_attempt_id": "development-v4",
+        "path": "configs/governance/metadata_calibration_v3_4_recovery_amendment.json",
+        "file_sha256": ("129c81f1a806e17d68ced5055d094faf22a9e0f017e834175394c5b40e79ee4e"),
+        "protocol_revision": "V3.4",
+        "development_attempt_id": "development-v5",
         "original_path": ("configs/governance/metadata_calibration_v3_preoutcome_amendment.json"),
         "prior_recovery_v1_file_sha256": (
             "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
@@ -7259,31 +7280,40 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         "prior_recovery_v2_path": (
             "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
         ),
+        "prior_recovery_v3_file_sha256": (
+            "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"
+        ),
+        "prior_recovery_v3_path": (
+            "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
+        ),
         "original_file_sha256": (
             "3238761a0a9a257032d6582286953a4d20981e5e646c9f1322c5c0357bd0c202"
         ),
-        "retired_scientific_contract_projection_sha256": (
+        "original_scientific_contract_projection_sha256": (
             "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
         ),
-        "scientific_contract_projection_sha256": (
+        "retired_scientific_contract_projection_sha256": (
             "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
         ),
+        "scientific_contract_projection_sha256": (
+            "670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca"
+        ),
     }:
-        raise ValueError("V3.3 recovery amendment binding is not exact.")
+        raise ValueError("V3.4 recovery amendment binding is not exact.")
     bundle = _mapping(plan, "development_bundle")
     if (
         bundle.get("current_status") != "absent"
-        or bundle.get("required_before_any_seed_3156745110_generation") is not True
-        or bundle.get("protocol_revision") != "V3.3"
-        or bundle.get("development_attempt_id") != "development-v4"
+        or bundle.get("required_before_any_seed_301269949_generation") is not True
+        or bundle.get("protocol_revision") != "V3.4"
+        or bundle.get("development_attempt_id") != "development-v5"
         or bundle.get("schema")
-        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+        != "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
         or bundle.get("canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-bundle.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-bundle.json"
         or bundle.get("context_reference_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/context-reference.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/context-reference.json"
         or bundle.get("development_result_canonical_path")
-        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v4/development-result.json"
+        != "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/development-result.json"
     ):
         raise ValueError("development bundle must remain absent in the frozen plan.")
     start = _mapping(bundle, "development_start_receipt")
@@ -7291,7 +7321,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         "schema": "cfeg.metadata-calibration-efficiency-v3.development-start.v1",
         "canonical_path": (
             "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-            "development-v4/development-start.json"
+            "development-v5/development-start.json"
         ),
         "creation": "O_EXCL_after_contract_validation_before_development_authority_or_RNG",
         "execution_capability": "private_and_creator_process_only",
@@ -7307,7 +7337,7 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
     recovery = _mapping(bundle, "recovery_prerequisite")
     if (
         recovery.get("amendment")
-        != "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
+        != "configs/governance/metadata_calibration_v3_4_recovery_amendment.json"
         or recovery.get("retired_v1_attempt_id") != "development-v1"
         or recovery.get("retired_v1_exact_file_count") != 2
         or recovery.get("retired_v1_bundle_file_sha256")
@@ -7337,8 +7367,22 @@ def _validate_exact_plan_sections(plan: Mapping[str, Any]) -> None:
         or recovery.get("retired_v1_v2_and_v3_continuation_authorized") is not False
         or recovery.get("adopt_retired_v1_context_exact_bytes") is not True
         or recovery.get("retired_v3_context_must_be_byte_identical_to_retired_v1") is not True
+        or recovery.get("retired_v4_attempt_id") != "development-v4"
+        or recovery.get("retired_v4_exact_file_count") != 3
+        or recovery.get("retired_v4_bundle_file_sha256")
+        != "d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9"
+        or recovery.get("retired_v4_context_file_sha256")
+        != "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
+        or recovery.get("retired_v4_start_file_sha256")
+        != "1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068"
+        or recovery.get("retired_v4_failure_envelope_sha256")
+        != "5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc"
+        or recovery.get("retired_v4_development_seed_consumed") is not True
+        or recovery.get("retired_v4_result_artifact_count") != 0
+        or recovery.get("retired_v1_v2_v3_and_v4_continuation_authorized") is not False
+        or recovery.get("retired_v4_context_must_be_byte_identical_to_retired_v1") is not True
     ):
-        raise ValueError("V3.3 recovery prerequisite is not exact.")
+        raise ValueError("V3.4 recovery prerequisite is not exact.")
     lockbox = _mapping(plan, "scientific_lockbox")
     if lockbox.get("current_authority") is not False or lockbox.get("future_beacon_selected") is not False:
         raise ValueError("scientific lockbox authority must be false.")

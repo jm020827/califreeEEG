@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import json
 import sys
 from copy import deepcopy
 from types import ModuleType, SimpleNamespace
@@ -190,6 +191,7 @@ def test_contract_is_nominal_deeply_immutable_and_revalidated_before_scoring(
 @pytest.mark.parametrize(
     "root_seed",
     (
+        3_156_745_110,
         v3.DEVELOPMENT_ROOT_SEED,
         v3.CONTEXT_REFERENCE_ROOT_SEED,
         8812983586834372979543294859684702645563544465387352627235733726918051280063,
@@ -1100,6 +1102,46 @@ def test_sensitivity_vectors_hashes_means_and_p_formula_are_exact() -> None:
     ][synthetic.SENSITIVITY_ENDPOINT_IDS[0]][0] = 0
     with pytest.raises(TypeError, match="exact finite floats"):
         synthetic._validate_gate_report_sensitivities(bad_type)
+
+
+def test_sensitivity_validation_uses_explicit_endpoint_order_after_canonical_roundtrip(
+) -> None:
+    original = _sensitivity_report_fixture()
+    canonical = json.dumps(
+        original,
+        allow_nan=False,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    parsed = json.loads(canonical)
+
+    assert tuple(parsed["sensitivity_participant_vectors"]["endpoint_order"]) == (
+        synthetic.SENSITIVITY_ENDPOINT_IDS
+    )
+    assert tuple(
+        parsed["sensitivity_participant_vectors"]["primary_values_by_endpoint"]
+    ) != synthetic.SENSITIVITY_ENDPOINT_IDS
+    primary, uniform = synthetic._validate_gate_report_sensitivities(parsed)
+    assert tuple(primary) == synthetic.SENSITIVITY_ENDPOINT_IDS
+    assert tuple(uniform) == synthetic.SENSITIVITY_ENDPOINT_IDS
+
+    missing = deepcopy(parsed)
+    del missing["sensitivity_participant_vectors"][
+        "primary_values_by_endpoint"
+    ][synthetic.SENSITIVITY_ENDPOINT_IDS[0]]
+    with pytest.raises(ValueError, match="keys differ"):
+        synthetic._validate_gate_report_sensitivities(missing)
+
+    extra = deepcopy(parsed)
+    extra["uniform_block_weight_sensitivity"]["endpoints"]["unknown"] = {}
+    with pytest.raises(ValueError, match="keys differ"):
+        synthetic._validate_gate_report_sensitivities(extra)
+
+    wrong_order = deepcopy(parsed)
+    wrong_order["sensitivity_participant_vectors"]["endpoint_order"].reverse()
+    with pytest.raises(ValueError, match="identity/order"):
+        synthetic._validate_gate_report_sensitivities(wrong_order)
 
 
 def test_audit_sensitivity_replay_compares_whole_report_without_exposing_rng(

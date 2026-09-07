@@ -365,10 +365,10 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
             "clean_git_commit": source.commit,
             "clean_git_tree": source.tree,
             "created_at_UTC": "2026-09-06T12:00:00Z",
-            "development_attempt_id": "development-v4",
+            "development_attempt_id": "development-v5",
             "development_start_receipt_path": (
                 "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
-                "development-v4/development-start.json"
+                "development-v5/development-start.json"
             ),
             "development_start_receipt_policy": (
                 "O_EXCL_before_development_authority_and_first_RNG_draw_creator_process_only"
@@ -409,24 +409,30 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
                 "configs/governance/metadata_calibration_v3_preoutcome_amendment.json"
             ),
             "preoutcome_amendment_file_sha256": (
-                "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"
+                "129c81f1a806e17d68ced5055d094faf22a9e0f017e834175394c5b40e79ee4e"
             ),
             "preoutcome_amendment_path": (
-                "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
+                "configs/governance/metadata_calibration_v3_4_recovery_amendment.json"
             ),
             "prior_recovery_amendment_file_sha256": (
-                "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
+                "d00fbb2722444fd92235eae97c403c6fc0b9bdf0157d571c2c7717c8afa09c11"
             ),
             "prior_recovery_amendment_path": (
-                "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+                "configs/governance/metadata_calibration_v3_3_recovery_amendment.json"
             ),
             "earlier_recovery_amendment_file_sha256": (
-                "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
+                "1db2d118376975c1817e329f4203dbaf9929d4f2bcb30bfede990af26c2c1ceb"
             ),
             "earlier_recovery_amendment_path": (
+                "configs/governance/metadata_calibration_v3_2_recovery_amendment.json"
+            ),
+            "first_recovery_amendment_file_sha256": (
+                "deddca9286f07c6293925409d01b3df1313e89f2ce89688c4a25c14a8ec01238"
+            ),
+            "first_recovery_amendment_path": (
                 "configs/governance/metadata_calibration_v3_1_recovery_amendment.json"
             ),
-            "protocol_revision": "V3.3",
+            "protocol_revision": "V3.4",
             "owner_authority_public_key_file_sha256": "2" * 64,
             "owner_authority_public_key_path": "configs/governance/owner.pub",
             "owner_authority_ssh_fingerprint": "SHA256:test",
@@ -601,29 +607,120 @@ def _write_test_bundle(repository: Path, site: Path, bundle: Path) -> None:
             "retired_v3_governed_network_accessed": False,
             "retired_v3_human_EEG_outcome_accessed": False,
             "retired_v3_continuation_authorized": False,
-            "retired_scientific_contract_projection_sha256": (
+            "retired_v4_source_commit": ("198158663efd1c4481b23dd3d012b9d854ada8d1"),
+            "retired_v4_source_tree": ("ac7882494955a7abb5046a4dd950bd98d6fdd6b1"),
+            "retired_v4_source_bundle_sha256": (
+                "c57c81a2ffae4511e4de6159d11ea5ef482e13b8fdebd916eef98bdf7235250c"
+            ),
+            "retired_v4_numerical_runtime_fingerprint_sha256": (
+                "d68d72b909b5eed289de51464c3b5a6340854ac189fecdc394fc27edaad9d633"
+            ),
+            "retired_v4_artifact_inventory_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.retired-development-inventory.v4"
+            ),
+            "retired_v4_artifact_inventory_sha256": (
+                "511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa"
+            ),
+            "retired_v4_development_bundle_path": (
+                "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+                "development-v4/development-bundle.json"
+            ),
+            "retired_v4_development_bundle_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
+            ),
+            "retired_v4_development_bundle_payload_sha256": (
+                "0fbb581d320a256c1722f6004810dbfb6f501f5eecf6e95c9264be9657f09e4c"
+            ),
+            "retired_v4_development_bundle_file_sha256": (
+                "d257a2f4ea83bc355399ddafea5f7deca8e95bb9e4de7d4a5e3ccb99a1602dd9"
+            ),
+            "retired_v4_context_reference_path": (
+                "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+                "development-v4/context-reference.json"
+            ),
+            "retired_v4_context_reference_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.context-reference.v1"
+            ),
+            "retired_v4_context_reference_payload_sha256": (
+                "c475e9d0ce4f8e436b49c50585eaee37965bba7c052eefdee862bc50f70a9253"
+            ),
+            "retired_v4_context_reference_file_sha256": (
+                "7b78b3092f5824b6e247d97f4b9cd9f9ec22dbfa74a182e2f32c34fb1c8cf3c8"
+            ),
+            "retired_v4_development_start_path": (
+                "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
+                "development-v4/development-start.json"
+            ),
+            "retired_v4_development_start_schema": (
+                "cfeg.metadata-calibration-efficiency-v3.development-start.v1"
+            ),
+            "retired_v4_development_start_payload_sha256": (
+                "b33666e840f9a6669713b79b10f75dbf1100d939b2c96e25bce22d7fe60ec8b2"
+            ),
+            "retired_v4_development_start_file_sha256": (
+                "1bfafb3b265c3cd7c459a8c7d09be4275743588addb2680e0685a1501389c068"
+            ),
+            "retired_v4_development_started_at_UTC": "2026-09-06T23:35:38Z",
+            "retired_v4_development_start_creator_process_id": 1_234_958,
+            "retired_v4_incident_error": "TypeError",
+            "retired_v4_incident_message": (
+                "primary_values_by_endpoint must be an exact endpoint-ordered dictionary."
+            ),
+            "retired_v4_incident_output_sha256": (
+                "5c6a3fa68152b88b3f32745f04afcc52f3c636dd709eb56a937470b45e7ddbcc"
+            ),
+            "retired_v4_incident_boundary": (
+                "after_execute_complete_development_returned_during_governance_canonical_parse_"
+                "to_core_publication_validation_before_result_O_EXCL"
+            ),
+            "retired_v4_context_reference_root_seed": 20_260_910,
+            "retired_v4_development_root_seed": 3_156_745_110,
+            "retired_v4_development_seed_consumed": True,
+            "retired_v4_control_flow_inference_classification": (
+                "strong_control_flow_inference_not_observed_outcome_or_durable_attestation"
+            ),
+            "retired_v4_development_rng_authority_issued_in_memory": True,
+            "retired_v4_development_seedsequence_and_DGP_executed": True,
+            "retired_v4_complete_grid_gate_reports_computed_in_memory": True,
+            "retired_v4_development_selection_computed_in_memory": True,
+            "retired_v4_development_result_present": False,
+            "retired_v4_selected_method_present": False,
+            "retired_v4_test_evidence_present": False,
+            "retired_v4_canary_present": False,
+            "retired_v4_experimental_outcome_observed": False,
+            "retired_v4_governed_network_accessed": False,
+            "retired_v4_human_EEG_outcome_accessed": False,
+            "retired_v4_continuation_authorized": False,
+            "original_retired_scientific_contract_projection_sha256": (
                 "0702d01be1e055d3203a3c1b78777db6456b8d527e5525b6d468fb52522f8a79"
             ),
+            "retired_scientific_contract_projection_sha256": (
+                "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
+            ),
             "replacement_seed_preimage_schema": (
-                "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed-preimage.v1"
+                "cfeg.metadata-calibration-efficiency-v3.replacement-development-seed-preimage.v2"
             ),
             "replacement_seed_preimage_sha256": (
-                "bc281b961f7b56fdc515e10512b465bb3f76c0fa03fc999d30cbf2ac374ff897"
+                "11f503bdca78e8a7d0e853f9a7b484510dd749018c7735bce61ff7965b70b1cb"
             ),
             "replacement_seed_digest_split": "eight_big_endian_uint32_words",
             "replacement_seed_selection_rule": (
                 "first_nonzero_word_outside_forbidden_seed_set_without_reroll_or_counter"
             ),
             "replacement_seed_selected_word_index": 0,
-            "replacement_development_root_seed": 3_156_745_110,
+            "replacement_development_root_seed": 301_269_949,
             "replacement_seed_outcome_used": False,
             "replacement_development_evidence_role": (
                 "transparent_synthetic_development_and_model_selection_not_human_confirmatory_"
                 "evidence"
             ),
+            "development_result_endpoint_order_policy": (
+                "endpoint_order_array_is_authoritative_JSON_object_keys_are_an_exact_unordered_"
+                "set_and_all_validation_iteration_uses_endpoint_order"
+            ),
             "schema": _DEVELOPMENT_BUNDLE_SCHEMA,
             "scientific_contract_projection_sha256": (
-                "5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712"
+                "670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca"
             ),
             "scientific_lockbox_authorized": False,
             "source_bundle_sha256": source.source_bundle_sha256,
@@ -667,7 +764,7 @@ def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_retire
             site_inventory=site_inventory,
         )
 
-    for retired_version in ("v1", "v2", "v3"):
+    for retired_version in ("v1", "v2", "v3", "v4"):
         retired_schema = dict(payload)
         retired_schema["schema"] = (
             f"cfeg.metadata-calibration-efficiency-v3.development-bundle.{retired_version}"
@@ -682,7 +779,12 @@ def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_retire
                 site_inventory=site_inventory,
             )
 
-    for retired_attempt in ("development-v1", "development-v2", "development-v3"):
+    for retired_attempt in (
+        "development-v1",
+        "development-v2",
+        "development-v3",
+        "development-v4",
+    ):
         retired_path = dict(payload)
         retired_path["canonical_path"] = (
             "/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/"
@@ -704,8 +806,11 @@ def test_runner_preimport_bundle_inventory_matches_governance_and_rejects_retire
         "retired_v3_artifact_inventory_sha256": "0" * 64,
         "retired_v3_development_start_file_sha256": "0" * 64,
         "retired_v3_development_seed_consumed": False,
+        "retired_v4_artifact_inventory_sha256": "0" * 64,
+        "retired_v4_development_start_file_sha256": "0" * 64,
+        "retired_v4_development_seed_consumed": False,
         "replacement_seed_preimage_sha256": "0" * 64,
-        "replacement_development_root_seed": 3_156_745_111,
+        "replacement_development_root_seed": 301_269_950,
         "retired_scientific_contract_projection_sha256": "0" * 64,
         "scientific_contract_projection_sha256": "0" * 64,
     }
@@ -737,7 +842,12 @@ def test_post_context_status_reopens_reference_without_development_or_mutation(
     payload, frozen_payload, exact_bytes = _frozen_context_transport_fixture()
 
     governance = SimpleNamespace(
-        observe_retired_development_attempts=lambda: (retired_v1, retired_v2, object()),
+        observe_retired_development_attempts=lambda: (
+            retired_v1,
+            retired_v2,
+            object(),
+            object(),
+        ),
         reopen_development_bundle=lambda: bundle,
         retired_v1_context_reference_payload=lambda value: (
             frozen_payload if value is retired_v1 else (_ for _ in ()).throw(AssertionError())
@@ -1074,7 +1184,12 @@ def test_fresh_receipt_without_result_is_terminal_and_never_resumes(
         )
 
     governance = SimpleNamespace(
-        observe_retired_development_attempts=lambda: (object(), object(), object()),
+        observe_retired_development_attempts=lambda: (
+            object(),
+            object(),
+            object(),
+            object(),
+        ),
         reopen_development_bundle=lambda: bundle,
         reopen_development_start_receipt=lambda **_kwargs: (
             events.append("read-only-start-reopen") or start
@@ -1127,7 +1242,12 @@ def test_result_without_start_receipt_is_a_durable_prefix_gap(
 ) -> None:
     bundle = SimpleNamespace(clean_commit="a" * 40, clean_tree="b" * 40)
     governance = SimpleNamespace(
-        observe_retired_development_attempts=lambda: (object(), object(), object()),
+        observe_retired_development_attempts=lambda: (
+            object(),
+            object(),
+            object(),
+            object(),
+        ),
         reopen_development_bundle=lambda: bundle,
     )
     facade = object.__new__(ProductionFacade)
@@ -1180,7 +1300,12 @@ def test_post_result_status_uses_read_only_recovery_without_rng_or_mutation(
         )
 
     governance = SimpleNamespace(
-        observe_retired_development_attempts=lambda: (retired_v1, retired_v2, object()),
+        observe_retired_development_attempts=lambda: (
+            retired_v1,
+            retired_v2,
+            object(),
+            object(),
+        ),
         reopen_development_bundle=lambda: bundle,
         reopen_development_start_receipt=lambda **_kwargs: (
             events.append("read-only-start-reopen") or start

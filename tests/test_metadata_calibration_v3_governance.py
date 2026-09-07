@@ -151,10 +151,10 @@ def test_recovery_amendment_is_semantically_exact_and_duplicate_safe(
     parsed = gov._validate_recovery_amendment_bytes(data)
     assert parsed["schema"] == gov.RECOVERY_AMENDMENT_SCHEMA
     assert parsed["recorded_at_is_amendment_time_not_incident_timestamp"] is True
-    assert parsed["replacement_development_seed"]["selected_seed"] == 3_156_745_110
+    assert parsed["replacement_development_seed"]["selected_seed"] == 301_269_949
 
     altered = json.loads(data)
-    altered["retired_development_v3"]["durable_execution_facts"][
+    altered["retired_development_v4"]["durable_execution_facts"][
         "development_result_artifact_count"
     ] = 1
     altered_bytes = json.dumps(altered, separators=(",", ":")).encode("utf-8")
@@ -165,7 +165,7 @@ def test_recovery_amendment_is_semantically_exact_and_duplicate_safe(
         "FROZEN_FILE_SHA256",
         {**gov.FROZEN_FILE_SHA256, gov.PREOUTCOME_AMENDMENT_PATH: gov.file_sha256(altered_bytes)},
     )
-    with pytest.raises(gov.ValidationError, match="frozen V3.3 facts"):
+    with pytest.raises(gov.ValidationError, match="frozen V3.4 facts"):
         gov._validate_recovery_amendment_bytes(altered_bytes)
 
     extra = json.loads(data)
@@ -309,6 +309,63 @@ def test_retired_v3_inventory_is_exact_three_file_nofollow_and_nominal(
         )
 
 
+def test_retired_v4_inventory_is_exact_three_file_nofollow_and_nominal(
+    private_test_path: Path,
+) -> None:
+    assert gov.retired_v4_artifact_inventory_sha256() == (
+        "511de6688fa315830ddf98ed5a78eefde4e0e4ba6f15977c347281403e908dfa"
+    )
+    root = private_test_path / "development-v4"
+    root.mkdir(mode=0o700)
+    for name in (
+        "development-bundle.json",
+        "context-reference.json",
+        "development-start.json",
+    ):
+        path = root / name
+        path.write_bytes(name.encode("ascii"))
+        path.chmod(0o400)
+    assert tuple(gov._load_exact_retired_v4_directory_bytes(root)) == (
+        "context-reference.json",
+        "development-bundle.json",
+        "development-start.json",
+    )
+
+    extra = root / "development-result.json"
+    extra.write_bytes(b"forbidden")
+    extra.chmod(0o400)
+    with pytest.raises(gov.AuthorityError, match="exact three-file inventory"):
+        gov._load_exact_retired_v4_directory_bytes(root)
+
+    with pytest.raises(TypeError):
+        gov.RetiredV4ArtifactsCapability()  # type: ignore[call-arg]
+    with pytest.raises(gov.AuthorityError, match="no valid issuer"):
+        gov.RetiredV4ArtifactsCapability(
+            development_bundle_bytes=b"bundle\n",
+            context_reference_bytes=b"context\n",
+            development_start_bytes=b"start\n",
+            _issuer=object(),
+        )
+    with pytest.raises(gov.AuthorityError, match="exact RetiredV4ArtifactsCapability"):
+        gov.require_retired_v4_artifacts_capability({"attempt_id": "development-v4"})
+    with pytest.raises(gov.AuthorityError, match="marker"):
+        gov.require_retired_v4_artifacts_capability(
+            object.__new__(gov.RetiredV4ArtifactsCapability)
+        )
+
+
+def test_canonical_retired_v4_prefix_reopens_read_only_with_exact_hashes() -> None:
+    capability = gov._observe_retired_v4_artifacts_from_exact_root(gov.RETIRED_V4_DEVELOPMENT_ROOT)
+    validated = gov.require_retired_v4_artifacts_capability(capability)
+    assert validated.source_commit == gov.RETIRED_V4_SOURCE_COMMIT
+    assert validated.source_tree == gov.RETIRED_V4_SOURCE_TREE
+    assert validated.development_bundle_file_sha256 == gov.RETIRED_V4_BUNDLE_FILE_SHA256
+    assert validated.context_reference_file_sha256 == gov.RETIRED_V4_CONTEXT_FILE_SHA256
+    assert validated.development_start_file_sha256 == gov.RETIRED_V4_START_FILE_SHA256
+    assert validated.incident_output_sha256 == gov.RETIRED_V4_INCIDENT_OUTPUT_SHA256
+    assert validated.continuation_authorized is False
+
+
 def test_retired_v2_directory_loader_rejects_inventory_and_inode_drift(
     private_test_path: Path,
 ) -> None:
@@ -400,7 +457,7 @@ def test_context_and_recovery_bundle_roles_are_read_only_but_development_is_resu
     monkeypatch.setattr(
         gov,
         "observe_retired_development_attempts",
-        lambda: (object(), object(), object()),
+        lambda: (object(), object(), object(), object()),
     )
 
     assert (
@@ -803,9 +860,9 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["focused_test_process_id"] == observed.process_id
     assert value["artifact_schemas"] == dict(gov.ARTIFACT_SCHEMAS)
     assert frozenset(value) == gov._DEVELOPMENT_BUNDLE_FIELDS
-    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v4"
-    assert value["protocol_revision"] == "V3.3"
-    assert value["development_attempt_id"] == "development-v4"
+    assert value["schema"] == "cfeg.metadata-calibration-efficiency-v3.development-bundle.v5"
+    assert value["protocol_revision"] == "V3.4"
+    assert value["development_attempt_id"] == "development-v5"
     assert value["retired_v1_source_commit"] == gov.RETIRED_V1_SOURCE_COMMIT
     assert value["retired_v1_source_tree"] == gov.RETIRED_V1_SOURCE_TREE
     assert value["retired_v1_development_bundle_payload_sha256"] == (
@@ -846,6 +903,18 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
     assert value["retired_v3_development_result_present"] is False
     assert value["retired_v3_experimental_outcome_observed"] is False
     assert value["retired_v3_continuation_authorized"] is False
+    assert value["retired_v4_source_commit"] == gov.RETIRED_V4_SOURCE_COMMIT
+    assert value["retired_v4_source_tree"] == gov.RETIRED_V4_SOURCE_TREE
+    assert value["retired_v4_artifact_inventory_sha256"] == (
+        gov.RETIRED_V4_ARTIFACT_INVENTORY_SHA256
+    )
+    assert value["retired_v4_development_seed_consumed"] is True
+    assert value["retired_v4_development_result_present"] is False
+    assert value["retired_v4_experimental_outcome_observed"] is False
+    assert value["retired_v4_continuation_authorized"] is False
+    assert value["original_retired_scientific_contract_projection_sha256"] == (
+        gov.ORIGINAL_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
+    )
     assert value["retired_scientific_contract_projection_sha256"] == (
         gov.RETIRED_SCIENTIFIC_CONTRACT_PROJECTION_SHA256
     )
@@ -853,7 +922,7 @@ def test_observed_runner_and_bundle_bind_real_process_and_clean_source(
         gov.SCIENTIFIC_CONTRACT_PROJECTION_SHA256
     )
     assert value["replacement_seed_preimage_sha256"] == gov.REPLACEMENT_SEED_PREIMAGE_SHA256
-    assert value["replacement_development_root_seed"] == 3_156_745_110
+    assert value["replacement_development_root_seed"] == 301_269_949
     assert value["replacement_seed_outcome_used"] is False
     with pytest.raises(gov.AuthorityError, match="DevelopmentBundleCapability"):
         gov.require_development_bundle_capability(
@@ -1488,27 +1557,25 @@ def test_selected_reopen_uses_only_durable_b_audit_not_ephemeral_a_proposal(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
-                "complete_grid_gate_report": [],
-                "nested": {"rows": [{"value": 1}]},
-            }
-        )
+    result_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+            "complete_grid_gate_report": [],
+            "nested": {"rows": [{"value": 1}]},
+        }
     )
-    result_data = gov.artifact_bytes(result)
+    result_data = gov.artifact_bytes(result_sealed)
+    result = gov._freeze_json(json.loads(result_data))
     result_payload_sha256 = result["payload_sha256"]
     result_file_sha256 = gov.file_sha256(result_data)
-    selected = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
-                "nested": {"tokens": ["a", {"b": 2}]},
-            }
-        )
+    selected_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
+            "nested": {"tokens": ["a", {"b": 2}]},
+        }
     )
-    selected_data = gov.artifact_bytes(selected)
+    selected_data = gov.artifact_bytes(selected_sealed)
+    selected = gov._freeze_json(json.loads(selected_data))
     recovery = SimpleNamespace(
         bundle_commit="7" * 40,
         bundle_tree="8" * 40,
@@ -1612,37 +1679,34 @@ def test_b_context_and_result_reopen_detach_frozen_json_at_core_boundaries(
     monkeypatch.setattr(gov, "_require_active_governed_process", lambda **_kwargs: object())
     core = ModuleType("cfeg.analysis.metadata_calibration_v3_synthetic")
     monkeypatch.setitem(sys.modules, "cfeg.analysis.metadata_calibration_v3_synthetic", core)
-    reference = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
-                "nested": {"channels": ["O1", {"name": "Oz"}]},
-            }
-        )
+    reference_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
+            "nested": {"channels": ["O1", {"name": "Oz"}]},
+        }
     )
     start = SimpleNamespace(schema="start.v1", payload_sha256="7" * 64, file_sha256="8" * 64)
-    result = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
-                "development_start_schema": start.schema,
-                "development_start_payload_sha256": start.payload_sha256,
-                "development_start_file_sha256": start.file_sha256,
-                "nested": {"rows": [{"score": 0.25}]},
-            }
-        )
+    result_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+            "development_start_schema": start.schema,
+            "development_start_payload_sha256": start.payload_sha256,
+            "development_start_file_sha256": start.file_sha256,
+            "nested": {"rows": [{"score": 0.25}]},
+        }
     )
-    selected = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
-                "nested": {"tokens": ["a", {"b": 2}]},
-            }
-        )
+    selected_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["selected_method_freeze"],
+            "nested": {"tokens": ["a", {"b": 2}]},
+        }
     )
-    reference_data = gov.artifact_bytes(reference)
-    result_data = gov.artifact_bytes(result)
-    selected_data = gov.artifact_bytes(selected)
+    reference_data = gov.artifact_bytes(reference_sealed)
+    result_data = gov.artifact_bytes(result_sealed)
+    selected_data = gov.artifact_bytes(selected_sealed)
+    reference = gov._freeze_json(json.loads(reference_data))
+    result = gov._freeze_json(json.loads(result_data))
+    selected = gov._freeze_json(json.loads(selected_data))
     bundle = SimpleNamespace(
         payload_sha256="1" * 64,
         file_sha256="2" * 64,
@@ -1676,7 +1740,7 @@ def test_b_context_and_result_reopen_detach_frozen_json_at_core_boundaries(
     monkeypatch.setattr(
         gov,
         "observe_retired_development_attempts",
-        lambda: (retired_v1, object(), object()),
+        lambda: (retired_v1, object(), object(), object()),
     )
     monkeypatch.setattr(
         gov,
@@ -1819,27 +1883,33 @@ def test_initial_development_result_validation_detaches_frozen_json_for_core(
         receipt_payload_sha256="7" * 64,
         receipt_file_sha256="8" * 64,
     )
-    frozen = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
-                "master_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.MASTER_PLAN_PATH],
-                "synthetic_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.SYNTHETIC_PLAN_PATH],
-                "development_bundle_schema": bundle.schema,
-                "development_bundle_payload_sha256": bundle.payload_sha256,
-                "development_bundle_file_sha256": bundle.file_sha256,
-                "context_reference_schema": context.schema,
-                "context_reference_payload_sha256": context.payload_sha256,
-                "context_reference_file_sha256": context.file_sha256,
-                "development_start_schema": start.receipt_schema,
-                "development_start_payload_sha256": start.receipt_payload_sha256,
-                "development_start_file_sha256": start.receipt_file_sha256,
-                "development_root_seed": gov.REPLACEMENT_DEVELOPMENT_ROOT_SEED,
-                "nested": {"rows": [{"score": 0.75}]},
-            }
-        )
+    endpoint_order = ["z_endpoint", "a_endpoint"]
+    sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+            "master_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.MASTER_PLAN_PATH],
+            "synthetic_plan_file_sha256": gov.FROZEN_FILE_SHA256[gov.SYNTHETIC_PLAN_PATH],
+            "development_bundle_schema": bundle.schema,
+            "development_bundle_payload_sha256": bundle.payload_sha256,
+            "development_bundle_file_sha256": bundle.file_sha256,
+            "context_reference_schema": context.schema,
+            "context_reference_payload_sha256": context.payload_sha256,
+            "context_reference_file_sha256": context.file_sha256,
+            "development_start_schema": start.receipt_schema,
+            "development_start_payload_sha256": start.receipt_payload_sha256,
+            "development_start_file_sha256": start.receipt_file_sha256,
+            "development_root_seed": gov.REPLACEMENT_DEVELOPMENT_ROOT_SEED,
+            "nested": {
+                "endpoint_order": endpoint_order,
+                "values_by_endpoint": {
+                    "z_endpoint": [0.75],
+                    "a_endpoint": [0.25],
+                },
+            },
+        }
     )
-    exact_bytes = gov.artifact_bytes(frozen)
+    exact_bytes = gov.artifact_bytes(sealed)
+    frozen = gov._freeze_json(json.loads(exact_bytes))
     observed: list[object] = []
     monkeypatch.setattr(gov, "_validate_development_result_content", lambda _value: None)
     monkeypatch.setattr(gov, "parse_artifact_bytes", lambda *_args, **_kwargs: frozen)
@@ -1848,8 +1918,13 @@ def test_initial_development_result_validation_detaches_frozen_json_for_core(
         assert parsed == gov._plain_json(frozen)
         assert type(parsed) is dict
         assert type(parsed["nested"]) is dict
-        assert type(parsed["nested"]["rows"]) is list
-        assert type(parsed["nested"]["rows"][0]) is dict
+        assert type(parsed["nested"]["endpoint_order"]) is list
+        assert type(parsed["nested"]["values_by_endpoint"]) is dict
+        assert parsed["nested"]["endpoint_order"] == endpoint_order
+        assert tuple(parsed["nested"]["values_by_endpoint"]) == (
+            "a_endpoint",
+            "z_endpoint",
+        )
         assert gov.canonical_json_bytes(parsed) + b"\n" == exact_bytes
         observed.append(parsed)
         return object()
@@ -1905,22 +1980,20 @@ def test_a_result_reopen_uses_canonical_audit_without_rng_reexecution(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
-                "nested": {"rows": [{"score": 0.25}]},
-            }
-        )
+    result_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+            "nested": {"rows": [{"score": 0.25}]},
+        }
     )
-    context_payload = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
-                "nested": {"channels": ["O1", {"name": "Oz"}]},
-            }
-        )
+    context_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["context_reference"],
+            "nested": {"channels": ["O1", {"name": "Oz"}]},
+        }
     )
+    result = gov._freeze_json(json.loads(gov.artifact_bytes(result_sealed)))
+    context_payload = gov._freeze_json(json.loads(gov.artifact_bytes(context_sealed)))
     context = SimpleNamespace(_validated_payload=context_payload)
     bundle = SimpleNamespace(schema=gov.DEVELOPMENT_BUNDLE_SCHEMA)
     audited_proof = SimpleNamespace(selection_status="DEVELOPMENT_NO_GO")
@@ -2016,16 +2089,15 @@ def test_a_selection_recovery_requires_the_sealed_core_audit(
         "cfeg.analysis.metadata_calibration_v3_synthetic",
         core,
     )
-    result_payload = gov._freeze_json(
-        gov.seal_payload(
-            {
-                "schema": gov.ARTIFACT_SCHEMAS["development_result"],
-                "complete_grid_gate_report": [],
-                "selected_grid_cell_id": "p3-nu_4-lambda_0p20",
-                "nested": {"rows": [{"score": 0.5}]},
-            }
-        )
+    result_sealed = gov.seal_payload(
+        {
+            "schema": gov.ARTIFACT_SCHEMAS["development_result"],
+            "complete_grid_gate_report": [],
+            "selected_grid_cell_id": "p3-nu_4-lambda_0p20",
+            "nested": {"rows": [{"score": 0.5}]},
+        }
     )
+    result_payload = gov._freeze_json(json.loads(gov.artifact_bytes(result_sealed)))
     result = SimpleNamespace(
         schema=gov.ARTIFACT_SCHEMAS["development_result"],
         payload_sha256=result_payload["payload_sha256"],
