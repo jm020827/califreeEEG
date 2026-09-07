@@ -36,7 +36,7 @@
     "scripts/native_subset_m_core.py": "20a3e3e505f00c2c43af51a5166457031838e4140cf7af15cdb2f427df904014",
     "scripts/audit_native_subset_m_source.py": "937368d639944184d71083fa67829640435e02cfeb3bd5f0f7f573f4b5224245"
   },
-  "helper_authority": "Import pinned function definitions only. Producer numerical extraction, raw/projection/baseline readers and exclusive publication helpers; pure core fits/evaluation; independently implemented audit math. Never call prior run/main/audit entrypoints or mutate helper globals. No prior attempt/artifact or seal reopening.",
+  "helper_authority": "Import pinned function definitions only. Producer numerical extraction, raw/projection/baseline readers and exclusive publication helpers; pure core fits/evaluation; independently implemented audit math. Never call prior run/main/audit entrypoints or externally rebind/monkeypatch helper globals, constants or functions. Unchanged import_native() internal _NATIVE initialization is permitted. No prior attempt/artifact or seal reopening.",
   "projection_transport": "Preserve entire original11-key envelope in new four-key projection wrapper. Producer and audit each independently require exact11 keys and pinned5 provenance values, then explicitly extract six content fields. Pure core and independent numerical replay unchanged.",
   "output_binding": "start/fold-freezes/result add attempt_id and execution_plan_sha256; plan_sha256 retains scientific_plan SHA. New start binds helper hashes. Other scientific artifact schemas and outputs remain unchanged.",
   "execution": {

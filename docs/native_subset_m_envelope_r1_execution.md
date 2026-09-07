@@ -10,7 +10,8 @@
 원본 byte hash와11-key envelope/5 provenance 값을 모두 검증하고, 원본 전체를 새 projection artifact에 보존한다.
 Core에만 검증된6-key content를 명시적으로 전달한다. 독립 감사도 별도 envelope 검증 후 동일 수학을 재계산한다.
 기존 producer/core/auditor 파일은 해시로 고정·수정하지 않는다. 이번 승인에서 고정 함수 정의의 import를 명시적으로
-허용하되 기존 run/main/audit entrypoint 호출과 global monkeypatch는 하지 않는다. 이는 옛 attempt 재실행이나 seal 해제가 아니다.
+허용하되 기존 run/main/audit entrypoint 호출과 외부 global monkeypatch는 하지 않는다. 원래 import_native()의
+내부 _NATIVE 초기화는 허용한다. 이는 옛 attempt 재실행이나 seal 해제가 아니다.
 새 producer가 새 실행 경계와 publication을 소유하고, 원 native 추출·pure core·독립 audit 수학을 그대로 호출한다.
 
 Start/freezes/result에 execution_plan_sha256과attempt_id를 추가하며 plan_sha256은 기존 과학 계획을 가리킨다.
