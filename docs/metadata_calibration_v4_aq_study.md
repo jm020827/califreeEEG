@@ -51,8 +51,9 @@ source 전체의 standalone NLL 최소값으로 정한다. Block은 실제 평�
 
 [Guo et al., ICML 2017](https://proceedings.mlr.press/v70/guo17a.html)의 temperature scaling은
 confidence calibration의 근거다. CNN 연구를 EEG에 이전하는 것은 검증할 가설이며,
-이 논문이 SSVEP fusion이나 metadata 효과를 입증한 것은 아니다. 양의 온도는 standalone
-decoder의 class 순위를 바꾸지 않지만 두 posterior를 합쳤을 때의 결정에는 영향을 줄 수 있다.
+이 논문이 SSVEP fusion이나 metadata 효과를 입증한 것은 아니다. 양의 온도는 A0·pooled의
+단일 score-vector softmax 순위를 바꾸지 않지만, 여러 softmax를 섞는 block decoder나
+A0/support fusion의 최종 결정에는 영향을 줄 수 있다.
 EEG의 labeled calibration과 확률의 calibration은 서로 다른 의미다.
 
 Fusion은 항상 `.5*A0 + .5*support`다. k0에서 raw 방법은 exact A0_raw,
@@ -104,3 +105,20 @@ result 순으로 exclusive create, fsync, hash 결속한다. Source freeze 전�
 열지 않는다. Source와 evaluation의 raw score cache를 보존해 DGP 재실행 없이 온도 적합과
 결과를 독립 검산할 수 있게 한다. 기존 start가 있으면 자동 retry/resume하지 않는다.
 이것은 local engineering provenance이며 외부 preregistration이나 암호학적 lockbox가 아니다.
+
+## 사전 구현 검증
+
+Plan commit `3b22b50459e87328f93563be88a4b3460e662788` 이후, 별도 worktree의
+implementation `6577f4b97b47ef8f7262712ffb09f9bac257dbbf`를 main `580be2e`로 통합했다.
+독립 reviewer는 75 samples/전체 7-band에서 공개 FBCCA와 score 차이 0.0,
+query 독립성, source-only fit과 freeze-before-evaluation 순서를 확인했다.
+
+Main의 [독립 검증기](../scripts/audit_metadata_calibration_v4_aq_study.py)는 DGP나 decoder
+module을 import하지 않고 score cache에서 6×31 NLL, 모든 metric/diagnostic, 24명 단위 CI와
+attainment를 다시 계산한다. Hash chain·historical source도 확인한다. Float reduction 차이를
+허용하는 수치 검산이며, 모든 posterior byte hash를 재생성했다는 주장은 하지 않는다.
+k0/k1 alias의 기록된 hash 동일성은 별도로 검사한다.
+
+Study outcome 전에 새 집중시험 **27 passed**, 전체 **942 passed/68 existing warnings**
+(110.88 s), changed Python lint/format 및 diff check를 통과했다. Study namespace는 이 검증에서
+사용하지 않았으며, 이후 clean commit을 exclusive start에 결속해 단회 실행한다.
