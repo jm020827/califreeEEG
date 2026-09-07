@@ -113,6 +113,62 @@ def test_every_band_diagnostic_and_true_reference_axis(features):
     assert len(row["query_reference_margin"]["participant_values"]) == 3
 
 
+def test_posthoc_component_damage_exact_pairs_and_empty_group():
+    # One fixed true class. Query0: support damages Aref; query1: support repairs it.
+    reference = np.zeros((1, 1, 1, 1, 2, 12))
+    reference[0, 0, 0, 0, 0, :2] = [0.8, 0.6]
+    reference[0, 0, 0, 0, 1, :2] = [0.6, 0.8]
+    components = np.zeros((1, 1, 1, 3, 1, 2, 12, 4))
+    for j in range(3):
+        components[0, 0, 0, j, ..., 0] = reference[0, 0, 0]
+        components[0, 0, 0, j, 0, 0, 1, 1] = 0.9
+        components[0, 0, 0, j, 0, 1, 0, 2] = 0.9
+    cache = {
+        "filter_weights": np.array([1.0]),
+        "query_labels": np.array([0, 0]),
+        "subject_ids": np.array([4]),
+        "pipeline_ids": np.array(["fixture"]),
+        "cell_ids": np.array(["dry-n125"]),
+        "aref_band_rho": reference,
+        "ecca_components": components,
+    }
+    report = audit.component_damage_report(cache)
+    assert len(report["rows"]) == 3
+    for row in report["rows"]:
+        assert row["transition_counts"] == {
+            "correct_to_correct": 0,
+            "damaged": 1,
+            "repaired": 1,
+            "wrong_to_wrong": 0,
+        }
+        np.testing.assert_allclose(
+            row["damaged"]["mean_component_pair_margin"], [0.28, -0.81, 0, 0]
+        )
+        np.testing.assert_allclose(
+            row["repaired"]["mean_component_pair_margin"], [-0.28, 0, 0.81, 0]
+        )
+        assert row["damaged"]["mean_total_pair_margin"] == pytest.approx(-0.53)
+        assert row["repaired"]["mean_total_pair_margin"] == pytest.approx(0.53)
+    components[..., 1:] = 0
+    report = audit.component_damage_report(cache)
+    assert all(r["damaged"]["mean_component_pair_margin"] is None for r in report["rows"])
+
+
+def test_posthoc_component_inventory_and_transition_accounting(features):
+    _, cache = features
+    before = cache["ecca_components"].copy()
+    report = audit.component_damage_report(cache)
+    assert len(report["rows"]) == 3 * 2 * 2 * 3
+    for row in report["rows"]:
+        assert sum(row["transition_counts"].values()) == 60
+        for group in ("damaged", "repaired"):
+            if row["transition_counts"][group]:
+                assert sum(row[group]["mean_component_pair_margin"]) == pytest.approx(
+                    row[group]["mean_total_pair_margin"], abs=1e-12
+                )
+    np.testing.assert_array_equal(before, cache["ecca_components"])
+
+
 @pytest.fixture(scope="module")
 def producer_bundle(features):
     from cfeg.analysis import reference_calibration_source as producer

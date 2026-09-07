@@ -3,6 +3,8 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
+> **2026-09-07 latest closeout:** [reference-calibration-source39-v1 결과](reference_calibration_source39_v1_results.md)의 두 arm 모두 AQ_NOT_ESTABLISHED. 7956행 단회 실행/독립audit PASS. 실제 support가 wrong-label보다 낫지만 reference보다 낮고, notch도 손실을 충분히 회복하지 못했다. 모든 대역 및 사후 점수분해를 완료했으며 다음은 reference-preserving support 결합의 새 설계다(미고정·미실행). Metadata/held 접근0. 아래 newest/current 표기는 당시 역사적 overlay이며 이전 후보를 재개하지 않는다.
+
 > **2026-09-07 newest overlay:** [spatial-calibration-source39-v1 결과](spatial_calibration_source39_v1_results.md)는 AQ_NOT_ESTABLISHED로 단회 종료·독립 검산 PASS다. Metadata-free IT-CCA의 early-AUC 이득0.004748pp로 utility/supervised-specificity 기준을 실패했다. 다음은 새 source39-only per-band/참조기반 learner 진단이며 아직 다음 실행 없음. Metadata/manifest/held 접근0. 아래 context-template와 기존 Phase들은 종료·역사적 이력이다.
 
 > **2026-09-07 current overlay:** [목표 중심 연구 루프](goal_aligned_research_loop.md)의

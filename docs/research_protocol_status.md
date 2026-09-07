@@ -1,9 +1,9 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 진행: **reference-calibration-source39-v1 설계 고정·구현 시작(outcome 전).** [두 전처리와 ECCA 진단 설계](reference_calibration_source39_v1_design.md)를 따른다. 유용한 EEG-only learner 확보를 위한 별도 source39 개발이며 metadata/held 접근은 없다. 아래는 변경 없는 직전 완료 결과다.
+현재 최신 결과: **reference-calibration-source39-v1 단회 완료·독립 검산 PASS, 두 arm 모두 AQ_NOT_ESTABLISHED.** [결과·점수분해·다음 결정](reference_calibration_source39_v1_results.md)을 우선한다. 올바른 support가 wrong-label보다 낫지만 ECCA−matched reference eAUC는 기존/causal-notch 각각−14.15/−10.09pp다. 현재 두 후보는 종료하고 reference를 보존하는 support 결합을 새로 설계해야 한다. Metadata/held 접근0, 새 independent M data0. 다음 operator는 아직 고정·실행하지 않았다. 아래는 변경 없는 직전 결과다.
 
-현재 최신 결과: **spatial-calibration-source39-v1 단회 완료, AQ_NOT_ESTABLISHED, 독립 검산 PASS.** [실제 결과·다음 진단](spatial_calibration_source39_v1_results.md)을 우선한다. AQ early-AUC 이득0.004748pp,27개 fit 중24개 exact A0 fallback으로 유용한 EEG 보정 학습을 입증하지 못했다. Metadata/held 접근0. 이 후보는 종료하고 다음은 reference-guided learner 및 대역별 class 구분력의 별도 source개발 진단이다. 아래 context-template 결과는 변경 없는 직전 종료 상태다.
+직전 결과: **spatial-calibration-source39-v1 단회 완료, AQ_NOT_ESTABLISHED, 독립 검산 PASS.** [당시 실제 결과·진단 제안](spatial_calibration_source39_v1_results.md)을 보존한다. AQ early-AUC 이득0.004748pp,27개 fit 중24개 exact A0 fallback으로 유용한 EEG 보정 학습을 입증하지 못했다. Metadata/held 접근0. 이때 제안한 reference-guided 진단은 위의 별도 후보로 완료했다. 아래 context-template 결과도 변경 없는 이전 종료 상태다.
 
 직전 종료 상태: **실제 `context-template-source39-v1` 단회 완료: AQ_NOT_ESTABLISHED, 독립 검산 PASS. 39명×6조건9828행에서 AQ의 보정 학습 이득과 M의 추가 이득·비용 감소를 입증하지 못해 이 후보는 종료한다. Held60 미개봉 유지. V3 개발 #5·V4 pilot001·AQ study001도 기존 종료 상태 그대로 보존한다.**
 수치와 다음 learner 병목은 [실제 source39 결과](context_template_source39_v1_results.md)를 따른다.

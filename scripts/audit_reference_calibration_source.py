@@ -452,6 +452,77 @@ def diagnostic_report(cache):
     return output
 
 
+def component_damage_report(cache):
+    """Posthoc fixed-prediction attribution, not a new decoder/fit or efficacy endpoint.
+
+    Keep every participant/cell/budget. Damaged pairs compare true vs the ECCA
+    error; repaired pairs compare true vs the Aref error. Empty groups are null.
+    Feature SD and true-minus-meanwrong margins first average queries per person.
+    """
+    weights = cache["filter_weights"]
+    labels = cache["query_labels"]
+    qi = np.arange(len(labels))
+    rows = []
+    for p, subject in enumerate(cache["subject_ids"]):
+        for a, pipeline in enumerate(cache["pipeline_ids"]):
+            for l, cell in enumerate(cache["cell_ids"]):
+                reference = (
+                    np.einsum("f,fqc->qc", weights, cache["aref_band_rho"][p, a, l] ** 2)
+                    / weights.sum()
+                )
+                rp = reference.argmax(-1)
+                for j, k in enumerate((1, 3, 5)):
+                    coefficients = cache["ecca_components"][p, a, l, j]
+                    signed = np.sign(coefficients) * coefficients**2
+                    parts = np.einsum("f,fqci->qci", weights, signed) / weights.sum()
+                    # Preserve production's sum-components-then-average-bands order.
+                    total = np.einsum("f,fqc->qc", weights, signed.sum(-1)) / weights.sum()
+                    ep = total.argmax(-1)
+                    rc, ec = rp == labels, ep == labels
+                    masks = {
+                        "correct_to_correct": rc & ec,
+                        "damaged": rc & ~ec,
+                        "repaired": ~rc & ec,
+                        "wrong_to_wrong": ~rc & ~ec,
+                    }
+                    record = {
+                        "subject_id": int(subject),
+                        "pipeline": str(pipeline),
+                        "cell_id": str(cell),
+                        "budget": k,
+                        "transition_counts": {
+                            name: int(mask.sum()) for name, mask in masks.items()
+                        },
+                        "component_class_sd": parts.std(axis=1).mean(axis=0).tolist(),
+                    }
+                    true = parts[qi, labels]
+                    record["component_true_minus_meanwrong"] = (
+                        (true - (parts.sum(1) - true) / 11).mean(0).tolist()
+                    )
+                    for name, competitor in (("damaged", ep), ("repaired", rp)):
+                        mask = masks[name]
+                        contributions = true - parts[qi, competitor]
+                        total_margin = total[qi, labels] - total[qi, competitor]
+                        close(
+                            contributions.sum(-1),
+                            total_margin,
+                            "Exact additive pair-margin decomposition",
+                        )
+                        record[name] = {
+                            "mean_component_pair_margin": contributions[mask].mean(0).tolist()
+                            if mask.any()
+                            else None,
+                            "mean_total_pair_margin": float(total_margin[mask].mean())
+                            if mask.any()
+                            else None,
+                        }
+                    rows.append(record)
+    return {
+        "role": "posthoc_fixed_decision_attribution_no_refit_selection_or_new_decoder",
+        "rows": rows,
+    }
+
+
 def verify_provenance(root, plan_path, plan, start, freeze, result, repo):
     require(
         {p.name for p in root.iterdir()} == set(plan["execution"]["artifacts"]), "Exact artifacts"
@@ -531,6 +602,11 @@ def main():
     parser.add_argument(
         "--diagnostics", action="store_true", help="Print every band/cell diagnostic after audit"
     )
+    parser.add_argument(
+        "--component-diagnostics",
+        action="store_true",
+        help="Print explicitly posthoc four-component fixed-decision attribution",
+    )
     args = parser.parse_args()
     plan = json.loads(args.plan.read_text())
     start, freeze, result = [
@@ -564,6 +640,8 @@ def main():
     }
     if args.diagnostics:
         output["diagnostics"] = diagnostic_report(cache)
+    if args.component_diagnostics:
+        output["posthoc_component_diagnostics"] = component_damage_report(cache)
     print(json.dumps(output, sort_keys=True, allow_nan=False))
 
 

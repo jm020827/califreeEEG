@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-07 최신: [reference-guided source39 실험](docs/reference_calibration_source39_v1_results.md)을 단회 완료하고 독립 검산했다. 기존/causal-notch 전처리 모두 AQ_NOT_ESTABLISHED: 개인 EEG의 label 정보는 있지만 현재 ECCA는 무보정 reference보다 낮다. 목표는 유지하며 다음은 reference-preserving support 결합의 별도 설계다. Metadata/held60 접근0. 아래 V1/V2 설명은 보존한 과거 이력이다.
+
 이 저장소의 상위 목표는 **처음 보는 사용자가 쓸 만한 closed-set SSVEP 성능에 도달하는 데 필요한 labeled target calibration을 최소화하는 것**이다. `k=0`은 calibration-free anchor이고 `k=1/3/5`는 명시적인 low-calibration 자원점이다. Metadata는 연구목표가 아니라 이 부담을 줄이기 위한 수단이며, 현재 직접 시험하는 metadata도 개인정보나 dataset ID가 아니라 query 전에 관측되는 wet/dry interface와 block별 채널 impedance다.
 
 완료된 `metadata-calibration-efficiency-v1`은 같은 완전한 calibration block과 같은 고정 query에서, EEG·구조·signal-derived QC만 쓰는 `A_Q`보다 pre-query acquisition context를 추가한 `A_QM`이 `k=0/1/3` early-budget curve를 개선하는지 물었다. Source 39명·24 jobs에서 eAUC 차이는 `−0.004843`, correct−shuffle은 `0`이었고 기본 A_Q k=5도 `0.476282<0.50`여서 `development_no_go`로 종료했다. 사전 규칙대로 held 60명은 열지 않았다. 전체 설계는 [metadata-assisted low-calibration 설계](docs/metadata_calibration_efficiency_design.md), 수치·해석·후속 결정은 [source 결과](docs/metadata_calibration_efficiency_results.md), 현재 상태는 [연구 프로토콜 현재 상태](docs/research_protocol_status.md), 결정 이력은 [append-only 연구일지](docs/research_log.md)에 있다.
