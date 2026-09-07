@@ -1,5 +1,9 @@
 # V4 후속 AQ 검증 001 — 사전 계획
 
+실행 후 상태(2026-09-07): **종료, `NO_SOURCE_INFORMATIVE_CELLS`**.
+[결과와 다음 결정](metadata_calibration_v4_aq_study_results.md)을 별도로 기록했다.
+아래 사전 설계와 고정 JSON의 기준은 결과에 맞춰 변경하지 않았다.
+
 기존 V3 개발 실행 #5와 V4 pilot001은 종료한 채 보존한다. 이 연구는 새
 `metadata-calibration-efficiency-v4-aq-study001`이며, **보정이 필요한 조건과 유용한
 EEG-only 비교법을 확보하는 단계**다. Metadata 효과를 이번에 평가하지 않으며 목표를
