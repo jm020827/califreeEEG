@@ -6,6 +6,8 @@
 후보를 종료하고, 확인한 범위와 미해결 질문을 남긴다. 손상 복원·새 class discovery·LLM/OOD로
 primary를 바꾸지 않는다.
 
+> 현재 진행: [reference-calibration-source39-v1 설계](reference_calibration_source39_v1_design.md)를 고정하여 구현·독립 검증 중이다. ECCA와 matched reference를 기존/causal-notch 두 전처리에서 비교하고 모든 대역을 진단한다. 아직 새 human outcome은 없으며 아래는 직전 종료 및 historical context 설계다.
+
 > 최신 종료: [spatial-calibration-source39-v1 결과](spatial_calibration_source39_v1_results.md)는 AQ_NOT_ESTABLISHED, 독립 검산 PASS다. Metadata-free IT-CCA도 유용한 보정 학습을 만들지 못했다. 다음은 새 source39-only 대역별 class 구분력 진단과 reference-guided 표준 learner 확인이며 아직 다음 실행은 없다. Metadata/manifest/held 접근0을 유지했다.
 >
 > 직전 실행 결과: `context-template-source39-v1`은39명/6조건 단회 완료하고
