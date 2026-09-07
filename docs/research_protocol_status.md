@@ -1,6 +1,8 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
+진행 중: **spatial-calibration-source39-v1 사전 계약 고정·구현 시작.** [새 설계](spatial_calibration_source39_v1_design.md)와 [계약](../configs/analysis/spatial_calibration_source39_v1.json)에 따라 강한 metadata-free IT-CCA learner만 개발한다. 아직 새 study 결과 없음. 아래 context-template 결과는 변경 없는 직전 종료 상태다.
+
 현재 상태: **실제 `context-template-source39-v1` 단회 완료: AQ_NOT_ESTABLISHED, 독립 검산 PASS. 39명×6조건9828행에서 AQ의 보정 학습 이득과 M의 추가 이득·비용 감소를 입증하지 못해 이 후보는 종료한다. Held60 미개봉 유지. V3 개발 #5·V4 pilot001·AQ study001도 기존 종료 상태 그대로 보존한다.**
 수치와 다음 learner 병목은 [실제 source39 결과](context_template_source39_v1_results.md)를 따른다.
 현재의 약한 평균 파형을 먼저 개선해야 하며 metadata 무용성이나 전체 연구 완료를 주장하지 않는다.
