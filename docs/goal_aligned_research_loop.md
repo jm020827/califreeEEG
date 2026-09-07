@@ -6,7 +6,7 @@
 후보를 종료하고, 확인한 범위와 미해결 질문을 남긴다. 손상 복원·새 class discovery·LLM/OOD로
 primary를 바꾸지 않는다.
 
-> 진행 중: [spatial-calibration-source39-v1](spatial_calibration_source39_v1_design.md)의 새 metadata-free IT-CCA learner 계약을 고정해 구현/검산한다. 이번 단계에서는 raw source39만 허용하며 metadata/manifest를 읽지 않는다. 아직 새 outcome 없음.
+> 최신 종료: [spatial-calibration-source39-v1 결과](spatial_calibration_source39_v1_results.md)는 AQ_NOT_ESTABLISHED, 독립 검산 PASS다. Metadata-free IT-CCA도 유용한 보정 학습을 만들지 못했다. 다음은 새 source39-only 대역별 class 구분력 진단과 reference-guided 표준 learner 확인이며 아직 다음 실행은 없다. Metadata/manifest/held 접근0을 유지했다.
 >
 > 직전 실행 결과: `context-template-source39-v1`은39명/6조건 단회 완료하고
 > `AQ_NOT_ESTABLISHED`로 종료했다. [결과와 사후 learner 진단](context_template_source39_v1_results.md)을

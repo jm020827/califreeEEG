@@ -1,17 +1,17 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-진행 중: **spatial-calibration-source39-v1 사전 계약 고정·구현 시작.** [새 설계](spatial_calibration_source39_v1_design.md)와 [계약](../configs/analysis/spatial_calibration_source39_v1.json)에 따라 강한 metadata-free IT-CCA learner만 개발한다. 아직 새 study 결과 없음. 아래 context-template 결과는 변경 없는 직전 종료 상태다.
+현재 최신 결과: **spatial-calibration-source39-v1 단회 완료, AQ_NOT_ESTABLISHED, 독립 검산 PASS.** [실제 결과·다음 진단](spatial_calibration_source39_v1_results.md)을 우선한다. AQ early-AUC 이득0.004748pp,27개 fit 중24개 exact A0 fallback으로 유용한 EEG 보정 학습을 입증하지 못했다. Metadata/held 접근0. 이 후보는 종료하고 다음은 reference-guided learner 및 대역별 class 구분력의 별도 source개발 진단이다. 아래 context-template 결과는 변경 없는 직전 종료 상태다.
 
-현재 상태: **실제 `context-template-source39-v1` 단회 완료: AQ_NOT_ESTABLISHED, 독립 검산 PASS. 39명×6조건9828행에서 AQ의 보정 학습 이득과 M의 추가 이득·비용 감소를 입증하지 못해 이 후보는 종료한다. Held60 미개봉 유지. V3 개발 #5·V4 pilot001·AQ study001도 기존 종료 상태 그대로 보존한다.**
+직전 종료 상태: **실제 `context-template-source39-v1` 단회 완료: AQ_NOT_ESTABLISHED, 독립 검산 PASS. 39명×6조건9828행에서 AQ의 보정 학습 이득과 M의 추가 이득·비용 감소를 입증하지 못해 이 후보는 종료한다. Held60 미개봉 유지. V3 개발 #5·V4 pilot001·AQ study001도 기존 종료 상태 그대로 보존한다.**
 수치와 다음 learner 병목은 [실제 source39 결과](context_template_source39_v1_results.md)를 따른다.
-현재의 약한 평균 파형을 먼저 개선해야 하며 metadata 무용성이나 전체 연구 완료를 주장하지 않는다.
-현재 작업의 목표·권한·완료 조건은 [연구 실행 루프](goal_aligned_research_loop.md)와
+현재의 약한 support 구분력을 먼저 이해·개선해야 하며 metadata 무용성이나 전체 연구 완료를 주장하지 않는다.
+종료한 context-template 실험의 목표·권한·완료 조건은 [연구 실행 루프](goal_aligned_research_loop.md)의 당시 설계와
 [source39 고정 계약](../configs/analysis/context_template_source39_v1.json)을 우선한다.
-이는 새 development-only 분석이며 기존 human/lockbox runner나 seal을 재개하지 않는다.
+이는 별도의 development-only 분석이었으며 기존 human/lockbox runner나 seal을 재개하지 않았다.
 AQ study001의 공식 primary는 비어 있고, 일부 조건의 학습 개선은 diagnostic뿐이다.
 [AQ study001 결과](metadata_calibration_v4_aq_study_results.md)를 소급 변경하지 않는다.
-새 후보의 범위와 판정은 [V4 pilot 계획](metadata_calibration_efficiency_v4_pilot.md),
+과거 V4 후보의 범위와 판정은 [V4 pilot 계획](metadata_calibration_efficiency_v4_pilot.md),
 수치와 난이도·fusion 병목은 [V4 pilot 결과](metadata_calibration_efficiency_v4_pilot_results.md)를 따른다.
 V4는 파형 기반 AQ, block별 M, equal-total-trust scalar와 null/shuffle controls를
 비교하는 bounded synthetic engineering pilot이며 V3 재실행이나 human confirmation이 아니다.
