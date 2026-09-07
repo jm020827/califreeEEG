@@ -711,3 +711,13 @@
 - 다음 연구 루프: 상위 질문 `external pre-query acquisition context M이 Q를 넘어 labeled target calibration 부담을 줄이는가`는 유지한다. 새 candidate/scientific revision은 먼저 waveform/spatio-temporal AQ의 matched-condition utility를 별도 evidence에서 입증한 뒤 metadata-selective trust를 검정해야 한다. Block별 residual weighting은 새 가설로만 검토하며 새 미관측 data와 함께 사전등록한다. Log probability/margin은 diagnostic, BA와 labeled-block/trial burden은 confirmatory로 유지한다.
 - Runtime: 현재 Python small-array/control/derangement/hash/audit workload는 단순 GPU 이전으로 큰 이득을 기대하기 어렵다. 먼저 whitening/reference, batched CCA, nu/cache/lambda 재사용과 participant deterministic CPU multiprocessing을 최적화한다. GPU는 새 deterministic numeric/RNG/runtime contract 뒤에만 검토한다.
 - 결과 문서: `docs/metadata_calibration_efficiency_v3_results.md`. 이 결과는 exact P3/AQM candidate에 대한 강한 synthetic development no-go이며, 연구목표 전체나 metadata 일반에 대한 부정이 아니다.
+
+## PLAN-20260907-034 — V4 waveform/context synthetic pilot 001, pre-outcome
+
+- 버전 구분: development-v5는 V3 방법의 개발 실행 #5이며 이미 0/9 eligible, DEVELOPMENT_NO_GO로 완료됐다. V4는 새 과학 후보이지 V5 재실행이나 V3 outcome 뒤 threshold 수정이 아니다. 기존 exact evidence와 retired root를 보존한다.
+- 목표 유지: external pre-query acquisition context M이 EEG-derived Q를 넘어 labeled target calibration 부담을 줄이는지 검증한다. 파형을 보존하는 AQ 자체가 먼저 유용해야 하며, M-block은 같은 total trust의 M-scalar와도 비교한다.
+- 사전 범위: 새 plan `configs/analysis/metadata_calibration_v4_pilot.json`과 설계 `docs/metadata_calibration_efficiency_v4_pilot.md`. 24 synthetic participants, 12 classes, 8 channels, 250 Hz 1 s, 5 support/5 fixed query blocks, k=0/1/3/5. Stable/drift/identical-EEG independent-M 세 family, 올바른/모든 block derangement/결측 M, pooled-waveform diagnostic을 하나의 고정 설정으로 보고한다. 이 기록 시점에 study RNG/outcome은 실행·관측하지 않았다.
+- 판정: stable AQ utility를 먼저 확인한 다음 drift AQM-AQ, correct-shuffle, block-scalar, null-equivalence와 A0 harm을 확인한다. 최소 평균 .01 및 paired participant lower bound 등 수치는 plan에 고정한다. 실패하면 그대로 기록하며 새 seed나 hyperparameter로 이 pilot을 재시도하지 않는다. 성공해도 synthetic mechanism 후보일 뿐 human confirmation이나 human lockbox unlock은 아니다.
+- 문헌: academic-research 기존 workspace의 LST targeted-fulltext card와 LST/CSDuDoFN/SSVEP-DAN 공식 초록을 재검토했다. 파형 보존 비교법을 조사할 근거이지 이 M 연산자나 impedance 유효성의 증거는 아니다. 새 narrow search 1회는 8 records/4 new를 추가했지만 의사결정을 바꿀 mechanism은 없었고 Semantic Scholar 429가 있었다. 따라서 검색량을 더 늘리는 대신 고정된 engineering falsification을 수행한다.
+- 구현 분리: coordinate-worktree-changes에 따라 contract/log/report는 main, 새 module/runner/tests는 한 isolated worktree 작성자, skeptic은 read-only다. 추가 checkout 약 7 MB, artifact 포함 1 GB 미만 budget, 300 GB 이상 여유로 승인한다. 기존 worktree/데이터/의존성은 변경·삭제하지 않는다.
+- 해석 정밀화: V3의 equal balanced accuracy만으로 trial별 prediction이 모두 같다고 증명할 수는 없다. 새 pilot은 actual flips를 직접 저장한다. Confidence 변화는 calibration 감소의 대체 endpoint가 아니다.
