@@ -1,7 +1,12 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3 방법·개발 실행 #5(`development-v5`)는 `DEVELOPMENT_NO_GO`, 0/9 eligible로 종료. 새 V4 waveform/context pilot 001도 단회 완료: `AQ_NOT_ESTABLISHED`, 독립 검산 PASS. A0가 이미 98% 이상, 모든 참가자가 80% target을 k0에 달성해 calibration 감소를 입증하지 못함. Scientific lockbox·external·human outcome 미개봉 / V2 terminal 불변.**
+현재 상태: **새 `context-template-source39-v1` 실제 데이터 개발실험을 사전 고정 중. 과거 노출된 source39만 새 raw-crop 경로로 분석하며 held60은 미개봉 유지한다. V3 개발 실행 #5는 0/9 no-go, V4 pilot001은 AQ_NOT_ESTABLISHED, AQ study001은 NO_SOURCE_INFORMATIVE_CELLS로 각각 종료·보존한다.**
+현재 작업의 목표·권한·완료 조건은 [연구 실행 루프](goal_aligned_research_loop.md)와
+[source39 고정 계약](../configs/analysis/context_template_source39_v1.json)을 우선한다.
+이는 새 development-only 분석이며 기존 human/lockbox runner나 seal을 재개하지 않는다.
+AQ study001의 공식 primary는 비어 있고, 일부 조건의 학습 개선은 diagnostic뿐이다.
+[AQ study001 결과](metadata_calibration_v4_aq_study_results.md)를 소급 변경하지 않는다.
 새 후보의 범위와 판정은 [V4 pilot 계획](metadata_calibration_efficiency_v4_pilot.md),
 수치와 난이도·fusion 병목은 [V4 pilot 결과](metadata_calibration_efficiency_v4_pilot_results.md)를 따른다.
 V4는 파형 기반 AQ, block별 M, equal-total-trust scalar와 null/shuffle controls를

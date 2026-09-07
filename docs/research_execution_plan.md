@@ -3,6 +3,12 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
+> **2026-09-07 current overlay:** 현재 실행은 [목표 중심 연구 루프](goal_aligned_research_loop.md)의
+> 새 `context-template-source39-v1`이다. 이전에 노출된 source39의 raw EEG와 pre-block
+> impedance만 새로 명시한 접근 범위에서 분석한다. 강한 EEG-only·eTRCA·shuffle/stale/order
+> 대조군과 5→3-shot 비용 비교를 함께 평가한다. 아래 역사적 Phase3의 held60/독립 확인
+> 권한을 복구하지 않는다. V3/V4 종료 후보와 결과는 불변이다.
+
 > **2026-09-06 V2 overlay:** 현재 V2 기준원은
 > [V2 설계](metadata_calibration_efficiency_v2_design.md)와
 > `configs/analysis/metadata_calibration_efficiency_v2.yaml`이다. V11 synthetic
