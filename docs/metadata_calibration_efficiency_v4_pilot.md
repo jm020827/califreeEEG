@@ -146,3 +146,28 @@ Weight turnover means half the L1 distance between `pi` and `pi*a/g`, set to zer
 if g=0 and always reported alongside g. Trial-level diagnostics are averaged
 within each participant before uncertainty calculation. The claim is M beyond
 **this EEG-derived Q comparator**, not beyond all information recoverable from EEG.
+
+### Pre-outcome verification record
+
+Plan commit `b56339de50007d743650cecc38636f3757561ea2`; plan SHA-256
+`50607e9b8abe7058565b45cdb8a98dcd1a78f516c393af911f0e5f3ab0484124`.
+Implementation worktree commit `052d867a359063de70e142796228d9a838ebe782`
+integrated as `b54b10c`; independent audit added in `8eff1a1`.
+There were no overlapping writing paths or textual/semantic integration conflicts.
+The main-owned incidental test-only change in `3338137` makes an existing
+ciphertext tamper fixture always change a character; production crypto and all
+old scientific/governance source remain unchanged. That commit also aligns the
+new independent audit's corruption fixture with the final result schema.
+
+Integrated verification: **44 focused tests passed**, and **915 full-suite tests
+passed** in 109.18 s (68 existing PyTorch nested-tensor warnings). The first full
+run had 914 passes and the pre-existing tamper no-op failure, now corrected.
+Changed Python lint/format and `git diff --check` passed. The independent reviewer
+also compared cached and public FBCCA with all twelve frequencies/seven bands,
+including rank deficiency and zero EEG: maximum score difference 0.0.
+
+New tests use explicitly separate fixture seeds only. Study start/result did not
+exist at this verification point. The executable runner will record the final
+clean source commit before the first study draw; no exact V3 artifact is reopened
+through its governed runner. The old V5 result file SHA remains
+`1af9f65910da1d753a30a957dfb5bbef7366b696f9f32d444bf95dd411afcc8c`.
