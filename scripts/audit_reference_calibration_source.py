@@ -516,6 +516,7 @@ def verify_provenance(root, plan_path, plan, start, freeze, result, repo):
         "Historical plan",
     )
     require(start["pinned_files"] == plan["pinned_files"], "Pin inventory")
+    require(start["pipeline_ids"] == plan["pipeline_ids"], "Start pipeline binding")
     for filename, expected in plan["pinned_files"].items():
         require(
             hashlib.sha256(git("show", f"{commit}:{filename}")).hexdigest() == expected,

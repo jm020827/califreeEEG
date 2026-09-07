@@ -256,6 +256,7 @@ def provenance_bundle(tmp_path, monkeypatch):
     helper = b"synthetic reference fixture helper"
     plan = {
         "study_id": "fixture",
+        "pipeline_ids": ["no_notch", "causal_notch50"],
         "source_subject_ids": [4, 6, 8],
         "evidence_role": "artificial-only",
         "execution": {
@@ -268,6 +269,7 @@ def provenance_bundle(tmp_path, monkeypatch):
     plan_path.write_text(json.dumps(plan))
     start = {
         "schema": "cfeg.reference-calibration-source.start.v1",
+        "pipeline_ids": plan["pipeline_ids"],
         "study_id": "fixture",
         "plan_sha256": audit.sha(plan_path),
         "source_commit": "a" * 40,
@@ -319,7 +321,19 @@ def test_provenance_chain(provenance_bundle):
 
 
 @pytest.mark.parametrize(
-    "change", ["metadata", "held", "commit", "features", "freeze", "plan", "mode", "extra", "pins"]
+    "change",
+    [
+        "metadata",
+        "held",
+        "commit",
+        "features",
+        "freeze",
+        "plan",
+        "mode",
+        "extra",
+        "pins",
+        "pipeline",
+    ],
 )
 def test_provenance_corruption(provenance_bundle, change):
     root, path, plan, start, freeze, result, repo = provenance_bundle
@@ -339,6 +353,8 @@ def test_provenance_corruption(provenance_bundle, change):
         (root / "features.npz").chmod(0o600)
     elif change == "extra":
         (root / "extra").write_text("fixture")
+    elif change == "pipeline":
+        start["pipeline_ids"] = ["no_notch"]
     else:
         start["pinned_files"] = {}
     with pytest.raises(ValueError):
