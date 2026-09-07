@@ -820,3 +820,11 @@
 - 새 read-only posthoc script/2fixtures로 saved-score 진단을 추가했다. Dry1s/k5 정답/오답template 평균weighted rho² scores=.787714927/.784661721,wet=.517756896/.494901156. 높은상관점수가 class정보가 아님을 확인했지만 원인은 band/noise/timing등 중 미확정이다. Raw재접근·refit·cell선택0. 이전 contextcache의subject/cell/rawhash/crophash/A0score/legacyTRCAscore도exact동일. Postoutcome independentreview는 closure/한계에동의했다.
 - 목표유지: metadata단계로승격하지않고 새 source39-only per-band class separation/support reproducibility/stimulus-reference evidence 진단과 reference-guided 표준learner 재현을 먼저계획한다. 새실험은아직고정·실행하지않았다. Metadata무용성·독립확인·논문연구완료를주장하지않는다. 독립M자료추가확보0/request미발송. 상세6조건/모든gate/hash/재검산경로는 `docs/spatial_calibration_source39_v1_results.md`.
 - Posthoc 추가 후 새3testfiles focused52PASS/1.99s, lint/format/diffcheck PASS. 원문 정의 claim과 이 measured no-go를 academic workspace에 분리하고 reference-guided 진단 gap을 기록했다. 모든4artifact와 이전candidate 결과는 그대로 보존하며 새artifactdirectory 파일추가0이다.
+
+## PLAN-20260907-046 — reference-guided source39 paired diagnosis, pre-outcome
+
+- 현재 사용자 계속 지시에 따라 목표를 유지한 새 reference-calibration-source39-v1을 고정한다. Eq14 four-feature ECCA, exact matched actual-Pearson Aref, template-only wrong-label11종, ITCCA diagnostic을 두 고정 전처리(no_notch/causal_notch50)에서 비교한다. 기존 실험의 설정·결과는 변경하지 않는다.
+- Academic-research의 targeted PLOS p9 Eq14–15와 official wearable Readme/stimulation table 및 두 author code를 교차 확인했다. Class/axis/start160은 일치하고 DAN의50Hz/Q35 전처리 누락이라는 차이를 찾았다. 원인으로 단정하지 않으며 full-epoch 미래접근을 복사하지 않고 current-trial prefix causal notch로 별도 진단한다. .64초 history와 filter operator 차이를 보고한다.
+- Same39 previously exposed participants/6cells/k0,1,3,5; raw39-only, metadata/held/retired/oldrunner0. 두 arm의4185 standaloneT objectives와7956metricrows, 동일5utility/safety screens를 고정했다. Global DIAGNOSTIC_COMPLETE는 completion일 뿐 efficacy가 아니다. 두 arm 모두 보고하고 winner/band 선택이나 M 자동 승격은 없다.
+- Coordinate-worktree-changes로 main 계약/auditor/docs/soleSQLite 및 단회 실행, isolated writer는 신규 module/runner/tests3개, reviewer는 read-only로 분리한다. Newcheckout12MiB/runtime1GiB/integrationtemp1GiB는 free>300GiB 내다. 기존21worktree 보존. Cache에는 실제 네항/11wrongscore/모든대역과모든reference 투영 diagnostic을 저장하고 독립auditor로 검산한다.
+- 설계 상세/API/schema/문헌 provenance는 docs/reference_calibration_source39_v1_design.md. 아직 새 human EEG/metadata access 또는 start/result 생성은 없다. Clean committed implementation의 fixture/integration 검증 뒤 main이 단회 실행한다.
