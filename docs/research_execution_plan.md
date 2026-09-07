@@ -3,6 +3,8 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
+> **2026-09-07 newest overlay:** [spatial-calibration-source39-v1 설계](spatial_calibration_source39_v1_design.md)와 새 JSON 계약에 따라 metadata-free IT-CCA learner를 구현·검산 중이다. 아래 context-template 분석은 종료 이력이다. 새 단계는 metadata/manifest 접근0, 동일 source39의 모든6조건·잘못된 label/균등확률 대조군만 허용하며 아직 새 study outcome 없음.
+
 > **2026-09-07 current overlay:** [목표 중심 연구 루프](goal_aligned_research_loop.md)의
 > `context-template-source39-v1`은 AQ_NOT_ESTABLISHED로 단회 종료·독립 검산 PASS했다.
 > [실제 결과와 다음 learner 병목](context_template_source39_v1_results.md)을 우선한다.
