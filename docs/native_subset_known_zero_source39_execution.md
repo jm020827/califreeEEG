@@ -55,3 +55,11 @@ Main은 계약/IO/연결시험/문서/SQLite/최종 실행을 소유한다. Prod
 새 문헌 검색/PDF 정독은0이다. 인공 검증·실제 측정·metadata 효능·독립 확인을 서로 다른 증거로 기록한다.
 실행 signature는 연구공간의 `native_subset_known_zero_execution_signature_20260908.md`다.
 Worktree/temp/이전 산출물은 보존하며 cleanup/push/환경 설치는 하지 않는다.
+
+## 최종 실제 접근 전 통과 기록
+
+Clean `95db187bd40900d90b322bdfa76d9c117d5f9f4b`에서 전체 **1520tests PASS197.03초**, 기존 Torch
+warnings68개. 새7개 Python 파일 Ruff lint/format, diff check, 원본 불변 검사 PASS다.
+같은 source의 읽기전용 통합 검토 CODE GO와 canonical preflight PASS(12source hashes)를 확인했다.
+이 시점까지 실제 부모 산출물 byte 접근과 새 실제 attempt 시작은0이다. 이 기록을 commit한 뒤
+동일 코드의 단회 실제 실행을 시작한다. 실제 결과는 별도 결과 문서/연구일지에 기록한다.
