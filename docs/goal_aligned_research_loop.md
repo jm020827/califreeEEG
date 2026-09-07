@@ -1,5 +1,7 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> 현재: 사용자가 [입력 연결 복구용 envelope-r1](native_subset_m_envelope_r1_execution.md)을 승인했다. 과학적 M 방식 수정0, 같은 모델·기준·SHAM으로 별도 실행한다. 새로운50tests/전체1345tests를 통과했으며 아직 이번 실제 outcome 전이다. 아래 v1실패와 당시 승인대기 이력은 보존한다.
+
 > 최신 상태: [직접 임피던스 입력 검증 실패](native_subset_m_source39_v1_results.md). 새 실행은 시작했지만 metadata 저장형식11개 key를6개로 가정한 오류로 EEG/fit/평가 전에 중단했다. 이 사건은 **시도1회/완료효능평가0회/M기작수정0회**다. 기존 metadata는 읽었으며 start-only 기록을 보존한다. 과학적 가설·study_id/SHAM배정은 유지하고 입력-adapter만 고친 별도 attempt authority가 필요하다. 긍정 결과까지 변형하는 루프로 바꾸지 않는다.
 
 > **현재 완료:** [native eTRCA source39·두 bridge 결과](author_etrca_source39_v1_results.md) 단회 실행과 독립 검산을 마쳤다. Wet0.5초에서는 ETRCA5−A0+18.08pp이지만 전8조건+2.24pp CI는0을 포함하고17명 평균 악화다. 원본 baseline 호환성 확인을 종료하고 직접 M 가설1개로 돌아간다. 알려진 interface는 native preset에 이미 사용됐으므로 다음 두 비교군에도 동일 제공하고 추가 M의 순증분을 검정한다. 아직 새 M 실행·독립 paired-M 추가·held60 개봉은 없다. 아래 최신 human은 이전 상태다.

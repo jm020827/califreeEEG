@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 최신 승인: [envelope-r1](native_subset_m_envelope_r1_execution.md)의 입력 연결만 복구하고 전체1345tests를 통과했다. 새로운 attempt/output만 구분하며 과학계획·study_id·SHAM은 불변이다. 실제 실행은 이 승인된 별도 경로에서 단회 수행한다. 아래 v1 failure는 보존된 이전 기록이다.
+
 > 현재: [native-subset-m-source39-v1 입력 검증 중단](native_subset_m_source39_v1_results.md). 단회 시작 후 원본metadata11-key envelope를6개로 가정한 구현 오류로 종료했다. Source-only metadata bytes는 읽었지만 EEG/fit/성능outcome은 없다. Start-only 산출물 보존·동일attempt재시도없음. 과학목표/방식은 바꾸지 않으며 다음은 명시적인 새 입력-adapter attempt 검토다. 아래 native 결과는 직전 완료 이력이다.
 
 기준일: 2026-09-07
