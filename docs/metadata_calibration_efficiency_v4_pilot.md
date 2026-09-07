@@ -61,8 +61,9 @@ orders; drift/null share EEG byte-for-byte.
   This tests whether waveform averaging learns even if per-block posterior
   mixing fails. It cannot be promoted after seeing this pilot's results.
 
-All methods use the same seven-band filtering and phase-preserving signed
-template correlation. A0 and template scores are divided by the same sum of
+All methods use the same seven-band filtering. A0 uses squared CCA correlation;
+template methods use phase-preserving signed squared correlation. Their scores
+are divided by the same sum of
 filter weights before the fixed softmax temperature .1. The fusion strength is
 .5. Q is log residual channel variance after a fixed all-class harmonic projection;
 the projection uses SVD with relative rank cutoff 1e-10. Support reliability is
@@ -135,3 +136,13 @@ paired data identity, metric aggregation, tests and source cleanliness before th
 single four-worker CPU run. Any numerical caching must be checked against the
 existing public FBCCA on independent unit fixtures. No CUDA/library migration is
 part of this candidate.
+
+### Pre-outcome implementation clarifications
+
+Channelwise gains are `exp(.35*z*u)` for the signal and `exp(.5*z*u)` for noise;
+`log M=log(50)+.5*z*u+measurement_noise`. Stable z=0 retains the same underlying
+waveform/noise/order draws. True-class margin means `p_true-max(p_other)`.
+Weight turnover means half the L1 distance between `pi` and `pi*a/g`, set to zero
+if g=0 and always reported alongside g. Trial-level diagnostics are averaged
+within each participant before uncertainty calculation. The claim is M beyond
+**this EEG-derived Q comparator**, not beyond all information recoverable from EEG.

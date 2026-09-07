@@ -1,7 +1,10 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3 synthetic development `DEVELOPMENT_NO_GO` terminal / 9개 grid cell 중 eligible 0 / selected method 없음 / exact V3 candidate 종료 / scientific lockbox·external·human outcome 미개봉 / V2 terminal 불변**
+현재 상태: **V3 방법·개발 실행 #5(`development-v5`)는 `DEVELOPMENT_NO_GO`, 0/9 eligible로 종료. 새 V4 waveform/context pilot 001 설계 동결·구현 중, 아직 outcome 미관측. Scientific lockbox·external·human outcome 미개봉 / V2 terminal 불변.**
+새 후보의 범위와 판정은 [V4 pilot 계획](metadata_calibration_efficiency_v4_pilot.md)을 따른다.
+V4는 파형 기반 AQ, block별 M, equal-total-trust scalar와 null/shuffle controls를
+비교하는 bounded synthetic engineering pilot이며 V3 재실행이나 human confirmation이 아니다.
 V3의 최종 해석은 [V3 synthetic development 결과](metadata_calibration_efficiency_v3_results.md),
 방법·복구 이력은 [V3 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
