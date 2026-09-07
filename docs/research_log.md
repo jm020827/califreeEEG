@@ -863,3 +863,10 @@
 - 신규 scripts/check_author_etrca.py는순수합성fixture만받고nativepreprocess/filterbank/ETRCA fit,predict를호출한다. PublicAPI/선형score/template평균/독립projectedPearson/label순환/currentquerylocality/허용구간밖변경불변검사12casesPASS. Main최초2.125초,재확인2.171초,independentreviewer2.240초;maxabs8.88e−16. Generalized-eigen학습해자체/원논문수치/human저보정효능/M효능은아직미검증이다.
 - Report docs/reports/author_etrca_fixture_20260907.json SHA5261d9a612ef647694f268da40c3af41a9550959c477497bf0070fadd2019f9a,scriptSHA744e9a8ec47393483fb9bc1f7c3ced34adc50bce44ad928da1e1b997a6c5fe61. 테스트17PASS0.07초/Ruff2filesPASS. Fullsuite는이기록을포함한commit뒤별도로실행한다. Temp `/tmp/cfeg-decision-reaudit.NTqI8J` 보존.
 - docs/author_etrca_compatibility.md에native5band/47–53Hz/detrend/ddof1/추가35sample/linearPearson 및nativeLOBO와우리chronology의차이를기록했다. 공개interfaceweights도전체코호트tuning정보를상속할수있으므로held파일미개봉과완전독립설정을혼동하지않는다. 실제source39계약·M연산자·새human실험은아직없으며fixturePASS로자동승격하지않는다.
+
+## VERIFY-20260907-051 — 판단 재검토·호환성 준비 전체 회귀 완료
+
+- Clean implementation commit7855b46482ac32a0bd46fa49948d5d1f5fff75a8에서전체 **1114PASS/116.77초/68기존Torchwarnings**, exit0. Pytest temp는 `/tmp/cfeg-decision-reaudit.NTqI8J/full`, bytecode/cache쓰기비활성,CPU/BLAS1. 새로운17tests와기존1097tests를함께완주했다. 이후변경은이검증기록과설명문서뿐이다.
+- Independent fixture review GO: 공개원본수치코드불변, BaseDataset에맞는slice/latency, 선형Pearson score, 합성API12cases를직접검산했다. 역할충돌/branchmerge없음,새worktree없음,기존22worktree와unmodified외부checkout/별도venv보존이다. Push/cleanup없음.
+- 이전context/spatial/reference resultSHA를다시읽어각각65e6f570a4a50281f23bfde805cdc569e96b8c55a5185ae58aab286724f31a61 /796003e50e720c995c6c3e45bbf32b6c804403b87b4d0e0849550afaa7477197 /661ef36b97cd556721ab98aea844419026b69b713fe3a1906bcbcd7a173e8e43과일치확인했다. 기존plan/helper/결과문서/runner/seal변경0,새human/M/held접근0. 실제성능확인과Moperator설계는다음할일이며연구전체완료를주장하지않는다.
+- Academicworkspace의옛'유용Q선행'gap:9e1391082b16f9b5도신규유한루프에종속된deferred질문으로내리고render했다. 기존수치/이전input보존. 검토범위를원문1편targeted재독·기존판단/결과검토·toolboxcode로한정하며전체1036records를정독했다고주장하지않는다.

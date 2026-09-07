@@ -66,6 +66,8 @@ CPU1/BLAS1, fixture seed20260907. 최초 실행2.125초,12cases PASS.
 (SHA256 `5261d9a612ef647694f268da40c3af41a9550959c477497bf0070fadd2019f9a`).
 읽기 전용 reviewer도 같은 명령을 독립 실행해12cases PASS/2.240초를 확인했다.
 이 반복은 개발 fixture 검산이지 새로운 미관측 과학적 실험이 아니다.
+Main 회귀17tests PASS 뒤 commit `7855b46482ac32a0bd46fa49948d5d1f5fff75a8`에서
+전체1114tests PASS/116.77초/기존Torch warnings68개를 확인했다.
 12cases는2interface preset×3windows×k3/5이고 독립 참가자12명이 아니다.
 합성 정답12/12는 fixture가 잘 연결됐다는 진단일 뿐 사람 정확도나 좋은 DGP의 증거가 아니다.
 
