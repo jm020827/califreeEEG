@@ -258,3 +258,37 @@ def test_independent_audit_rejects_corruption(producer_bundle, change):
             audit.verify_summary(result, plan)
         else:
             audit.verify_rows(values, freeze, result, plan)
+
+
+def test_posthoc_diagnosis_is_read_only_and_does_not_reselect(
+    producer_bundle, tmp_path, monkeypatch
+):
+    import sys
+
+    plan, values, freeze, result = producer_bundle
+    monkeypatch.setitem(sys.modules, "audit_context_template_source", audit)
+    spec = importlib.util.spec_from_file_location(
+        "context_posthoc_fixture", ROOT / "scripts/diagnose_context_template_source.py"
+    )
+    diagnostic = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(diagnostic)
+    np.savez_compressed(tmp_path / "features.npz", **values)
+    (tmp_path / "fold-freezes.json").write_text(json.dumps(freeze))
+    (tmp_path / "result.json").write_text(json.dumps(result))
+    before = {p.name: audit.sha(p) for p in tmp_path.iterdir()}
+    report = diagnostic.diagnose(tmp_path, plan)
+    assert len(report["rows"]) == 6
+    assert report["human_raw_access"] is False
+    assert report["changes_to_frozen_study"] is False
+    assert report["evidence_role"].startswith("posthoc_saved_feature_diagnostic")
+    assert {p.name: audit.sha(p) for p in tmp_path.iterdir()} == before
+    row = report["rows"][0]
+    expected = []
+    for p in range(3):
+        fold = freeze["folds"][p % 3]
+        candidate = next(
+            c for c in plan["q"]["candidates"] if c["id"] == fold["q_selection"]["candidate_id"]
+        )
+        score = audit.template_scores(values, p, 0, audit.qweights(values, p, 0, candidate, 1))
+        expected.append(float((score.argmax(-1) == values["query_labels"]).mean()))
+    assert row["standalone_template_participant_BA"] == expected

@@ -1,7 +1,9 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **새 `context-template-source39-v1` 실제 데이터 개발실험의 사전 고정·구현·독립 검토 완료, 전체983시험 PASS. Clean source에서 단회 실행할 준비가 됐다. 과거 노출된 source39만 새 raw-crop 경로로 분석하며 held60은 미개봉 유지한다. V3 개발 실행 #5는 0/9 no-go, V4 pilot001은 AQ_NOT_ESTABLISHED, AQ study001은 NO_SOURCE_INFORMATIVE_CELLS로 각각 종료·보존한다.**
+현재 상태: **실제 `context-template-source39-v1` 단회 완료: AQ_NOT_ESTABLISHED, 독립 검산 PASS. 39명×6조건9828행에서 AQ의 보정 학습 이득과 M의 추가 이득·비용 감소를 입증하지 못해 이 후보는 종료한다. Held60 미개봉 유지. V3 개발 #5·V4 pilot001·AQ study001도 기존 종료 상태 그대로 보존한다.**
+수치와 다음 learner 병목은 [실제 source39 결과](context_template_source39_v1_results.md)를 따른다.
+현재의 약한 평균 파형을 먼저 개선해야 하며 metadata 무용성이나 전체 연구 완료를 주장하지 않는다.
 현재 작업의 목표·권한·완료 조건은 [연구 실행 루프](goal_aligned_research_loop.md)와
 [source39 고정 계약](../configs/analysis/context_template_source39_v1.json)을 우선한다.
 이는 새 development-only 분석이며 기존 human/lockbox runner나 seal을 재개하지 않는다.

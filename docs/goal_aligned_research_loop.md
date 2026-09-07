@@ -6,6 +6,11 @@
 후보를 종료하고, 확인한 범위와 미해결 질문을 남긴다. 손상 복원·새 class discovery·LLM/OOD로
 primary를 바꾸지 않는다.
 
+> 현재 실행 결과: `context-template-source39-v1`은39명/6조건 단회 완료하고
+> `AQ_NOT_ESTABLISHED`로 종료했다. [결과와 사후 learner 진단](context_template_source39_v1_results.md)을
+> 우선한다. 아래는 변경하지 않은 당시 설계와 목표 경계다. 다음 단계는 metadata를 강하게
+> 만드는 것이 아니라 실제 support 학습의 유용성을 먼저 세우는 새 development 설계다.
+
 ## 현재 병목을 해결하는 순서
 
 ```text

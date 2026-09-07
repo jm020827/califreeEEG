@@ -3,8 +3,10 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
-> **2026-09-07 current overlay:** 현재 실행은 [목표 중심 연구 루프](goal_aligned_research_loop.md)의
-> 새 `context-template-source39-v1`이다. 이전에 노출된 source39의 raw EEG와 pre-block
+> **2026-09-07 current overlay:** [목표 중심 연구 루프](goal_aligned_research_loop.md)의
+> `context-template-source39-v1`은 AQ_NOT_ESTABLISHED로 단회 종료·독립 검산 PASS했다.
+> [실제 결과와 다음 learner 병목](context_template_source39_v1_results.md)을 우선한다.
+> 이전에 노출된 source39의 raw EEG와 pre-block
 > impedance만 새로 명시한 접근 범위에서 분석한다. 강한 EEG-only·eTRCA·shuffle/stale/order
 > 대조군과 5→3-shot 비용 비교를 함께 평가한다. 아래 역사적 Phase3의 held60/독립 확인
 > 권한을 복구하지 않는다. V3/V4 종료 후보와 결과는 불변이다.
