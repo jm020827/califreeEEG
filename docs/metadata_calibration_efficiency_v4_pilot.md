@@ -125,7 +125,7 @@ absolute path; worktree pytest temporary/cache paths remain local.
 
 | Lane | Owner and paths | Runtime | Order |
 | --- | --- | --- | --- |
-| Contract/integration/report | main; this document, new plan, append-only research log | main and sole research-workspace writer | Freeze first; integrate; run once; report |
+| Contract/integration/report | main; this document, new plan, append-only research log, `scripts/audit_metadata_calibration_v4_pilot.py`, `tests/test_metadata_calibration_v4_pilot_audit.py` | main and sole research-workspace writer | Freeze first; integrate; run once; report |
 | Implementation | v4_baseline_mapper; new V4 module, runner, tests only in `/home/whwovy/califreeEEG-wt-v4-pilot`, branch `codex/v4-pilot001` | unit fixtures only; no full study seeds or old artifacts | Starts after contract commit; returns one reviewed commit |
 | Independent review | v4_design_skeptic; read-only | no writes or experiments | Review frozen contract and implementation before study |
 
