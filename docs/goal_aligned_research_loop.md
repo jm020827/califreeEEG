@@ -6,7 +6,13 @@
 후보를 종료하고, 확인한 범위와 미해결 질문을 남긴다. 손상 복원·새 class discovery·LLM/OOD로
 primary를 바꾸지 않는다.
 
-> 현재 완료: [reference-calibration-source39-v1 결과](reference_calibration_source39_v1_results.md)는 두 전처리 모두 AQ_NOT_ESTABLISHED, 독립 검산 PASS다. 올바른 labels의 정보는 있지만 ECCA가 reference 기준을 크게 악화시켰다. 모든 band 진단과 사후 fixed-decision 점수분해까지 완료했다. 다음은 reference 판단을 보존하는 support 결합의 별도 설계이며 아직 다음 operator/실행 없음. Metadata/held 접근0, 독립 M자료 추가0. 아래는 직전 종료 및 historical context 설계다.
+> **현재 후속 순서 수정:** [기존 판단 재검토·유한 루프](research_decision_reaudit_20260907.md)가
+> 아래 historical 설계의 ‘Q utility 먼저, 그 다음에만 M’이라는 일반 필수조건을 대체한다.
+> 저자 구현 하나의 호환성을 확인한 뒤 동일한 강한 Q와 M+Q를 직접 비교한다. 새 분류기
+> 계열을 계속 추가하지 않으며, M 방식1개와 기작 기반 수정 최대1회 뒤 프로그램을 점검한다.
+> 기존 gate·결과·closed runner는 수정하지 않는다. Source39는 계속 개발용, held60은 미개봉이다.
+
+> 최신 human 결과: [reference-calibration-source39-v1 결과](reference_calibration_source39_v1_results.md)는 두 전처리 모두 AQ_NOT_ESTABLISHED, 독립 검산 PASS다. 올바른 labels의 정보는 있지만 ECCA가 reference 기준을 크게 악화시켰다. 모든 band 진단과 사후 fixed-decision 점수분해까지 완료했다. Reference-preserving support 결합은 당시 제안이며 현재 후속은 위 재검토 계획이다. 해당 실험 Metadata/held 접근0, 독립 M자료 추가0. [새 eTRCA 합성 API 확인](author_etrca_compatibility.md)은 PASS했지만 새 human 실험은 아니다. 아래는 직전 종료 및 historical context 설계다.
 
 > 직전 종료: [spatial-calibration-source39-v1 결과](spatial_calibration_source39_v1_results.md)는 AQ_NOT_ESTABLISHED, 독립 검산 PASS다. Metadata-free IT-CCA도 유용한 보정 학습을 만들지 못했다. 이때 제안한 대역별/reference-guided 진단은 위 별도 실험으로 완료했다. 기존 결과와 Metadata/manifest/held 접근0 기록은 그대로다.
 >

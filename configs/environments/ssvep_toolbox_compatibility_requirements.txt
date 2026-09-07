@@ -1,0 +1,11 @@
+# Isolated leaf environment for upstream 3344bd199daf78888e364d9db00ae7d8128d2b5f.
+# Python 3.9, numerical versions from upstream environment.yml.
+# Not installed into the project's .venv; does not install the upstream setup.py.
+numpy==1.23.4
+scipy==1.13.0
+joblib==1.4.2
+scikit-learn==1.3.0
+mat73==0.63
+# Explicit transitive dependencies for a reproducible minimal import closure.
+h5py==3.11.0
+threadpoolctl==3.5.0

@@ -1,0 +1,127 @@
+{
+  "cases": [
+    {
+      "interface_preset": "dry",
+      "k": 3,
+      "max_scalar_error": 8.881784197001252e-16,
+      "n_samples": 125,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "dry",
+      "k": 5,
+      "max_scalar_error": 8.881784197001252e-16,
+      "n_samples": 125,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 3,
+      "max_scalar_error": 8.881784197001252e-16,
+      "n_samples": 125,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 5,
+      "max_scalar_error": 8.881784197001252e-16,
+      "n_samples": 125,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "dry",
+      "k": 3,
+      "max_scalar_error": 5.551115123125783e-16,
+      "n_samples": 188,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "dry",
+      "k": 5,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 188,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 3,
+      "max_scalar_error": 5.551115123125783e-16,
+      "n_samples": 188,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 5,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 188,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "dry",
+      "k": 3,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 250,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "dry",
+      "k": 5,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 250,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 3,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 250,
+      "synthetic_correct_of_12": 12
+    },
+    {
+      "interface_preset": "wet",
+      "k": 5,
+      "max_scalar_error": 6.661338147750939e-16,
+      "n_samples": 250,
+      "synthetic_correct_of_12": 12
+    }
+  ],
+  "dataset_constructor_used": false,
+  "dependencies": {
+    "h5py": "3.11.0",
+    "joblib": "1.4.2",
+    "mat73": "0.63",
+    "numpy": "1.23.4",
+    "scikit-learn": "1.3.0",
+    "scipy": "1.13.0",
+    "threadpoolctl": "3.5.0"
+  },
+  "elapsed_seconds": 2.170869086869061,
+  "guard_scope": "Python audit defense-in-depth, not a security sandbox",
+  "human_data_access": false,
+  "imported_source_hashes": {
+    "SSVEPAnalysisToolbox/__init__.py": "e45434b3fdab3dad95a63fdd3a1a7abac5d70073d3f57f8c0555592cfd94a2aa",
+    "SSVEPAnalysisToolbox/algorithms/__init__.py": "56d70fe22f169ef0b5dce85acd72d9513d006e4b486ab6a0fc249dc9e9e9e073",
+    "SSVEPAnalysisToolbox/algorithms/basemodel.py": "a3b489021ff33f165b97b1a6b1d1c5a10ed55ff9b8b84e519dc8bb68824ad63f",
+    "SSVEPAnalysisToolbox/algorithms/cca.py": "acb5434c218a374a6ff4ceb4409c953e1f736efac7ecf01febd605aba08b30ab",
+    "SSVEPAnalysisToolbox/algorithms/lsframework.py": "bda071008d86316c6ad11b91ad5fc095652e7bdde38480939e1dcaa4e872fdd2",
+    "SSVEPAnalysisToolbox/algorithms/ms_msetcca_r_1.py": "5e9c52b8c1cfbaac90dbec84cdbaeab631d269659e772f96594781865689d985",
+    "SSVEPAnalysisToolbox/algorithms/ms_msetcca_r_2.py": "4cf2880f17261eda78f82eb26d0b3de8907dcbbc8e56cfcf1d1842d5a2f6a5b8",
+    "SSVEPAnalysisToolbox/algorithms/ms_msetcca_r_3.py": "46e36cceba38d2566269bb5a4c523c5f82a18a4b68567c8c3f04f6759e69124b",
+    "SSVEPAnalysisToolbox/algorithms/ms_trca_r_1.py": "21c718033917f198823f12b5ae52babe94b536c0095b9b4e4136c7741d73e044",
+    "SSVEPAnalysisToolbox/algorithms/ms_trca_r_2.py": "b09ad5396d76acbfb385c309287cf6c86990b878a003d8c62d68555c8b187a7f",
+    "SSVEPAnalysisToolbox/algorithms/tdca.py": "ddc886c3d8cabce70bed25071194df8e77b8aa1ec81d345cdb23f933851f73e9",
+    "SSVEPAnalysisToolbox/algorithms/trca.py": "49f67828ff5da4156c0a86d829e9f0dc80d74ba6a4b1c7dcba1e23890dbe342b",
+    "SSVEPAnalysisToolbox/algorithms/utils.py": "44354f61b1d6dd6b7626bbed4600d780f25bd873193bd4dbb5a39bb0a8ca0727",
+    "SSVEPAnalysisToolbox/algorithms/utils_ls.py": "706c73b0f3bd21cb4e9da6fb490231f943d9549d9dfd1c651b86765310eafaad",
+    "SSVEPAnalysisToolbox/utils/__init__.py": "e45434b3fdab3dad95a63fdd3a1a7abac5d70073d3f57f8c0555592cfd94a2aa",
+    "SSVEPAnalysisToolbox/utils/io.py": "05ef34590d7c6ea9f17c91d42bec5ab18631148e879199f70eafce6aae457bff",
+    "SSVEPAnalysisToolbox/utils/wearablepreprocess.py": "248b40b6a5e8e2e6b55b890a40263549f593ca46ad8bec6accc7b3f1ea2260ac"
+  },
+  "metadata_access": false,
+  "python": "3.9.21",
+  "scope": "synthetic engineering only; no human performance reproduction",
+  "seed": 20260907,
+  "status": "FIXTURE_COMPATIBILITY_PASS",
+  "upstream_numeric_code_modified": false,
+  "upstream_revision": "3344bd199daf78888e364d9db00ae7d8128d2b5f"
+}

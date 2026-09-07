@@ -3,7 +3,9 @@
 기준일: 2026-08-30
 프로토콜 버전: 0.3 (평가 골격), 0.4-dev 최소 공정성 구현
 
-> **2026-09-07 latest closeout:** [reference-calibration-source39-v1 결과](reference_calibration_source39_v1_results.md)의 두 arm 모두 AQ_NOT_ESTABLISHED. 7956행 단회 실행/독립audit PASS. 실제 support가 wrong-label보다 낫지만 reference보다 낮고, notch도 손실을 충분히 회복하지 못했다. 모든 대역 및 사후 점수분해를 완료했으며 다음은 reference-preserving support 결합의 새 설계다(미고정·미실행). Metadata/held 접근0. 아래 newest/current 표기는 당시 역사적 overlay이며 이전 후보를 재개하지 않는다.
+> **2026-09-07 현재 실행 전략 수정:** [기존 판단 재검토·유한 연구 루프](research_decision_reaudit_20260907.md)를 우선한다. 연구목표와 기존 종료 판정은 유지하되 Q>A0 평균 우위를 M 검정의 입장권으로 요구하지 않는다. 저자 구현 호환성 확인1개 → 직접 M 가설1개 → 원인 기반 수정 최대1회 뒤 점검으로 제한한다. 아래 overlay의 다음 신규 EEG 결합식 제안은 자동 실행하지 않는다. Source39 개발/held60 보호와 강한 비교군·실용성·비용 요구는 유지한다.
+
+> **2026-09-07 latest human closeout:** [reference-calibration-source39-v1 결과](reference_calibration_source39_v1_results.md)의 두 arm 모두 AQ_NOT_ESTABLISHED. 7956행 단회 실행/독립audit PASS. 실제 support가 wrong-label보다 낫지만 reference보다 낮고, notch도 손실을 충분히 회복하지 못했다. 모든 대역 및 사후 점수분해를 완료했다. Reference-preserving 결합은 당시 제안이고 현재 후속은 위 재검토 계획이다. 해당 실험 Metadata/held 접근0. [eTRCA 합성 API 확인](author_etrca_compatibility.md)은 새 준비 작업이며 human 성능 결과가 아니다. 아래 newest/current 표기는 당시 역사적 overlay이며 이전 후보를 재개하지 않는다.
 
 > **2026-09-07 newest overlay:** [spatial-calibration-source39-v1 결과](spatial_calibration_source39_v1_results.md)는 AQ_NOT_ESTABLISHED로 단회 종료·독립 검산 PASS다. Metadata-free IT-CCA의 early-AUC 이득0.004748pp로 utility/supervised-specificity 기준을 실패했다. 다음은 새 source39-only per-band/참조기반 learner 진단이며 아직 다음 실행 없음. Metadata/manifest/held 접근0. 아래 context-template와 기존 Phase들은 종료·역사적 이력이다.
 
