@@ -1,23 +1,36 @@
-# Metadata-assisted low-calibration SSVEP — V3 pre-outcome design
+# Metadata-assisted low-calibration SSVEP — V3 design과 terminal development 결과
 
-상태: **V3.4 pre-outcome consumed-development recovery / development-v1·v2·v3·v4 영구 은퇴 /
-development-v5 bundle 전 / replacement development seed 301269949 미실행 /
-scientific lockbox·외부 EEG·wearable EEG outcome 미승인**
+상태: **V3 synthetic development `DEVELOPMENT_NO_GO` terminal / development-v5 0/9 eligible /
+selected method 없음 / exact V3 candidate 종료 / scientific lockbox·외부 EEG·wearable EEG
+outcome 미개봉**
 
 기준 후보는 `metadata-calibration-efficiency-v3`, 결정 ID는 `DEC-20260906-024`다.
 기계 판독 기준원은
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`, synthetic 기준원은
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`, V2와의 최초 경계는 byte-identical
-`configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 현재 recovery 경계는
+`configs/governance/metadata_calibration_v3_preoutcome_amendment.json`, 최종 pre-development recovery 경계는
 `configs/governance/metadata_calibration_v3_4_recovery_amendment.json`이다.
+최종 수치·해석·artifact integrity는
+[V3 synthetic development 결과](metadata_calibration_efficiency_v3_results.md)에 기록한다.
 
 ## 결론부터 말하면
 
-연구목표는 바꾸지 않는다.
+상위 연구목표는 바꾸지 않지만, 이 문서가 동결한 **exact V3 candidate는 종료됐다**.
 
 > 처음 보는 사용자가 정답이 붙은 SSVEP calibration EEG를 아주 조금만 제공할 때,
 > EEG 자체에서 얻은 품질 단서 `Q` 외에 query 전에 측정한 전극 interface와 impedance
 > `M`을 알면 필요한 labeled calibration block을 실제로 줄일 수 있는가?
+
+Development-v5는 family당 48 participants와 3×3 grid를 완전 평가했지만 eligible cell이
+`0/9`였고 `selected_grid_cell_id=null`인 `DEVELOPMENT_NO_GO`로 끝났다. 모든 cell에서 AQ
+viability, B3/B4 metadata efficacy, B4 in-reference/interface-scale value, k3 pairing mechanism과
+pairing potency가 함께 실패했다. 반면 불변식, null/harm, deployment viability, adversarial
+abstention과 anti-triviality는 통과했다. 안전성 통과를 효능으로 읽지 않는다.
+
+B2 A0 balanced accuracy가 `.5850694444444444`로 개선 여지가 있었는데 AQ eAUC gain은 0이어서
+baseline ceiling만으로 no-go를 설명할 수 없다. k1에서 M은 AQ의 나빠진 log probability를
+일부 완화했지만 BA는 A0와 같았고, k3/5는 gate가 exact A0로 abstain했다. Forced-on 사후 진단도
+유의미한 BA gain을 만들지 못했으므로 gate가 양성 효과를 숨긴 것이 아니다.
 
 V3에서 바꾸는 것은 질문이 아니라 **M을 넣는 위치와 실패 판정 방식**이다. V2는 M을
 support prototype과 최종 fusion에 두 번 반영했다. V3는 M을 오직 “이 calibration을 현재
@@ -77,11 +90,10 @@ AQ prototype은 M을 전혀 보지 않는다. 각 block에서 class `c`의 smoot
 query score distribution과 각 `r_bc` 사이의 negative Jensen–Shannon divergence가 `ps_b`의
 class score가 된다. `nu ∈ {1,4,16}`, `lambda_max ∈ {0.1,0.2,0.3}`의 9개 조합은
 clean implementation commit과 별도 development-bundle receipt 뒤 nonreserved synthetic
-development에서 완전 grid로 검사하고, 모든 gate를 통과하는 조합이
-없으면 V3를 종료한다. 통과 조합 중 정해진 tie-break로 하나만 고른 뒤 scientific
-lockbox 전에 별도 `selected-method-freeze`로 다시 고정한다. 현재 두 YAML은 scientific
-실행계약이 아니라 selection 계약이다. 사전 정의된 selector 결과를 한 번 채우는 것은 V4가
-아니지만 operator·DGP·threshold·grid·rank rule을 바꾸면 V4와 새 evidence가 필요하다.
+development에서 완전 grid로 검사했다. 모든 gate를 통과한 조합이 없어 V3를 종료했고,
+`selected-method-freeze`는 만들지 않았다. 두 YAML은 scientific 실행계약이 아니라 selection
+계약이었다. 이제 operator·DGP·threshold·grid·rank rule을 바꾸려면 새 candidate/scientific
+revision과 새 미관측 evidence가 필요하다.
 
 Raw interface/impedance는 metadata adapter만 읽는다. 먼저 signal을 전혀 받지 않는 preflight가
 schema·pairing·query OOD와 block affinity를 검사한다. Malformed/OOD면 support EEG·label을
@@ -183,9 +195,10 @@ promotion될 수 있었다. V3는 모든 이름 붙은 component의 **교집합*
 7. Anti-triviality: B3/B4에서 metadata가 실제 residual을 바꾼 비율이 0.20 이상이어야 한다.
    항상 AQ 또는 A0만 반환하는 후보는 안전해 보여도 통과하지 못한다.
 
-Synthetic PASS는 구현과 메커니즘의 필요조건일 뿐 사람 EEG의 M 효과가 아니다. 하나라도
-실패하면 정확한 V3 후보를 종료하며 threshold, DGP 또는 lambda를 같은 결과에 맞춰 바꾸지
-않는다. 바꾸려면 V4와 새 미관측 evidence가 필요하다.
+Synthetic PASS는 구현과 메커니즘의 필요조건일 뿐 사람 EEG의 M 효과가 아니다. 실제로 하나
+이상의 필수 component가 실패했으므로 exact V3 후보를 종료하며 threshold, DGP 또는 lambda를
+같은 결과에 맞춰 바꾸지 않는다. 후속은 새 candidate/scientific revision과 새 미관측 evidence를
+먼저 사전등록해야 한다.
 
 ## 최종 사람 EEG 질문은 그대로다
 
@@ -252,10 +265,10 @@ impedance 측정·전극 setup 시간, elapsed calibration time과 재측정 횟
   평균 향상 뒤의 participant transition을 설명하는 보조 비유로만 쓴다. LLM sampling K와
   EEG calibration k는 같은 양이 아니다.
 
-따라서 broad literature search는 현재 포화에 가깝다. 다음 정보가 큰 단계는 논문 수를 더
-늘리는 것보다 (1) 이 계약대로 pure-DAG 코드와 canary를 완성하고, (2) nonreserved synthetic
-development에서 한 exact 후보를 살리거나 종료하며, (3) 직접 metadata-bearing 독립 cohort의
-접근권한을 얻는 것이다.
+따라서 broad literature search는 현재 포화에 가깝다. V3 synthetic development가 exact 후보를
+종료한 뒤 정보가 큰 다음 단계는 논문 수를 더 늘리는 것보다 (1) 새 AQ가 matched-condition에서
+실제 utility를 만드는지 별도 evidence로 확인하고, (2) 그 위에 metadata-selective trust를
+사전등록하며, (3) 직접 metadata-bearing 독립 cohort의 접근권한을 얻는 것이다.
 
 ## 실행·권한 경계
 
@@ -332,7 +345,7 @@ key set이 아니라 insertion order로 판정한 것이 원인이다. V4 seed�
 소비됐고 DGP/grid/selection 완료는 강한 control-flow inference일 뿐 durable·관측 outcome이
 아니다. V4 result를 재구성하거나 seed를 replay하지 않는다.
 
-계속할 수 있는 유일한 attempt는
+당시 계속할 수 있는 유일한 attempt는
 `/home/whwovy/v3-artifacts/metadata-calibration-efficiency-v3/development-v5/`이며 bundle
 schema는 `cfeg.metadata-calibration-efficiency-v3.development-bundle.v5`다. 새 bundle은
 V1/V2/V3/V4의 exact 2/1/3/3-file inventory, 네 recovery amendment, incident identities,
@@ -371,6 +384,30 @@ Scientific execution authorization의 trust root는 repository에 고정한 work
 RSA-4096 공개키(fingerprint `SHA256:tm6CDH5eVtjTKNqBUwrBYwbq5RhZ48wo1QjP9c+mR+g`)다.
 임의 runtime key는 거부한다. 향후 exact attempt manifest가 생긴 뒤 target 전에 대응 개인키로
 RSA-PSS/SHA-256 detached 서명을 받아야 하며, 현재 대화의 일반 승인은 그 target-bound 서명을 대신하지 않는다.
+
+## V3 synthetic development 결과와 종료
+
+Development-v5는 commit `8b3ace24eb4160aa61f3e7bf2af7dc1b74905699`, tree
+`04895973c140787546d31a72437d8c90982b698f`에서 seed `301269949`로 단회 실행됐다. Canonical
+result는 88,992 participant metric rows와 90 invariant rows를 담으며 file/payload SHA-256은
+`1af9f65910da1d753a30a957dfb5bbef7366b696f9f32d444bf95dd411afcc8c`/
+`341df8f21cadbd599ca2ef9fe15f09f1d354c0b997198f503ba4ec5c1b0760fd`다. Fresh process가
+`DEVELOPMENT_NO_GO`, terminal true, selected null을 read-only로 재확인했다.
+
+9개 cell은 모두 같은 7개 필수 component에서 실패했다. B1 최대 AQ eAUC gain은
+`.0001736111111111128`이고 LCB는 `-.00011769561139615749`, B2 gain은 0이었다. B3/B4 metadata와
+k3 mechanism efficacy도 0이었다. B4 potency는 changed fraction
+`.49166666666666664<.50`, median `.04830195627485313<.05`였다. Null/harm/invariant와
+abstention이 통과한 사실은 안전성 evidence이지 효능 evidence가 아니다.
+
+따라서 exact V3를 threshold/lambda/DGP 사후조정이나 다른 seed로 재시도하지 않는다. Selected
+freeze, canary, scientific lockbox와 external/human EEG는 열리지 않았다. 다음 후보는 먼저
+waveform/spatio-temporal AQ의 matched-condition calibration utility를 입증하고, 그 뒤 block별
+metadata affinity를 보존하는 trust operator를 새 evidence와 함께 사전등록해야 한다. 예를 들어
+`p0 + lambda_Q * sum_b pi_b * a_qb * (p_s,b - p0)`는 검토할 수 있으나 이는 결과 뒤의 가설이며
+동결된 후속 설계가 아니다. Continuous log probability/margin은 진단용이고 balanced accuracy와
+labeled calibration burden은 confirmatory endpoint로 유지한다. 자세한 표와 주장 한계는
+[V3 결과](metadata_calibration_efficiency_v3_results.md)를 따른다.
 
 ## 역사 기록: 구현 준비 상태 (2026-09-07 implementation A 직전)
 

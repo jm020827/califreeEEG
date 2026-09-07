@@ -1,8 +1,9 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 상태: **V3.4 pre-outcome consumed-development recovery 구현·검증 중 / development-v1·v2·v3·v4 영구 은퇴 / development-v5 bundle 전 / replacement seed 301269949 미실행 / scientific lockbox·external·human outcome 미승인 / V2 terminal 불변**
-현재 후속 방법 기준원은 [V3 pre-outcome 설계](metadata_calibration_efficiency_v3_design.md),
+현재 상태: **V3 synthetic development `DEVELOPMENT_NO_GO` terminal / 9개 grid cell 중 eligible 0 / selected method 없음 / exact V3 candidate 종료 / scientific lockbox·external·human outcome 미개봉 / V2 terminal 불변**
+V3의 최종 해석은 [V3 synthetic development 결과](metadata_calibration_efficiency_v3_results.md),
+방법·복구 이력은 [V3 설계](metadata_calibration_efficiency_v3_design.md),
 `configs/analysis/metadata_calibration_efficiency_v3.yaml`과
 `configs/analysis/metadata_calibration_v3_synthetic.yaml`이다. V2의 불변 기준원은
 `configs/analysis/metadata_calibration_efficiency_v2.yaml`과 frozen V11 plan SHA-256
@@ -12,7 +13,7 @@
 미개봉, `DEC-20260903-005`의 physical 후보 retirement와 terminal
 `reliability-spatial-v1` Stage-0도 그대로 유효하다.
 
-이 문서는 현재 방향의 요약본이다. V1의 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), V1 수치·해석은 [source 결과](metadata_calibration_efficiency_results.md), V2 방법은 [V2 설계](metadata_calibration_efficiency_v2_design.md), 현재 후속은 [V3 설계](metadata_calibration_efficiency_v3_design.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. V2 terminal은 scientific negative result가 아니다. 과거 physical, synthetic, query-only plan과 결과도 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
+이 문서는 현재 방향의 요약본이다. V1의 쉬운 전체 설계는 [metadata-assisted low-calibration 설계](metadata_calibration_efficiency_design.md), V1 수치·해석은 [source 결과](metadata_calibration_efficiency_results.md), V2 방법은 [V2 설계](metadata_calibration_efficiency_v2_design.md), V3의 설계와 수치는 각각 [V3 설계](metadata_calibration_efficiency_v3_design.md)와 [V3 결과](metadata_calibration_efficiency_v3_results.md), 세부 이력은 [append-only 연구일지](research_log.md)를 따른다. V2 terminal은 scientific negative result가 아니다. 과거 physical, synthetic, query-only plan과 결과도 삭제하거나 새 후보의 양성 근거로 재해석하지 않는다.
 
 ## 연구목표
 
@@ -22,7 +23,28 @@
 
 Metadata 자체가 목적이 아니다. 현재 처리 가능한 과학적 treatment는 pre-query acquisition context뿐이다. Dataset/subject ID와 query-derived QC를 metadata 이득으로 세지 않는다. 새 class discovery, open-set/OOD 탐지, 손상 EEG 복원과 LLM test-time scaling은 primary endpoint가 아니다.
 
-## V3 outcome-free 개발 계약
+## V3 synthetic development terminal closeout
+
+Clean main commit `8b3ace24eb4160aa61f3e7bf2af7dc1b74905699`, tree
+`04895973c140787546d31a72437d8c90982b698f`에 묶인 development-v5를 seed
+`301269949`로 단회 실행했다. Family당 48 participants, 8 families, 3×3 grid의 88,992 metric
+rows와 90 invariant rows가 canonical result에 기록됐다. 9개 cell 모두 같은 7개 필수
+component—AQ viability, B3/B4 metadata efficacy, B4 in-reference efficacy와 interface-scale value,
+k3 pairing mechanism, pairing potency—에서 실패해 eligible cell은 0이고 선택 ID는 null이다.
+
+Result file/payload SHA-256은
+`1af9f65910da1d753a30a957dfb5bbef7366b696f9f32d444bf95dd411afcc8c`/
+`341df8f21cadbd599ca2ef9fe15f09f1d354c0b997198f503ba4ec5c1b0760fd`다. Fresh separate-process
+`status`는 exit 0, terminal `DEVELOPMENT_NO_GO`, `durable_phases_advanced=0`,
+`next_command=null`, `selected_grid_cell_id=null`을 재확인했다. 세부 9-cell 판정, 대표 확률과
+해석은 [V3 결과](metadata_calibration_efficiency_v3_results.md)에 기록한다.
+
+따라서 exact V3 후보는 종료한다. Threshold, lambda, DGP를 이 결과에 맞춰 바꾸거나 다른 seed로
+재시도하지 않는다. Selected freeze, canary, scientific lockbox, external/human outcome은 만들거나
+열지 않았다. 상위 연구목표는 유지하되 다음 후보는 AQ matched-condition utility를 먼저 세우고
+metadata-selective trust를 검정하는 새 candidate/scientific revision으로 사전등록해야 한다.
+
+## V3 개발 계약 (historical pre-outcome specification)
 
 V3는 같은 목표와 primary `eAUC(A_QM)-eAUC(A_Q)`를 유지한다. 변경점은 acquisition
 context를 support prototype과 fusion에 중복 적용하지 않고, AQ의 최종 support residual을
@@ -59,17 +81,16 @@ robust impedance scale을 선택할 때만 쓰고 직접 logit 입력으로 쓰�
 없으면 interface-only 경로는 exact AQ다. 따라서 주장은 interface 자체 효과가 아니라
 **해당 장치 내 interface-conditional impedance mismatch의 순증분**으로 제한한다.
 
-현재는 V3.4 recovery 코드·unit test와 clean hash-pinned development-v5 bundle을 만드는
-단계다. Bundle은
-git 자기참조를 피하려고 V3 external artifact root의 write-once receipt로 만들고 이미 clean한
-implementation commit/tree를 묶는다. Root seed
-`301269949`의 replacement synthetic development는 bundle validator 뒤에만 가능하고 public
-historical-pulse governance canary는 selected-method freeze와 state engine 뒤에만 가능하다.
-V3 scientific seed, future-beacon attempt manifest, target-bound 서명 authorization은 아직 없고
-external 또는 human EEG outcome 접근 권한도 없다. V2 deny overlay는 byte-identical하게
+이 계약은 V3.4 recovery와 clean hash-pinned development-v5 bundle을 거쳐 단회 실행됐다.
+Bundle은 git 자기참조를 피한 V3 external artifact root의 write-once receipt로 clean
+implementation commit/tree를 묶었다. Root seed `301269949`의 replacement synthetic development는
+bundle validator 뒤에만 실행됐고, 0/9 eligible 판정으로 V3는 `DEVELOPMENT_NO_GO` terminal이
+됐다. Selected-method freeze가 없으므로 historical-pulse governance canary와 scientific DAG는
+열리지 않았다. V3 scientific seed, future-beacon attempt manifest, target-bound 서명
+authorization, external 또는 human EEG outcome 접근도 없다. V2 deny overlay는 byte-identical하게
 유지한다.
 
-### V3.4 pre-outcome consumed-development recovery
+### V3.4 pre-outcome consumed-development recovery (historical)
 
 Development-v4에는 정확히 bundle·retired-v1과 byte-identical한 context·start receipt 세 파일만
 있고 result는 없다. Bundle file/payload SHA-256은
@@ -106,8 +127,10 @@ Outcome은 쓰지 않았다. Scientific projection은 V4의
 `5885f39908d8a33b130e0dc923abe560cc4587ebe7c58ed242647ce028f94712`에서
 `670b61c767ff2a4b02c3a582aa8ac7e46b5632ada2806ffc109e2e79326d05ca`로 바뀌며 유일한
 leaf delta는 `synthetic.rng.development_root_seed`다. Objective, operator, DGP, grid, gates,
-thresholds, rank, context seed와 evidence roles는 그대로다. V5 root/artifact와 seed/DGP는 아직
-생성·실행되지 않았고 모든 future/scientific/human/network authorization은 false다.
+thresholds, rank, context seed와 evidence roles는 그대로다. 이 recovery 기록 시점에는 V5
+root/artifact와 seed/DGP가 아직 생성·실행되지 않았으며, 이후 단회 development-v5의 terminal
+결과는 위 closeout과 [V3 결과](metadata_calibration_efficiency_v3_results.md)에 기록한다.
+Future/scientific/human/network authorization은 끝까지 false였다.
 
 ### V3.3 pre-outcome consumed-development recovery
 
@@ -388,6 +411,8 @@ development cohort를 다시 사전 동결·검증한 별도 후보만 미개봉
 
 ## 현재 모델 방향과 근거
 
+- V3의 exact P3/AQM single-insertion 후보는 synthetic development 0/9 eligible로 종료됐다.
+  아직 동결된 후속 후보는 없으며, 같은 결과에 맞춘 threshold/lambda/DGP 조정은 하지 않는다.
 - 종료된 V2 V11의 방법 concept는 metadata를 decoder-wide prompt나 query-spatial transform이 아니라 **frozen Q-only calibration estimator 위의 nested precision/shrinkage residual**로 제한했다. Bounded diagonal-Gaussian 수식과 Q 0.25–4배, M 0.8–1.25배, absolute precision 0.05–20의 범위는 구현·계약 검증됐지만 efficacy는 평가되지 않았다.
 - Primary pair는 한 composite source checkpoint의 A_Q residual-off와 A_QM residual-on이다. 공통 Q path를 먼저 고정하므로 M fit이 A_Q weights에 영향을 주지 않고, metadata missing 시 그 frozen A_Q path와 exact 같아야 한다.
 - `query_reliability_spatial_v1`은 waveform 앞에서 `X'=(I+ΔQ)X`를 적용하는 outcome-free frozen baseline 후보다.
@@ -446,7 +471,8 @@ Target participant의 다른 trial, target batch 통계, target 기반 normaliza
 
 다음 source→conditional-held 권한과 N=60 sensitivity 수용은 **완료된 V1의 historical
 directive**다. V1 source no-go로 conditional held 권한은 소멸했고, V2에는 synthetic-only
-단회 권한만 있었으며 그것도 terminal로 소비됐다. 현재 external·Choi·held 실행 권한은 없다.
+단회 권한만 있었으며 그것도 terminal로 소비됐다. V3 synthetic development도 0/9 eligible
+`DEVELOPMENT_NO_GO`로 끝났다. 현재 external·Choi·held 실행 권한은 없다.
 
 - [V1 historical 승인·동결] A_QM−A_Q complete-block eAUC, exact 39/60 allocation, SESOI·margin·N=60
   sensitivity와 source gate 뒤 조건부 held 실행
@@ -470,7 +496,9 @@ directive**다. V1 source no-go로 conditional held 권한은 소멸했고, V2�
 - [완료·inconclusive] V2 V11은 global claim·미래 beacon 뒤 validator 재귀로 scientific result 전 terminal; 자동 재시도 금지
 - [금지] 현 V11에 대한 BETA/Dong selection·independent outcome, Choi replication, wearable held 60 outcome
 - [기계적 차단] hash-pinned terminal deny-overlay가 repository의 synthetic 재실행 및 BETA/Dong request·prediction·label join·reduction·selection·gate를 입력 접근 전에 거부
-- [다음 후보] 새 schema·seed·amendment·clean freeze·future beacon을 갖춘 별도 candidate만 검토
+- [완료·no-go] V3 development-v5의 9개 cell 모두 promotion 교집합 실패; selected freeze·canary·scientific lockbox 없음
+- [종료] exact V3의 threshold/lambda/DGP/seed 사후 변경·재시도 금지
+- [다음 후보] AQ utility를 먼저 입증하고 metadata-selective trust를 검정하는 새 사전등록 candidate만 검토
 - [보존] query-only BETA 35/20 plan은 frozen baseline-only이며 실행하지 않음
 - [불변] physical_hybrid_v1, S1–S3 추가 outcome과 reliability-spatial-v1 재실행 금지
 
@@ -583,10 +611,13 @@ Assay는 유효했다. Counterfactual condition flip과 train/inference bundle c
     구현하고, 사람 EEG 전에 synthetic V11 gate를 사전등록·동결했다.
 11. [완료·inconclusive] V11 단회 실행은 claim·beacon 뒤 validator 재귀로 efficacy 계산 전
     terminal이 됐다. Scientific PASS/FAIL 값은 없고 같은 lockbox는 소비됐다.
-12. [차단] External·Choi·held outcome은 실행하지 않는다. 재개하려면 기술 수정 외에도 새
-    candidate/schema와 seed, 명시적 amendment, clean freeze와 새 future beacon이 필요하다.
+12. [완료·no-go] V3는 9개 grid cell 전체를 단회 synthetic development에서 평가했고 eligible
+    0, selected null의 `DEVELOPMENT_NO_GO`로 exact candidate를 종료했다.
+13. [차단] V3 selected freeze·canary·scientific lockbox와 External·Choi·held outcome은 실행하지
+    않는다. 재개하려면 새 사전등록 candidate/scientific revision과 미관측 evidence가 필요하다.
 
-현 v1은 source 39명 outcome을 한 번 공개한 `development_no_go`이고, V2 V11은 과학 결과가
-없는 `infrastructure inconclusive`다. Held 60명의 support-label access, query
-prediction·outcome은 모두 미개봉이다. 어느 후보도 결과를 본 뒤 threshold를 바꾸거나 같은
-lockbox/cohort로 재실행하지 않는다.
+현 v1은 source 39명 outcome을 한 번 공개한 `development_no_go`, V2 V11은 과학 결과가 없는
+`infrastructure inconclusive`, V3는 transparent synthetic development에서 0/9 eligible의
+`DEVELOPMENT_NO_GO`다. Held 60명의 support-label access, query prediction·outcome은 모두
+미개봉이다. 어느 후보도 결과를 본 뒤 threshold를 바꾸거나 같은 lockbox/cohort로 재실행하지
+않는다.
