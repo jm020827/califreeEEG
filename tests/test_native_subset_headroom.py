@@ -13,6 +13,38 @@ from test_native_subset_known_zero_source import load, synthetic_parent
 
 H = load("native_subset_headroom")
 
+# Deliberately no pytest/test-fixture imports in the child: those can preload ZIP
+# dependencies and conceal a production cold-start failure under the I/O guard.
+CHILD = """
+import importlib.util
+import json
+import sys
+from pathlib import Path
+payload = json.loads(Path(sys.argv[1]).read_text())
+root = Path(sys.argv[2])
+def load_module(name):
+    spec = importlib.util.spec_from_file_location(name, root / "scripts" / (name + ".py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+H = load_module("native_subset_headroom")
+modules = {name: load_module(name) for name in
+           ("native_subset_m_core", "audit_native_subset_m_source")}
+H.t.ppf(0.975, 38)
+H.preflight = lambda: (payload["plan"], payload["science"], modules,
+                       "synthetic", "synthetic", {})
+original_read = H.artifact_bytes
+reads = 0
+def assert_started(path, limit):
+    global reads
+    assert (Path(payload["plan"]["output_root"]) / "start.json").exists()
+    reads += 1
+    raw = original_read(path, limit)
+    return raw + b"changed" if payload["failure"] == "final_hash" and reads > 2 else raw
+H.artifact_bytes = assert_started
+H.execute()
+"""
+
 
 def fixture_predictions():
     truth = np.tile(np.arange(12), 5)
@@ -213,7 +245,7 @@ def test_serialized_execute_start_first_and_no_retry(artificial, tmp_path, failu
     fixture = tmp_path / "fixture.json"
     fixture.write_text(json.dumps({"plan": plan, "science": science, "failure": failure}))
     completed = subprocess.run(
-        [str(H.ROOT / ".venv/bin/python"), str(Path(__file__).resolve()), str(fixture)],
+        [str(H.ROOT / ".venv/bin/python"), "-c", CHILD, str(fixture), str(H.ROOT)],
         capture_output=True,
         text=True,
         timeout=120,
@@ -237,7 +269,7 @@ def test_serialized_execute_start_first_and_no_retry(artificial, tmp_path, failu
         message = "Input hash" if failure == "initial_hash" else "Input changed during diagnostic"
         assert message in completed.stderr
     second = subprocess.run(
-        [str(H.ROOT / ".venv/bin/python"), str(Path(__file__).resolve()), str(fixture)],
+        [str(H.ROOT / ".venv/bin/python"), "-c", CHILD, str(fixture), str(H.ROOT)],
         capture_output=True,
         text=True,
         timeout=120,
@@ -287,34 +319,3 @@ def test_preflight_pins_git_and_runtime_without_human_reads(monkeypatch, failure
     else:
         with pytest.raises(ValueError):
             H.preflight()
-
-
-if __name__ == "__main__":
-    import sys
-
-    payload = json.loads(Path(sys.argv[1]).read_text())
-    modules = {
-        name: load(name) for name in ("native_subset_m_core", "audit_native_subset_m_source")
-    }
-    H.t.ppf(0.975, 38)
-    H.preflight = lambda: (
-        payload["plan"],
-        payload["science"],
-        modules,
-        "synthetic",
-        "synthetic",
-        {},
-    )
-    original_read = H.artifact_bytes
-    reads = 0
-
-    def assert_started(path, limit):
-        global reads
-
-        assert (Path(payload["plan"]["output_root"]) / "start.json").exists()
-        reads += 1
-        raw = original_read(path, limit)
-        return raw + b"changed" if payload["failure"] == "final_hash" and reads > 2 else raw
-
-    H.artifact_bytes = assert_started
-    H.execute()

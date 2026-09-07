@@ -1,5 +1,9 @@
 # 현재 자료 우선 — 연구계획 수정과 단일 선택공간 진단
 
+> 실행 상태: [headroom 단회 시작 후 NPZ cold-start 오류로 종료](native_subset_headroom_source39_results.md).
+> 두 입력은 읽었으나 새 oracle/BA 집계는0이다. 아래는 당시 고정한 설계이며 완료 결과를 뜻하지 않는다.
+> 인프라 수정은 인공검증했지만 동일 attempt를 재실행하지 않았다.
+
 2026-09-08 사용자 ‘응 그렇게하자’ 승인. 연구목표는 새 사용자의 적은 labeled SSVEP 보정이며,
 acquisition metadata는 이를 위한 수단이다. **새 독립 paired-M 확보를 모든 후속 연구의 필수 입장 조건으로 두지 않는다.**
 현재 Wearable의 EEG와 사전 block별 임피던스로 같은 측정환경의 좁은 가설을 연구할 수 있다.

@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 2026-09-08 연구계획 정정: [현재 자료 우선 계획](docs/current_data_first_research_plan.md)이 아래 이력의 ‘독립 paired-M 확보가 다음 연구의 필수조건’이라는 요구를 대체한다. 기존 Wearable 자료로 좁은 개발 연구를 진행할 수 있다. 종료한 M 후보는 그대로 두고 저장 예측의 단일 선택공간 상한 진단만 수행한다. 새 learner·metadata/raw 재접근·held60 개봉·외부 요청은 포함하지 않는다. 아래 ‘현재/다음’은 각 과거 단계의 기록이다.
+> 2026-09-08 현재: [현재 자료 우선 계획](docs/current_data_first_research_plan.md)으로 추가 paired-M 확보를 모든 연구의 필수조건에서 내렸다. [단일 headroom 진단](docs/native_subset_headroom_source39_results.md)은 두 입력을 읽은 후 NPZ cold-start 오류로 계산 전에 중단됐다. **새 과학 결과 없음**, start-only 보존·실제 재시도0. ZIP 의존성과 인공 cold-process 테스트를 수정했다. 기존 M 종료 결과와 held60 보호는 그대로다. 아래 ‘현재/다음’은 각 과거 단계의 기록이다.
 
 > 2026-09-08 현재 완료: [Known-zero 단일 수정 실제 결과](docs/native_subset_known_zero_source39_results.md)를 개발39명에서 단회 평가하고 독립 전체 검산을 통과했다. 수정 QM−Q는 k3 **0pp**, k5 **+0.01068pp**이며 80% 최초 도달 보정량은312개 사람×조건 모두 같았다. 수정 자체도 k5 정답을 Q2개/QM1개 줄였다. **추가 M 보정비용 절감 미확립으로 이 구현 탐색을 종료한다.** 직접 M 평가1회+기작수정 평가1회 예산을 사용했으며 새 후보/재학습/held60 자동 개봉은 없다. 연구목표는 유지하고 다음 공백은 독립 paired-acquisition 자료와 사전 가설이다. 전체1520tests PASS, 새 독립M자료·외부요청0. 아래는 보존한 이전 단계의 이력이다.
 

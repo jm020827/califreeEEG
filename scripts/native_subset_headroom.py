@@ -12,6 +12,7 @@ import stat
 import subprocess
 import sys
 import time
+import zipfile  # noqa: F401 -- eager NPZ dependency before the exact-path runtime guard
 from datetime import datetime, timezone
 from pathlib import Path
 from types import ModuleType
