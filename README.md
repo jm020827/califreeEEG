@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 현재 실행 단계: [source39 native eTRCA 호환성·두 protocol bridge](docs/author_etrca_source39_v1_design.md)를 고정했다. 원본 API와 독립 수식의 합성 검증을 마쳤으며, 단회 human 실행은 통합·전체 회귀 뒤 수행한다. 새 metadata 효과 검정이나 held60 실행은 아니다.
+
 > 2026-09-07 최신 판단: [기존 판단 재검토·새 연구 루프](docs/research_decision_reaudit_20260907.md). 목표는 유지하되 ‘Q가 먼저 평균적으로 A0를 이겨야만 M을 시험한다’는 필수 순서를 철회했다. 기존 저자 구현 하나의 호환성 확인 → 직접 M 가설1개 → 원인이 특정된 수정 최대1회 뒤 프로그램 점검으로 바꾼다. 기존 reference 두 arm의 AQ_NOT_ESTABLISHED와 모든 종료 결과는 그대로다. Source39는 개발용이며 held60은 열지 않는다. 아래 V1/V2 설명은 보존한 과거 이력이다.
 
 이 저장소의 상위 목표는 **처음 보는 사용자가 쓸 만한 closed-set SSVEP 성능에 도달하는 데 필요한 labeled target calibration을 최소화하는 것**이다. `k=0`은 calibration-free anchor이고 `k=1/3/5`는 명시적인 low-calibration 자원점이다. Metadata는 연구목표가 아니라 이 부담을 줄이기 위한 수단이며, 현재 직접 시험하는 metadata도 개인정보나 dataset ID가 아니라 query 전에 관측되는 wet/dry interface와 block별 채널 impedance다.

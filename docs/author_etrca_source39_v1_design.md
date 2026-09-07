@@ -52,6 +52,10 @@ native47–53Hz bandstop→5band/detrend/ddof1 처리하고 앞35samples를 버�
 11개 candidate-score 순환은 score-permutation diagnostic으로만 낸다. ETRCA의 ensemble
 label 순환 대응은 fixture에서 확인했으나 실제 human wrong-label refit을 한 것으로 쓰지 않는다.
 각 순환의 BA를 평균하며 probability를 합치거나 가장 유리한 순환을 고르지 않는다.
+Unique maximum에서는 이 평균이 `(1-real BA)/11`이므로 독립적인 wrong-training 증거가 아니다.
+독립 수치 검토에서 native ensemble의 개별 filter 부호 변경은 crop 뒤 nonzero component mean과
+global-flatten Pearson 때문에 합성 correlation을 최대0.000951 바꿨다. 원본의 부호·Q-normalization을
+그대로 보존하며, 이를 이유로 centering이나 새 decoder를 추가하지 않는다.
 
 ## 평가·중단
 

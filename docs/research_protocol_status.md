@@ -1,6 +1,8 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
+현재 실행 계약: [source39 native eTRCA와 두 bridge](author_etrca_source39_v1_design.md).
+합성 수치·API 검증 뒤 통합 회귀와 실제39명 단회 실행을 준비한다. 아래 최신 human 표기는 직전 결과다.
 현재 **방향·후속 순서**는 [기존 판단 재검토](research_decision_reaudit_20260907.md)를 우선한다.
 Q>A0의 평균 우위를 metadata 검정의 필수 입장 조건으로 요구하지 않는다. 검증된 강한 Q와
 M+Q의 A0 대비 실용성·harm·실제 비용은 계속 확인한다. 한 저자 구현 호환성 sprint와 한 M
