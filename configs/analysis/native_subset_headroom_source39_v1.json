@@ -1,0 +1,88 @@
+{
+  "schema": "cfeg.native-subset-headroom.plan.v1",
+  "study_id": "native-subset-headroom-source39-v1",
+  "authority": {
+    "basis": "2026-09-08 user 응 그렇게하자 after current-data sufficiency correction",
+    "diagnostic_only": true,
+    "source39_saved_artifact_reuse": true,
+    "oracle_aggregate_only": true,
+    "external_data_not_prerequisite": true,
+    "raw_eeg_access": false,
+    "metadata_packet_access": false,
+    "policy_fit": false,
+    "new_deployable_policy": false,
+    "held_access": false,
+    "retired_access": false,
+    "old_entrypoints": false,
+    "retry_same_attempt": false
+  },
+  "inputs": {
+    "cache": {
+      "path": "/home/whwovy/native-subset-m-artifacts/source39-v1-envelope-r1/features.npz",
+      "sha256": "3e70b32a77bbaf10cd77fac603b7e808183134f27ceb5f839c475c69161523ae"
+    },
+    "result": {
+      "path": "/home/whwovy/native-subset-m-artifacts/known-zero-source39-v1/result.json",
+      "sha256": "d49d8e7c0b367c0eca15a5504e25dbc9b5ee20ac13f20ef0d2792cd5f2999f4f"
+    }
+  },
+  "science": {
+    "path": "configs/analysis/native_subset_m_source39_v1.json",
+    "sha256": "ee9b758f755a18f7540c978e9faf18a5711e652948b94df595377bbfb83cb80a"
+  },
+  "helpers": {
+    "scripts/native_subset_m_core.py": "20a3e3e505f00c2c43af51a5166457031838e4140cf7af15cdb2f427df904014",
+    "scripts/audit_native_subset_m_source.py": "937368d639944184d71083fa67829640435e02cfeb3bd5f0f7f573f4b5224245"
+  },
+  "saved_result": {
+    "study_id": "native-subset-known-zero-source39-v1",
+    "source_commit": "156f8c44d8965df4e8e677e451067ef8ead363b2",
+    "rows": 4680,
+    "diagnostics": 624
+  },
+  "scoring": "Exact original signed native band-weight dot product/class-axis argmax; independent batched-score and exactargmax check; pool FULL+singleomission only k3:4,k5:6. A0 onlyk0, never in k3/k5pool.",
+  "replay": "Validate all624unique cells/60integer in-range Q/QM saved finalactions; reconcile A0/FULL/Q/QM correctness with savedrows before anynew oracle aggregate. No gains/refits/policyreplay.",
+  "reporting": {
+    "cell_rows": 624,
+    "group_summaries": 18,
+    "cost_rows": 9,
+    "attainment_rows": 1248,
+    "oracle": "anycandidatepredictstruth, perquery hindsight; export aggregate counts only, no oracleactions/targets",
+    "groups": "all8 plus everydry/wet×125/188/250/500 cell; participant means then descriptive39person t95; no pooling independentwindows",
+    "metrics": [
+      "full_ba",
+      "q_ba",
+      "qm_ba",
+      "oracle_ba",
+      "potential_over_q",
+      "potential_over_qm",
+      "disagreement_fraction",
+      "unrecoverable_fraction"
+    ],
+    "cost": "oracle3−fixedQ5;36vs60labels; NIreference−1/60 descriptive only; first80% onobserved0/3/5 usingA0k0, no interpolation ormonotonicityassumption",
+    "attainment_methods": [
+      "FULL",
+      "Q",
+      "QM",
+      "ORACLE_HINDSIGHT"
+    ]
+  },
+  "interpretation": "One mathematical representational-ceiling diagnostic on exposeddevelopment, not M information test, deployable accuracy, achievedlabel savings, inferentialconfirmation, or populationbound. High orlow headroom neverautomaticallylicenses nextlearner/subgroup/poolchange.",
+  "output_root": "/home/whwovy/native-subset-m-artifacts/headroom-source39-v1",
+  "artifacts": [
+    "start.json",
+    "result.json"
+  ],
+  "runtime": {
+    "python": "3.10.12",
+    "numpy": "1.26.4",
+    "scipy": "1.15.3",
+    "blas_threads": 1,
+    "ceiling_seconds": 120,
+    "input_budget_bytes": 134217728,
+    "output_budget_bytes": 4194304
+  },
+  "publication": "Cleanmain/committedsources; exactexclusive0400files withfsync; newstart before2inputbytes; hashesfirst, oldBAreplaybeforeoracle; stableinputrehashbeforecompletion; nooverwrite/retry.",
+  "stop": "Afterthissole diagnostic report, stop. No newvariant, model, fit, gain, threshold, subgroup/windowselection, expandedpool, externalrequest, orheldunlock."
+}
+
