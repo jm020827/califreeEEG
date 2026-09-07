@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
-> 현재: [native-subset-m-source39-v1](native_subset_m_source39_v1_design.md) 계약을 고정하고 독립 검증기·통합 테스트를 준비 중이다. Q 대 Q+임피던스의 직접 증분 실험이며 아직 이번 human outcome은 없다. 아래 native 결과는 직전 완료 이력이다.
+> 현재: [native-subset-m-source39-v1 입력 검증 중단](native_subset_m_source39_v1_results.md). 단회 시작 후 원본metadata11-key envelope를6개로 가정한 구현 오류로 종료했다. Source-only metadata bytes는 읽었지만 EEG/fit/성능outcome은 없다. Start-only 산출물 보존·동일attempt재시도없음. 과학목표/방식은 바꾸지 않으며 다음은 명시적인 새 입력-adapter attempt 검토다. 아래 native 결과는 직전 완료 이력이다.
 
 기준일: 2026-09-07
 최신 human 결과: [source39 native eTRCA와 두 bridge](author_etrca_source39_v1_results.md)

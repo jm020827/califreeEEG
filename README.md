@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 현재 구현·검증 중: [직접 acquisition-M subset 실험](docs/native_subset_m_source39_v1_design.md). 같은 native eTRCA 후보를 Q와 Q+임피던스가 각각 선택하도록 고정했고, 합성 수학·누출 검사를 통과했다. 개발39명 단회 실행 전 독립 검증기·전체 회귀시험을 마치는 단계다. 연구목표와 held60 미개봉 경계는 유지한다.
+> 최신 실행 상태: [직접 acquisition-M v1 입력 오류](docs/native_subset_m_source39_v1_results.md). 전체1294tests 뒤 시작했으나 실제 metadata의11-key 저장 형식을6개로 가정한 연결 오류로 중단했다. 기존 metadata는 읽었지만 EEG·학습·효능 평가는 시작되지 않았다. M 가설 실패가 아니며 start-only 기록을 보존했다. 연구목표는 유지하고 새 입력-adapter 실행은 별도 authority가 필요하다. 아래 native eTRCA는 직전 완료된 성능 결과다.
 
 > 최신 실제 결과: [source39 native eTRCA·두 bridge](docs/author_etrca_source39_v1_results.md) 39명 단회 완료·독립 검산 PASS. Wet0.5초 A0/3예시/5예시=33.42/43.72/51.50%, 하지만 전8조건 ETRCA5−A0=+2.24pp(CI −0.59~+5.07),17명 평균 악화다. 호환성 sprint는 종료하고 matched Q 대 추가 acquisition-M 비교로 돌아간다. 새 M 효능·독립 확인은 아직 없다. Dry/wet은 native preset에 이미 사용됐으며 impedance/held60은 열지 않았다.
 

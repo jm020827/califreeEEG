@@ -1,6 +1,6 @@
 # 연구목표에 도달하기 위한 실행 루프
 
-> 현재 진행: [직접 임피던스 증분 실험](native_subset_m_source39_v1_design.md)의 계약과 core/producer 합성 검증을 마쳤다. 독립 감사·통합 전체 시험 뒤 개발39명에서 단회 실행한다. 좋은 결과가 나올 때까지 변형하지 않고 M방식1개+기작 기반 수정 최대1회의 유한 예산을 유지한다.
+> 최신 상태: [직접 임피던스 입력 검증 실패](native_subset_m_source39_v1_results.md). 새 실행은 시작했지만 metadata 저장형식11개 key를6개로 가정한 오류로 EEG/fit/평가 전에 중단했다. 이 사건은 **시도1회/완료효능평가0회/M기작수정0회**다. 기존 metadata는 읽었으며 start-only 기록을 보존한다. 과학적 가설·study_id/SHAM배정은 유지하고 입력-adapter만 고친 별도 attempt authority가 필요하다. 긍정 결과까지 변형하는 루프로 바꾸지 않는다.
 
 > **현재 완료:** [native eTRCA source39·두 bridge 결과](author_etrca_source39_v1_results.md) 단회 실행과 독립 검산을 마쳤다. Wet0.5초에서는 ETRCA5−A0+18.08pp이지만 전8조건+2.24pp CI는0을 포함하고17명 평균 악화다. 원본 baseline 호환성 확인을 종료하고 직접 M 가설1개로 돌아간다. 알려진 interface는 native preset에 이미 사용됐으므로 다음 두 비교군에도 동일 제공하고 추가 M의 순증분을 검정한다. 아직 새 M 실행·독립 paired-M 추가·held60 개봉은 없다. 아래 최신 human은 이전 상태다.
 

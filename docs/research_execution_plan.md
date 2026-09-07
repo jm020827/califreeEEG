@@ -1,6 +1,6 @@
 # califreeEEG 연구 실행 계획
 
-> 현재 실행 대상: [native-subset-m-source39-v1](native_subset_m_source39_v1_design.md). 고정 full/drop-one 후보와 Q/QM/SHAM, shuffle/stale/missing을 구현 중이며 전체 검증 뒤 새 source39-only 단회 실행한다. 새 decoder 탐색이나 held60 권한 복구는 없다.
+> 최신 실행: [native-subset-m-source39-v1](native_subset_m_source39_v1_results.md)은 metadata envelope 연결 오류로 EEG 이전에 중단됐다. 재시도는 하지 않고 start-only 산출물을 보존했다. 다음은 연구목표·모델·SHAM namespace를 유지하는 입력-adapter 복구용 별도 attempt의 명시적 승인과 실제 연결 시험이다. 새 decoder 탐색이나 held60 개봉은 없다.
 
 > **현재 완료 단계:** [native eTRCA source39 결과](author_etrca_source39_v1_results.md) 39명/2028행/52summary 단회 완료·독립 검산 PASS. 조건별 학습 신호는 있지만 전반적 utility·새 M 효과는 미입증이다. 한 baseline sprint와 두 bridge를 사용했으므로 새 decoder 계열 탐색은 종료한다. 다음은 공통 interface를 포함한 matched Q에 추가 사전 acquisition-M이 주는 효용을 비교하는 명세다. 전체1196tests PASS, held60 미개봉. 아래 latest/current는 역사적 단계다.
 
