@@ -504,12 +504,14 @@ def verify_provenance(root, plan_path, plan, start, freeze, result, repo):
         if kind != "start":
             require(doc["start_sha256"] == sha(root / "start.json"), "Start binding")
             require(doc["scores_sha256"] == sha(root / "scores.npz"), "Score binding")
+            require(doc["source_commit"] == start["source_commit"], "Source commit binding")
     require(result["fold_freezes_sha256"] == sha(root / "fold-freezes.json"), "Freeze binding")
     require(result["evidence_role"] == plan["evidence_role"], "Exposed-development evidence role")
     require(
         start["human_held_access"] is False and result["summary"]["human_held_unlock"] is False,
         "Held boundary",
     )
+    require(start["metadata_access"] is False, "Metadata-free boundary")
     require(start["source_subject_ids"] == plan["source_subject_ids"], "Start allowlist")
     require(start["workers"] == plan["execution"]["workers"], "Workers")
     require(

@@ -224,3 +224,115 @@ def test_no_producer_or_human_import_in_auditor():
     imports = [n.module or "" for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)]
     assert not any(n.startswith("cfeg") for n in imports)
     assert "loadmat(" not in source and "read_parquet(" not in source
+
+
+@pytest.fixture
+def provenance_bundle(tmp_path, monkeypatch):
+    import hashlib
+
+    root = tmp_path / "artifacts"
+    root.mkdir()
+    plan_path = tmp_path / "plan.json"
+    helper = b"synthetic pinned source fixture"
+    plan = {
+        "study_id": "fixture-only",
+        "source_subject_ids": [4, 6, 8],
+        "evidence_role": "artificial-fixture",
+        "execution": {
+            "artifacts": ["start.json", "scores.npz", "fold-freezes.json", "result.json"],
+            "resource_budget_bytes": 100000,
+            "workers": 4,
+        },
+        "pinned_files": {"synthetic.py": hashlib.sha256(helper).hexdigest()},
+    }
+    plan_path.write_text(json.dumps(plan))
+    start = {
+        "schema": "cfeg.spatial-calibration-source.start.v1",
+        "study_id": plan["study_id"],
+        "plan_sha256": audit.sha(plan_path),
+        "source_commit": "a" * 40,
+        "source_tree": "b" * 40,
+        "source_subject_ids": plan["source_subject_ids"],
+        "workers": 4,
+        "metadata_access": False,
+        "human_held_access": False,
+        "pinned_files": plan["pinned_files"],
+        "runtime": {
+            "blas_threads": {
+                k: "1" for k in ("OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "OMP_NUM_THREADS")
+            }
+        },
+    }
+    (root / "start.json").write_text(json.dumps(start))
+    (root / "scores.npz").write_bytes(b"only provenance fixture, not a score archive")
+    provenance = {
+        "study_id": plan["study_id"],
+        "plan_sha256": audit.sha(plan_path),
+        "source_commit": start["source_commit"],
+        "start_sha256": audit.sha(root / "start.json"),
+        "scores_sha256": audit.sha(root / "scores.npz"),
+    }
+    freeze = {"schema": "cfeg.spatial-calibration-source.fold-freezes.v1", **provenance}
+    (root / "fold-freezes.json").write_text(json.dumps(freeze))
+    result = {
+        "schema": "cfeg.spatial-calibration-source.result.v1",
+        **provenance,
+        "fold_freezes_sha256": audit.sha(root / "fold-freezes.json"),
+        "evidence_role": plan["evidence_role"],
+        "summary": {"human_held_unlock": False},
+    }
+    (root / "result.json").write_text(json.dumps(result))
+    for path in root.iterdir():
+        path.chmod(0o400)
+
+    def git(command):
+        if command[3] == "rev-parse":
+            return (start["source_tree"] + "\n").encode()
+        if command[4].endswith("synthetic.py"):
+            return helper
+        return plan_path.read_bytes()
+
+    monkeypatch.setattr(audit.subprocess, "check_output", git)
+    return root, plan_path, plan, start, freeze, result, ROOT
+
+
+def test_provenance_chain(provenance_bundle):
+    audit.verify_provenance(*provenance_bundle)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "metadata",
+        "held",
+        "commit",
+        "score_hash",
+        "freeze_hash",
+        "plan_hash",
+        "mode",
+        "extra",
+        "helpers",
+    ],
+)
+def test_provenance_rejects_corruption(provenance_bundle, change):
+    root, plan_path, plan, start, freeze, result, repo = provenance_bundle
+    if change == "metadata":
+        start["metadata_access"] = True
+    elif change == "held":
+        result["summary"]["human_held_unlock"] = True
+    elif change == "commit":
+        freeze["source_commit"] = "c" * 40
+    elif change == "score_hash":
+        freeze["scores_sha256"] = "d" * 64
+    elif change == "freeze_hash":
+        result["fold_freezes_sha256"] = "d" * 64
+    elif change == "plan_hash":
+        result["plan_sha256"] = "d" * 64
+    elif change == "mode":
+        (root / "scores.npz").chmod(0o600)
+    elif change == "extra":
+        (root / "unexpected.txt").write_text("fixture")
+    elif change == "helpers":
+        start["pinned_files"] = {}
+    with pytest.raises(ValueError):
+        audit.verify_provenance(root, plan_path, plan, start, freeze, result, repo)
