@@ -1,0 +1,161 @@
+{
+  "schema": "cfeg.native-subset-known-zero.execution.v1",
+  "attempt_id": "native-subset-known-zero-source39-v1",
+  "study_id": "native-subset-known-zero-source39-v1",
+  "randomization_namespace": "native-subset-m-source39-v1",
+  "authority": {
+    "basis": "2026-09-08 user 시작 after single revision artificial validation",
+    "human_outcome_execution": true,
+    "parent_artifact_reuse": true,
+    "raw_eeg_access": false,
+    "full_impedance_or_manifest_access": false,
+    "held_access": false,
+    "retired_access": false,
+    "old_entrypoints": false,
+    "external_monkeypatch": false,
+    "policy_refit": false,
+    "audit_only_fit_replay": true,
+    "automatic_promotion": false,
+    "retry_same_attempt": false
+  },
+  "mechanism": {
+    "path": "configs/analysis/native_subset_known_zero_v1.json",
+    "sha256": "9f3ed2309b9dc2efff81460a91c49e131722595ef1ff8de4b24f9291f66c9e55"
+  },
+  "science": {
+    "path": "configs/analysis/native_subset_m_source39_v1.json",
+    "sha256": "ee9b758f755a18f7540c978e9faf18a5711e652948b94df595377bbfb83cb80a"
+  },
+  "parent": {
+    "root": "/home/whwovy/native-subset-m-artifacts/source39-v1-envelope-r1",
+    "attempt_id": "native-subset-m-source39-v1-envelope-r1",
+    "study_id": "native-subset-m-source39-v1",
+    "source_commit": "81ccfa8919391917a9c4870e274b2b9465a48ee7",
+    "source_tree": "184a75c39e6f687b77b7ba902691ad877682a004",
+    "execution_plan_path": "configs/analysis/native_subset_m_source39_envelope_r1.json",
+    "execution_plan_sha256": "93108bd8d0cce8b0572e6cbc200208c3990be725ffdbdf2fdcc0bc8daec82115",
+    "artifacts": {
+      "start.json": "d4ab1c42b9123e6a6a873968afb1f5d947485bbd62db38c55e948ad632c08fbe",
+      "source-projection.json": "48f25bff7122e3ccd8ddc4779793a48a20ea0ab175ce3ba35b85b0ab74239117",
+      "features.npz": "3e70b32a77bbaf10cd77fac603b7e808183134f27ceb5f839c475c69161523ae",
+      "fold-freezes.json": "199feee618c9539cabd8809cd79b9b553066d64160100651a2e5154b9d073eed",
+      "result.json": "e7ec3e37eab995b8c18da5c390123fb357cf0b3893ee7140427a2af4c07354af"
+    },
+    "total_bytes": 117526373,
+    "role": "already repeatedly exposed development only; exact frozen fit reused, not new raw reproduction"
+  },
+  "pinned_helpers": {
+    "scripts/native_subset_m_core.py": "20a3e3e505f00c2c43af51a5166457031838e4140cf7af15cdb2f427df904014",
+    "scripts/audit_native_subset_m_source.py": "937368d639944184d71083fa67829640435e02cfeb3bd5f0f7f573f4b5224245",
+    "scripts/audit_native_subset_m_envelope_r1.py": "96ef6b81e35557d57bac4d325b60b67fb6b225e129ee4a55f73f957ffe6f9e57",
+    "scripts/native_subset_known_zero.py": "d9830fe97e358eae7f65305feee5776ac7390b0d8eef7ca67a8c4790fbb952ba",
+    "scripts/audit_native_subset_known_zero.py": "5c2bb42d0c04a46d316efb940ce58dcf7c65a45b32b2ce75913f2b6951cb2d7a"
+  },
+  "allowed_helper_calls": "pinned pure definitions, including core.evaluate_all only to replay and verify unchanged parent before any revised routing; independent provenance/cache/Q/M/fit/report replay definitions; never oldrun/main/audit or global rebinding",
+  "output_root": "/home/whwovy/native-subset-m-artifacts/known-zero-source39-v1",
+  "artifacts": [
+    "start.json",
+    "result.json"
+  ],
+  "publication": "exactexclusive0400/nlink1 fsync; start before parentbytehash/parse; all5inputs verified before newrouting; nooverwrite/noresume; stableinputs before result",
+  "code_paths": [
+    "scripts/native_subset_known_zero_io.py",
+    "scripts/run_native_subset_known_zero_source.py",
+    "scripts/audit_native_subset_known_zero_source.py"
+  ],
+  "runtime": {
+    "python": "3.10.12",
+    "numpy": "1.26.4",
+    "scipy": "1.15.3",
+    "cpu_workers": 1,
+    "blas_threads": 1,
+    "ceiling_seconds": 600,
+    "output_budget_bytes": 67108864,
+    "parent_budget_bytes": 134217728
+  },
+  "schemas": {
+    "start": "cfeg.native-subset-known-zero.start.v1",
+    "result": "cfeg.native-subset-known-zero.result.v1"
+  },
+  "common_fields": [
+    "attempt_id",
+    "study_id",
+    "randomization_namespace",
+    "execution_plan_sha256",
+    "mechanism_plan_sha256",
+    "scientific_plan_sha256",
+    "source_commit",
+    "source_tree",
+    "started_at",
+    "parent_root",
+    "parent_artifact_sha256",
+    "source_hashes",
+    "runtime",
+    "output_root",
+    "policy_refit",
+    "held_access",
+    "retired_access",
+    "raw_eeg_access"
+  ],
+  "result_extra_fields": [
+    "completed_at",
+    "start_sha256",
+    "status",
+    "parent_replay_verified",
+    "rows",
+    "summary",
+    "contrasts",
+    "diagnostics",
+    "attainment",
+    "revision_diagnostics",
+    "evidence_scope"
+  ],
+  "evaluator_api": "evaluate(cache, content_projection, freezes, parent_result, science, core, rule) returns result scientific fields with parent_replay_verified:true after entire parent core replay equals saved parent; core/rule are authenticateddefinitions injected by newIO, no global patch",
+  "revision_diagnostics": {
+    "rows": 624,
+    "keys": [
+      "participant",
+      "interface",
+      "n_samples",
+      "k",
+      "methods",
+      "shuffle"
+    ],
+    "methods": [
+      "Q",
+      "QM",
+      "SHAM_REFIT",
+      "M_STALE",
+      "M_MISSING"
+    ],
+    "shuffle": "one record per sameoriginal map or identity, mapping list plus the metric fields",
+    "metric_fields": [
+      "query_count",
+      "old_full_selected",
+      "old_alias_selected",
+      "old_nonalias_selected",
+      "projected_gain_entries_changed",
+      "prefallback_action_changes",
+      "prefallback_prediction_changes",
+      "action_changes",
+      "prediction_changes",
+      "repaired_previous",
+      "damaged_previous",
+      "old_ba",
+      "new_ba"
+    ],
+    "missing": "M_MISSING uses Q gains and Q original/corrected actions; allmethodaliases/equality derivefromsamepredpool"
+  },
+  "evaluation": {
+    "rows": 4680,
+    "summary": 120,
+    "contrasts": 153,
+    "diagnostics": 624,
+    "attainment": 1248,
+    "primary": "all8equal-weight correctedQM3−correctedQ3, originalreference1pp/paired descriptive95%CI",
+    "labels": "36/60 andalloriginalcost/endpoints unchanged",
+    "no_new_science_choices": true,
+    "stop": "after this single revised outcome, program review regardless ofsign; no further candidate sweeps or heldunlock"
+  },
+  "auditor_scope": "independent parentprovenance/cache/Q/M/scaler/9ridge replay (audit-only calculation, no policyrefit); originalparentreports; newscalarselection/control/report andrevisiondiagnostics; no raw/nativefit or originalprojectionbyte/rawprecision re-extraction"
+}
