@@ -1,5 +1,7 @@
 # 기존 구현 호환성 준비 — toolbox eTRCA
 
+> 후속 완료: [source39 native·두 bridge 결과](author_etrca_source39_v1_results.md)가 이제 실제39명 단회 실행/독립 검산까지 포함한다. 아래는 그 이전의 합성 API 준비 기록이며 원논문 전체cohort 재현이나 M 효능 입증으로 승격하지 않는다.
+
 2026-09-07. 현재 **로컬 합성 fixture/API 확인 PASS**. 실제 source39 성능 확인,
 원 TRCA 논문의 MATLAB 실행, 논문 수치 재현, M 효능 실험은 아직 아니다.
 [판단 재검토·유한 루프](research_decision_reaudit_20260907.md)의 A단계 준비 작업이다.

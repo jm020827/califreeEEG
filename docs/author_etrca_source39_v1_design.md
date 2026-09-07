@@ -4,6 +4,11 @@
 권위는 [고정 JSON](../configs/analysis/author_etrca_source39_v1.json)이며, 이전 후보는 재개하지 않는다.
 이 단계는 [수정한 연구 루프](research_decision_reaudit_20260907.md)의 baseline 확인이다.
 
+실행 후 표현 정정(2026-09-07): [결과](author_etrca_source39_v1_results.md)에서 밝히듯
+dry/wet은 native preset 선택에 이미 사용됐다. 따라서 'Metadata를 전혀 쓰지 않는다'는
+표현은 부정확하다. 추가 impedance/manifest/M packet·새 M operator 접근이 없었으며,
+고정 JSON의 interface·가중치·access flag·연산은 변경하지 않았다. 향후 matched Q도 이 공통 context를 공유한다.
+
 ## 무엇을 확인하나
 
 새 EEG 분류기를 만들지 않는다. 이미 합성 API를 확인한 toolbox 저자의 ETRCA와

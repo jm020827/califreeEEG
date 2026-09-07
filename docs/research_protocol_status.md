@@ -1,13 +1,18 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
 기준일: 2026-09-07
-현재 실행 계약: [source39 native eTRCA와 두 bridge](author_etrca_source39_v1_design.md).
-합성 수치·API 검증 뒤 통합 회귀와 실제39명 단회 실행을 준비한다. 아래 최신 human 표기는 직전 결과다.
+최신 human 결과: [source39 native eTRCA와 두 bridge](author_etrca_source39_v1_results.md)
+39명/2028행 단회 완료·독립 검산 PASS. Wet0.5초 A0/E3/E5=33.42/43.72/51.50%,
+전8조건 E5−A0=+2.24pp [−0.59,+5.07]로 보편적 유용성은 미입증이다. 전체1196tests PASS.
+Baseline sprint는 종료하며 새 M operator는 미실행이다. 알려진 interface는 양쪽 native preset에
+사용했고 impedance/manifest/held는 읽지 않았다. 다음 M 비교도 공통 interface를 통제한다.
 현재 **방향·후속 순서**는 [기존 판단 재검토](research_decision_reaudit_20260907.md)를 우선한다.
 Q>A0의 평균 우위를 metadata 검정의 필수 입장 조건으로 요구하지 않는다. 검증된 강한 Q와
 M+Q의 A0 대비 실용성·harm·실제 비용은 계속 확인한다. 한 저자 구현 호환성 sprint와 한 M
 가설, 기작에 근거한 수정 최대1회 뒤 점검으로 제한한다. 아래 결과·당시 gate는 불변이고,
 ‘다음 reference-preserving 결합’이라는 과거 제안은 자동 실행 계획이 아니다.
+
+아래 ‘최신/직전’은 보존한 이전 단계의 상태 표기이며 현재 결과는 위 native source39를 따른다.
 
 현재 최신 human 결과: **reference-calibration-source39-v1 단회 완료·독립 검산 PASS, 두 arm 모두 AQ_NOT_ESTABLISHED.** 수치는 [결과·점수분해](reference_calibration_source39_v1_results.md)를 따른다. 올바른 support가 wrong-label보다 낫지만 ECCA−matched reference eAUC는 기존/causal-notch 각각−14.15/−10.09pp다. 두 후보는 종료했다. Reference-preserving 결합은 당시 후속 제안이었으며 현재는 위 재검토 계획을 따른다. 해당 실험 Metadata/held 접근0, 새 independent M data0. 새 M operator는 아직 고정·실행하지 않았다. [Toolbox eTRCA 합성 API 확인](author_etrca_compatibility.md)은 PASS했으며 새 human 성능 결과가 아니다. 아래는 변경 없는 직전 결과다.
 

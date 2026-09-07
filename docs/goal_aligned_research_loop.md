@@ -1,5 +1,7 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> **현재 완료:** [native eTRCA source39·두 bridge 결과](author_etrca_source39_v1_results.md) 단회 실행과 독립 검산을 마쳤다. Wet0.5초에서는 ETRCA5−A0+18.08pp이지만 전8조건+2.24pp CI는0을 포함하고17명 평균 악화다. 원본 baseline 호환성 확인을 종료하고 직접 M 가설1개로 돌아간다. 알려진 interface는 native preset에 이미 사용됐으므로 다음 두 비교군에도 동일 제공하고 추가 M의 순증분을 검정한다. 아직 새 M 실행·독립 paired-M 추가·held60 개봉은 없다. 아래 최신 human은 이전 상태다.
+
 기준: 2026-09-07. 상위 목표는 **처음 보는 사용자의 labeled SSVEP calibration 부담 감소**다.
 검정할 수단은 **외부 pre-query acquisition metadata가 EEG-only Q를 넘어 주는 순증분**이다.
 긍정 결과를 반드시 얻는 것이 목표는 아니다. 유효한 검증에서 해당 방법이 실패하면 그
