@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 현재: [native-subset-m-source39-v1](native_subset_m_source39_v1_design.md) 계약을 고정하고 독립 검증기·통합 테스트를 준비 중이다. Q 대 Q+임피던스의 직접 증분 실험이며 아직 이번 human outcome은 없다. 아래 native 결과는 직전 완료 이력이다.
+
 기준일: 2026-09-07
 최신 human 결과: [source39 native eTRCA와 두 bridge](author_etrca_source39_v1_results.md)
 39명/2028행 단회 완료·독립 검산 PASS. Wet0.5초 A0/E3/E5=33.42/43.72/51.50%,

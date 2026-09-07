@@ -83,11 +83,19 @@ Base main108379392820226865e4948b09ade297fe896ec2 clean/ahead96,23기존worktree
 
 | Lane | 단독 소유 | 통합·검증 |
 | --- | --- | --- |
-| Main | 계약/설계, scripts/native_subset_m_core.py와tests, 독립auditor,문서/SQLite/실행 | cleanmain에서단회; 모든freeze를평가전publish |
+| Main | 계약/설계, scripts/native_subset_m_core.py와tests,문서/SQLite/실행 | cleanmain에서단회; 모든freeze를평가전publish |
 | Producer | 새격리worktree scripts/run_native_subset_m_source.py, tests/test_native_subset_m_source.py | synthetic만; main환경pytest/외부nativefixture; commit반환 |
+| Auditor | 별도격리worktree scripts/audit_native_subset_m_source.py, tests/test_native_subset_m_audit.py | producer/core import 없는 cache/fit/결과 재계산; synthetic만, main이실자료실행 |
 | Reviewer | main/upstream읽기전용 | native pool·Q/features·회귀·누출·control/결과검토 |
 
 Producer worktree /home/whwovy/califreeEEG-wt-subset-m, branch codex/native-subset-m-source39-v1.
+Auditor worktree /home/whwovy/califreeEEG-wt-subset-audit, branch codex/native-subset-m-audit-v1,
+base47720523c97e604fb45f3bac65eaa334e36ed9ab. 추가checkout12MiB/temp1GiB 이내,
+기존 read-only venv 재사용, 별도 dependency/SQLite/raw 접근 없음. 생성 전 가용294GiB 확인.
+통합순서는 main core→producer→auditor→전체 검증이며 공통 JSON/schema는 main 단독 소유다.
+진단의 feature 변화는 abs차이>1e−12로 세어 합산 순서의 부동소수점 잡음을 제외한다.
+Map 없음은 SHAM/평가shuffle 모두 unavailable이며 identity 결과를 남겨 사람을 제외하지 않는다.
+Map별 packet/feature/selector/prediction 변화와 fit-SHAM eligibility/no-op coverage를 기록한다.
 Main 공유core API: projection_arrays(payload,plan)->(z[39,2,10,8],order[39]);
 fit_all(cache,projection,plan)->freezeJSON; evaluate_all(cache,projection,freeze,plan)->rows/summary/진단.
 Producer는검증된원projection을projection key에담은새source-projection.json을publish한다.
