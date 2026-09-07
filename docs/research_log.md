@@ -879,3 +879,9 @@
 - Nativeglobalflatten correlation의 filter부호 민감성(합성max0.000951)을 원본 특성으로 기록한다. 수정·Euclidean normalization·추가centering 없음. Score순환은 unique max에서(1−BA)/11인 비독립 diagnostic이며 human wrong-label refit이 아니다.
 - Worktree coordination: main만계약/audit/문서/SQLite/실행을소유하고producer2files는새격리worktree califreeEEG-wt-author-source에배정했다. Read-only reviewer공유,기존22worktree/외부venv/upstream보존. Checkout12MiB+출력1GiB+temp1GiB,가용약297GiB,CPU4/BLAS1/30분. 새 raw파일을읽기전start·clean source·plan/upstream pin을검증한다.
 - Root 독립audit은producer/native/rawloader를import하지않고3correlation arrays에서2028행/52summary,50contrasts/624harm/312attainment를재계산한다. 인공score와fullpublication/provenance9변조 포함28tests PASS6.87초. 최초fixture의cache설명key 순회오류는human시작전수정했다. 구현자41tests와실제native 인공participant전체adapter15.178초,reviewer별도15.28초PASS. 실제 EEG시간은아직미측정이다. 통합·전체회귀가끝나기전human start/result없음.
+
+## VERIFY-20260907-053 — native producer 통합 및 감사 동률 수정
+
+- Producer 최종53tests PASS, clean cf4864fcc41b59f0fc7daa6c0fc1d7fcd9c3a113의소유2files만main7aa2f77894b3d2f8873c134d24efc778aeaf2564로cherry-pick했다. Git2.34 merge-tree base/main/branchpreview, textualconflict0, native수치/API/경계독립CODEGO. ProducerSHA06534ee32cded52fc43a8f584eab64e351b4f4395cba65c20367be502253c2a4. Root実환경preflight및guard하native18filesimportPASS,raw/start접근0.
+- 첫전체시험temp /tmp/cfeg-author-source-verification.WMJXiR/full의source단어가옛V2 pathdeny규칙에걸려3FAIL/14ERROR를만들었다.975PASS시SIGINT중단113.06초. 보호규칙/oldrunner변경없이중립경로 /tmp/cfeg-compat-check.Kd20YJ/full에서동일cleancommit전체 **1195PASS/117.80초/68기존warnings**. 이전실패와temp보존.
+- 독립auditreview에서8cell BA차이의정확0합이8.67e−18로표현되어help로세어질수있음을발견했다. 개인help/harm/tie의부호만60queries의정수정답수합으로판정하도록고치고cancellationfixture1개추가. 원BA/CI/과학계약/producer불변. Censored_above_5는시험한0/3/5에서미달이지미측정1/2/4까지배제한최소필요k의하한이아님을명시했다. 수정뒤최종전체검증예정이며human시작전이다.

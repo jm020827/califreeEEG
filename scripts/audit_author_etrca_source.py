@@ -253,6 +253,12 @@ def diagnostics(rows):
                     )
     overall_harm = []
     for k in (3, 5):
+        # All eight chronological cells have 60 queries. Use integer correct
+        # counts for signs so cancelling floating fractions remain true ties.
+        net_correct = [
+            sum(round(60 * r["delta_ba"]) for r in harms if r["k"] == k and r["participant"] == p)
+            for p in IDS
+        ]
         deltas = [
             float(np.mean([r["delta_ba"] for r in harms if r["k"] == k and r["participant"] == p]))
             for p in IDS
@@ -261,9 +267,9 @@ def diagnostics(rows):
             {
                 "k": k,
                 "cell_weighting": "all8 equal, including2s",
-                "help": sum(d > 0 for d in deltas),
-                "harm": sum(d < 0 for d in deltas),
-                "tie": sum(d == 0 for d in deltas),
+                "help": sum(d > 0 for d in net_correct),
+                "harm": sum(d < 0 for d in net_correct),
+                "tie": sum(d == 0 for d in net_correct),
                 **interval(deltas),
             }
         )

@@ -89,6 +89,25 @@ def test_interval():
     assert result["mean"] == 19 and result["ci95_low"] < 19 < result["ci95_high"]
 
 
+def test_cancelling_fractional_deltas_remain_ties(reconstructed):
+    rows = copy.deepcopy(reconstructed[0])
+    a0_counts = [7, 30, 35, 11, 11, 38, 50, 4]
+    etrca_counts = [8, 29, 37, 9, 14, 35, 54, 0]
+    assert sum(a0_counts) == sum(etrca_counts)
+    for row in rows:
+        if row["participant"] != AUDIT.IDS[0] or row["stage"] == "native_lobo_2s":
+            continue
+        cell = (0 if row["interface"] == "dry" else 4) + (125, 188, 250, 500).index(
+            row["n_samples"]
+        )
+        if row["method"] == "A0_author":
+            row["ba"] = a0_counts[cell] / 60
+        elif row["method"] == "ETRCA":
+            row["ba"] = etrca_counts[cell] / 60
+    for row in AUDIT.diagnostics(rows)["overall_harm"]:
+        assert row["help"] == 37 and row["harm"] == 0 and row["tie"] == 2
+
+
 @pytest.mark.parametrize("damage", ["missing", "extra", "shape", "dtype", "nan", "range"])
 def test_cache_corruption_rejected(cache, plan, damage):
     candidate = dict(cache)

@@ -69,6 +69,8 @@ A0,ETRCA3/5,rotated3/5를 보고한다. 원 band correlations도 보존해 별�
 k0는A0 anchor이며 기존k0성공을 새 calibration 이득으로 세지 않는다. 비단조성을 숨기거나
 미달자의 비용을 보간하지 않는다. Labels=12k, retainedseconds=12k*N/250,
 history=12k*.14초로 분리하고 전체 사용자 wall-clock 절감은 주장하지 않는다.
+`censored_above_5`는 측정한0/3/5에서 미달이라는 표기다. 비단조성과 미측정k1/2/4 때문에
+진정한 최소 필요k가5보다 크다는 수학적 하한이 아니다.
 
 완료 상태 `COMPATIBILITY_ASSESSMENT_COMPLETE`는 모든 입력·split·finite·score 계산을
 완주했다는 뜻일 뿐 efficacy PASS가 아니다. 낮은 정확도 때문에 새 방법/가중치/조건을
