@@ -64,6 +64,14 @@ Interface별 BA·도달 여부는 별도로 보고한다. M은 shuffle뿐 아니
 order-control과 stale-query packet보다도 우위여야 READY가 가능하다. 세부 status 우선순위와
 기술적 CI 공식은 JSON에 명시하며, fold 공유 의존성을 보정한 confirmatory coverage는 주장하지 않는다.
 
+해석 경계도 결과 전에 고정한다. k0/k1에서 M이 exactQ이므로 M−Q eAUC는 k3 BA 차이의
+1/3이다. 따라서 primary mean0.005는 k3 평균 **1.5 percentage points 이상**의 개선을
+뜻하며 positive LCB도 별도로 필요하다. 5→3-shot은 같은 AQ5에 비해 interface당 labeled
+trials60→36, 즉24개 감소라는 비교다. eTRCA3도 이미80%를 달성한다면 eTRCA 대비
+label 절감은 보인 것이 아니며, eTRCA와 같은36 trials에서의 성능 비교만 가능하다.
+READY도 이 좁은 개발 단계 의미이지 최선의 기존 방법 대비 calibration 최소화를 입증한
+것은 아니다. 총 준비시간·개인별 보장·임피던스 측정 자체의 시간 절감을 주장하지 않는다.
+
 ## 문헌과 데이터가 정한 경계
 
 [Kalunga et al.의 SSVEP Riemannian 연구](https://arxiv.org/abs/1501.03227)와
