@@ -1,5 +1,9 @@
 # V4 waveform/context pilot 001 — pre-outcome plan
 
+실행 후 상태: 아래 과학적 설정·판정 기준과 JSON plan은 유지하고 상태 주석만 덧붙인다. Pilot 001은
+`AQ_NOT_ESTABLISHED`로 완료됐으며 [별도 결과 보고서](metadata_calibration_efficiency_v4_pilot_results.md)에
+ceiling, calibration endpoint와 fusion 진단을 기록했다. 아래 pre-outcome 기록은 역사적 계획이다.
+
 ## Version clarification and objective
 
 `development-v5` is **V3 method, development execution #5**, not a V5 scientific
