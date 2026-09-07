@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 현재 승인된 후속: [envelope-r1 입력 연결 복구](docs/native_subset_m_envelope_r1_execution.md). 원본11-key를 엄격 검증·보존하고 기존6-key core에 연결했다. 과학적 설정·SHAM배정은 그대로이며 새50tests/전체1345tests를 통과했다. 별도 경로 단회 실행 전 단계이고 아래 실패 기록은 보존한다.
+> 현재 결과: [envelope-r1 직접 M 평가](docs/native_subset_m_envelope_r1_results.md)를 개발39명에서 완료했고 독립 검산을 통과했다. 입력 연결만 복구했으며 과학설정·SHAM배정은 불변이다. **Q 대비 임피던스 추가 이득은 k3 0pp, k5 +0.00534pp(정답1개)**였고, 80% 최초도달 보정량은 전부 같았다. Q 자체의 선택 개선은 있지만 M의 추가 보정비용 절감은 미확립이다. 전체1345tests PASS; held60 미개봉. 아래는 보존한 이전 단계의 기록이며 당시 ‘최신/다음/미승인’은 현재 상태가 아니다.
 
 > 최신 실행 상태: [직접 acquisition-M v1 입력 오류](docs/native_subset_m_source39_v1_results.md). 전체1294tests 뒤 시작했으나 실제 metadata의11-key 저장 형식을6개로 가정한 연결 오류로 중단했다. 기존 metadata는 읽었지만 EEG·학습·효능 평가는 시작되지 않았다. M 가설 실패가 아니며 start-only 기록을 보존했다. 연구목표는 유지하고 새 입력-adapter 실행은 별도 authority가 필요하다. 아래 native eTRCA는 직전 완료된 성능 결과다.
 
