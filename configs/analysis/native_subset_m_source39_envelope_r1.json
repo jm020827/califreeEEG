@@ -1,0 +1,53 @@
+{
+  "schema": "cfeg.native-subset-m.execution-amendment.v1",
+  "attempt_id": "native-subset-m-source39-v1-envelope-r1",
+  "study_id": "native-subset-m-source39-v1",
+  "authority": "2026-09-07 user 응 approving separate input-connection-only execution; supersedes only execution destination/envelope transport",
+  "scientific_plan": {
+    "path": "/home/whwovy/califreeEEG/configs/analysis/native_subset_m_source39_v1.json",
+    "sha256": "ee9b758f755a18f7540c978e9faf18a5711e652948b94df595377bbfb83cb80a"
+  },
+  "output_root": "/home/whwovy/native-subset-m-artifacts/source39-v1-envelope-r1",
+  "previous_attempt": {
+    "path": "/home/whwovy/native-subset-m-artifacts/source39-v1",
+    "start_sha256": "4e4a2d736a2165f3552297931d4cbe0b02ed0b89bd75d367c56148e6cf769f68",
+    "preserve": true,
+    "read_contents": false
+  },
+  "scientific_changes": [],
+  "randomization_namespace": "native-subset-m-source39-v1",
+  "envelope_provenance": {
+    "schema": "cfeg.context-template-source.projection.v1",
+    "study_id": "context-template-source39-v1",
+    "plan_sha256": "a76f1df0e0d2989f6217013e610d074e50d9efb52b0cf636bbcdf38a905898d3",
+    "source_commit": "46b87b7a6c2bae2ca6ac35cdc079c7c8a50ebb0d",
+    "start_sha256": "baa7104b659738b79a7cae78b958330195ab17d1adc591c097541c203f4c0125"
+  },
+  "content_keys": [
+    "manifest_sha256",
+    "packets",
+    "returned_rows",
+    "returned_packets",
+    "returned_subject_ids",
+    "columns"
+  ],
+  "source_helpers": {
+    "scripts/run_native_subset_m_source.py": "4516f7d68cf19adebc484c27e77e2afc0a66871f19dcc5e0fb40243458f5fb59",
+    "scripts/native_subset_m_core.py": "20a3e3e505f00c2c43af51a5166457031838e4140cf7af15cdb2f427df904014",
+    "scripts/audit_native_subset_m_source.py": "937368d639944184d71083fa67829640435e02cfeb3bd5f0f7f573f4b5224245"
+  },
+  "helper_authority": "Import pinned function definitions only. Producer numerical extraction, raw/projection/baseline readers and exclusive publication helpers; pure core fits/evaluation; independently implemented audit math. Never call prior run/main/audit entrypoints or mutate helper globals. No prior attempt/artifact or seal reopening.",
+  "projection_transport": "Preserve entire original11-key envelope in new four-key projection wrapper. Producer and audit each independently require exact11 keys and pinned5 provenance values, then explicitly extract six content fields. Pure core and independent numerical replay unchanged.",
+  "output_binding": "start/fold-freezes/result add attempt_id and execution_plan_sha256; plan_sha256 retains scientific_plan SHA. New start binds helper hashes. Other scientific artifact schemas and outputs remain unchanged.",
+  "execution": {
+    "cpu_workers": 4,
+    "blas_threads": 1,
+    "expected_runtime_ceiling_seconds": 1800,
+    "resource_budget_bytes": 1073741824,
+    "retry_same_attempt": false,
+    "held_access": false,
+    "retired_access": false,
+    "manifest_or_full_impedance_access": false,
+    "new_dependencies": false
+  }
+}
