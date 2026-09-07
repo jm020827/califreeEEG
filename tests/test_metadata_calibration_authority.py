@@ -76,7 +76,10 @@ def test_finalizer_encryption_roundtrip_and_aad_tamper(tmp_path) -> None:
     ) == secret
 
     tampered = copy.deepcopy(envelope)
-    tampered["ciphertext_base64"] = "A" + tampered["ciphertext_base64"][1:]
+    ciphertext = tampered["ciphertext_base64"]
+    replacement = "B" if ciphertext[0] == "A" else "A"
+    tampered["ciphertext_base64"] = replacement + ciphertext[1:]
+    assert tampered["ciphertext_base64"] != envelope["ciphertext_base64"]
     with pytest.raises(ValueError, match="self-hash"):
         decrypt_json_for_finalizer(
             tampered,

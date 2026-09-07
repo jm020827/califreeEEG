@@ -56,7 +56,7 @@ def test_independent_audit_rejects_corruption(auditor, fixture_result, mutation)
     plan, original = fixture_result
     result = copy.deepcopy(original)
     if mutation == "count":
-        result["summary"]["participant_metric_rows"][0]["correct_count"] += 1
+        result["participant_results"][0]["rows"][0]["correct_count"] += 1
     elif mutation == "interval":
         result["summary"]["comparisons"]["stable_AQ_minus_A0_eauc"]["one_sided_95_LCB"] += 0.1
     elif mutation == "screen":
