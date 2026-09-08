@@ -115,3 +115,30 @@ def test_generated_builder_persists_immutable_self_consistent_archives(tmp_path)
                 assert np.isfinite(data[name]).all()
     for path in root.iterdir():
         assert path.is_file() and path.stat().st_mode & 0o777 == 0o400
+
+
+def test_generated_manifest_matches_integrated_producer_and_cold_contracts(tmp_path):
+    module = generator()
+    manifest_path = tmp_path / "generated_manifest.json"
+    evidence = module.prepare(
+        tmp_path / "generated-inputs",
+        tmp_path / "task-trca-temporal-source39-generated-contract",
+        manifest_path,
+        device="cpu",
+    )
+    manifest = json.loads(manifest_path.read_text())
+    validators = {}
+    for name in ("run", "audit"):
+        spec = importlib.util.spec_from_file_location(
+            "generated_manifest_" + name,
+            ROOT / f"scripts/{name}_task_trca_temporal_source39.py",
+        )
+        validators[name] = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(validators[name])
+    runtime, cold = validators["run"], validators["audit"]
+    assert runtime.CODE_PATHS == cold.CODE_PATHS
+    runtime.validate_manifest(manifest, runtime.archive.GENERATED_PROFILE)
+    runtime.validate_program(document("metadata_learning_program_v1.json"), manifest)
+    profile, contract = cold.validate_manifest(manifest, evidence["manifest"]["sha256"])
+    assert profile == "generated" and contract == module.PROFILE
+    assert not Path(manifest["output_root"]).exists()
