@@ -72,3 +72,27 @@ Useexistingrootvenvreadonly withPYTHONPATH=<ownworktree>/src, PYTHONDONTWRITEBYT
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1. Mainrootfullsuite andCUDAonly.
 Current38worktrees preserved; available237,484,296KiB. Twoadditionalcheckouts~24MiBarewellwithinbudget.
 Freezecontracts beforeconcurrentwrite; commitownedfiles only; returncommit/diff/tests/semanticissues.
+
+## Generated completed-path profile (root-approved before implementation)
+
+`RuntimeProfile`, HUMAN_PROFILE and GENERATED_PROFILE are explicit; no oldmoduleglobalmonkeypatching.
+HUMAN is unchanged39IDs/2interfaces/4windows/k3,5. GENERATED uses exact IDs
+(4,6,8,11,14,21,22,25,28), interfaces(0,1), samples(17,), budgets(3,5), seed20260909.
+These IDs are routing labels on generated values, not observations of those humans.
+Generated manifest schema `cfeg.task_trca_temporal.source39_generated.v1`, statusGENERATED_FROZEN;
+runner `run_generated(manifest_path,manifest_sha,profile=GENERATED_PROFILE)` uses SAME internal execute
+path for actualthreeouter nestedfits, save/reload, globalfreeze, authorizedreadjournal, evaluation,
+aggregateandcoldpublication. No learnedmodelstubs. CLI/profile mustrejectarbitrarysource/grid overrides.
+Archiveverify_freeze optionallytakesprofile(defaultHUMAN), newNativeArchive getsprofile toderiveheaders.
+Generatedmetadatafixture mayretainall780generatedroutingpackets to reuseunchangedlexicalparser;
+only9fixtureIDs are fitted/evaluated. Source/metadata envelope mustexplicitlyidentifygeneratedorigin.
+
+Independentartifactaudit accepts keywordprofile(defaultHUMAN) with independentvalidated equivalent
+constants, notproducerimports. Cold derivesexpected fullgrid/multiset fromtheverified fixedprofile.
+Generatedaggregate shape9×2×1×2×10×48×12; generatedsummary records exactcounts/structuralcompletion
+and METADATA_NOT_EVALUATED, NEVER human39practicalgates. Human summary staysfixed39/8conditions.
+Exacthuman39grid/policy also testedseparately; generatedrehearsal doesnotclaimhuman numericalstability.
+
+Allauthorized native/metadata requests mustemit event_sink record BEFORE numericdecode; runnerfsyncs
+accessjournal. Oldcontext-exit buffering alone isnotdurable attempt evidence. Coldchecksorderedfreeze
+barrier viaevents+access sequencenumbers andexactfullaccessmultiset, notjusttypecounts.

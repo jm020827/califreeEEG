@@ -1,0 +1,119 @@
+{
+  "schema": "cfeg.task_trca_pair_s.design.v1",
+  "study_id": "task-trca-pair-s-v1",
+  "program_id": "metadata-learning-program-v1",
+  "slot": "C2",
+  "date": "2026-09-09",
+  "status": "SCIENTIFIC_SPEC_FROZEN_BEFORE_C1_HUMAN_FITTING",
+  "execution_requires": "C2 eligibility underprogram plusgeneratedpreflight andseparatepinnedexecutionmanifest. Thisdesignisnotanexecutablemanifest.",
+  "estimand": "Numerical block-resolved supportimpedance changes pairwiseTRCA spatiallearning beyond pairEEG-Q andsharedorder/mask, yielding classification/calibrationsavings.",
+  "inherit_cohort_and_cost_from": "configs/analysis/task_trca_temporal_v1_design.json",
+  "inherit_design_sha256": "e456c3bcfc066e6ba3cb95a9c76798a006416bee11d064d083d9bd98ce7b97da",
+  "score_schema": "component-time-centered-ensemble-pearson-v1",
+  "operator": {
+    "support": "X[k,12,5,8,N], originalnativepreprocessing, noindividualtrialcentering forcrossproducts",
+    "pairs": "lexicographic i<j, i,j zero-based, n=k*(k-1)/2",
+    "pair_cross": "A_e,y,b = X_i,y,b @ X_j,y,b.T + X_j,y,b @ X_i,y,b.T",
+    "s0_c": "unchanged native trca_matrices; C concatenated-temporal-centered, S0 native floatingpoint construction",
+    "b": "C EXACTLY; noR/ridge/tau/M-conditioned denominator",
+    "templates": "unchangeduniform supportmean for eachclass/band",
+    "logits": "a=log(2)/2; qlogit=.8*a*tanh(theta0+theta dotq); resid=.2*a*available*tanh(beta0+beta dotfeature); Qfrozen beforeseparateresidualfits",
+    "weights": "u=exp(logits-max(logits)); p=u/sum(u) alongpairs perband, sharedacross12classes",
+    "numerator": "d=(u-mean(u))/mean(u); S=S0+sum_e(d_e*A_e). No detacheduniformbranch. Algebraically d=n*p-1; exactlyzerocorrection atuniformlogits.",
+    "pair_mass": "p>0,sum(p)=1,max(p)/min(p)<=2; 1/(2*n-1)<=p<=2/(n+1)",
+    "residual_weight_ratio": "2^(-.2)<=p_QM/p_Q<=2^(.2)",
+    "normalization": "L=chol(C); H=L^-1*S*L^-T; K=L^-T*Ptop(H)*L^-1; F=K/tr(C*K); J=sumclassF; first-orderlogit/Sgradient",
+    "topgap": "leadinggap>1e-10*max(1,maxabs(eigenvalues)); CstrictSPD; samefloat64symmetry andpositiveprojectedtemporalvarianceguards asC1; nofallback/jitter/rescue",
+    "not_guaranteed": "Fixedpairmassdoesnotfixtrace(S), direction/angle, effectiveindependenttrials, nativeensembleequivalence oraccuracy. DoNOTnormalizetrace(S)."
+  },
+  "q_features": {
+    "shape": "[5,n_pairs,15]; numericM never passed, supportEEG+booleanprefixmask+interface/order/frequencycodebook only",
+    "primitives": {
+      "P_i_b_c": "mean(X_i_y_b_c_t^2) overclassy andt",
+      "G_b": "max(mean(P_i_b_c) overi,c,1e-12)",
+      "L_i_b_c": "log(max(P_i_b_c/G_b,1e-12))",
+      "O_i_b_c": "classmean ofmean_t residualpower usingexisting centered250Hz5harmonic sin/cosQRbasis perclassfrequency; noquery",
+      "V_i_b_c": "log(clip(O_i_b_c/max(P_i_b_c,1e-12),1e-6,1))",
+      "D_i_j_b_c": "classmean(1-clip(centered_timecorr(X_i,X_j),-1,1)); sqrt(sumcenteredXi^2*sumcenteredXj^2)<=1e-24 rejected"
+    },
+    "ordered_features_zero_based": [
+      "mean_c((L_i+L_j)/2)",
+      "sqrt(mean_c((L_i-L_j)^2))",
+      "mean_c((V_i+V_j)/2)",
+      "sqrt(mean_c((V_i-V_j)^2))",
+      "mean_c(D_i_j)",
+      "population_sd_c(D_i_j)",
+      "log(k)",
+      "interface: dry0/wet1",
+      "order: firstinterface dry0/wet1",
+      "float(interface!=order)",
+      "(i+j)/(2*(k-1))",
+      "(j-i)/(k-1)",
+      "mean_c(mask_i AND mask_j)",
+      "mean_c(mask_i XOR mask_j)",
+      "abs(sum_c(mask_i)-sum_c(mask_j))/8"
+    ],
+    "q2_indices": [2, 4],
+    "parameters": 16
+  },
+  "m_features": {
+    "shape": "[n_pairs,2], sameforallbands/classes; exactcurrentkprefix only",
+    "validity": "existingkohmunits; zeroobserved, NaNmissing, negative/Inf rejected",
+    "z": "log1p(Z)",
+    "center": "ztilde_i_c=z_i_c-mean_observed_prefixblocks(z_*_c)",
+    "common": "H_e=channelsobservedinbothi,j; available_e=len(H_e)>0",
+    "ordered_features": ["mean_H((ztilde_i+ztilde_j)/2)", "sqrt(mean_H((z_i-z_j)^2))"],
+    "unavailable": "bothfeatureszero, entireintercept-and-slope residualmasked0; Q2sameavailablegate",
+    "missing_arm": "retainsoriginalsharedmask andreturnsfrozenQ exactly",
+    "partial_missing_note": "pairnormalizationcanchangeunavailablepairsweights; onlywholemissingM hasexactQfallback",
+    "stale": "repeatblock0valueswhilepreservingoriginalprefixmask; originallyunobservedcellsremainmissing; channelmissingatblock0 hasnostalenumericvalue; recordstalepairavailability separately",
+    "not_physical": "Relativeblocklevel/discrepancy, notamplifiernoisevariance orhigher-is-worsemonotonicprior"
+  },
+  "scalers": {
+    "q": "fitpartitionweightedpopulationmean/SD; eachpid/interface/window/k/band hasunitmass, eachpairmass1/n",
+    "m": "fitpid/interface/k uniqueunitsonly, pairmass1/n; retainavailablepairs andnormalizeglobalretainedmass; no duplicatedband/windowweightinflation",
+    "q2": "sameQpairmasses butavailablepairsonly, normalizeglobalretainedmass",
+    "sd_floor": "SD<1e-12 replacedby1; noclip; missingfeatureszeroaftertransform",
+    "empty_available_fit": "M/Q2mean0SD1 andresidualcoefficients0, retainfixed200maskedsteps"
+  },
+  "fitting": {
+    "objective": "equalweightpercaseandclassCE(score/sum(nativepositiveweights)/.1)+lambda*mean(coeff^2)",
+    "head_schedule": "Qglobal16coefficientfitthenfreeze; Q2/QM/SHAM3coeffeachseparatelyfit; allinitialized0",
+    "steps_per_head": 200,
+    "optimizer": "fullbatchfloat64Adam,lr.01,betas(.9,.999),eps1e-8",
+    "lambdas": [0.0001, 0.001, 0.01],
+    "selection": "sameouter3fold26/13,inner3fit17/18validation8/9; QCEonly, participant-weightedmeans, ties1e-12largerlambda; allinner4headsrefit; noC1selectedlambda reuse",
+    "max_pipelines": 30,
+    "max_updates": 24000,
+    "source_labels": "block5only; evaluationblock5denied; sourceprefix0..k-1 Q/M; target36/60labelcost"
+  },
+  "controls": {
+    "arms": ["FULL_NATIVE", "FULL_CENTERED", "UNIFORM_C2", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING"],
+    "uniform": "S0/C andC-normalizedF+temporalscorer, nolearnedpairweights. NOTcalledISOregularization andNOTassumednativeexact.",
+    "full": "BothFULLusesameunchangednativegamma0filters/templates, differonlyglobalvscomponenttimecentering; A0separateunchangednativek0",
+    "sham": "partition-local sortedcyclicdonor withininterface/order/exactk*8prefixmask; wholeprefixpacketpermuted, recomputeM2withdonorcentering; frozenQ/scalers, own3coeffrefit",
+    "permuted": "samepartitiondonor, trainedQMcoefficientsunchanged",
+    "coverage": "At k3, fractionofall78pid-interfaceunits whereanycorrect-vs-donorM2elementdiffers>1e-12 across3pairs; allmissing/unchanged/singletonsremain denominator. >=.5 required, notconditionalrandomizationtest."
+  },
+  "decision": {
+    "primary": "SameC1fixed39participant8conditionQM3-Q3 mean>=1pp, descriptivetCI lower>0; vsQ2/SHAMlower>0; coverage>=.5",
+    "calibration": "AllC1Q5/A0/FULL_NATIVE/FULL_CENTERED NI(-1pp),QM3accuracy>=.8,harmed<=helped,observedlabelsumpositive,newattain>=lost; ADDQM3-UNIFORM_C2_3 CIlower>-1pp",
+    "costs": "sameobserved0/3/5cost0/36/60,threshold39of48,nullnonattainment, notrealdeploymentstoppingrule",
+    "actuation": "pairweight -> S/S0-relative-direction -> F -> J -> score -> argmax; reporteffectivepairnumber1/sum(p^2) descriptivelynotindependentn",
+    "structural_certificate": "allQMcoefficientszero orallpairM unavailable acrossbothk; unchangedargmaxalone isnotstructuraldormancy",
+    "branch_order": "VALIDITY_FAILURE, STRUCTURAL_NO_ACTUATION, METADATA_INCREMENT_NOT_ESTABLISHED, CLASSIFICATION_INCREMENT_ONLY, DEVELOPMENT_CALIBRATION_BENEFIT_CANDIDATE",
+    "post_outcome_tuning": false,
+    "held60_autostart": false,
+    "scope": "Repeatedsource39development; adaptivefirst-passingselectionnotindependentconfirmation"
+  },
+  "engineering_gates": [
+    "Uniformlogits recovernativeS0exact withnonzero legitimateweightgradient, notdetachedbranch",
+    "Independentpair-sum/Cholesky-projector/literaltemporalscore and1stordergradcheck; top-tie/SPD/variancefailurespreserved",
+    "Nonuniformpaircase changesSdirection/F/J/score; commonpositivescalingS leavesgeneralizedeigenspace unchangedwithinprecision, notclaimedutility",
+    "QAPI acceptsnomnumericM; exactprefix/scaler/partition/donor/missingrules",
+    "Channelpermutationequivariance; blockpermutationonlywhenoriginalchronologicalcoordinatesarecarried, notrelabelingtimepositions",
+    "Bound/normalizedpairmass/effectivepairdiagnostics; C/templateimmutable",
+    "Actual4headCPU/CUDA parity, actualnestedselection, new-schemaartifactcoldaudit andsamehumanrolemanifestpreflight"
+  ],
+  "evidence": "Agent-derivedfalsifiablemechanism basedonlocalhistory/nativeequations, notpublishedSSVEPimpedanceefficacy orliteraturenovelty. NoC1newhumantraining/queryvalues usedinthisspec."
+}
