@@ -89,6 +89,9 @@ Six Q features, class-aggregated per channel/band:
 Feature6 is an **artificial oracle-Q control**, not an EEG-derived measurement
 available to a real deployment. It tests saturation of side information and must
 never be exported as a human feature. The other scenarios use zero in this column.
+Information sufficiency is for the full oracle-Q vector; the restricted row-wise
+linear predictor need not exploit it. Centered M supplies cross-channel transformations,
+so a failed null screen is not a refutation of that conditional information property.
 All synthetic data use one interface and protocol, so no variable domain-ID benefit
 is present. A real-data schema must separately bind the shared context features.
 
@@ -96,6 +99,9 @@ M has two features: mean log(impedance) centered across available channels in a
 support band, and within-support population SD of log(impedance). Units are arbitrary
 positive synthetic impedance-like values, not a physical kOhm-to-noise mapping.
 Nonpositive/infinite observed M is an error; NaN is missing. No query M is accepted.
+Means use observed packets only, centering uses channels with at least one observation,
+SD uses ddof0 (one observation gives0), and a wholly missing channel is zero-filled
+with available=False. The observed fraction remains a common Q feature.
 The mean/std definition deliberately discards detailed block order; this limitation
 is fixed and not repaired after seeing outcomes.
 
@@ -114,6 +120,8 @@ the two standardized M features without an intercept; SHAM_REFIT has the same
 M feature dimension, ridge, fitting budget and no intercept as QM.
 This is a restricted incremental predictor, not an optimal conditional-information test.
 Q2 controls extra fitting opportunity; dimension match with QM is not claimed.
+Residuals use in-sample Q errors as an explicit engineering simplification; they
+are not cross-fitted independent proxy validation. Outer participants are disjoint.
 
 Predicted Q log penalty is clipped[-3,3], exponentiated and trace-normalized.
 Residual predictions are clipped[-0.2,0.2] and applied through residual_prior.
@@ -153,6 +161,11 @@ Report every scenario/budget/arm's proxy MSE, accuracy, participant help/tie/har
 QM−Q/Q2/SHAM, prediction changes and trace/fallback diagnostics. No significance
 claim from this small fixed suite. k3/5 synthetic label counts36/60 and accuracy80%
 attainment are descriptive; no measured wallclock or actual calibration savings.
+FULL/ISO have no proxy predictor and their proxy MSE is null. Q proxy uses raw
+regression output; residual-arm proxy uses raw Q plus the same clipped residual
+passed to the prior, before base clipping and trace normalization. MISSING proxy
+equals Q. These predictions are not the normalized R or calibrated noise variance.
+Only the observed synthetic k3/5 grid is summarized; k0 is not measured in this suite.
 
 Descriptive screen at k3: informative QM proxy MSE<Q and accuracy>Q,Q2,SHAM;
 independent and q_sufficient abs(QM−Q accuracy)<=1/60. Phase_only is a mandatory
