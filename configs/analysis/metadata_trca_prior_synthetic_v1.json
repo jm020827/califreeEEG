@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "study_id": "metadata-trca-prior-synthetic-v1",
+  "scope": "artificial engineering only; no human data or automatic promotion",
+  "seed": 26090817,
+  "subjects": 24,
+  "folds": 3,
+  "classes": 12,
+  "channels": 8,
+  "bands": 1,
+  "samples": 125,
+  "sample_rate": 250,
+  "blocks": 8,
+  "budgets": [3, 5],
+  "proxy_block": 5,
+  "query_blocks": [6, 7],
+  "frequency_start": 9.0,
+  "frequency_step": 0.5,
+  "gamma": 0.1,
+  "ridge": 0.1,
+  "log_prior_clip": 3.0,
+  "residual_bound": 0.2,
+  "scenarios": ["informative", "independent", "q_sufficient", "phase_only"],
+  "arms": ["FULL", "ISO", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING"],
+  "screen": {
+    "positive_proxy_mse_delta_lt": 0.0,
+    "positive_accuracy_delta_gt": 0.0,
+    "null_absolute_accuracy_delta_max": 0.016666666666666666,
+    "interpretation": "descriptive synthetic screen, not significance, calibration savings or human execution authority"
+  }
+}
