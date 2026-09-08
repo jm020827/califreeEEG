@@ -1,0 +1,83 @@
+{
+  "status": "GENERATED_LEARNER_INTEGRATION_VERIFIED",
+  "study_id": "task-trca-temporal-v1",
+  "score_schema": "component-time-centered-ensemble-pearson-v1",
+  "date_kst": "2026-09-09",
+  "runtime_commit": "e736a26e357adfac82207530387647c66dcfa6e1",
+  "design_sha256": "e456c3bcfc066e6ba3cb95a9c76798a006416bee11d064d083d9bd98ce7b97da",
+  "root": "/home/whwovy/task-trca-temporal-engineering-dlDeIx",
+  "receipt_sha256": "88894b4c6396c5fa7cbfa1555199938645049b1987d0be64b2430e250c56a0ee",
+  "cold_audit_sha256": "4469da60e1bac62c92346e3b9537e7ba01369d757a24309eee89be73faa6d8d5",
+  "parity_sha256": "48e4ebb742423c4a35cb8858f3ac83ce27e157f77e624f07906128ebbd900d1e",
+  "generated_seed": 20260909,
+  "nested": {
+    "source_participants": 6,
+    "conditions": 1,
+    "pipeline_fits": 10,
+    "head_fits": 40,
+    "optimizer_updates": 8000,
+    "seconds": 33.78318624384701,
+    "synthetic_only_selected_lambda": 0.01
+  },
+  "parity": {
+    "heads": ["Q", "Q2", "QM", "SHAM_REFIT"],
+    "optimizer_updates_cpu": 800,
+    "optimizer_updates_cuda": 800,
+    "max_coefficient_abs_error": 2.378486674158882e-15,
+    "max_score_abs_error": 2.0573820425084932e-15,
+    "all_four_argmax_exact": true,
+    "scalar_batch_loss_error": 2.0816681711721685e-17,
+    "scalar_batch_gradient_error": 9.147955830346444e-20,
+    "cpu_seconds": 5.765563606284559,
+    "cuda_seconds": 3.0350841702893376,
+    "cuda_peak_allocated_bytes": 31300608,
+    "cuda_peak_reserved_bytes": 52428800
+  },
+  "cold_audit": {
+    "status": "GENERATED_COLD_AUDIT_PASS",
+    "validation_ce_comparisons": 36,
+    "max_validation_ce_abs_error": 1.1796119636642288e-16,
+    "evaluation_array_comparisons": 70,
+    "evaluation_integer_count_comparisons": 20,
+    "evaluation_generated_participants": 2,
+    "evaluation_arms": 10,
+    "evaluation_argmax_exact": true,
+    "seconds": 0.3782207309268415,
+    "independent_read_only_receipt_review": "PASS"
+  },
+  "regression": {
+    "tests_passed": 2376,
+    "tests_added": 128,
+    "warnings": 68,
+    "seconds": 406.08,
+    "junit_path": "/home/whwovy/task-trca-temporal-full-20260909.xml",
+    "junit_sha256": "c417fbf647003fec6d20972beabceb4cdd062d151101710a6726538275d5f239"
+  },
+  "scope": {
+    "cli_generated_optimizer_updates_total": 9600,
+    "unit_test_updates_included_in_cli_total": false,
+    "generated_evaluation_unique_trials_per_person": 12,
+    "generated_evaluation_tiling_factor": 4,
+    "generated_qm_minus_q_argmax_changed": [0, 0],
+    "generated_qm_minus_q_r_f_j_score_changes_nonzero": true,
+    "new_human_training_updates": 0,
+    "human_artifact_reads_this_stage": false,
+    "held60_access": false,
+    "metadata_efficacy": "NOT_EVALUATED",
+    "calibration_savings": "NOT_EVALUATED",
+    "old_15_execution_code_pins_unchanged": true,
+    "human_execution_manifest": "NOT_IMPLEMENTED",
+    "human_completed_path_provenance_audit": "NOT_IMPLEMENTED",
+    "autostart": false
+  },
+  "limitations": [
+    "One fixed generated case and one-condition nested graph, not a source39 human experiment or efficacy DGP screen.",
+    "48 generated query rows are 12 trials tiled four times, not 48 independent repeats.",
+    "Independent source audit starts at saved Q/S/C; no independent EEG-Q15/native-fit/Adam replay.",
+    "New scorer is not generally native-equivalent; both native and centered FULL controls remain required.",
+    "Nonzero R/F/J/score changes with unchanged argmax do not establish efficacy or structural dormancy.",
+    "Synthetic selected lambda cannot be transferred into a human run; no seed/difficulty/parameter sweep.",
+    "Old human candidate remains terminal VALIDITY_FAILURE; old negative evidence is unchanged.",
+    "Next stage is separate actual-reader/manifest/completed-path audit preparation, not automatic human execution."
+  ]
+}
