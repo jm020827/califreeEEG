@@ -20,6 +20,16 @@ from scipy import stats
 
 PLAN_SHA256 = "ed67cc1f361ed89c37b6f7c5df1e9170b78484e428a5105020485c8c03e3934b"
 ARMS = ("FULL", "ISO", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING")
+ORIGINAL_NATIVE = Path("/home/whwovy/metadata-prior-source39-v1/native")
+RECOVERED_NATIVE = Path("/home/whwovy/metadata-prior-source39-v1/native-cold-r1")
+RECOVERY = {
+    "original_root": str(ORIGINAL_NATIVE),
+    "start_sha256": "0af0f7d02e7a5b31494133fb1a99924bbcc55c7713df49028479552ac15df1c7",
+    "preserved_artifact_count": 39,
+    "reason": "infrastructure_terminal_source_rehash_allowlist",
+    "unchanged_plan_sha256": PLAN_SHA256,
+    "actual_native_root": str(RECOVERED_NATIVE),
+}
 
 
 def require(condition, message):
@@ -994,6 +1004,15 @@ def publish_exclusive(path, payload):
     return hashlib.sha256(raw).hexdigest()
 
 
+def verify_recovery(start, result, native_start, native_manifest, original_start_sha):
+    require(original_start_sha == RECOVERY["start_sha256"], "Original failed start pin")
+    for document in (start, result["provenance"]):
+        require(document["native_root"] == str(RECOVERED_NATIVE), "Explicit recovered native path")
+        require(document["native_recovery"] == RECOVERY, "Exact analysis recovery receipt")
+    for document in (native_start, native_manifest):
+        require(document["recovery"] == RECOVERY, "Exact native recovery receipt")
+
+
 def run(analysis_root=None, plan_path=None):
     root = Path(__file__).resolve().parents[1]
     plan_path = (
@@ -1011,12 +1030,14 @@ def run(analysis_root=None, plan_path=None):
     require(not output.exists() and not output.is_symlink(), "Audit output already exists")
     names = ("start.json", "features.npz", "fold-freezes.json", "scores.npz", "result.json")
     paths = {name: analysis / name for name in names}
-    native = Path(plan["execution"]["native_root"])
+    require(Path(plan["execution"]["native_root"]) == ORIGINAL_NATIVE, "Original native plan path")
+    native = RECOVERED_NATIVE
     paths.update(
         {
             "native/start.json": native / "start.json",
             "native/result.json": native / "result.json",
             "source_projection": Path(plan["source_projection"]["path"]),
+            "original_native/start.json": ORIGINAL_NATIVE / "start.json",
         }
     )
     payloads, hashes = {}, {}
@@ -1028,6 +1049,13 @@ def run(analysis_root=None, plan_path=None):
                 payloads[name] = {key: archive[key] for key in archive.files}
         else:
             payloads[name], hashes[name] = read_document(path)
+    verify_recovery(
+        payloads["start.json"],
+        payloads["result.json"],
+        payloads["native/start.json"],
+        payloads["native/result.json"],
+        hashes["original_native/start.json"],
+    )
     verify_provenance(
         payloads["start.json"],
         payloads["result.json"],

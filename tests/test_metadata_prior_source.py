@@ -194,6 +194,41 @@ def test_analysis_guard_denies_raw_held_and_old(plan, tmp_path, path):
         RUNNER.guard_for(plan, tmp_path)("open", (path, "r", os.O_RDONLY))
 
 
+@pytest.mark.parametrize("corruption", [None, "start", "reason", "path"])
+def test_infrastructure_recovery_chain_is_exact(corruption):
+    spec = importlib.util.spec_from_file_location(
+        "prior_recovery_audit", ROOT / "scripts/audit_metadata_prior_source.py"
+    )
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    assert audit.RECOVERY == RUNNER.RECOVERY
+    start = {
+        "native_root": str(audit.RECOVERED_NATIVE),
+        "native_recovery": copy.deepcopy(audit.RECOVERY),
+    }
+    result = {"provenance": copy.deepcopy(start)}
+    native = {"recovery": copy.deepcopy(audit.RECOVERY)}
+    original_sha = audit.RECOVERY["start_sha256"]
+    if corruption == "start":
+        original_sha = "0" * 64
+    elif corruption == "reason":
+        result["provenance"]["native_recovery"]["reason"] = "new scientific candidate"
+    elif corruption == "path":
+        start["native_root"] = str(audit.ORIGINAL_NATIVE)
+    if corruption:
+        with pytest.raises(ValueError):
+            audit.verify_recovery(start, result, native, native, original_sha)
+    else:
+        audit.verify_recovery(start, result, native, native, original_sha)
+
+
+def test_recovery_loader_cannot_silently_use_failed_native(plan, monkeypatch):
+    assert RUNNER.native_root(plan) == RUNNER.RECOVERED_NATIVE
+    monkeypatch.setattr(RUNNER, "read_json", lambda *a: ({"recovery": None}, "f" * 64))
+    with pytest.raises(ValueError, match="recovery"):
+        RUNNER.native_manifest(plan)
+
+
 def test_projection_exact_envelope_and_zero_values(plan, tmp_path):
     plan["source_subject_ids"] = [4]
     packets = [

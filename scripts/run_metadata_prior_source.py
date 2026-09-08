@@ -26,6 +26,21 @@ CANONICAL = Path("/home/whwovy/califreeEEG")
 PLAN = CANONICAL / "configs/analysis/metadata_prior_source39_v1.json"
 PLAN_SHA = "ed67cc1f361ed89c37b6f7c5df1e9170b78484e428a5105020485c8c03e3934b"
 OUTPUT = Path("/home/whwovy/metadata-prior-source39-v1/analysis")
+ORIGINAL_NATIVE = Path("/home/whwovy/metadata-prior-source39-v1/native")
+RECOVERED_NATIVE = Path("/home/whwovy/metadata-prior-source39-v1/native-cold-r1")
+RECOVERY = {
+    "original_root": str(ORIGINAL_NATIVE),
+    "start_sha256": "0af0f7d02e7a5b31494133fb1a99924bbcc55c7713df49028479552ac15df1c7",
+    "preserved_artifact_count": 39,
+    "reason": "infrastructure_terminal_source_rehash_allowlist",
+    "unchanged_plan_sha256": PLAN_SHA,
+    "actual_native_root": str(RECOVERED_NATIVE),
+}
+
+
+def native_root(plan):
+    declared = Path(plan["execution"]["native_root"])
+    return RECOVERED_NATIVE if declared == ORIGINAL_NATIVE else declared
 
 
 def digest(path):
@@ -110,8 +125,13 @@ def projection(plan):
 
 
 def native_manifest(plan):
-    root = Path(plan["execution"]["native_root"])
+    root = native_root(plan)
     manifest, sha = read_json(root / "result.json")
+    if root == RECOVERED_NATIVE and (
+        manifest.get("recovery") != RECOVERY
+        or digest(ORIGINAL_NATIVE / "start.json") != RECOVERY["start_sha256"]
+    ):
+        raise ValueError("Exact infrastructure recovery receipt required")
     if (
         manifest["status"] != "COMPLETE"
         or manifest["study_id"] != plan["study_id"]
@@ -130,7 +150,7 @@ def native_manifest(plan):
 
 
 def load_native(row, plan):
-    path = Path(plan["execution"]["native_root"]) / row["filename"]
+    path = native_root(plan) / row["filename"]
     if digest(path) != row["sha256"] or path.stat().st_size != row["bytes"]:
         raise ValueError("Native array hash/size mismatch")
     with open_regular(path) as stream, np.load(stream, allow_pickle=False) as archive:
@@ -142,12 +162,13 @@ def load_native(row, plan):
 
 
 def guard_for(plan, output):
-    native = Path(plan["execution"]["native_root"])
+    native = native_root(plan)
     readable = {
         native / "start.json",
         native / "result.json",
         Path(plan["source_projection"]["path"]),
         PLAN,
+        ORIGINAL_NATIVE / "start.json",
     }
     readable |= {native / f"S{p:03d}.npz" for p in plan["source_subject_ids"]}
     writable = {
@@ -227,6 +248,8 @@ def run():
         "python": sys.version.split()[0],
         "numpy": np.__version__,
         "scipy": scipy.__version__,
+        "native_root": str(native_root(plan)),
+        "native_recovery": RECOVERY if native_root(plan) == RECOVERED_NATIVE else None,
     }
     OUTPUT.mkdir(mode=0o700)
     quota = plan["execution"]["budget_bytes"]
@@ -284,7 +307,7 @@ def run():
             raise ValueError("Source changed during analysis")
     if (
         digest(Path(plan["source_projection"]["path"])) != plan["source_projection"]["sha256"]
-        or digest(Path(plan["execution"]["native_root"]) / "result.json") != manifest_sha
+        or digest(native_root(plan) / "result.json") != manifest_sha
     ):
         raise ValueError("Input manifest/projection changed during analysis")
     result = {

@@ -31,3 +31,20 @@
   보호장치/기존 tests/과학 설정을 바꾸지 않고 중립 경로로 검사한다.
 - 신규 core/export/audit와 기존 V2 요청 검사를 합쳐133PASS14.69초.
   실제 자료에서 학습·Q+M outcome은 아직 시작 전이며 native 변환은 진행 중이다.
+
+## Native 완료 해시 확인 오류와 동일 과학 복구
+
+- 첫 export는39명 마지막 파일까지309.326초에 작성했지만, 완료 전 프로젝트 source 해시 확인에서
+  `metadata_trca_prior.py`가 runtime 허용 경로에 없어 RuntimeError로 종료했다.
+  실제 raw/native A0·FULL 계산은 이루어졌다. 학습된 Q/QM outcome과 numeric M은 아직 열지 않았다.
+- 실패 경로 `/home/whwovy/metadata-prior-source39-v1/native`의 start와39NPZ를 그대로 보존한다.
+  Start SHA `0af0f7d02e7a5b31494133fb1a99924bbcc55c7713df49028479552ac15df1c7`;
+  결과 manifest 없음. 원 exporter SHA539566b9b7c962fc6da8fc0a1965c1f5f838f985a73d3572d754925bdfe6490c.
+- 고친 부분은 최종 해시 검사용 정확한 SRC helper2경로 read 허용과 별도 native-cold-r1
+  경로·복구 receipt다. 원 JSON SHA, preprocessing/weights/operator/feature/선택/분할/판정은 불변이다.
+  Exporter가 같은 native 계산을 별도 경로에서 수행하고, analysis와 auditor는 실패start 해시와
+  recovery 이유·새 경로·고정plan을 명시적으로 연결한다. 실패 파일의 덮어쓰기/재사용은 없다.
+- 보존 파일 약2.986GiB를 전체8GiB 예산에서 차감한다. 별도39파일 약2.986GiB,
+  analysis와 두 회귀검사 temp까지 예산 내다. 이는 독립 과학 반복/새 후보가 아닌 동일 입력의 실행 복구다.
+- 중립 경로 전체1786PASS218.39초/기존68warnings. 이 collection 이후 추가한 recovery5검사와
+  runner/auditor 수정을 포함한81tests도 PASS9.64초다. 최종 exporter 수정 통합 후 다시 검증한다.
