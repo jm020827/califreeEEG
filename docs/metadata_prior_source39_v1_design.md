@@ -46,6 +46,8 @@ gamma0 correlation과 argmax가 이 native 결과에 맞아야 한다. 두 Pytho
 Mean/std M은 block 순서를 섞어도 같아진다. 따라서 새 sham은 같은 interface/order와 **전체prefix
 결측 패턴**의 사람들끼리 packet을 정해진 cyclic derangement로 바꾼다. Fit/eval 사이는 섞지 않는다.
 Singleton이나 실제 특징이 안 바뀌는 경우도 그대로 포함·보고한다. 순열은 효능을 보고 선택하지 않는다.
+정확한 donor는 각 stratum에서 정렬한 subjectID의 다음 사람(끝은 처음)이다. Coverage는 primary k3의
+78개 사람×interface에서 correct M과 평가 donor M의2특징 중 abs차이>1e−12인 비율이며 singleton도 분모에 남긴다.
 STALE은 첫packet 반복, MISSING은 공통 Q mask를 남긴 numeric-denial exactQ fallback이다.
 
 ## 결과를 보기 전에 정한 종료 분기
@@ -58,6 +60,8 @@ Primary는8조건을 사람 안에서 평균한 QM3−Q3이며39명 단위 기�
 case에서 평균 label차이<0 및 새도달≥도달상실을 요구한다. 1pp는 실용 참고폭이지48query 중1개라는 뜻이 아니다.
 관측k0/3/5 최초80%와 미도달 전이를 전부 보고하며, 미도달을 임의의24label 비용으로 대체하지 않는다.
 1/2/4shot과 실제 준비·휴식·임피던스 측정시간은 미관측이므로 최소비용·wallclock절감을 주장하지 않는다.
+보정량 집계는 전체312개 사람×조건 cell이며, 둘 다 도달한 cell들의 label 차이를 pooled 평균한다.
+새도달/상실/둘다미도달은 전체312개에서 따로 센다. 둘다도달이0개이면 label평균null/보정 gate실패다.
 
 입력/누수/native검증 실패는 VALIDITY_FAILURE. 나머지는 METADATA_INCREMENT_NOT_ESTABLISHED,
 CLASSIFICATION_INCREMENT_ONLY, DEVELOPMENT_CALIBRATION_BENEFIT_CANDIDATE 중 하나로 종료한다.

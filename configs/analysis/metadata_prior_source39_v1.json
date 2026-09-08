@@ -275,8 +275,9 @@
       "channel onehot8"
     ],
     "q_size": 15,
-    "target": "log mean_class,time((block5-support_mean)^2)/support_global_band_power; raw target preserved, report raw/level/shape MSE",
-    "m": "support-only log1p(kOhm), mean centered over available channels, population SD; zero valid, NaN missing, no oracle or query M"
+    "target": "log(max(error/max(global_support_band_power,1e-12),1e-12)); error=mean_class,time((block5-support_mean)^2); global_support_band_power=mean_support,class,channel,time(support^2) perband; report raw/level/shape MSE",
+    "m": "support-only log1p(kOhm), mean centered over available channels, population SD; zero valid, NaN missing, no oracle or query M",
+    "q_numeric": "relativepower floor1e-12; off-reference power denominator floor1e-12 and fraction clip[1e-6,1]; centered pairwise correlation clipped[-1,1], reject denominator<=1e-24; QR of centered real-codebook sin/cos harmonics1..5"
   },
   "learning": {
     "outer_folds": 3,
@@ -286,7 +287,7 @@
     "residual_intercept": true,
     "residual_hyperparameter_selection": false,
     "q2": "same chosen Q representation; fixed residual fit",
-    "sham": "deterministic cyclic derangement of participants within interface, headband_order and exact complete prefix-mask strata, fit/eval separately; singleton identity reported",
+    "sham": "For each interface/k and fit or eval partition separately, group by headband_order and entire k-by8 finite-mask tuple; sort each group by subjectID, assign each recipient next sorted member cyclically (np.roll(sorted_indices,-1)); singleton maps to self; same mapping all windows/bands; no random search",
     "stale": "repeat first support packet k times; intersect recipient observed mask",
     "missing": "numeric denial with common Q mask retained; exact Q prior/prediction fallback"
   },
@@ -321,7 +322,9 @@
       "5": 60
     },
     "ci_scope": "descriptive development participant variability; repeated cohort and overlapping CV training forbid independent confirmation",
-    "report": "all cells/arms; help tie harm; native compatibility; proxy level/shape; prior/filter/score/decision changes; sham/missing coverage; reachability transitions and finite-pair label differences separately"
+    "report": "all cells/arms; help tie harm; native compatibility; proxy level/shape; prior/filter/score/decision changes; sham/missing coverage; reachability transitions and finite-pair label differences separately",
+    "coverage": "primaryk3:78 participant×interface cells; correct vs evalPERMUTED donor M two-feature arrays, any absolute difference>1e-12; denominator includes singleton/identical features; same donor as SHAM_REFIT evaluation",
+    "calibration_aggregation": "all312 participant×interface×window cells: count both/new/lost/neither reached; arithmetic mean QMlabels-Qlabels over all both-reached cells (pooled, not participant conditionalmeans); zero both-reached => mean null and calibration gate false; new/lost counts acrossall312"
   },
   "execution": {
     "root": "/home/whwovy/metadata-prior-source39-v1",
