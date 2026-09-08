@@ -1,0 +1,85 @@
+{
+  "schema": "cfeg.metadata_learning_program.v1",
+  "program_id": "metadata-learning-program-v1",
+  "date": "2026-09-09",
+  "base_commit": "7545edad5d5b8411ed50cc79c8f8fc1b80827452",
+  "status": "FAMILY_AND_BUDGET_FROZEN",
+  "objective": "Develop and test metadata-assisted low-calibration SSVEP learning; isolate numerical support impedance increment beyond EEG Q and shared missingness/order.",
+  "authority": {
+    "source39_development_authorized_after_candidate_preflight": true,
+    "implementation_and_generated_validation_authorized": true,
+    "held60_authorized": false,
+    "retired_s1_s3_authorized": false,
+    "external_outreach_authorized": false,
+    "paid_resources_authorized": false,
+    "old_terminal_candidates_reopened": false,
+    "basis": "User explicitly requested a mechanism-based candidate research loop with family/budget/stops fixed first and no per-step approval inside those bounds. This prospective program supersedes engineering-only turn authority for NEW manifested candidates, not old scientific results or immutable designs."
+  },
+  "candidates": [
+    {
+      "slot": "C1",
+      "id": "task-trca-temporal-v1",
+      "mechanism": "Task-trained channelwise bounded denominator shape, frozen Q15 plus three-coefficient numerical-M residual; allpositive arms sharetemporal-centered score.",
+      "design_path": "configs/analysis/task_trca_temporal_v1_design.json",
+      "design_sha256": "e456c3bcfc066e6ba3cb95a9c76798a006416bee11d064d083d9bd98ce7b97da",
+      "order": 1,
+      "activation": "C2 mathematical specification frozen before any C1 newfinalquery; C1 actualreader/manifest andgeneratedcompleted-path audit pass before human numerical access."
+    },
+    {
+      "slot": "C2",
+      "id": "task-trca-pair-s-v1",
+      "mechanism": "Task-trained positive normalized support-block-pair weights alter ONLY TRCA cross-trial numerator S; retain block-resolved M, fixed unweighted C and uniform template and common temporal scorer. Not a template-only repeat or larger C1 ridge.",
+      "order": 2,
+      "activation": "C1 valid audited result notfullcalibrationcandidate; or C1numericalfailure explicitly audited and C2 shares no unresolved causal defect. No inference thatC1failure favorsC2. C2 ownmathematicalspec mustprecedeC1newfinalquery and ownexecutionmanifest/generatedpreflight mustprecedeC2humanrun.",
+      "rejection": "Non-distinct mechanism, absent required block correspondence, shared unresolved validity defect, or failedengineering preflight closes slot asNOT_EVALUATED, notmetadata-negative."
+    }
+  ],
+  "budget": {
+    "scientific_candidates_max": 2,
+    "primary_human_attempts_max": 2,
+    "shared_infrastructure_recovery_attempts_max": 1,
+    "human_data_attempts_total_max": 3,
+    "pipelines_per_primary_max": 30,
+    "heads_per_primary_max": 120,
+    "optimizer_updates_per_primary_max": 24000,
+    "human_optimizer_updates_total_max_including_partial_and_recovery": 72000,
+    "distinct_final_query_model_reveals_max": 2,
+    "human_seconds_per_attempt_max": 7200,
+    "human_seconds_program_max": 21600,
+    "output_bytes_per_attempt_max": 12884901888,
+    "human_output_bytes_program_max": 38654705664,
+    "engineering_output_bytes_max": 4294967296,
+    "engineering_compute_seconds_max": 43200,
+    "cpu_threads": 1,
+    "gpu_device": "existing local CUDA device0 only",
+    "gpu_memory_fraction_max": 0.16,
+    "gpu_allocated_bytes_max": 4294967296,
+    "new_worktrees_max": 2,
+    "new_checkout_bytes_per_worktree_max": 67108864,
+    "test_output_bytes_per_worktree_max": 536870912,
+    "new_parameter_seed_window_subgroup_sweeps": 0,
+    "generated_seed": 20260909
+  },
+  "recovery": {
+    "allowed": "At most one shared correction of input transport/persistence/infrastructure under identicalscience; preserve originalfailedattempt and pinnewimplementation/output before retry. Allpartialhumanupdates count.",
+    "after_query": "Savedfrozenmodels andunchangedpredictions only; no refit, scorer repair, changeddata or secondmodelreveal.",
+    "not_recovery": "Changed operator, Q/Mfeatures, hyperparameters, thresholds, topgap/SPD/variancepolicies, excludedcontrol/person/condition, or repairedpostoutcome scientificscore."
+  },
+  "shared_evaluation": {
+    "cohort": "Exactsource39 IDs/grid fromC1design; repeatedlyexposeddevelopment, notindependentconfirmation.",
+    "selection": "Participant-disjoint outer3/inner3; candidate-specificQ-onlylambda selection, noM-basedhyperparameterchoice.",
+    "controls": ["FULL_NATIVE", "FULL_CENTERED", "ISO", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING", "separate A0"],
+    "primary": "All8conditions equalweight perparticipant QM3-Q3; sameC1practical thresholds, Q2/SHAM separation andcoverage, bothFULL/A0/Q5 noninferiority, observedattainment/labelcost/harm.",
+    "costs": "k0/3/5 cost0/36/60; 48query39correct means80percent attained; nonattainment costnull, noforced24label saving.",
+    "report_all": "Everyattempt andcandidate, allconditions, pairedparticipant results, actuation, negative/validity distinctions; noselectedwinner confirmation claim."
+  },
+  "stops": {
+    "promising": "Independentlyaudited fullcalibrationcandidate satisfying ALL fixedpractical gates. Stopfamily andreport independentconfirmation plan; noheld60autostart.",
+    "classification_only": "Notprogramsuccess; recordclassificationincrement andproceedonlytoalreadyfrozeneligibleC2.",
+    "negative": "Closecandidate, do nottune; proceedonlytoalreadyfrozeneligibleC2.",
+    "validity_failure": "Preservefailure, performboundedcause/audit review, markefficacyNOT_EVALUATED; noautomaticnumerical-policyrescue. Sharedunresolveddefect stopspendingcandidate.",
+    "budget_exhausted": "Report fullprogramresults andnextverificationplan, noautomaticthirdcandidate orbudgetextension.",
+    "missing_authority_or_data": "Reportgenuineblocker, nevermarkresearchcompletejustbecauseexecutioncannotstart."
+  },
+  "completion": "Allrequiredoutputs forpromisingstop orclosed/exhaustedcandidatefamily: pinnedattempts, independent terminalaudit, readableaggregatecomparisons/limitations/researchlog andnextverificationplan. Designorunit-testcompletion alone isnotprogramcompletion."
+}
