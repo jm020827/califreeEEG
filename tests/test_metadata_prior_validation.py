@@ -79,6 +79,13 @@ def test_finite_but_unrepresentable_scale_and_prediction_are_rejected():
         model.predict([[1e200]])
 
 
+def test_overflowing_aggregate_cv_loss_is_rejected():
+    q = np.zeros((9, 1, 1, 2, 1))
+    y = np.broadcast_to(np.array([4.5e153, -4.5e153]), (9, 1, 1, 2))
+    with pytest.raises(ValueError, match="Nonfinite Q selection loss"):
+        m.select_q(q, y, np.arange(9))
+
+
 def test_nested_crossfit_recovers_declared_context_identity_and_records_all_candidates():
     x, y, ids = linear_fixture()
     original = x.copy(), y.copy(), ids.copy()

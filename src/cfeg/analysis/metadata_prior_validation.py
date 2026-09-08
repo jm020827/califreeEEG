@@ -168,8 +168,9 @@ def select_q(q, target, participant_ids):
                 )
                 errors = (model.predict(design[valid]) - y[valid]) ** 2
                 losses[valid] = errors.reshape(valid.sum(), -1).mean(axis=1)
-            loss = float(losses.mean())
-            if not np.isfinite(losses).all():
+            with np.errstate(over="ignore", invalid="ignore"):
+                loss = float(losses.mean())
+            if not np.isfinite(losses).all() or not np.isfinite(loss):
                 raise ValueError("Nonfinite Q selection loss")
             candidate_rows.append(
                 {
