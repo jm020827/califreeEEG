@@ -72,3 +72,19 @@
 원artifact·source·정정receipt12hash와 JSON원본/정정 projection 일치, 관련local links108개,
 SQLitequick_check ok를 확인했다. 확인한 study/temp/2worktree 합계 약6.93GiB로8GiB예산 안이다.
 기존30+신규2worktrees/실패·복구자료는 보존하며 삭제하지 않았다.
+
+## 최종 협업·통합 인계
+
+통합 기준은 main의 d954870이며 실제 source 학습/평가는97a72aa, 정수보고는8dc17be,
+결과문서/연구일지 정리는5b33af3에 기록됐다. 모든 변경은 로컬이고 push하지 않았다.
+
+| Lane | Worktree / branch | 단독 작성 범위 | 통합·보존 상태 |
+|---|---|---|---|
+| Main | /home/whwovy/califreeEEG / main | 계약·core·runner·root tests·문서·연구공간·최종 실행 | 통합·전체1820tests 검증 담당 |
+| Exporter | /home/whwovy/califreeEEG-wt-prior-export / codex/metadata-prior-source-export-v1 | export_metadata_prior_source.py와 해당 test | e53bcc7→52bcc2f, 복구fde4fd3→97a72aa; clean 보존 |
+| Auditor | /home/whwovy/califreeEEG-wt-prior-audit / codex/metadata-prior-source-audit-v1 | 원auditor/test, 이후 별도counts auditor/test | 7206df1→5822351,96c0ddd→8dc17be; clean 보존 |
+
+읽기 전용 과학·결과 검토자는 shared repo를 사용했고 새tree를 만들지 않았다.
+두 agent의 schema clarification cherry-pick은 main0d1b0cd와 같은 내용이므로 중복 통합하지 않았다.
+텍스트 충돌0이지만 수식 연결·guard·정수 집계는 별도 의미 검토와 실제 실행으로 검증했다.
+남은32worktrees는 사용자 작업/복구 이력으로 보존하며 이번 요청에 없는 cleanup은 수행하지 않았다.
