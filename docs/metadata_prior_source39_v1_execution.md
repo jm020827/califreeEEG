@@ -48,3 +48,27 @@
   analysis와 두 회귀검사 temp까지 예산 내다. 이는 독립 과학 반복/새 후보가 아닌 동일 입력의 실행 복구다.
 - 중립 경로 전체1786PASS218.39초/기존68warnings. 이 collection 이후 추가한 recovery5검사와
   runner/auditor 수정을 포함한81tests도 PASS9.64초다. 최종 exporter 수정 통합 후 다시 검증한다.
+
+## 실제 실행·최종 판정 완료
+
+- 복구export97a72aa는308.83초 COMPLETE,39NPZ/3,205,578,402bytes.
+  실패/복구39파일 바이트 동일. 원본 실패는 보존했다.
+- 같은97a72aa의 analysis109.74초 COMPLETE. 39명×8조건×k3/5/48queries,
+  5928rows/152summary/99contrast/2808attainment. 모든fit/freeze를 learnedqueryscoring 전에 게시했다.
+- 원 auditor PASS:840selectedfits+분할·M projection·prior/proxy·점수·통계·보정량 검산.
+  Gamma0 native correlation 최대7.96e−12/예측불일치0. 전체1797tests PASS234.16초.
+- 최종 판정 METADATA_INCREMENT_NOT_ESTABLISHED. QM3−Q3 −0.006677%p,
+  QM5−Q5 0%p,312개 관측 최초80%도달 단계 모두 동일, 보정label절감0.
+  상세 수치·한계·조건별 결과는 [최종 분석](metadata_prior_source39_v1_results.md)에 있다.
+- 추가 독립검토가 float취소오차로 일부참가자 signcount를 잘못 분류함을 발견했다.
+  별도96c0ddd→main8dc17be의 정수보고검산은 모델을 재실행하지 않고4개ALLk5집계를 정정했다.
+  99contrast 평균/CI 최대차5.55e−17/보정량·판정불변, REPORTING_CORRECTION_VERIFIED.
+  원result/audit불변; 정정receipt SHA32a39fbe02c741280121418d21d34f9f6e523f417a7f03989fcb55efca77bbaf.
+  관련104tests PASS9.85초이며 정정helper를 포함한 최종전체회귀검사는 별도 기록한다.
+- 이번 후보 실행은 종료했다. 연구목표의 효능달성·독립확증과 같지 않다.
+  추가실험/held60개봉/외부요청/설치/push/cleanup은 없다.
+
+최종 정수보고 helper 포함1820tests PASS237.72초/기존warnings68, Ruff9files PASS.
+원artifact·source·정정receipt12hash와 JSON원본/정정 projection 일치, 관련local links108개,
+SQLitequick_check ok를 확인했다. 확인한 study/temp/2worktree 합계 약6.93GiB로8GiB예산 안이다.
+기존30+신규2worktrees/실패·복구자료는 보존하며 삭제하지 않았다.

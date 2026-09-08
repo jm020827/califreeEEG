@@ -1075,3 +1075,41 @@
 - 결과 docs/metadata_prior_validation_repair_results.md, 원 계약 docs/metadata_prior_validation_repair.md SHA07c428e8bb396ed8780d1b211573f7f7084b7638404f76966477dbe1b3a4e5de. README/상태/상위계획/루프/current-data plan의 현재 overlay를 갱신했다. 현실적인 generator·난이도 범위·최종효능seed는 아직 고정/실행하지 않았으며, 다음은 M을 보지 않는 개발 난이도 portfolio와 untouched 최종평가의 분리 설계다. 보정량 감소·metadata효능·연구전체 완료는 미확립이다.
 - academic-research 기존 landscape를 재사용하고 claim:20ab8110e071b6ba qualified/evidence:ca1d1804bd97a345,45dfca140bff7268,06968061d0e93415로 구현·수치·한계를 연결했다. Technique:feb2f44f47a68444에 engineering helper 상태를 추가, 과학gap:6a8254f849b36b2f는 현실적 검증 설계 질문으로 open 유지, 이전 qualified효능claim/closedheadroom/optional외부gap 보존. 새검색/PDF0,37claims/65evidence(1053papers/78searches/41cards/37gaps/9techniques/5analogies/36deepreads)로 render했다.
 - coordinate-worktree-changes에 따라 main이 코드·계약·문서·SQLite 단독 writer, 두 shared-repo reviewer는 읽기 전용이다. Tight helper/test 계약 의존성 때문에 새 concurrent writing lane/worktree는 만들지 않았다. Baseline76649af→1745386→45a5dfd→20339b2,텍스트 통합 충돌0,semantic 지적은 위 수정으로 해결. 기존30worktrees·환경 보존,가용약262GiB/1GiBtemp예산 대비294020KiB,설치/push/cleanup0. Local links99개/새receipt및source5hash/기존9paths/nestedreceipts/SQLitequick_check PASS,signature에 완료 경계를 기록했다.
+
+## PLAN/IMPL-20260908-072 — 실제 source39 prior 실험을 종료까지 수행하는 계약
+
+- 사용자 ‘끝까지 실험 계획 세우고 실행하라’에 따라 단순 engineering 정지가 아닌 source39 native export→학습→분류평가→독립검산→종료보고를 수행한다. 연구질문은 pre-query acquisition context의 저보정 순증분이다. 기존 종료 후보·held60/retired1–3·fullmanifest/Impedance.mat·외부 요청은 범위 밖이다.
+- Baseline d954870에서4c825ee로 계획 고정, 실제 EEG/numericM 전에0d1b0cd로 0kOhm·Q식·sham donor방향·78coverage·312cost 명료화. 최종 과학 JSON SHAed67cc1f361ed89c37b6f7c5df1e9170b78484e428a5105020485c8c03e3934b. 기존39명×dry/wet×125/188/250/500samples, k3/5, 별도 proxyblock5/query6–9의48queries. 26fit/13eval outer3fold, nested Q선택, 동일OOF잔차 Q2/QM/SHAM 고정alpha.1, gamma.1·bound.2·trace8. 결과 후 과학 retries0이다.
+- coordinate-worktree-changes: main은 계약/core/runner/통합/docs/SQLite, exporter와 auditor는 신규격리 worktree2개에서 각script/test2paths만 소유. 기존30+신규2worktree 보존. Contract→exporter e53bcc7/main52bcc2f→root ed14df5→audit7206df1/main5822351→교차검증d51cc0b 순서, 충돌0. Read-only operatorreview는 nested축/누수/비용을 검토했고 filter-angle roundoff를 고쳤다. sharedtree 동시writer0이다.
+- 인공9명에서 실제 추출/fit/score/guard/publication과 독립감사 cross-lane 통과. Initial144testsPASS7.99초. 첫 full1709PASS3FAIL14ERROR232.30초는 /tmp/cfeg-prior-source.TMPUtA의 source단어를 기존 V2 external fixtureguard가 차단한 이유였고, 보호코드를 바꾸지 않은 중립경로 full1786PASS218.39초로 해결했다. 인공fixture를 실제 외부자료 접근으로 세지 않는다.
+- academic-research 기존 landscape/과학gap에 현재signature를 먼저 기록했다. 이번 결정의 불확실성은 문헌수가 아니라 실제metadata효과였으므로 추가검색/PDF0. 문헌비유·인공검증만으로 현실의효능을 주장하지 않는다.
+
+## INFRA-20260908-073 — native 완료직전 guard 실패와 동일과학 cold-r1 복구
+
+- Cleaned14df5에서 actual39raw를 읽어39NPZ를309.326초에 게시했지만 최종 codehash 확인에서 SRC helper2개가 guard허용에 없어 중단됐다. Source39raw/nativeA0·FULL은 계산됐다; learnedQ/QM 및numericM은 아직 접근전이었다. 실패start SHA0af0f7d02e7a5b31494133fb1a99924bbcc55c7713df49028479552ac15df1c7, 원39NPZ·result없음을 /home/whwovy/metadata-prior-source39-v1/native에 보존했다.
+- Root0dbfb89/6ddc393은 명시적 recovery입력 경로·4receipt 연결만 변경했고, exporterfde4fd3→main97a72aa는 정확한 immutableSRC2paths 읽기와 native-cold-r1 단일 새 경로를 허용했다. 원start해시+39파일stat/0400/nlink1을 확인하고 약2.986GiB 보존분을 전체8GiB예산에서 차감한다. 계획·feature/학습core/Qhelper/operator/threshold 변경0. Oldrunner 재개/실패파일 덮어쓰기/원파형재사용0이다.
+- 이전 coldtest의 source_hashes={}가 문제를 놓쳤음을 인정하고 실제5sourcefile 최종rehash를 검사하도록 고쳤다. Native3.9 실제pipeline+인공raw cold COMPLETE8.58초, 격리agent90testsPASS1.82초; main교차118testsPASS9.78초, 최종full1797PASS234.16초/기존warnings68. Reviewer의 immediate recoveredstart검사도 반영했다.
+- Clean97a72aa에서 같은39raw/과학을 복구 실행,308.83초 COMPLETE. Nativefiles3,205,578,402bytes, recoveredstart SHAbeec51add5146d4a9bec3d3c7481514511b2d87f781b612c412d1937e9e14a09, manifest SHA15c088048f3435a500d3758138c3cd6a1616e869d568bdf68d10bcc5e978d83a. 별도 cmp로 원/복구39NPZ 모두 바이트 일치. 독립 과학 반복이나 후보변경이 아니다.
+
+## EXP-20260908-074 — 실제 prior39 단회 결과, 추가 metadata 효용 미확립
+
+- 동일 clean97a72aa로 실제 source39 native파형과 고정780packet projection을 읽어 특징추출·nested Q/residual학습·전체평가를109.74초에 완료했다. 모든fold계수/선택/freeze를 outerqueryscoring 전에0400배타 게시했다. 새held/retired/fullmanifest/Impedance.mat/외부자료·요청0이며 새scope실행을 별도endpoint성공에 맞춰 반복하지 않았다.
+- 결과5928rows/152summary/99contrasts/2808attainment. Result SHAf1d8158c0228cfefdf5bd762bdc1d960f7268f79f93c24268a519e46d6460ce6, features fefc1749c66cab297dedc368d760bbe98fe29ca92085dbb4f75bd8bc97f48bf6,freeze e30deb271ff213c1da4e7972979c74cf4b61cff6fc19625efe211df54e10dd19,scores a8cc09c170d2e7396463eee2655a647262eabfdb4d66214dd5cc0037682c0c61. Nativegamma0 최대corr오차7.96e−12/예측불일치0. Independentaudit SHAce5e355674f940a6d256226c573df0727780676e927ccbbe3e0626e124616be8,840선택회귀+OOF/scalers/residuals/M/prior/proxy/점수/통계/비용 검산 PASS.
+- PrimaryQM3−Q3 −0.006677%p(CI−0.042843,+0.029488%p),QM5−Q5 순정답변화0. 관측312cell의 최초80%도달은 모두동일:0→0 50,3→3 3,5→5 7,미도달252. 둘다도달60의평균label차0,새도달/상실0. QM3−Q5 −5.5823%p로−1ppNI에도미달. 판정 METADATA_INCREMENT_NOT_ESTABLISHED,보정량절감미확립이다.
+- Metadata는312cell에서prior/score를바꾸며 shamcoverage78/78이었다. 분류답변화는k3 12/14976(오답→정답2,반대3,다른오답7),k5 17/14976(5,5,7)뿐. QMraw/shapeproxy도Q보다낮아지지 않았다. FULL3/5 34.4151/41.0390%,ISO26.8964/32.4786%,Q26.8897/32.4653%,QM26.8830/32.4653%,A039.2228%. 공통규제부터큰손실이있으므로 metadata일반의무용성이나양성전이증거가아니다. 다른gamma가성공할지는측정하지 않았다.
+- 독립auditor는 모든12후보CVloss·rawQ특징·TRCA파형계산을 재실행한 것이 아니다. Source39반복노출/publicpreset/겹치는trainingfold로독립확증불가. k1/2/4최소비용·실제walltime절감미관측. 읽기전용추가검토가 float상쇄로ALL k5 help/tie/harm이일부틀림을발견했다(원QM−Q4/31/4→정수3/33/3). Originalresult/audit는보존하고 별도정수보고검산으로정정한다; 모델재실행/효능판정변경없음.
+- 결과문서 docs/metadata_prior_source39_v1_results.md,전체projection docs/reports/metadata_prior_source39_v1_summary.json. 연구목표유지·이후보종료·새튜닝/held자동개봉없음. Claim6c575153b9f5a422 qualified와3evidence,techniquefeb2f44f47a68444/analogyb3d72912cb0d0d78의실제test상태를연결했다. 과학gap6a8254f849b36b2f는 broaderM질문으로open유지하되이후보종료명시;기존qualified/closed/외부optionalgap보존. 현재38claims/68evidence이며 추가문헌검색0이다.
+
+## AUD-20260908-075 — 원점수 정수 집계로 보고오류만 정정
+
+- Reader가 발견한 부동소수점 상쇄를 원본보존·별도보고 방식으로 고쳤다. 기존auditworktree의 새script/test2paths만 agent가 작성했고96c0ddd→main8dc17be로 충돌 없이 통합했다. Main이 초안resultSHA의문자순서오류를 실제입력 접근 전에 지적·수정했고 plan/result/scores/originalaudit4개exactpin을 회귀검사했다. 원학습/runner/auditor/result/scores는 바꾸지 않았다.
+- 순수23testsPASS0.26초,main기존core/auditor합104PASS9.85초. Main실행으로 reporting-audit/exact-counts.json0400 배타게시, SHA32a39fbe02c741280121418d21d34f9f6e523f417a7f03989fcb55efca77bbaf, REPORTING_CORRECTION_VERIFIED. Raw/M/새모델적합없고 고정점수의classargmax·정수정답만 다시 집계했다.
+- 99contrast를 참가자정수netcorrect/384(ALL)또는48(cell)로 검산했다. ALLk5 QM−Q 4/31/4→3/33/3, QM−Q2 5/30/4→4/31/4, QM−SHAM 6/29/4→5/31/3, QM−FULL 4/0/35→3/1/35의4개 도움/동률/손해가 정정됐다. 평균·CI 최대차5.55e−17,312cost·최종판정불변. 과학가설이나성공기준을 바꾼것이 아니다.
+- 보고JSON의schema는report-projection.v1이며 최상위contrasts는정수기준으로교체하고 original_float_sign_contrasts와원audit를별도보존했다. 원측정artifact11.4MB와원audit의checksum은그대로다. Claim6c575153b9f5a422에정정measurement근거를추가해38claims/69evidence로갱신했다. 원auditPASS를모든원표기정확성으로과장하지않는다.
+
+## VERIFY/CLOSE-20260908-076 — 실제 실험 프로그램 최종 종료
+
+- 정수보고helper를 포함한 전체1820tests PASS237.72초/기존Torchwarnings68, Ruff9files/diffcheck PASS. Native export/fit·query평가/원arrayaudit/정수reportaudit의 실제경로를 모두 실행했고 마지막1820은인공회귀검사이지추가human실험이 아니다.
+- 원analysis6artifact/source5hash/정정receipt1hash의12checks,원본·정정JSONprojection exact,관련Markdownlocal links108개/SQLitequick_check ok. 별도readonlyreportreview를 적용했다. 학습수식코드·과학JSON은최초human전ed14df5에서불변이고이후변경은IO복구/독립감사/보고뿐이다.
+- 확인한study6,314,684KiB,roottemps174,868+569,340KiB,agentnativeproof80,288+80,292KiB,신규2trees36,912+9,136KiB의합계약6.93GiB로8GiB예산내. 기존30worktree와신규2개branch는통합후보존하고삭제/설치/push0이다. worktree소유경로겹침/텍스트충돌0,semantic문제3가지(필터각도roundoff,guard최종SRC누락,정수sign집계)는원결과이력과함께해결했다.
+- 연구공간 render완료:1053papers/78searches/41cards/38claims/69evidence/37gaps/9techniques/5analogies/36deepreads. 새검색/PDF0,claim6c575153b9f5a422 qualified/근거4개,broader과학gapopen/이후보closed,외부optionalgap보존. 최종목표의입증이아닌승인된단일후보실험의완료다. Metadata저보정원목표를유지하되후속학습/튜닝/held60자동개봉은없다.
