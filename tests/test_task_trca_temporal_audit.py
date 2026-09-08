@@ -129,7 +129,12 @@ def fixture(*, conditions=((0, 17, 3),), missing=False, participants=6):
         for name, values in arrays.items():
             values.append(item[name])
     data = {name: np.stack(values) for name, values in arrays.items()}
-    data.update(keys=keys, orders=np.zeros(len(keys), dtype=np.int64))
+    data.update(
+        keys=keys,
+        orders=np.zeros(len(keys), dtype=np.int64),
+        schema=np.array(audit.SCHEMA),
+        score_schema=np.array(audit.SCORE_SCHEMA),
+    )
     rows = []
     for fold in range(3):
         val_ids = ids[fold::3]
@@ -160,6 +165,14 @@ def fixture(*, conditions=((0, 17, 3),), missing=False, participants=6):
 @pytest.fixture(scope="module")
 def generated():
     return fixture()
+
+
+@pytest.mark.parametrize("name", ["schema", "score_schema"])
+def test_source_artifact_requires_explicit_temporal_schema(generated, name):
+    data, model, ids, evaluation_ids = generated
+    missing = {k: v for k, v in data.items() if k != name}
+    with pytest.raises(ValueError, match="case artifact"):
+        audit.audit_training(missing, model, ids, evaluation_ids)
 
 
 def test_no_producer_imports_in_independent_module():

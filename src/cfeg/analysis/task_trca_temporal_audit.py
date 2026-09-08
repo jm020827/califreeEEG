@@ -178,12 +178,12 @@ def _validate_data(data, outer_ids):
     )
     _require(not {"query_mean", "template_mean"} & set(data), "legacy global statistics rejected")
     for name, expected in (("schema", SCHEMA), ("score_schema", SCORE_SCHEMA)):
-        if name in data:
-            _require(
-                np.asarray(data[name]).shape == ()
-                and str(np.asarray(data[name]).item()) == expected,
-                "case artifact " + name,
-            )
+        _require(
+            name in data
+            and np.asarray(data[name]).shape == ()
+            and str(np.asarray(data[name]).item()) == expected,
+            "case artifact " + name,
+        )
     keys = np.asarray(data["keys"])
     _require(
         keys.dtype.kind in "iu" and keys.ndim == 2 and keys.shape[1] == 4 and len(keys) > 0,

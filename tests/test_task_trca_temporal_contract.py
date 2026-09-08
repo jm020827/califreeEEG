@@ -66,3 +66,10 @@ def test_cold_receipt_pin_precedes_any_npz_access(tmp_path, monkeypatch):
     monkeypatch.setattr(cold.np, "load", forbidden)
     with pytest.raises(ValueError, match="receipt hash"):
         cold.audit(tmp_path, "0" * 64)
+
+
+def test_cold_producer_failure_precedes_receipt_read(tmp_path):
+    cold = module("audit_task_trca_temporal_engineering")
+    (tmp_path / "failure.json").write_text("preserved generated failure")
+    with pytest.raises(ValueError, match="failure takes precedence"):
+        cold.audit(tmp_path, "0" * 64)
