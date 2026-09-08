@@ -2,17 +2,17 @@
   "program_id": "metadata-learning-program-v1",
   "goal_status": "ACTIVE",
   "updated_date_kst": "2026-09-09",
-  "runtime_snapshot_utc": "2026-09-08T18:14:04.404182Z",
+  "runtime_snapshot_utc": "2026-09-08T18:39:47Z",
   "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",
   "candidates": {
-    "C1": {"id": "task-trca-temporal-v1", "status": "HUMAN_PRIMARY_RUNNING", "human_attempts": 1, "efficacy": "NOT_EVALUATED", "execution_sha256": "05e6251de0463a0cf49d8ac434135d8df18544b3a640d9a6128432dd2eebdd33", "output": "/home/whwovy/task-trca-temporal-source39-v1-primary1-20260909", "start_sha256": "d7be52c88f2918e055395c62c021974504ae0a75863c07399be733aa9e01fde4"},
-    "C2": {"id": "task-trca-pair-s-v1", "status": "SCIENTIFIC_SPEC_FROZEN_BEFORE_C1_HUMAN_FITTING", "human_attempts": 0, "efficacy": "NOT_EVALUATED", "design_sha256": "1561541f541d3cbf9a3b2b5a35e78a409edc4099cff3bddf6b343c0d37109ee3"}
+    "C1": {"id": "task-trca-temporal-v1", "status": "TERMINAL_VALIDITY_FAILURE", "human_attempts": 1, "efficacy": "NOT_EVALUATED", "execution_sha256": "05e6251de0463a0cf49d8ac434135d8df18544b3a640d9a6128432dd2eebdd33", "output": "/home/whwovy/task-trca-temporal-source39-v1-primary1-20260909", "failure_sha256": "4b57bc9bad8cd53eda24f49cbee063e32eba3729ce72d10b5d3b94de2f167c7e"},
+    "C2": {"id": "task-trca-pair-s-v1", "status": "ELIGIBILITY_REVIEW_AFTER_C1_NUMERICAL_FAILURE", "human_attempts": 0, "efficacy": "NOT_EVALUATED", "design_sha256": "1561541f541d3cbf9a3b2b5a35e78a409edc4099cff3bddf6b343c0d37109ee3"}
   },
-  "program_usage": {"human_data_attempts": 1, "human_optimizer_updates_known_completed_at_snapshot": 800, "human_optimizer_updates_charged_at_snapshot": 1600, "distinct_final_query_model_reveals_at_snapshot": 0, "infrastructure_recoveries": 0, "new_worktrees": 2, "attempt_in_progress": true},
+  "program_usage": {"human_data_attempts": 1, "human_optimizer_updates": 24000, "human_optimizer_updates_charged": 24000, "human_seconds": 587.19494638592, "distinct_final_query_model_reveals": 1, "infrastructure_recoveries": 0, "new_worktrees": 2, "attempt_in_progress": false},
   "new_human_artifact_reads": true,
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "MonitorC1primarywithoutintervention; afterfrozenmodels/evaluation runindependentcold andfixedallgateanalysis; noC2beforeeligibilitydecision.",
+  "next": "PreserveclosedC1; finishindependentcause/formulareview thenrecordC2generatedengineeringeligibility; nohumanC2beforeitsownpreflight/manifest.",
   "not_complete": "Program requires auditedcandidateattempts orjustifiedterminalslotclosures andfullprogramreport, notdesign/unittestcompletion."
 }
