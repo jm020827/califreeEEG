@@ -287,11 +287,18 @@ def _fit_head(dimensions, loss_function, regularization, device):
     )
 
 
-def fit_pipeline(cases, regularization):
+def fit_pipeline(cases, regularization, *, backend="scalar"):
     """Fit Q then three matched residuals at one predeclared lambda, 200steps/head."""
     if regularization not in LAMBDAS:
         raise ValueError("Lambda is outside the frozen selection grid")
     cases, ids = _validate_cases(cases, fitting=True)
+    if backend not in ("scalar", "batch"):
+        raise ValueError("Unknown task loss backend")
+    batch = None
+    if backend == "batch":
+        from cfeg.analysis.task_trca_shape_batch import TaskBatch
+
+        batch = TaskBatch(cases)
     pids = [c.participant_id for c in cases]
     q = np.stack([c.q for c in cases])
     m = np.stack([c.m for c in cases])
@@ -308,6 +315,8 @@ def fit_pipeline(cases, regularization):
 
     def q_loss(coefficient):
         logits = _head(qx, coefficient, 0.8)
+        if batch is not None:
+            return batch.loss(logits)
         return torch.stack(
             [_ce(_prior_scores(c, logits[j]), c) for j, c in enumerate(cases)]
         ).mean()
@@ -325,6 +334,8 @@ def fit_pipeline(cases, regularization):
 
         def residual_loss(coefficient, values=values):
             logits = _head(values, coefficient, 0.2) * observed[:, None, :]
+            if batch is not None:
+                return batch.loss(frozen_q + logits)
             return torch.stack(
                 [_ce(_prior_scores(c, frozen_q[j], logits[j]), c) for j, c in enumerate(cases)]
             ).mean()
@@ -401,7 +412,7 @@ def choose_lambda(rows):
     return max(value for value, loss in means.items() if loss <= best + 1e-12)
 
 
-def nested_fit(outer_training_cases, *, outer_evaluation_ids=()):
+def nested_fit(outer_training_cases, *, outer_evaluation_ids=(), backend="scalar", progress=None):
     """Rebuild entire pipeline for each inner fold/lambda; final outer refit."""
     cases, ids = _validate_cases(outer_training_cases, fitting=True)
     if set(ids) & set(outer_evaluation_ids):
@@ -417,7 +428,9 @@ def nested_fit(outer_training_cases, *, outer_evaluation_ids=()):
             replace(c, role="validation") for c in cases if c.participant_id in validation_ids
         )
         for value in LAMBDAS:
-            fitted = fit_pipeline(train, value)
+            if progress is not None:
+                progress({"event": "inner_start", "fold": fold, "lambda": value})
+            fitted = fit_pipeline(train, value, **({"backend": backend} if backend != "scalar" else {}))
             rows.append(
                 {
                     "inner_fold": fold,
@@ -430,8 +443,12 @@ def nested_fit(outer_training_cases, *, outer_evaluation_ids=()):
                     },
                 }
             )
+            if progress is not None:
+                progress({"event": "inner_complete", "fold": fold, "lambda": value})
     selected = choose_lambda(rows)
-    final = fit_pipeline(cases, selected)
+    if progress is not None:
+        progress({"event": "final_refit_start", "lambda": selected})
+    final = fit_pipeline(cases, selected, **({"backend": backend} if backend != "scalar" else {}))
     return final, {
         "selected_lambda": selected,
         "selection_signal": "Q CE only",
