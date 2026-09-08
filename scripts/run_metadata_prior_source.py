@@ -132,6 +132,17 @@ def native_manifest(plan):
         or digest(ORIGINAL_NATIVE / "start.json") != RECOVERY["start_sha256"]
     ):
         raise ValueError("Exact infrastructure recovery receipt required")
+    if root == RECOVERED_NATIVE:
+        native_start, _ = read_json(root / "start.json", manifest["start_sha256"])
+        if (
+            native_start.get("recovery") != RECOVERY
+            or native_start.get("schema") != "cfeg.metadata-prior-source.native-start.v1"
+            or native_start.get("plan_sha256") != PLAN_SHA
+            or native_start.get("study_id") != plan["study_id"]
+            or native_start.get("output_root") != str(root)
+            or native_start.get("status") != "STARTED"
+        ):
+            raise ValueError("Recovered start differs before any metadata access")
     if (
         manifest["status"] != "COMPLETE"
         or manifest["study_id"] != plan["study_id"]
