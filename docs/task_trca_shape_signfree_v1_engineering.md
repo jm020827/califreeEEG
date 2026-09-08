@@ -16,7 +16,8 @@ ENGINEERING_ONLY**이며 사람 학습/최종 query/held60 실행을 허용하�
 고정200step 인공 optimizer를 검증한다. 별도로 이미 노출된 실패 지점 JSON
 `/home/whwovy/task-trca-shape-anchor-failure-diagnostic-v1.json`
 (SHA `86eda34fc11f9e20a3874ef0e952a2aedc8b60e7f908bdd290b84ccf84b1561b`)
-의 S/C/R만 시험한다. 이것은 독립 인공 자료가 아닌 **알려진 실제 실패점 재검산**이다.
+의 S/C/R와 저장된 native anchor·cosine·위치 정보를 시험한다.
+이것은 독립 인공 자료가 아닌 **알려진 실제 실패점 재검산**이다.
 Source NPZ·raw·M 수치·query·held60은 읽지 않으며 실패 pipeline을 재학습하지 않는다.
 조건/seed/학습률/규제량 sweep, 원 anchor threshold 변경, SHAM 제외는 없다.
 

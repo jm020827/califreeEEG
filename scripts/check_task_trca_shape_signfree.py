@@ -8,6 +8,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import stat
 import sys
 import time
 from datetime import datetime, timezone
@@ -158,7 +160,11 @@ def fit_generated(arrays, device):
 
 def check_point(*, cuda):
     # One open, hash-before-decode; bounded bytes and no caller-supplied file path.
-    with POINT.open("rb") as stream:
+    descriptor = os.open(POINT, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, "rb") as stream:
+        identity = os.fstat(stream.fileno())
+        if not stat.S_ISREG(identity.st_mode) or identity.st_size > 1_048_576:
+            raise ValueError("saved failure point must be a bounded regular file")
         raw = stream.read(1_048_577)
     if len(raw) > 1_048_576 or hashlib.sha256(raw).hexdigest() != POINT_SHA:
         raise ValueError("saved failure point does not match the pinned artifact")

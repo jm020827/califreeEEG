@@ -137,6 +137,8 @@ def score_temporal_gram(
     _same_device(x, ("projectors", projectors), ("weights", weights))
     if projectors.shape != (bands, classes, CHANNELS, CHANNELS) or weights.shape != (bands,):
         raise ValueError("projectors/weights shapes must be (bands,classes,8,8)/(bands,)")
+    if (weights <= 0).any():
+        raise ValueError("band weights must be positive; signed refers to correlations")
     roots = torch.linalg.eigvalsh(projectors.detach())
     scale = roots.abs().amax(dim=-1)
     if (roots[..., 0] < -1e-12 * scale).any() or (roots.sum(dim=-1) <= 0).any():

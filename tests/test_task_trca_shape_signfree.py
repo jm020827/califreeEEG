@@ -1,6 +1,8 @@
 """Generated matrices only; never open diagnostic/human artifacts in pytest."""
 
+import importlib.util
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -125,6 +127,18 @@ def test_repeated_lower_roots_allowed_and_top_ties_rejected():
         bad = torch.diag(torch.tensor([0] * 6 + [1, 1 + gap], dtype=D))
         with pytest.raises(ValueError, match="degenerate"):
             bounded_projectors(bad, c, r)
+
+
+def test_dense_repeated_lower_roots_nonzero_r_gradient():
+    c = torch.eye(8, dtype=D)
+    v = torch.arange(1, 9, dtype=D)
+    v = v / v.norm()
+    s = c + 2 * v[:, None] * v[None, :]
+    z = torch.zeros(8, dtype=D, requires_grad=True)
+    assert torch.autograd.gradcheck(lambda zz: bounded_projectors(s, c, shape_prior(zz)), (z,))
+    f = bounded_projectors(s, c, shape_prior(z))
+    grad = torch.autograd.grad(f[0, 0], z)[0]
+    assert grad.abs().max() > 1e-5
 
 
 def test_literal_scores_and_gradients_match_new_gram():
@@ -254,6 +268,9 @@ def test_no_implicit_global_statistics_coercion_and_validation_guards():
     for bad in (f.float(), -f, torch.zeros_like(f), f[:, :1]):
         with pytest.raises(ValueError):
             score_temporal_gram(bad, stats, weights)
+    for bad_weights in (torch.zeros_like(weights), -weights):
+        with pytest.raises(ValueError, match="positive"):
+            score_temporal_gram(f, stats, bad_weights)
     with pytest.raises(ValueError, match="detached"):
         score_temporal_gram(
             f, replace(stats, query_gram=stats.query_gram.requires_grad_()), weights
@@ -267,3 +284,55 @@ def test_rotating_complete_frame_does_not_prove_score_actuation():
     q[:2, :2] = torch.tensor([[0.6, -0.8], [0.8, 0.6]], dtype=D)
     assert (outer(w) - outer(q.unsqueeze(0))).abs().max() > 0.1
     torch.testing.assert_close(outer(w).sum(1), outer(q.unsqueeze(0)).sum(1))
+    g = torch.Generator().manual_seed(20260908)
+    t = torch.randn(8, 1, 8, 17, generator=g, dtype=D)
+    x = torch.randn(3, 1, 8, 17, generator=g, dtype=D)
+    stats = temporal_statistics(t, x)
+    a = score_temporal_gram(outer(w), stats, torch.ones(1, dtype=D))[0]
+    b = score_temporal_gram(outer(q.unsqueeze(0)), stats, torch.ones(1, dtype=D))[0]
+    torch.testing.assert_close(a, b)
+
+
+def test_positive_scaling_and_arbitrary_fixed_filter_offset_invariance():
+    w, t, x, weights = score_arrays()
+    g = torch.Generator().manual_seed(20260908)
+    ts = torch.exp(torch.randn(3, 2, 1, 1, generator=g, dtype=D))
+    xs = torch.exp(torch.randn(4, 2, 1, 1, generator=g, dtype=D))
+    to = torch.randn(3, 2, 8, 1, generator=g, dtype=D)
+    xo = torch.randn(4, 2, 8, 1, generator=g, dtype=D)
+    a = score_temporal_gram(outer(w), temporal_statistics(t, x), weights)[0]
+    b = score_temporal_gram(outer(w), temporal_statistics(t * ts + to, x * xs + xo), weights)[0]
+    torch.testing.assert_close(a, b, atol=2e-14, rtol=0)
+
+
+def load_probe():
+    spec = importlib.util.spec_from_file_location(
+        "signfree_probe",
+        Path(__file__).resolve().parents[1] / "scripts/check_task_trca_shape_signfree.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_point_rejects_bad_hash_before_json_decode(tmp_path, monkeypatch):
+    module = load_probe()
+    point = tmp_path / "generated-invalid.json"
+    point.write_text("not the pinned point")
+    monkeypatch.setattr(module, "POINT", point)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("must not parse an unpinned point")
+
+    monkeypatch.setattr(module.json, "loads", forbidden)
+    with pytest.raises(ValueError, match="pinned"):
+        module.check_point(cuda=False)
+
+
+def test_point_rejects_symlink_without_target_read(tmp_path, monkeypatch):
+    module = load_probe()
+    link = tmp_path / "alias.json"
+    link.symlink_to(tmp_path / "missing-target.json")
+    monkeypatch.setattr(module, "POINT", link)
+    with pytest.raises(OSError):
+        module.check_point(cuda=False)
