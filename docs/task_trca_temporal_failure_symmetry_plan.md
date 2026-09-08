@@ -31,3 +31,23 @@
 
 Query 이후 scorer의 수치 정책을 고쳐 C1을 다시 평가하는 것은 허용된 infrastructure recovery가 아니다.
 이번진단에서도 old/new runtime25pins·실패산출물은 변경하지 않는다.
+
+## 2차 범위 — ISO 재현 실패에 따른 frozen-prior 위치 확인
+
+첫 제한 진단(결과SHA57cbb4838b836d3bdf3351f01b17b069028a7a9e18df9310417ad017519b6703)에서
+C1 ISO와 C2 uniform 모두 통과했다. 최대대칭오차/허용오차비율은 각각.7624/.5326이었다.
+따라서 실패 arm은 아직 확정되지 않았고 C2의 공유실패도 입증되지 않았다. 첫 해석을 고치거나
+진단을 숨기지 않는다. 다음 범위를 두 번째 계산 **전에** 기록한다.
+
+- 같은 이번 source1/2 저장 NPZ에서 keys,s,c 외에 q,m,available,packet5,orders를 추가로 읽는다.
+  이는 이미 C1에서 사용한 저장 prefix 특징이며 원raw/nativearchive/원Mprojection/Grams/labels/query는 안 읽는다.
+- Model0의 고정 Q/scalers/residual coefficients와 outer0의13평가 ID를 사용한다.
+  단일 조건(interface1,N125,k3)의13prefix가 동일 donor partition을 재구성하기 위한 전부다.
+  중복 저장 prefix는 bitexact 일치를 요구한다. 대상 S063 외의 행렬 연산/점수 계산은 하지 않는다.
+- 현재고정CPU float64 prior 산식 그대로 ISO/Q/Q2/QM/SHAM_REFIT/PERMUTED/STALE/MISSING
+  8개R를 계산한다. 단일prefix의5bands×12classes×8arms=최대480H만 체크한다.
+- 이전의 같은1e−12 symmetryguard/SPD/topgap를 사용하고 고정전처리·scaler·head·bound를 바꾸지 않는다.
+  성공/예외와행렬오차만기록하며 분류score/argmax/정확도/새query/학습0이다.
+- CPU1/60초/새출력1MiB, 기존실패·1차진단보존. C1재실행이나C2활성화로세지않는원인감사다.
+- 첫실패arm과해당band/class가 재현돼야 원인위치를확정한다. C2uniform통과는전체C2안정성증거가아니며,
+  C2의공유원인없음여부는독립검토후기록한다. C1과학계약수정은이번프로그램에서하지않는다.
