@@ -1,5 +1,7 @@
 # 현재 자료 우선 — 연구계획 수정과 단일 선택공간 진단
 
+> 2026-09-08 설계 검토 완료: [Metadata의 보정학습 삽입 재검토](metadata_learning_covariance_design_review.md). 목표는 그대로이며, native TRCA에 동일 총량의 Q/Q+M 채널 규제를 주는 후보 하나를 제안했다. V1·context-template도 이미 학습단계 M을 사용했으므로 ‘최초 metadata 학습’이 아니다. 관련 공개 PDF2편 선택 정독·인공 대수 검산 완료, 새 사람 데이터 접근·효능 결과는 0이다. 다음은 proxy·대조군 명세와 순수 합성 구현 검증이며, source-only 입력 준비·실제 평가는 별도 단계다. 아래 완료 결과와 종료 경계는 그대로 보존한다.
+
 > 현재: 명시 승인된 [cold-r1 별도 진단과 독립 검산 완료](native_subset_headroom_cold_r1_results.md).
 > 사후 상한 k3/k5=46.67/56.06%, 실제 Q=36.99/44.21%다. M 정보나 실제 비용 절감의 증거는 아니다.
 > [이전 start-only 실패](native_subset_headroom_source39_results.md)는 그대로 보존했고 동일 attempt 재실행은 없다.

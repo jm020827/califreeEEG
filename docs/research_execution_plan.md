@@ -1,5 +1,7 @@
 # califreeEEG 연구 실행 계획
 
+> 2026-09-08 설계 검토 완료: [Metadata의 보정학습 삽입 재검토](metadata_learning_covariance_design_review.md). 목표는 그대로이며, native TRCA에 동일 총량의 Q/Q+M 채널 규제를 주는 후보 하나를 제안했다. V1·context-template도 이미 학습단계 M을 사용했으므로 ‘최초 metadata 학습’이 아니다. 관련 공개 PDF2편 선택 정독·인공 대수 검산 완료, 새 사람 데이터 접근·효능 결과는 0이다. 다음은 proxy·대조군 명세와 순수 합성 구현 검증이며, source-only 입력 준비·실제 평가는 별도 단계다. 아래 완료 결과와 종료 경계는 그대로 보존한다.
+
 > 2026-09-08 현재 완료: [Headroom cold-r1 진단](native_subset_headroom_cold_r1_results.md)과 독립 수치 검산을 마쳤다. 실제 Q k3/k5=36.99/44.21%, 정답을 아는 사후 상한=46.67/56.06%이며, 이상적 선택도312개 사람×조건 중217개는 관측 grid에서80% 미도달이다. **선택 개선 여지는 있으나 M 효과·실제 보정량 절감을 입증한 것은 아니다.** 전체1561tests PASS, 실패한 이전 start 보존·held60 미개봉. [현재 자료 우선 계획](current_data_first_research_plan.md)의 외부 paired-M 선택적 보강 원칙을 유지한다. 새 learner/추가 조건 탐색은 자동 실행하지 않는다. 아래는 과거 단계 이력이다.
 
 > 2026-09-08 현재 완료: [Known-zero 단일 수정 실제 결과](native_subset_known_zero_source39_results.md)를 개발39명에서 단회 평가하고 독립 전체 검산을 통과했다. 수정 QM−Q는 k3 **0pp**, k5 **+0.01068pp**이며 80% 최초 도달 보정량은312개 사람×조건 모두 같았다. 수정 자체도 k5 정답을 Q2개/QM1개 줄였다. **추가 M 보정비용 절감 미확립으로 이 구현 탐색을 종료한다.** 직접 M 평가1회+기작수정 평가1회 예산을 사용했으며 새 후보/재학습/held60 자동 개봉은 없다. 연구목표는 유지하고 다음 공백은 독립 paired-acquisition 자료와 사전 가설이다. 전체1520tests PASS, 새 독립M자료·외부요청0. 아래는 보존한 이전 단계의 이력이다.
