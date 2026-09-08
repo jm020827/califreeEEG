@@ -1,0 +1,62 @@
+{
+  "status": "ARTIFICIAL_NATIVE_BRIDGE_PASS",
+  "seed": 66473,
+  "cases": [
+    {
+      "k": 3,
+      "offset": 0,
+      "identical_input_shas": {
+        "support": "27e8b8bc5cb20d801a70067e73cc474f407fa9c322ac4f67cbb22a2e03b748a9",
+        "query": "3e49cb07f6cee6b3cdb856a59c5243aed818795b6f52b3faf002d9e020dc0783",
+        "weights": "04c7fc6e8e375e94bdeeb331e12e7969512ca7121f0dba108e87cf585088542e"
+      },
+      "correlation_max_abs_error": 7.771561172376096e-16,
+      "predictions_exact": true,
+      "native_numpy": "1.23.4",
+      "native_python": "3.9.21"
+    },
+    {
+      "k": 5,
+      "offset": 0,
+      "identical_input_shas": {
+        "support": "a3ef0e5827721da05e563c1ebbb98bbf6cafd036710221425562e83b23994aa9",
+        "query": "3e49cb07f6cee6b3cdb856a59c5243aed818795b6f52b3faf002d9e020dc0783",
+        "weights": "04c7fc6e8e375e94bdeeb331e12e7969512ca7121f0dba108e87cf585088542e"
+      },
+      "correlation_max_abs_error": 7.771561172376096e-16,
+      "predictions_exact": true,
+      "native_numpy": "1.23.4",
+      "native_python": "3.9.21"
+    },
+    {
+      "k": 3,
+      "offset": 0.25,
+      "identical_input_shas": {
+        "support": "a0dafa0db89c83d6bad64eca4e7578e5cf254454f7eb46b196d6dfc2213f4055",
+        "query": "fc789a9d63bcc9b0ff003afa73010bfafa55e847256bd092170d2afce333f378",
+        "weights": "04c7fc6e8e375e94bdeeb331e12e7969512ca7121f0dba108e87cf585088542e"
+      },
+      "correlation_max_abs_error": 6.661338147750939e-16,
+      "predictions_exact": true,
+      "native_numpy": "1.23.4",
+      "native_python": "3.9.21"
+    },
+    {
+      "k": 5,
+      "offset": 0.25,
+      "identical_input_shas": {
+        "support": "64eae3820427618c300186f1f2e8fc7d9285aa8459ecc24880ddf3fbc3967b3c",
+        "query": "fc789a9d63bcc9b0ff003afa73010bfafa55e847256bd092170d2afce333f378",
+        "weights": "04c7fc6e8e375e94bdeeb331e12e7969512ca7121f0dba108e87cf585088542e"
+      },
+      "correlation_max_abs_error": 9.992007221626409e-16,
+      "predictions_exact": true,
+      "native_numpy": "1.23.4",
+      "native_python": "3.9.21"
+    }
+  ],
+  "upstream_revision": "3344bd199daf78888e364d9db00ae7d8128d2b5f",
+  "human_data_access": false,
+  "new_preprocessing_validation": false,
+  "scope": "new eta0 wrapper versus actual pinned toolbox on identical pipe-transferred bytes"
+}

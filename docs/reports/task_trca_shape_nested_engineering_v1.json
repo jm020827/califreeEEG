@@ -1,0 +1,30 @@
+{
+  "status": "ARTIFICIAL_NESTED_GRAPH_PASS",
+  "seed": 20260908,
+  "input_sha256": "83e076344fec79bf684844cfe1939884cce2bd33a9f326b6ff99387f58d60cce",
+  "artificial_participants": 6,
+  "conditions_per_participant": 1,
+  "samples": 17,
+  "k": 3,
+  "actual_pipeline_fits": 10,
+  "actual_head_fits": 40,
+  "actual_optimizer_steps": 8000,
+  "cpu_seconds": 80.28701996617019,
+  "selected_lambda": 0.0001,
+  "human_data_access": false,
+  "held60_access": false,
+  "efficacy_established": false,
+  "verified_inner_q_ce_means": {
+    "0.0001": 0.026956189618798202,
+    "0.001": 0.02697131178004585,
+    "0.01": 0.027005536678511643
+  },
+  "persisted_graph_checks": "PASS: root separately recomputed IDs, donor membership, scaler IDs, per-head200 steps, finite traces and participant-weighted Q-only lambda selection; not a score/artifact reconstruction auditor",
+  "full_receipt": "/home/whwovy/task-trca-shape-engineering-v1-vtPDaw/nested.json",
+  "full_receipt_sha256": "e9cf0af288fbe2e54f8f79d6bcce83d320e7a2db84a7fff3df9eca35c3529dbc",
+  "limitations": [
+    "one-condition six-artificial-person CPU graph, not source39 or8condition study",
+    "no outer-evaluation query values",
+    "no independent score/artifact auditor or human efficacy experiment"
+  ]
+}

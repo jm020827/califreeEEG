@@ -31,3 +31,11 @@
   이번 reader는 **인공/메모리 역할 adapter**이며 실제 archive decoder나 사람 입력 guard의 완성으로 부르지 않는다.
 
 실제 완료/검사 수치는 실행 후 append한다. 과거1877tests PASS를 새 learner 검증으로 재사용하지 않는다.
+
+## 완료 overlay
+
+[구현·인공 검증 결과](task_trca_shape_engineering_v1_results.md): leaf 두 개와 root learner/역할 adapter를
+통합했고 신규180/전체2057tests PASS다. CPU4head×200step, RTX4090 forward/gradient parity,
+동일 인공bytes의 실제 native bridge4cases, 인공6명의 전체 nested40head/8000step을 검증했다.
+실제 archive reader·independent score auditor·human cold runner는 아직 없다. 설계JSON은 불변이고
+새 사람 EEG/M/held60 접근0이다. 자세한 통합commit·예산·한계·재현은 결과 문서를 따른다.

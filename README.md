@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-08 학습기·인공 검증 완료: [task-shape 구현 결과](docs/task_trca_shape_engineering_v1_results.md). Q 분류 학습·동결 후 M/Q2/SHAM 잔차, bounded projector, mask-only Q와 참가자 분리 선택을 구현했다. 신규180/전체2057tests PASS, CPU 학습·CUDA forward/gradient 일치·실제 native 인공 bridge·인공6명 중첩8000steps를 확인했다. **사람 실험/metadata 효능 확인은 아니다.** 다음은 실제 역할 제한 reader와 독립 auditor/cold CLI이며 held60은 열지 않았다. 아래는 이전 단계 기록이다.
+
 > 2026-09-08 새 후보 설계 완료: [분류 목표로 학습하는 Q+metadata](docs/task_aligned_trca_shape_v1_design.md), [구현 명세](docs/task_aligned_trca_shape_v1_implementation.md). 원 저보정 목표를 유지하고 source 분류 오차로 Q를 학습·동결한 뒤 작은 M 잔차를 비교한다. 공통 규제의 모든 방향 분모 증가≤10%, Q2/SHAM 대조, 참가자 nested 선택·보정비용·harm·유한 종료 규칙을 명세했다. **설계만 완료했으며 새 학습/사람 실험은0이다.** 다음은 인공 gradient/native/누수 검증을 포함한 구현이며 기존 후보 종료·held60 미개봉을 유지한다. 아래는 이전 단계 기록이다.
 
 > 2026-09-08 후속 기하 진단 완료: [규제가 실제 support 필터를 얼마나 바꿨나](docs/trca_support_geometry_v1_results.md). Metadata를 넣기 전 고정γ=.1만으로 필터 방향이 중앙값 약44.4°/42.3° 바뀌었다. 큰 연산자 변화는 확인했지만 정확도 손실의 인과 원인이나 새 metadata 이득은 입증하지 않았다. 원 후보 종료·held60 보호는 유지하며 새 gamma 탐색/분류 실행은 없다. 아래는 기존 효능 결과와 이전 단계 기록이다.

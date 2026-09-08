@@ -1,5 +1,7 @@
 # califreeEEG 연구 실행 계획
 
+> 2026-09-08 [task-shape core 구현·인공 검증](task_trca_shape_engineering_v1_results.md) 완료. 다음은 실제 archive 역할 제한 reader → 독립 저장 score/판정 auditor → start/freeze/eval cold CLI → 입력·코드·자원 pinning을 갖춘 별도 source39 실행 계약이다. 현재 완료는 인공 검증까지이며 사람 EEG/held60을 열지 않는다. 아래 ‘설계만 완료’는 이전 상태다.
+
 > 2026-09-08 새 후보 설계 완료: [task-aligned Q+M 설계](task_aligned_trca_shape_v1_design.md)와 [구현 계약](task_aligned_trca_shape_v1_implementation.md). 다음 순서는 mask-only 특징/연산자 → nested 분류 learner → 역할 제한 reader → 독립 auditor → 인공·회귀·runtime 검증 → 별도 사람 실행 계약이다. 현재는 **DESIGN_ONLY**, 새 학습·효능 실행0이며 이전 runner를 재개하지 않는다. 기존 후보 종료·held60 보호는 유지한다.
 
 > 2026-09-08 후속 기하 진단 완료: [규제가 실제 support 필터를 얼마나 바꿨나](trca_support_geometry_v1_results.md). Metadata를 넣기 전 고정γ=.1만으로 필터 방향이 중앙값 약44.4°/42.3° 바뀌었다. 큰 연산자 변화는 확인했지만 정확도 손실의 인과 원인이나 새 metadata 이득은 입증하지 않았다. 원 후보 종료·held60 보호는 유지하며 새 gamma 탐색/분류 실행은 없다. 아래는 기존 효능 결과와 이전 단계 기록이다.

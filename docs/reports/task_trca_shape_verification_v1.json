@@ -1,0 +1,32 @@
+{
+  "status": "IMPLEMENTATION_ENGINEERING_VERIFIED",
+  "scope": "core, in-memory role boundaries, artificial learning/gradients/native compatibility only",
+  "base_commit": "15f853cee236fef8e93024d5f112946e1c7d474e",
+  "core_test_revision": "5ff7702b2e9116e757bb56ee6c05ee89f79cb942",
+  "nested_cli_revision": "3e0ffbd21f5cb7ea56a73fd3b9577a8f1311894c",
+  "full_tests": {"passed": 2057, "warnings": 68, "seconds": 239.89},
+  "new_tests": {"passed": 180, "seconds": 7.34},
+  "test_revision_note": "Only the separately executed nested engineering CLI changed during full regression; core/tests unchanged",
+  "code_sha256": {
+    "src/cfeg/analysis/task_trca_shape_operator.py": "e0aab61f200983d83f7b8ff82efe76916e6ccaf3e506b6acd83e9ec1535f0449",
+    "src/cfeg/analysis/task_trca_shape_features.py": "feb77445244e5b6e81c2137176f03ae9d0daf7e34f96fd35c38deaa017ce5ec5",
+    "src/cfeg/analysis/task_trca_shape_learning.py": "f883a84d64501954d755cdee3686780067c3ed31d9ae3c89805bde7adc306ff4",
+    "src/cfeg/analysis/task_trca_shape_inputs.py": "a85d60eac7094aacc07b609bb79f7c8eda5e8f4feb97e845c58593194d3f3f44",
+    "scripts/check_task_trca_shape_engineering.py": "4084d9cb4ac868e763461533b960c26a263f8a9960b4d527395b708467cb5ea8",
+    "scripts/check_task_trca_shape_native_bridge.py": "06e6c8eda66fe965e58541c75f9f9f211b129cd15570338527feb3a77c727a41"
+  },
+  "artifact_sha256": {
+    "docs/reports/task_trca_shape_engineering_v1.json": "81d9949613a8e673e7d994d3c69960be8266159efbca76a8450ae8ea12b5b5bb",
+    "docs/reports/task_trca_shape_native_bridge_v1.json": "d94db69884b2cd027bc5e02849e3c25f39fb1471dbf05b3d0767bc2ac3629b68",
+    "docs/reports/task_trca_shape_nested_engineering_v1.json": "03629a9e769d3e19568122ca15d5d3904b5eea4bda90517c62f73b961b62fbb5"
+  },
+  "preserved_design_sha256": "5e17b2368a84174f008ce31e4c7a3de1836e69b4e5c1570e8722aa6b2c56d696",
+  "preserved_native_sha256": "71f7f54e91b9afaf0f571b75da64d4adb7d36d72dc1fe6c2e0d8afab2425baed",
+  "real_input_reader_implemented": false,
+  "independent_score_artifact_auditor_implemented": false,
+  "human_runner_implemented": false,
+  "human_data_access": false,
+  "held60_access": false,
+  "metadata_efficacy_established": false,
+  "calibration_savings_established": false
+}

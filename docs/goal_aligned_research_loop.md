@@ -1,5 +1,7 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> 2026-09-08 [단일 task-shape 학습 코어 구현](task_trca_shape_engineering_v1_results.md)을 마쳤다. 인공6명에서 전체 nested graph/8000steps, CUDA 수치 일치와 전체2057tests를 통과했으나 metadata 효능 실험은 아니다. 다음은 실제 자료 reader·독립 auditor·별도 실행 계약이다. 인공 선택 λ를 사람 연구의 정답으로 사용하거나 새 window/seed를 효능이 나올 때까지 추가하지 않는다.
+
 > 2026-09-08 후속 설계 완료: [분류 목표에 직접 맞춘 단일 Q+M 후보](task_aligned_trca_shape_v1_design.md). Proxy 예측 대신 source 분류 CE로 학습하며 고정 Q에 작은 M 잔차를 추가한다. 3개 사전 λ/Q-only 선택, 총120head fits 이하, 모든8조건·cost/harm·matched controls 및 음성 종료를 명세했다. **설계 완료이지 실행/효능 검증 완료가 아니다.** 다음은 순수 인공 구현 검증이며 새 eta/window/seed를 성공할 때까지 추가하지 않는다. 이전 후보 결과와 held60 경계는 유지한다.
 
 > 2026-09-08 후속 기하 진단 완료: [규제가 실제 support 필터를 얼마나 바꿨나](trca_support_geometry_v1_results.md). Metadata를 넣기 전 고정γ=.1만으로 필터 방향이 중앙값 약44.4°/42.3° 바뀌었다. 큰 연산자 변화는 확인했지만 정확도 손실의 인과 원인이나 새 metadata 이득은 입증하지 않았다. 원 후보 종료·held60 보호는 유지하며 새 gamma 탐색/분류 실행은 없다. 아래는 기존 효능 결과와 이전 단계 기록이다.
