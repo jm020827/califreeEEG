@@ -19,3 +19,15 @@
 
 독립 감사기는 별도 worktree에서 작성 중이며 통합 후 결과를 검산한다.
 원본/held/기존 종료 산출물과 예전 연구 결론은 변경하지 않는다.
+
+## 실제 native 변환 중 통합 검증
+
+- Export는 clean ed14df5에서 시작했다. 39명 외에는 읽지 않고 새 native 파일만 작성한다.
+- Auditor7206df1을 main5822351로 충돌 없이 통합했다. 별도60개 인공시험 PASS.
+  실제 producer가 만든 인공9명 결과를 독립 auditor가 읽는 교차 통합시험도 통과했다.
+- 첫 전체 회귀검사:1709PASS/3FAIL/14ERROR/68기존warnings,232.30초.
+  실패17개는 모두 기존 V2 외부 fixture의 임시 부모 경로 `cfeg-prior-source.TMPUtA`의
+  `source` 단어가 기존 보호 regex에 차단된 원인이다. 이 검사는 실제 외부 데이터를 열지 않았다.
+  보호장치/기존 tests/과학 설정을 바꾸지 않고 중립 경로로 검사한다.
+- 신규 core/export/audit와 기존 V2 요청 검사를 합쳐133PASS14.69초.
+  실제 자료에서 학습·Q+M outcome은 아직 시작 전이며 native 변환은 진행 중이다.

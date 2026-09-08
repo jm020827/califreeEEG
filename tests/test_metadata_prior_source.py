@@ -359,3 +359,21 @@ print("COLD REAL MATH PASS")
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "COLD REAL MATH PASS" in completed.stdout
+    # Cross-lane check: independent auditor consumes the actual artificial
+    # producer bytes, not a separately handwritten result fixture.
+    spec = importlib.util.spec_from_file_location(
+        "prior_cross_lane_audit", ROOT / "scripts/audit_metadata_prior_source.py"
+    )
+    auditor = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(auditor)
+    auditor.PLAN_SHA256 = plan_sha
+    output = tmp_path / "analysis"
+    with np.load(output / "features.npz", allow_pickle=False) as archive:
+        features = dict(archive)
+    with np.load(output / "scores.npz", allow_pickle=False) as archive:
+        scores = dict(archive)
+    freezes = json.loads((output / "fold-freezes.json").read_text())
+    result = json.loads((output / "result.json").read_text())
+    checked = auditor.verify_results(scores, features, freezes, result, plan)
+    assert checked["rows_checked"] == 342
+    assert checked["selected_fit_replays"] == 210
