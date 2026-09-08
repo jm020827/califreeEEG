@@ -1,5 +1,7 @@
 # califreeEEG 연구 실행 계획
 
+> 2026-09-08 새 후보 설계 완료: [task-aligned Q+M 설계](task_aligned_trca_shape_v1_design.md)와 [구현 계약](task_aligned_trca_shape_v1_implementation.md). 다음 순서는 mask-only 특징/연산자 → nested 분류 learner → 역할 제한 reader → 독립 auditor → 인공·회귀·runtime 검증 → 별도 사람 실행 계약이다. 현재는 **DESIGN_ONLY**, 새 학습·효능 실행0이며 이전 runner를 재개하지 않는다. 기존 후보 종료·held60 보호는 유지한다.
+
 > 2026-09-08 후속 기하 진단 완료: [규제가 실제 support 필터를 얼마나 바꿨나](trca_support_geometry_v1_results.md). Metadata를 넣기 전 고정γ=.1만으로 필터 방향이 중앙값 약44.4°/42.3° 바뀌었다. 큰 연산자 변화는 확인했지만 정확도 손실의 인과 원인이나 새 metadata 이득은 입증하지 않았다. 원 후보 종료·held60 보호는 유지하며 새 gamma 탐색/분류 실행은 없다. 아래는 기존 효능 결과와 이전 단계 기록이다.
 
 > 2026-09-08 실제 실험 종료: [Source39 metadata-prior 결과](metadata_prior_source39_v1_results.md). 39명×8조건의 단일 후보 학습·평가와 독립 검산을 완료했다. QM3−Q3 −0.006677%p, QM5−Q5 0%p이고312개 사람×조건의80% 최초 도달 단계가 모두 같아 보정량 절감은0이다. **이 구현의 metadata 이득 미확립으로 종료**한다. 공통 규제부터 native FULL보다 낮았다는 한계, 실행 복구와 정수 count 보고 정정은 결과 문서에 보존한다. 연구목표는 유지하되 새 후보 튜닝·held60 자동 개봉은 없다. 아래는 이전 단계 기록이다.

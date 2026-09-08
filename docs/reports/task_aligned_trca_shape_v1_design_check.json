@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "date": "2026-09-08",
+  "scope": "design JSON/counts/folds/local links and unchanged native code only; no numerical operator/gradient or EEG test",
+  "outer_eval_sizes": [13, 13, 13],
+  "inner_train_validation_sizes_per_outer": [[17, 9], [17, 9], [18, 8]],
+  "pipeline_fits_max": 30,
+  "head_fits_max": 120,
+  "optimizer_steps_max": 24000,
+  "participant_condition_cells": 312,
+  "queries_per_condition": 48,
+  "correct_for_observed_80pct_attainment": 39,
+  "local_links_checked": 7,
+  "final_new_and_added_local_links_checked": 19,
+  "final_artifact_sha_recheck": "PASS",
+  "workspace_sqlite_quick_check": "ok",
+  "worktrees_preserved": 32,
+  "artifacts": {
+    "configs/analysis/task_aligned_trca_shape_v1_design.json": "5e17b2368a84174f008ce31e4c7a3de1836e69b4e5c1570e8722aa6b2c56d696",
+    "docs/task_aligned_trca_shape_v1_design.md": "31227ea5142e5eca672c70b38c9a170fdd222f862940fc799bd8f5225837d150",
+    "docs/task_aligned_trca_shape_v1_implementation.md": "a98df3d270fc68d9a0994552b1c1ebdbb97167a0e6a8fd3b7a39ad59fac1a4c3"
+  },
+  "native_sha256": "71f7f54e91b9afaf0f571b75da64d4adb7d36d72dc1fe6c2e0d8afab2425baed",
+  "independent_readonly_reviews": ["operator algebra and native score", "data roles and metadata leakage", "conditional estimand and finite stopping"],
+  "reviews_are_not_runtime_tests": true,
+  "new_human_data_reads": 0,
+  "new_fits": 0,
+  "held60_access": false,
+  "full_regression_run_this_turn": false,
+  "reason": "No src/tests/scripts or old scientific config changed; future learner implementation is not verified by past regression results"
+}
