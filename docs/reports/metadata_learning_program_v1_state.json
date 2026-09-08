@@ -4,7 +4,7 @@
   "updated_date_kst": "2026-09-09",
   "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",
   "candidates": {
-    "C1": {"id": "task-trca-temporal-v1", "status": "RUNTIME_INTEGRATED_GENERATED_COMPLETED_PATH_PENDING", "human_attempts": 0, "efficacy": "NOT_EVALUATED"},
+    "C1": {"id": "task-trca-temporal-v1", "status": "READY_FOR_FIRST_MANIFESTED_HUMAN_ATTEMPT", "human_attempts": 0, "efficacy": "NOT_EVALUATED", "prospective_execution_sha256": "05e6251de0463a0cf49d8ac434135d8df18544b3a640d9a6128432dd2eebdd33"},
     "C2": {"id": "task-trca-pair-s-v1", "status": "SCIENTIFIC_SPEC_FROZEN_BEFORE_C1_HUMAN_FITTING", "human_attempts": 0, "efficacy": "NOT_EVALUATED", "design_sha256": "1561541f541d3cbf9a3b2b5a35e78a409edc4099cff3bddf6b343c0d37109ee3"}
   },
   "program_usage": {"human_data_attempts": 0, "human_optimizer_updates": 0, "distinct_final_query_model_reveals": 0, "infrastructure_recoveries": 0, "new_worktrees": 2},
@@ -12,6 +12,6 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Run integrated realthreeouter generatedarchive completedpath and independentcold; fullregression; thenfreezeC1humanmanifest beforehumanaccess.",
+  "next": "Execute alreadyvalidatednewC1humanmanifest once aftercompletedgenerated/cold/full2578PASS; independentcold andfixedallgateanalysis.",
   "not_complete": "Program requires auditedcandidateattempts orjustifiedterminalslotclosures andfullprogramreport, notdesign/unittestcompletion."
 }
