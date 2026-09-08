@@ -37,6 +37,10 @@ No source archive, diagnostic JSON, raw EEG, real numerical M or held60 reads th
   temporal statistics mapping keys(query_gram,template_gram,cross_gram,samples).
   Root evaluation uses an explicit complete evaluation partition, validates no fit IDs,
   deterministic exact-mask/order/condition donor identity; does not consume query labels/block5.
+  Evaluation API uses `EvaluationPartition(states, evaluation_ids, conditions)` with expected
+  IDs/grid supplied from a frozen contract, not inferred from provided states. `evaluate` and
+  `frozen_prior` require keyword `partition=`. Exact expected Cartesian keys must match, so
+  dropping a person/condition cannot turn an intended donor into an allowed singleton.
 - Audit module imports NO producer (learner/features/signfree/operator/evaluation) modules.
   Old independent NumPy audit/helper reuse allowed. API:
   `independent_prior(q,m,available,pipeline_record,arm,donor_m=None,stale_m=None,stale_available=None)`;
@@ -47,7 +51,7 @@ No source archive, diagnostic JSON, raw EEG, real numerical M or held60 reads th
   donors/prior/inner validationCE and Q-onlyselection, validate schema. No claim of independent
   Q15/rawpreprocessing/Adam reproduction. Reject bad schema, altered M/R/score/CE/donor/scaler.
   `summarize(scores[39,2,4,2,10,48,12],a0,coverage,actuation)` preserves previous gates,
-  explicitly maps FULL_NATIVE to the original FULL guard and adds FULL_CENTERED3−QM3
+  explicitly maps FULL_NATIVE to the original FULL guard and adds QM3−FULL_CENTERED3
   noninferiority guard in the correct direction: lowerCI(QM3−FULL_CENTERED3)>−1pp.
   Keep original metadata increment gates; the added centered guard can only demote calibration
   candidate to classification-only, never promote an old failure. Do not rename nulls to zero.
