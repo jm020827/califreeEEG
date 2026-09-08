@@ -29,6 +29,8 @@ PLAN_PATH = SOURCE_ROOT / "configs/analysis/metadata_prior_source39_v1.json"
 PLAN_SHA256 = "ed67cc1f361ed89c37b6f7c5df1e9170b78484e428a5105020485c8c03e3934b"
 RAW_ROOT = Path("/home/whwovy/eeg-data/raw/wearable")
 OUTPUT_ROOT = Path("/home/whwovy/metadata-prior-source39-v1/native")
+RECOVERY_ROOT = Path("/home/whwovy/metadata-prior-source39-v1/native-cold-r1")
+FAILED_START_SHA256 = "0af0f7d02e7a5b31494133fb1a99924bbcc55c7713df49028479552ac15df1c7"
 UPSTREAM_ROOT = Path("/home/whwovy/ssvep-author-compatibility-20260907/upstream")
 PYTHON_PATH = Path("/home/whwovy/ssvep-author-compatibility-20260907/.venv/bin/python")
 SOURCE_IDS = (
@@ -154,8 +156,52 @@ def git(root, *args):
     return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
 
 
+def recovery_record(output, plan):
+    """Bind the one declared infrastructure recovery; never read old NPZ bytes."""
+    if output == OUTPUT_ROOT:
+        return None, 0
+    if output != RECOVERY_ROOT:
+        raise ValueError("Undeclared native recovery path")
+    original = exact_path(OUTPUT_ROOT)
+    expected = {"start.json", *(f"S{subject:03d}.npz" for subject in SOURCE_IDS)}
+    if {entry.name for entry in original.iterdir()} != expected:
+        raise ValueError("Failed native attempt inventory differs; require start plus39NPZ")
+    preserved_bytes = 0
+    for name in sorted(expected):
+        path = exact_path(original / name)
+        info = os.stat(path, follow_symlinks=False)
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1
+            or stat.S_IMODE(info.st_mode) != 0o400
+        ):
+            raise ValueError("Failed native artifacts must remain regular single-link0400")
+        preserved_bytes += info.st_size
+    with open_regular(original / "start.json") as stream:
+        encoded = stream.read()
+    if hashlib.sha256(encoded).hexdigest() != FAILED_START_SHA256:
+        raise ValueError("Failed native start hash differs")
+    start = json.loads(encoded)
+    if (
+        start["plan_sha256"] != PLAN_SHA256
+        or start["source_subject_ids"] != list(SOURCE_IDS)
+        or start["status"] != "STARTED"
+        or start["study_id"] != plan["study_id"]
+        or start["output_root"] != str(OUTPUT_ROOT)
+    ):
+        raise ValueError("Failed native start authority differs")
+    return {
+        "original_root": str(OUTPUT_ROOT),
+        "start_sha256": FAILED_START_SHA256,
+        "preserved_artifact_count": len(SOURCE_IDS),
+        "reason": "infrastructure_terminal_source_rehash_allowlist",
+        "unchanged_plan_sha256": PLAN_SHA256,
+        "actual_native_root": str(RECOVERY_ROOT),
+    }, preserved_bytes
+
+
 def preflight(plan_path, output):
-    if exact_path(plan_path) != PLAN_PATH or exact_path(output) != OUTPUT_ROOT:
+    if exact_path(plan_path) != PLAN_PATH or exact_path(output) not in (OUTPUT_ROOT, RECOVERY_ROOT):
         raise ValueError("Only canonical plan/output paths are permitted")
     if Path(__file__).resolve().parents[1] != SOURCE_ROOT:
         raise RuntimeError("Human export requires the integrated main checkout")
@@ -194,7 +240,8 @@ def preflight(plan_path, output):
         source_hashes[spec["path"]] = actual
     source_hashes["scripts/export_metadata_prior_source.py"] = file_sha256(Path(__file__).resolve())
     source_hashes[str(PLAN_PATH.relative_to(SOURCE_ROOT))] = PLAN_SHA256
-    return plan, {
+    recovery, preserved_bytes = recovery_record(output, plan)
+    provenance = {
         "plan_sha256": PLAN_SHA256,
         "source_commit": git(SOURCE_ROOT, "rev-parse", "HEAD"),
         "source_tree": git(SOURCE_ROOT, "rev-parse", "HEAD^{tree}"),
@@ -207,6 +254,9 @@ def preflight(plan_path, output):
         "workers": 1,
         "blas_threads": 1,
     }
+    if recovery is not None:
+        provenance.update(recovery=recovery, preserved_native_bytes=preserved_bytes)
+    return plan, provenance
 
 
 def import_helper(plan):
@@ -361,6 +411,12 @@ def runtime_guard(output, *, library_roots=()):
     raw_paths = {RAW_ROOT / f"S{subject:03d}.mat" for subject in SOURCE_IDS}
     output_paths = {output / name for name in ("start.json", "result.json")}
     output_paths.update(output / f"S{subject:03d}.npz" for subject in SOURCE_IDS)
+    # These exact immutable helpers are hashed before and after export. They
+    # are never imported/executed by the native exporter; no src tree wildcard.
+    pinned_source_paths = {
+        SOURCE_ROOT / "src/cfeg/analysis/metadata_trca_prior.py",
+        SOURCE_ROOT / "src/cfeg/analysis/metadata_prior_validation.py",
+    }
     roots = tuple(Path(path).resolve() for path in library_roots)
 
     def guard(event, args):
@@ -377,7 +433,13 @@ def runtime_guard(output, *, library_roots=()):
         writing = bool(flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC))
         if writing and path not in output_paths:
             raise RuntimeError("Only new native artifacts may be written")
-        if path in raw_paths or path in output_paths or path == output or path == PLAN_PATH:
+        if (
+            path in raw_paths
+            or path in output_paths
+            or path in pinned_source_paths
+            or path == output
+            or path == PLAN_PATH
+        ):
             exact_path(path)
             return
         # Shared data containers never become authorized by a library root.
@@ -409,7 +471,9 @@ def run(plan_path=PLAN_PATH, output=OUTPUT_ROOT):
     plan, provenance = preflight(plan_path, output)
     began = time.monotonic()
     limit = plan["execution"]["max_seconds_per_stage"]
-    budget = plan["execution"]["budget_bytes"]
+    budget = plan["execution"]["budget_bytes"] - provenance.get("preserved_native_bytes", 0)
+    if budget <= 0:
+        raise ValueError("Preserved failed artifacts consume the total8GiB budget")
     exact_path(output.parent)
     output.parent.mkdir(mode=0o700, exist_ok=True)
     output.mkdir(mode=0o700)

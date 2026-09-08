@@ -262,6 +262,82 @@ def test_guard_denies_network_mutation_escape_and_relative_paths(tmp_path):
         guard("import", ("SSVEPAnalysisToolbox.datasets",))
 
 
+def test_guard_allows_exact_pinned_src_hash_reads_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(EXPORT, "SOURCE_ROOT", ROOT)
+    guard = EXPORT.runtime_guard(tmp_path, library_roots=(ROOT / "scripts",))
+    for name in ("metadata_trca_prior.py", "metadata_prior_validation.py"):
+        path = ROOT / "src/cfeg/analysis" / name
+        guard("open", (str(path), "r", os.O_RDONLY))
+        with pytest.raises(RuntimeError, match="written"):
+            guard("open", (str(path), "w", os.O_WRONLY))
+    for name in ("metadata_trca_prior_synthetic.py", "metadata_calibration_v2.py"):
+        with pytest.raises(RuntimeError, match="Unlisted"):
+            guard("open", (str(ROOT / "src/cfeg/analysis" / name), "r", os.O_RDONLY))
+
+
+def artificial_failed_attempt(plan, tmp_path, monkeypatch):
+    original, recovery = tmp_path / "native", tmp_path / "native-cold-r1"
+    original.mkdir()
+    monkeypatch.setattr(EXPORT, "OUTPUT_ROOT", original)
+    monkeypatch.setattr(EXPORT, "RECOVERY_ROOT", recovery)
+    start = {
+        "plan_sha256": EXPORT.PLAN_SHA256,
+        "source_subject_ids": list(EXPORT.SOURCE_IDS),
+        "status": "STARTED",
+        "study_id": plan["study_id"],
+        "output_root": str(original),
+    }
+    receipt = EXPORT.publish(original / "start.json", start, 65536)
+    monkeypatch.setattr(EXPORT, "FAILED_START_SHA256", receipt["sha256"])
+    for subject in EXPORT.SOURCE_IDS:
+        EXPORT.publish(
+            original / f"S{subject:03d}.npz", {"artificial": np.zeros(1)}, 4096, npz=True
+        )
+    return original, recovery
+
+
+def test_recovery_receipt_hash_inventory_and_preserved_quota(plan, tmp_path, monkeypatch):
+    original, recovery = artificial_failed_attempt(plan, tmp_path, monkeypatch)
+    opened = []
+    real_open = EXPORT.open_regular
+
+    def only_start(path):
+        opened.append(path)
+        assert path == original / "start.json", "Old waveform bytes must not be opened"
+        return real_open(path)
+
+    monkeypatch.setattr(EXPORT, "open_regular", only_start)
+    record, preserved = EXPORT.recovery_record(recovery, plan)
+    assert opened == [original / "start.json"]
+    assert record == {
+        "original_root": str(original),
+        "start_sha256": EXPORT.FAILED_START_SHA256,
+        "preserved_artifact_count": 39,
+        "reason": "infrastructure_terminal_source_rehash_allowlist",
+        "unchanged_plan_sha256": EXPORT.PLAN_SHA256,
+        "actual_native_root": str(recovery),
+    }
+    assert preserved == sum(path.stat().st_size for path in original.iterdir())
+    assert EXPORT.recovery_record(original, plan) == (None, 0)
+    with pytest.raises(ValueError, match="Undeclared"):
+        EXPORT.recovery_record(tmp_path / "native-cold-r2", plan)
+
+
+@pytest.mark.parametrize("problem", ["hash", "extra", "mode", "missing"])
+def test_recovery_rejects_changed_failed_identity(plan, tmp_path, monkeypatch, problem):
+    original, recovery = artificial_failed_attempt(plan, tmp_path, monkeypatch)
+    if problem == "hash":
+        monkeypatch.setattr(EXPORT, "FAILED_START_SHA256", "0" * 64)
+    elif problem == "extra":
+        (original / "result.json").write_text("{}")
+    elif problem == "mode":
+        (original / "S004.npz").chmod(0o600)
+    else:
+        (original / "S004.npz").rename(original / "renamed.npz")
+    with pytest.raises(ValueError):
+        EXPORT.recovery_record(recovery, plan)
+
+
 @pytest.mark.parametrize("fail", [False, True])
 def test_cold_lifecycle_start_before_inputs_manifest_and_no_retry(tmp_path, fail):
     # Only temp paths and artificial arrays. Run the real lifecycle/publication
@@ -274,13 +350,22 @@ spec = importlib.util.spec_from_file_location("export_fixture", sys.argv[1])
 module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
 plan = json.loads(pathlib.Path(sys.argv[2]).read_text())
 root = pathlib.Path(sys.argv[3]); output = root / "native"
+module.SOURCE_ROOT = pathlib.Path(sys.argv[1]).parents[1]
+module.PLAN_PATH = pathlib.Path(sys.argv[2])
 module.SOURCE_IDS = (4,)
 plan["source_subject_ids"] = [4]
 plan["sample_counts"] = [125]
 plan["execution"]["max_seconds_per_stage"] = 30
 plan["execution"]["budget_bytes"] = 16777216
+source_hashes = {
+    plan[name]["path"]: module.file_sha256(module.SOURCE_ROOT / plan[name]["path"])
+    for name in ("native_helper", "operator", "q_helper")
+}
+source_hashes["scripts/export_metadata_prior_source.py"] = module.file_sha256(pathlib.Path(sys.argv[1]))
+source_hashes[str(module.PLAN_PATH.relative_to(module.SOURCE_ROOT))] = module.PLAN_SHA256
+assert len(source_hashes) == 5
 provenance = {"plan_sha256": module.PLAN_SHA256, "source_commit": "a" * 40,
-              "source_tree": "b" * 40, "source_hashes": {},
+              "source_tree": "b" * 40, "source_hashes": source_hashes,
               "helper_sha256": "d" * 64, "upstream_revision": "e" * 40,
               "upstream_pins": {}}
 def preflight(*args):
