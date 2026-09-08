@@ -128,10 +128,62 @@ def test_channel_permutation_is_synchronized(artificial):
     np.testing.assert_allclose(perm, q[:, order], atol=1e-13)
 
 
+def test_missing_donor_cannot_create_a_numeric_residual(artificial):
+    base = syn.LinearModel(np.zeros(6), np.ones(6), np.zeros(6), 0.0)
+    extra = syn.LinearModel(np.ones(2), np.ones(2), np.ones(2), 0.0)
+    models = {"Q": base, "Q2": base, "QM": extra, "SHAM_REFIT": extra}
+    donor = syn.ArtificialParticipant(
+        artificial.eeg, np.full_like(artificial.impedance, np.nan), artificial.oracle_q
+    )
+    priors, proxy = syn.priors_for_participant(artificial, donor, 3, models)
+    for arm in ("SHAM_REFIT", "PERMUTED"):
+        np.testing.assert_array_equal(priors[arm], priors["Q"])
+        np.testing.assert_array_equal(proxy[arm], proxy["Q"])
+
+
+def test_summary_counts_and_descriptive_screen_from_handcrafted_rows():
+    rows = []
+    for scenario in syn.SCENARIOS:
+        for k in syn.BUDGETS:
+            for pid in range(24):
+                for arm in syn.ARMS:
+                    good = scenario == "informative" and arm == "QM"
+                    rows.append(
+                        {
+                            "scenario": scenario,
+                            "k": k,
+                            "participant": pid,
+                            "arm": arm,
+                            "accuracy": 0.75 if good else 0.5,
+                            "proxy_mse": None if arm in ("FULL", "ISO") else 0.1 if good else 0.2,
+                            "predictions": [1 if good else 0] * 24,
+                        }
+                    )
+    summary, contrasts, screen = syn.summarize(rows)
+    assert len(summary) == 72 and len(contrasts) == 24
+    assert screen["status"] == "SYNTHETIC_SCREEN_SUPPORTED"
+    assert not screen["human_promotion"]
+    record = next(
+        r for r in summary if (r["scenario"], r["k"], r["arm"]) == ("informative", 3, "QM")
+    )
+    assert record["help_vs_Q"] == 24 and record["prediction_changes_vs_Q"] == 576
+    for row in rows:
+        if row["arm"] == "QM":
+            row["accuracy"] = 0.5
+    assert syn.summarize(rows)[2]["status"] == "SYNTHETIC_CANDIDATE_NOT_ESTABLISHED"
+
+
 def test_synthetic_modules_have_no_data_loading_imports():
     tree = ast.parse(Path(syn.__file__).read_text())
     names = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    assert not any(name and ("data" in name or "source" in name) for name in names)
+    assert names == {"__future__", "dataclasses", "cfeg.analysis"}
+    imports = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    assert imports == {"numpy"}
     assert "open(" not in Path(syn.__file__).read_text()
 
 

@@ -229,7 +229,7 @@ def priors_for_participant(p: ArtificialParticipant, donor: ArtificialParticipan
     support, packet = p.eeg[:k], p.impedance[:k]
     q = support_features(support, packet, p.oracle_q)
     mf, available = metadata_features(packet)
-    perm, _ = metadata_features(donor.impedance[:k])
+    perm, perm_available = metadata_features(donor.impedance[:k])
     stale, stale_available = metadata_features(np.repeat(packet[:1], k, axis=0))
     base_prediction = models["Q"].predict(q)
     base_prior = op.trace_normalize(np.exp(np.clip(base_prediction, -3, 3)))
@@ -239,8 +239,8 @@ def priors_for_participant(p: ArtificialParticipant, donor: ArtificialParticipan
     residuals = {
         "Q2": (models["Q2"].predict(q), np.ones_like(available)),
         "QM": (models["QM"].predict(mf), available),
-        "SHAM_REFIT": (models["SHAM_REFIT"].predict(perm), available),
-        "PERMUTED": (models["QM"].predict(perm), available),
+        "SHAM_REFIT": (models["SHAM_REFIT"].predict(perm), available & perm_available),
+        "PERMUTED": (models["QM"].predict(perm), available & perm_available),
         "STALE": (models["QM"].predict(stale), stale_available),
         "MISSING": (np.zeros_like(base_prediction), np.zeros_like(available)),
     }
@@ -256,14 +256,30 @@ def summarize(rows: list[dict]) -> tuple[list[dict], list[dict], dict]:
     for scenario in SCENARIOS:
         for k in BUDGETS:
             selected = [r for r in rows if r["scenario"] == scenario and r["k"] == k]
+            q_rows = {r["participant"]: r for r in selected if r["arm"] == "Q"}
             for arm in ARMS:
                 group = [r for r in selected if r["arm"] == arm]
+                differences = np.array(
+                    [r["accuracy"] - q_rows[r["participant"]]["accuracy"] for r in group]
+                )
+                changes = sum(
+                    int(
+                        np.count_nonzero(
+                            np.asarray(r["predictions"]) != q_rows[r["participant"]]["predictions"]
+                        )
+                    )
+                    for r in group
+                )
                 summary.append(
                     {
                         "scenario": scenario,
                         "k": k,
                         "arm": arm,
                         "accuracy": float(np.mean([r["accuracy"] for r in group])),
+                        "help_vs_Q": int((differences > 0).sum()),
+                        "tie_vs_Q": int((differences == 0).sum()),
+                        "harm_vs_Q": int((differences < 0).sum()),
+                        "prediction_changes_vs_Q": changes,
                         "proxy_mse": None
                         if arm in ("FULL", "ISO")
                         else float(np.mean([r["proxy_mse"] for r in group])),
@@ -279,6 +295,14 @@ def summarize(rows: list[dict]) -> tuple[list[dict], list[dict], dict]:
                         "k": k,
                         "comparator": comparator,
                         "accuracy_delta": float(diff.mean()),
+                        "proxy_mse_delta": float(
+                            np.mean(
+                                [
+                                    actual[i]["proxy_mse"] - baseline[i]["proxy_mse"]
+                                    for i in baseline
+                                ]
+                            )
+                        ),
                         "help": int((diff > 0).sum()),
                         "tie": int((diff == 0).sum()),
                         "harm": int((diff < 0).sum()),
@@ -338,6 +362,7 @@ def run_suite() -> dict:
                         scores, _ = op.score_trca(model, query, np.ones(1))
                         predicted = scores.argmax(axis=-1)
                         predictions[arm] = predicted
+                        diagnostics = model.diagnostics
                         if arm == "MISSING":
                             np.testing.assert_array_equal(prior[arm], prior["Q"])
                             np.testing.assert_array_equal(predicted, predictions["Q"])
@@ -356,6 +381,14 @@ def run_suite() -> dict:
                                 "predictions": predicted.tolist(),
                                 "prior": prior[arm].tolist(),
                                 "trace_error": float(np.max(np.abs(prior[arm].sum(-1) - 8))),
+                                "min_denominator_eigenvalue": float(
+                                    np.min(diagnostics["denominator_min_eigenvalues"])
+                                ),
+                                "min_eigen_gap": float(np.min(diagnostics["top_eigenvalue_gaps"])),
+                                "max_denominator_norm_error": float(
+                                    np.max(diagnostics["denominator_norm_errors"])
+                                ),
+                                "penalty_trace": diagnostics["penalty_trace"],
                             }
                         )
     summary, contrasts, screen = summarize(rows)

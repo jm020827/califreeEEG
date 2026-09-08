@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -19,7 +20,13 @@ def run(upstream):
     import numpy as np
     from SSVEPAnalysisToolbox.algorithms.trca import ETRCA
 
-    from cfeg.analysis import metadata_trca_prior as op
+    # Load only this pure module: cfeg.analysis.__init__ exports unrelated pandas
+    # analyses that are intentionally absent from the isolated native environment.
+    module_path = Path(__file__).resolve().parents[1] / "src/cfeg/analysis/metadata_trca_prior.py"
+    spec = importlib.util.spec_from_file_location("prior_operator_fixture", module_path)
+    op = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = op
+    spec.loader.exec_module(op)
 
     rng = np.random.default_rng(66473)
     rows = []
