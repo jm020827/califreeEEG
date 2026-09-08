@@ -1,5 +1,7 @@
 # M-conditioned TRCA prior — synthetic v1 contract
 
+> 2026-09-08 합성 단계 완료: [M-prior v1 실제 합성 결과](metadata_trca_prior_synthetic_v1_results.md). Native-compatible operator와 Q/QM·대조군 구현/검산은 완료했지만, 고정 screen은 **효과 미확립**이다. 주요3시나리오 Q 정확도100%로 분류 ceiling이 있었고, 반복 불일치 예측도 Q만 추가 적합한 Q2가 QM보다 좋았다. 실패 start와 같은 suite의 복구 결과를 모두 보존했다. 새 사람 데이터/held60 접근0이며 난이도·Q 적합의 검증 설계가 다음 검토 대상이다. 결과를 보고 설정을 바꾸거나 사람 실험으로 자동 승격하지 않는다. 아래는 이전 단계 기록이다.
+
 2026-09-08, baseline8b78cd0. User approved the synthetic engineering next step.
 This contract and its JSON are committed **before evaluation on the declared seeds**.
 No human EEG, metadata packets, saved human outcomes, held60, retired inputs,
