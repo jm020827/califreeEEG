@@ -69,6 +69,12 @@ gamma0 prior 불변, uniform delta의 prior 불변1e-12, all-missing exact fallb
 실패하면 코드/식 오류를 설명하고 수정한다. 여러 seed/noise/gamma를 탐색해 성공 fixture를 고르지 않는다.
 통과해도 실제 SSVEP 난이도나 작은 M residual의 평균 효능을 입증하지 않는다.
 
+보조 score 진단은 baseline top-two margin `m`과 전체 class 점수 변화의 최대값 `epsilon`을 기록한다.
+`m > 2*epsilon`이면 baseline 승자의 감소와 경쟁자의 증가를 합쳐도 margin을 닫지 못하므로
+선택이 유지된다. 역은 성립하지 않고 동점/등호에서는 보증하지 않는다.
+이는 engineering 진단 추가이며 새 효능 성공조건이 아니다. v1에는 score vectors가 저장되지 않아
+이 식으로 당시 모든 불변 예측의 원인을 입증했다고 주장할 수 없다.
+
 ## 다음 효능 설계의 경계
 
 이번에 새 realistic generator·효능 seed·임계값을 고르지 않는다. 다음 별도 설계에서는
