@@ -1,5 +1,7 @@
 # califreeEEG 연구 실행 계획
 
+> 2026-09-08 [task-shape 실제 실행 종료](task_trca_shape_source39_v1_results.md): `VALIDITY_FAILURE`. 첫 외부 분할10pipelines는 완료·독립 검산했으나 두 번째 분할의 SHAM 학습이 native 기준 정렬 하한을 위반했다. 같은 실패 지점의 CPU/GPU 재현으로 확인했으며 최종 query·held60 접근0이다. **Metadata 효과 없음이 아니라 효능 미평가**다. 연구목표는 유지하고 다음은 별도 필터 방향·부호 규칙의 수학/인공 검증 설계다. 원 후보 재실행·실패 대조군 제외·threshold 완화·held60 자동 개봉은 없다. 아래는 이전 단계 이력이다.
+
 > 2026-09-08 [task-shape core 구현·인공 검증](task_trca_shape_engineering_v1_results.md) 완료. 다음은 실제 archive 역할 제한 reader → 독립 저장 score/판정 auditor → start/freeze/eval cold CLI → 입력·코드·자원 pinning을 갖춘 별도 source39 실행 계약이다. 현재 완료는 인공 검증까지이며 사람 EEG/held60을 열지 않는다. 아래 ‘설계만 완료’는 이전 상태다.
 
 > 2026-09-08 새 후보 설계 완료: [task-aligned Q+M 설계](task_aligned_trca_shape_v1_design.md)와 [구현 계약](task_aligned_trca_shape_v1_implementation.md). 다음 순서는 mask-only 특징/연산자 → nested 분류 learner → 역할 제한 reader → 독립 auditor → 인공·회귀·runtime 검증 → 별도 사람 실행 계약이다. 현재는 **DESIGN_ONLY**, 새 학습·효능 실행0이며 이전 runner를 재개하지 않는다. 기존 후보 종료·held60 보호는 유지한다.

@@ -1,0 +1,159 @@
+{
+  "schema": "cfeg.task_trca_shape.source39_terminal_report.v1",
+  "terminal": "VALIDITY_FAILURE",
+  "candidate_closed": true,
+  "metadata_efficacy": "NOT_EVALUATED",
+  "calibration_savings": "NOT_EVALUATED",
+  "scientific_attempt": {
+    "status": "VALIDITY_FAILURE",
+    "error_type": "ValueError",
+    "error": "native anchor is nearly C-orthogonal to the leading direction",
+    "state": {
+      "stage": "NESTED_TRAINING",
+      "outer_fold": 1,
+      "query_access_count": 0,
+      "models_frozen": false
+    },
+    "artifacts": {
+      "source0": {
+        "path": "/home/whwovy/task-trca-shape-source39-v1-attempt1/source0.npz",
+        "sha256": "005dc3b36aef0ce05358dc52d69f9274f946f24353eec6426795a09407f93f70",
+        "bytes": 211528298
+      },
+      "model0": {
+        "path": "/home/whwovy/task-trca-shape-source39-v1-attempt1/model0.json",
+        "sha256": "9920006633265781931dbcf7ac5963b46fc9f9ef6d2e2872919d3e48c1119284",
+        "bytes": 2398360
+      },
+      "source1": {
+        "path": "/home/whwovy/task-trca-shape-source39-v1-attempt1/source1.npz",
+        "sha256": "217c37501edfe97ab49567e6341d844a5c4ee942e5463f046c34bafdacc92440",
+        "bytes": 211528298
+      }
+    },
+    "time": "2026-09-08T11:15:52.067284+00:00",
+    "elapsed_seconds": 212.77971175685525,
+    "held60_access": false,
+    "manifest_sha256": "4440bd74192f877b66e1ac05bee04a120eb3da67ae49e30aedf4a3d28ea406a7",
+    "interpretation": "Candidate attempt stopped; no scientific tuning, sample exclusion, or efficacy interpretation of partial results"
+  },
+  "independent_boundary_audit": {
+    "status": "FAILED_ATTEMPT_BOUNDARY_AND_PARTIAL_SOURCE_AUDIT_PASS",
+    "scientific_terminal": "VALIDITY_FAILURE",
+    "manifest_sha256": "4440bd74192f877b66e1ac05bee04a120eb3da67ae49e30aedf4a3d28ea406a7",
+    "start_sha256": "8958839225978ce864f536e9abe2233de2fe8dec04430d5229e5977618c3e871",
+    "failure_sha256": "78e540eb45e93378219127c626437a05acecac46633ae8e1fa37924a079f37ae",
+    "access_sha256": "292035b38ec39262a450e5ceca7ae5b65590c5eda8d9ded37ae62e69e4adcc8b",
+    "events_sha256": "d4eaba05a8a09a7762592a14ede0727983f6185af6e781606e6a05fb02ab21ec",
+    "source_revision": "50654e3f08000c7d81b50d40fb3a5ffaa79f4bb2",
+    "first_fold": {
+      "status": "SOURCE_SELECTION_AUDIT_PASS",
+      "selected_lambda": 0.001,
+      "max_validation_ce_abs_error": 4.884981308350689e-15,
+      "validation_ce_comparisons": 36,
+      "scope": "scalers/donors/200-step traces and independent inner-validation scores; not full independent Adam replay"
+    },
+    "access_events": 1456,
+    "distinct_source_participants": 39,
+    "completed_outer_folds": 1,
+    "completed_pipelines": 10,
+    "completed_heads_at_least": 40,
+    "completed_optimizer_steps_at_least": 8000,
+    "query_or_outcome_access": false,
+    "held60_access": false,
+    "full_cold_evaluation_audit_executed": false,
+    "scope": "exact failure/manifest/partial artifact/access chain and cold first source-fold replay; no final efficacy scores exist",
+    "seconds": 18.287324971985072
+  },
+  "diagnostic": {
+    "status": "FAILURE_POINT_REPRODUCED",
+    "error": "native anchor is nearly C-orthogonal to the leading direction",
+    "seconds": 12.571491625159979,
+    "state": {
+      "head_index": 3,
+      "head": "SHAM_REFIT",
+      "objective_call": 86,
+      "completed_heads": [
+        "Q",
+        "Q2",
+        "QM"
+      ],
+      "coefficient_at_call": [
+        0.5213277932008317,
+        -0.12207082769958785,
+        0.3298163516538043
+      ]
+    },
+    "point": {
+      "case_key": [
+        41,
+        1,
+        188,
+        5
+      ],
+      "band_zero_based": 0,
+      "class_zero_based": 4,
+      "gpu_min_abs_c_cosine": 6.105745921081152e-7,
+      "cpu_abs_c_cosine": 6.105745589974016e-7,
+      "all_cosines_finite": true,
+      "frozen_anchor_min": 0.000001,
+      "gpu_roots": [
+        -0.39105854049163585,
+        -0.2750824418872989,
+        -0.18371232858388833,
+        -0.020598475852999083,
+        0.13463192145826183,
+        0.24101804705149535,
+        0.6381222212645824,
+        0.6451246997404532
+      ],
+      "cpu_roots": [
+        -0.39105854049163574,
+        -0.27508244188729897,
+        -0.18371232858388942,
+        -0.020598475852999044,
+        0.13463192145826092,
+        0.24101804705149552,
+        0.638122221264582,
+        0.6451246997404521
+      ],
+      "c_minimum": 3.2767296483883763,
+      "tau": 0.1843160427218462,
+      "r": [
+        0.8849055442476713,
+        1.2191044921449428,
+        0.8946286046701648,
+        1.5005888852827287,
+        0.8968640378907369,
+        0.8806396829580028,
+        0.8559264711147359,
+        0.8673422816910171
+      ],
+      "independent_cpu_confirms_threshold_failure": true
+    },
+    "source_sha256": "217c37501edfe97ab49567e6341d844a5c4ee942e5463f046c34bafdacc92440",
+    "failure_sha256": "78e540eb45e93378219127c626437a05acecac46633ae8e1fa37924a079f37ae",
+    "scope": "one fixed failure-only source-statistic replay; no completed model published, no query/outcome/new candidate",
+    "candidate_terminal_unchanged": "VALIDITY_FAILURE",
+    "held60_access": false,
+    "raw_input_access": false,
+    "no_threshold_or_scientific_setting_changes": true
+  },
+  "artifact_pins": {
+    "failure_sha256": "78e540eb45e93378219127c626437a05acecac46633ae8e1fa37924a079f37ae",
+    "boundary_audit_sha256": "d93575ac15604e55c9d104ff70f09aa33900d07b974456f9784a63d279c422b7",
+    "diagnostic_sha256": "86eda34fc11f9e20a3874ef0e952a2aedc8b60e7f908bdd290b84ccf84b1561b"
+  },
+  "verification": {
+    "pre_execution_full_suite": 2213,
+    "full_seconds": 251.86,
+    "post_failure_artificial_tests": 3,
+    "post_failure_full_suite_rerun": false
+  },
+  "limitations": [
+    "No complete three-fold fit or final query/accuracy/cost outcomes exist.",
+    "Failure-only replay repeated an existing source-training calculation, not a new outcome candidate; its 685 optimizer updates are additional diagnostic work.",
+    "Cold final-score/terminal auditor was not exercised on human evaluation artifacts because none were created.",
+    "This does not establish metadata inefficacy, insufficient data, or a CUDA defect."
+  ]
+}

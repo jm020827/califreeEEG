@@ -1,5 +1,7 @@
 # 현재 자료 우선 — 연구계획 수정과 단일 선택공간 진단
 
+> 2026-09-08 [task-shape 실제 실행 종료](task_trca_shape_source39_v1_results.md): `VALIDITY_FAILURE`. 첫 외부 분할10pipelines는 완료·독립 검산했으나 두 번째 분할의 SHAM 학습이 native 기준 정렬 하한을 위반했다. 같은 실패 지점의 CPU/GPU 재현으로 확인했으며 최종 query·held60 접근0이다. **Metadata 효과 없음이 아니라 효능 미평가**다. 연구목표는 유지하고 다음은 별도 필터 방향·부호 규칙의 수학/인공 검증 설계다. 원 후보 재실행·실패 대조군 제외·threshold 완화·held60 자동 개봉은 없다. 아래는 이전 단계 이력이다.
+
 > 2026-09-08 [task-shape 인공 구현 검증](task_trca_shape_engineering_v1_results.md)까지 완료했다. 기존39명에 새 방법을 실행한 것은 아니며 새 data 요청도 없었다. 다음 병목은 실제 입력 역할 경계·독립 검산·실행 계약이다. 기존 자료를 좁은 개발용으로 사용하는 원칙과 독립 paired-acquisition 자료의 확증/일반화 역할을 구분한다.
 
 > 2026-09-08 후속 설계: [task-aligned Q+M](task_aligned_trca_shape_v1_design.md)를 한 후보로 명세했다. 기존39명은 추후 좁은 개발 평가에 쓸 수 있으나 반복 노출을 독립 확증으로 바꾸어 부르지 않는다. 새 데이터 요청은 이번 구현 전제조건이 아니다. **이번에는 설계만 완료**, 새 EEG/M 접근·학습0; 다음은 인공 구현 검증이다. 외부 paired-acquisition 자료의 일반화 보강 가치는 남고 held60은 자동 개봉하지 않는다.

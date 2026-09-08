@@ -95,3 +95,13 @@ pins15 implementation dependencies, native input provenance, the exact old
 design hash and all runtime/evidence limits. No final query can be read before
 all3 models and their selection/source records are hashed in globalfreeze.
 This checkpoint precedes the first actual input read of the new candidate.
+
+## Terminal overlay
+
+[실제 결과](task_trca_shape_source39_v1_results.md): source39 attempt는212.780초 뒤
+outer1/inner0의SHAM 학습 중 native-anchor 정렬 하한 위반으로 VALIDITY_FAILURE 종료했다.
+첫10pipelines만 완료했으며 final query/globalfreeze/score/result는 없다. 추가로 한 번의
+실패-only source-statistic 재현(12.571초,새효능평가 아님)에서 finite Ccosine6.1057e−7을
+독립CPU도 확인했다. 별도 실패경계/첫sourcefold cold 감사18.287초PASS,1456access exact,
+held60/query0. 전체 완료-path cold score audit를 실제 자료에서 실행했다고 주장하지 않는다.
+진단/실패감사 추가3인공tests PASS. 원 과학/실행pins는 그대로이며 이후 코드는 별도 진단만이다.

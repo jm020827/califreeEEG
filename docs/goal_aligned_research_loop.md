@@ -1,5 +1,7 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> 2026-09-08 [task-shape 실제 실행 종료](task_trca_shape_source39_v1_results.md): `VALIDITY_FAILURE`. 첫 외부 분할10pipelines는 완료·독립 검산했으나 두 번째 분할의 SHAM 학습이 native 기준 정렬 하한을 위반했다. 같은 실패 지점의 CPU/GPU 재현으로 확인했으며 최종 query·held60 접근0이다. **Metadata 효과 없음이 아니라 효능 미평가**다. 연구목표는 유지하고 다음은 별도 필터 방향·부호 규칙의 수학/인공 검증 설계다. 원 후보 재실행·실패 대조군 제외·threshold 완화·held60 자동 개봉은 없다. 아래는 이전 단계 이력이다.
+
 > 2026-09-08 [단일 task-shape 학습 코어 구현](task_trca_shape_engineering_v1_results.md)을 마쳤다. 인공6명에서 전체 nested graph/8000steps, CUDA 수치 일치와 전체2057tests를 통과했으나 metadata 효능 실험은 아니다. 다음은 실제 자료 reader·독립 auditor·별도 실행 계약이다. 인공 선택 λ를 사람 연구의 정답으로 사용하거나 새 window/seed를 효능이 나올 때까지 추가하지 않는다.
 
 > 2026-09-08 후속 설계 완료: [분류 목표에 직접 맞춘 단일 Q+M 후보](task_aligned_trca_shape_v1_design.md). Proxy 예측 대신 source 분류 CE로 학습하며 고정 Q에 작은 M 잔차를 추가한다. 3개 사전 λ/Q-only 선택, 총120head fits 이하, 모든8조건·cost/harm·matched controls 및 음성 종료를 명세했다. **설계 완료이지 실행/효능 검증 완료가 아니다.** 다음은 순수 인공 구현 검증이며 새 eta/window/seed를 성공할 때까지 추가하지 않는다. 이전 후보 결과와 held60 경계는 유지한다.

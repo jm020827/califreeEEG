@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-08 [task-shape 실제 실행 종료](task_trca_shape_source39_v1_results.md): `VALIDITY_FAILURE`. 첫 외부 분할10pipelines는 완료·독립 검산했으나 두 번째 분할의 SHAM 학습이 native 기준 정렬 하한을 위반했다. 같은 실패 지점의 CPU/GPU 재현으로 확인했으며 최종 query·held60 접근0이다. **Metadata 효과 없음이 아니라 효능 미평가**다. 연구목표는 유지하고 다음은 별도 필터 방향·부호 규칙의 수학/인공 검증 설계다. 원 후보 재실행·실패 대조군 제외·threshold 완화·held60 자동 개봉은 없다. 아래는 이전 단계 이력이다.
+
 > 2026-09-08 구현 상태: [task-shape 학습기·인공 검증 완료](task_trca_shape_engineering_v1_results.md). 신규180/전체2057tests PASS, 인공200step 학습·RTX4090 forward/backward parity·native bridge·인공6명 nested8000steps를 확인했다. 원 과학 선택 JSON은 불변이다. **새 사람 실험0**, 실제 source39 reader·독립 score auditor·별도 실행 manifest는 남아 있다. 기존 metadata 이득 미확립과 held60 보호는 유지한다.
 
 > 2026-09-08 새 후보 설계 완료: [분류 목표로 학습하는 Q+metadata](task_aligned_trca_shape_v1_design.md), [구현 명세](task_aligned_trca_shape_v1_implementation.md). Q를 source 분류 오차로 학습·동결하고 bounded M 잔차를 추가하는 후보 하나다. 공통 mass/C 정규화·분모 변화≤10%·Q2/SHAM·참가자 nested 선택·비용/harm를 고정했다. **DESIGN_ONLY, 새 학습/사람 실험0.** 다음은 인공 검증을 포함한 구현이며 별도 실행 manifest 전 사람 입력/held60 접근은 없다. 원 부정 결과와 아래 역사 기록은 유지한다.
