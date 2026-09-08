@@ -1,5 +1,8 @@
 # Headroom cold-r1 — 승인된 별도 실행, 과학설계 불변
 
+> 완료: [실제 결과·독립 검산](native_subset_headroom_cold_r1_results.md), [전체 집계](native_subset_headroom_cold_r1_tables.md).
+> 이 실행은 종료됐다. 아래는 사전에 고정한 실행 계약이며 추가 실행 권한이 아니다.
+
 2026-09-08 사용자 ‘응’은 ‘실패 기록을 보존하고 수정 코드로 별도 진단 실행1회’에 대한 승인이다.
 이 문서는 [이전 start-only 실패](native_subset_headroom_source39_results.md)의 미승인 상태를
 이 별도 실행에 한해 전망적으로 대체한다. 옛 시작/과학계약/실패 판정은 그대로 보존한다.

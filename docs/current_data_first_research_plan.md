@@ -1,8 +1,9 @@
 # 현재 자료 우선 — 연구계획 수정과 단일 선택공간 진단
 
-> 실행 상태: [headroom 단회 시작 후 NPZ cold-start 오류로 종료](native_subset_headroom_source39_results.md).
-> 두 입력은 읽었으나 새 oracle/BA 집계는0이다. 아래는 당시 고정한 설계이며 완료 결과를 뜻하지 않는다.
-> 인프라 수정은 인공검증했지만 동일 attempt를 재실행하지 않았다.
+> 현재: 명시 승인된 [cold-r1 별도 진단과 독립 검산 완료](native_subset_headroom_cold_r1_results.md).
+> 사후 상한 k3/k5=46.67/56.06%, 실제 Q=36.99/44.21%다. M 정보나 실제 비용 절감의 증거는 아니다.
+> [이전 start-only 실패](native_subset_headroom_source39_results.md)는 그대로 보존했고 동일 attempt 재실행은 없다.
+> 아래 과학설계를 바꾸지 않고 새 실행 신원만 분리했다. 이번 진단은 종료하고 새 learner는 자동 추가하지 않는다.
 
 2026-09-08 사용자 ‘응 그렇게하자’ 승인. 연구목표는 새 사용자의 적은 labeled SSVEP 보정이며,
 acquisition metadata는 이를 위한 수단이다. **새 독립 paired-M 확보를 모든 후속 연구의 필수 입장 조건으로 두지 않는다.**

@@ -1,5 +1,8 @@
 # 현재 자료 선택공간 진단 — 실행 오류 종료, 새 과학 결과 없음
 
+> 후속 상태: 사용자 명시 승인 후 [별도 cold-r1 실행이 완료됐다](native_subset_headroom_cold_r1_results.md).
+> 아래는 **처음 실패한 attempt만의** 변경 없는 기록이다. 이 start를 지우거나 재사용하지 않았다.
+
 2026-09-08. 상태: **infrastructure-inconclusive / start-only**.
 연구계획 정정은 완료했지만, 실제 headroom 진단은 계산 전에 중단됐다.
 상한이 낮거나 metadata 가설이 실패했다는 결과가 아니다.
