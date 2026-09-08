@@ -91,7 +91,7 @@ class ForbiddenArray:
 
 
 def test_frozen_partition_completeness_and_donor_before_query_access(generated):
-    model, states, partition, source, bundles, frequencies, weights = generated
+    model, states, partition, _source, bundles, frequencies, weights = generated
     for incomplete in (states[:1], states[:-1]):
         with pytest.raises(PermissionError, match="frozen expected"):
             ev.evaluate(
@@ -110,7 +110,7 @@ def test_frozen_partition_completeness_and_donor_before_query_access(generated):
 
 def test_numeric_m_changes_do_not_change_q(generated):
     model, states, partition, _, bundles, frequencies, weights = generated
-    pid, x, y, packet = bundles[2]
+    pid, x, _y, packet = bundles[2]
     altered = ev.support_state(pid, 0, 0, x, packet * 3 + 7, frequencies, weights)
     changed = replace(partition, states=(altered, *states[1:]))
     np.testing.assert_array_equal(states[0].q, altered.q)
@@ -164,6 +164,31 @@ def test_packed_source_schema_and_missing_padding(generated):
     assert packed["packet5"].shape == (2, 5, 8)
     assert np.isnan(packed["packet5"][:, 3:]).all()
     assert "query_mean" not in packed and "template_mean" not in packed
+
+
+def test_native_model_and_returned_filters_are_immutable(generated):
+    model, states, partition, _, bundles, _, _ = generated
+    state = states[0]
+    before = state.model.filters.copy()
+    for array in (state.model.filters, state.model.templates):
+        with pytest.raises(ValueError):
+            array.flat[0] = 17
+        with pytest.raises(ValueError):
+            array.flags.writeable = True
+    out = ev.evaluate(model, state, np.tile(bundles[2][2], (4, 1, 1, 1)), partition=partition)
+    with pytest.raises(ValueError):
+        out["native_filters"].flat[0] = 17
+    np.testing.assert_array_equal(state.model.filters, before)
+
+
+def test_pack_rejects_bad_role_duplicate_or_sample_count(generated):
+    source = tuple(generated[3])
+    with pytest.raises(PermissionError):
+        ev.pack_cases((replace(source[0], role="evaluation"),))
+    with pytest.raises(ValueError, match="Duplicate"):
+        ev.pack_cases((source[0], source[0]))
+    with pytest.raises(ValueError):
+        ev.pack_cases((replace(source[0], samples=23),))
 
 
 @pytest.mark.parametrize("pid", [True, 0, 1.5])

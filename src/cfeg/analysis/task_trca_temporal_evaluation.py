@@ -101,6 +101,9 @@ def support_state(pid, interface, order, support, packet, frequencies, weights):
     if weights.shape != (5,) or np.any(weights <= 0):
         raise ValueError("Positive native weights[5] required")
     model = native.fit_trca(x, np.ones((5, 8)), 0)
+    model = native.TrcaModel(
+        learn._readonly(model.filters), learn._readonly(model.templates), dict(model.diagnostics)
+    )
     pairs = [[native.trca_matrices(x[:, cls, b]) for cls in range(12)] for b in range(5)]
     s = np.array([[p[0] for p in band] for band in pairs])
     c = np.array([[p[1] for p in band] for band in pairs])
@@ -173,7 +176,11 @@ def _partition(pipeline, state, partition):
     if any(g != grids[0] for g in grids):
         raise ValueError("Evaluation partition requires a complete common grid")
     identities = {}
+    orders = {}
     for s in states:
+        if s.participant_id in orders and orders[s.participant_id] != s.order:
+            raise ValueError("Evaluation participant acquisition order differs across conditions")
+        orders[s.participant_id] = s.order
         key = s.participant_id, s.interface, s.k
         if key in identities:
             previous = identities[key]
@@ -182,6 +189,14 @@ def _partition(pipeline, state, partition):
             ):
                 raise ValueError("Evaluation metadata differs across windows")
         identities[key] = s
+    for (pid, interface, k), current in identities.items():
+        longer = identities.get((pid, interface, 5))
+        if (
+            k == 3
+            and longer is not None
+            and not np.array_equal(current.packet, longer.packet[:3], equal_nan=True)
+        ):
+            raise ValueError("Evaluation budgets must share the same metadata prefix")
     rows = sorted((s for s in states if s.condition == state.condition), key=lambda s: s.key)
     mapping = features.donor_map(
         [s.participant_id for s in rows],
@@ -353,9 +368,7 @@ def pipeline_from_record(record):
 
 def pack_cases(cases):
     """Detached temporal sufficient statistics for independent generated-file audit."""
-    cases = tuple(sorted(cases, key=lambda c: c.key))
-    if not cases or any(not isinstance(c, learn.TaskCase) for c in cases):
-        raise ValueError("New temporal TaskCase sequence required")
+    cases, _ = learn._validate_cases(cases)
     if any(not isinstance(c.statistics, temporal.TemporalGramStatistics) for c in cases):
         raise ValueError("Global statistics cannot be packed as temporal")
     result = {
