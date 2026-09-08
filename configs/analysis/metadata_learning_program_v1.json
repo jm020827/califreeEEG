@@ -29,7 +29,7 @@
       "slot": "C2",
       "id": "task-trca-pair-s-v1",
       "design_path": "configs/analysis/task_trca_pair_s_v1_design.json",
-      "design_sha256": "c9e8c5087b9a296bfb3f0d61cff7b086c89f2e86ba275f3a76bc27acac4d5aa9",
+      "design_sha256": "1561541f541d3cbf9a3b2b5a35e78a409edc4099cff3bddf6b343c0d37109ee3",
       "mechanism": "Task-trained positive normalized support-block-pair weights alter ONLY TRCA cross-trial numerator S; retain block-resolved M, fixed unweighted C and uniform template and common temporal scorer. Not a template-only repeat or larger C1 ridge.",
       "order": 2,
       "activation": "C1 valid audited result notfullcalibrationcandidate; or C1numericalfailure explicitly audited and C2 shares no unresolved causal defect. No inference thatC1failure favorsC2. C2 ownmathematicalspec mustprecedeC1humanfitting and ownexecutionmanifest/generatedpreflight mustprecedeC2humanrun.",

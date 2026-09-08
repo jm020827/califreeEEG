@@ -22,7 +22,7 @@
     "numerator": "d=(u-mean(u))/mean(u); S=S0+sum_e(d_e*A_e). No detacheduniformbranch. Algebraically d=n*p-1; exactlyzerocorrection atuniformlogits.",
     "pair_mass": "p>0,sum(p)=1,max(p)/min(p)<=2; 1/(2*n-1)<=p<=2/(n+1)",
     "residual_weight_ratio": "2^(-.2)<=p_QM/p_Q<=2^(.2)",
-    "normalization": "L=chol(C); H=L^-1*S*L^-T; K=L^-T*Ptop(H)*L^-1; F=K/tr(C*K); J=sumclassF; first-orderlogit/Sgradient",
+    "normalization": "L=chol(C); H=L^-1*S*L^-T; K=L^-T*Ptop(H)*L^-1; F=K/tr(C @ K), where tr(C @ K)=sum_ij(C_ij*K_ji); J=sumclassF; first-orderlogit/Sgradient",
     "topgap": "leadinggap>1e-10*max(1,maxabs(eigenvalues)); CstrictSPD; samefloat64symmetry andpositiveprojectedtemporalvarianceguards asC1; nofallback/jitter/rescue",
     "not_guaranteed": "Fixedpairmassdoesnotfixtrace(S), direction/angle, effectiveindependenttrials, nativeensembleequivalence oraccuracy. DoNOTnormalizetrace(S)."
   },
@@ -67,6 +67,7 @@
     "missing_arm": "retainsoriginalsharedmask andreturnsfrozenQ exactly",
     "partial_missing_note": "pairnormalizationcanchangeunavailablepairsweights; onlywholemissingM hasexactQfallback",
     "stale": "repeatblock0valueswhilepreservingoriginalprefixmask; originallyunobservedcellsremainmissing; channelmissingatblock0 hasnostalenumericvalue; recordstalepairavailability separately",
+    "stale_interpretation": "Repeatingblock0 makes bothrawM2features zero onavailablepairs. Allavailablepairs shareconstantstandardizedresidual that cancels mathematically underpairnormalization (floatingpointroundoffpossible); partialavailability canactuatethroughgating. Testsremovalofwithinprefixvariation, notindependenttimingspecificity. OnlyMISSINGhasexplicitbitexactQfallback.",
     "not_physical": "Relativeblocklevel/discrepancy, notamplifiernoisevariance orhigher-is-worsemonotonicprior"
   },
   "scalers": {
