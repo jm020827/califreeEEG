@@ -16,7 +16,15 @@ def make_case(pid=1001, role="fit", *, missing=False):
     source = prototype + rng.normal(size=prototype.shape)
     packet = np.full((3, 8), np.nan) if missing else rng.uniform(0, 20, (3, 8))
     return learning.make_task_case(
-        pid, 0, 0, support, packet, np.linspace(9, 14.5, 12), source, role=role
+        pid,
+        0,
+        0,
+        support,
+        packet,
+        np.linspace(9, 14.5, 12),
+        source,
+        role=role,
+        weights=np.ones(5),
     )
 
 
@@ -79,7 +87,9 @@ def test_eval_builder_rejects_before_array_conversion():
             raise AssertionError("Evaluation block5 was touched")
 
     with pytest.raises(PermissionError):
-        learning.make_task_case(1, 0, 0, Poison(), Poison(), Poison(), Poison(), role="evaluation")
+        learning.make_task_case(
+            1, 0, 0, Poison(), Poison(), Poison(), Poison(), role="evaluation", weights=np.ones(5)
+        )
 
 
 def test_choose_lambda_ignores_all_metadata_validation_outcomes():
@@ -98,6 +108,42 @@ def test_choose_lambda_ignores_all_metadata_validation_outcomes():
         r["validation_ce"]["Q"] = {0.0001: 0.5, 0.001: 0.7, 0.01: 0.9}[r["lambda"]]
         r["validation_ce"]["QM"] = -1e20 if r["lambda"] == 0.01 else 1e20
     assert learning.choose_lambda(rows) == 0.0001
+
+
+def test_prediction_donor_roles_cannot_mix_or_leak(trained):
+    cases, model = trained
+    with pytest.raises(PermissionError, match="Mixed roles"):
+        learning.predict(model, (cases[0], replace(cases[1], role="validation")), "SHAM_REFIT")
+    with pytest.raises(PermissionError, match="overlap"):
+        learning.predict(model, tuple(replace(c, role="validation") for c in cases), "PERMUTED")
+    with pytest.raises(PermissionError, match="complete fitted donor"):
+        learning.predict(model, (cases[0],), "SHAM_REFIT")
+    with pytest.raises(ValueError):
+        model.q.coefficients.setflags(write=True)
+
+
+@pytest.mark.parametrize("field", ["support", "packet", "source", "weights"])
+@pytest.mark.parametrize("dtype", [complex, str, bool, object])
+def test_builder_rejects_dtype_before_coercion(field, dtype):
+    rng = np.random.default_rng(8831)
+    values = {
+        "support": rng.normal(size=(3, 12, 5, 8, 17)),
+        "packet": np.ones((3, 8)),
+        "source": rng.normal(size=(12, 5, 8, 17)),
+        "weights": np.ones(5),
+    }
+    values[field] = values[field].astype(dtype)
+    with pytest.raises(ValueError, match="real"):
+        learning.make_task_case(
+            1,
+            0,
+            0,
+            values["support"],
+            values["packet"],
+            np.linspace(9, 14.5, 12),
+            values["source"],
+            weights=values["weights"],
+        )
 
 
 def test_nested_entire_fit_graph_rebuilt_with_disjoint_people(monkeypatch, trained):

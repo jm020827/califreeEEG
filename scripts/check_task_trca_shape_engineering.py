@@ -52,7 +52,7 @@ def run(*, cuda=False):
         b"".join(v.astype("<f8").tobytes() for v in (support, source, packet))
     ).hexdigest()
     arguments = (10001, 0, 0, support, packet, np.linspace(9, 14.5, 12), source)
-    case = learning.make_task_case(*arguments)
+    case = learning.make_task_case(*arguments, weights=np.ones(5))
     start = time.perf_counter()
     cpu = device_probe(case)
     cpu_time = time.perf_counter() - start
@@ -74,7 +74,7 @@ def run(*, cuda=False):
         if not torch.cuda.is_available():
             raise RuntimeError("Explicit CUDA engineering check requires available CUDA")
         torch.cuda.reset_peak_memory_stats()
-        gpu_case = learning.make_task_case(*arguments, device="cuda")
+        gpu_case = learning.make_task_case(*arguments, device="cuda", weights=np.ones(5))
         torch.cuda.synchronize()
         start = time.perf_counter()
         actual = device_probe(gpu_case)
@@ -130,5 +130,34 @@ def run(*, cuda=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cuda", action="store_true")
-    result = run(cuda=parser.parse_args().cuda)
-    print(json.dumps(result, indent=2, allow_nan=False))
+    parser.add_argument("--output", type=Path, help="Exclusive new engineering receipt file")
+    args = parser.parse_args()
+    if args.output is not None and args.output.exists():
+        raise FileExistsError("Engineering receipts cannot be overwritten")
+    try:
+        result = run(cuda=args.cuda)
+    except Exception as error:
+        if args.output is not None:
+            with args.output.open("x") as stream:
+                json.dump(
+                    {
+                        "status": "ENGINEERING_FAILURE",
+                        "error_type": type(error).__name__,
+                        "error": str(error),
+                        "seed": 20260908,
+                        "human_data_access": False,
+                    },
+                    stream,
+                    indent=2,
+                    allow_nan=False,
+                )
+        raise
+    if args.output is not None:
+        with args.output.open("x") as stream:
+            json.dump(result, stream, indent=2, allow_nan=False)
+        summary = {key: value for key, value in result.items() if key != "fit"}
+        summary["full_receipt"] = str(args.output.resolve())
+        summary["full_receipt_sha256"] = hashlib.sha256(args.output.read_bytes()).hexdigest()
+        print(json.dumps(summary, indent=2, allow_nan=False))
+    else:
+        print(json.dumps(result, indent=2, allow_nan=False))

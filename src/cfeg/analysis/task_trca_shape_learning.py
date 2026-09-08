@@ -25,8 +25,7 @@ RESIDUAL_ARMS = ("Q2", "QM", "SHAM_REFIT")
 
 def _readonly(value, dtype=np.float64):
     result = np.array(value, dtype=dtype, copy=True)
-    result.setflags(write=False)
-    return result
+    return np.frombuffer(result.tobytes(), dtype=result.dtype).reshape(result.shape)
 
 
 @dataclass(frozen=True)
@@ -69,7 +68,7 @@ def make_task_case(
     *,
     role="fit",
     labels=None,
-    weights=None,
+    weights,
     device="cpu",
 ):
     """Construct one source/validation case from already role-limited arrays.
@@ -79,20 +78,27 @@ def make_task_case(
     """
     if role not in ("fit", "validation"):
         raise PermissionError("Task supervision only belongs to source fit/validation")
-    if type(participant_id) is not int:
-        raise ValueError("Participant ID must be an integer")
+    if type(participant_id) is not int or participant_id <= 0:
+        raise ValueError("Participant ID must be a positive integer")
+    if np.asarray(support).dtype.kind not in "iuf" or np.asarray(packet).dtype.kind not in "iuf":
+        raise ValueError("Support and metadata must be real numeric arrays")
     x = np.asarray(support, dtype=np.float64)
     packet = np.asarray(packet, dtype=np.float64)
     mask = np.isfinite(packet)
     q = features.support_q_mask(x, mask, interface, order, frequencies)
     m, available = features.metadata_features(packet)
+    if np.asarray(source_block5).dtype.kind not in "iuf":
+        raise ValueError("Source block5 must be a real numeric array")
     y = np.asarray(source_block5, dtype=np.float64)
     if y.shape != x.shape[1:] or not np.isfinite(y).all():
         raise ValueError("Expected separate source block5[12,5,8,N]")
     label_values = np.arange(12) if labels is None else np.asarray(labels)
     if label_values.dtype.kind not in "iu" or sorted(label_values.tolist()) != list(range(12)):
         raise ValueError("Source block5 requires exactly one label per class")
-    weight_values = np.ones(5) if weights is None else np.asarray(weights, dtype=np.float64)
+    weight_values = np.asarray(weights)
+    if weight_values.dtype.kind not in "iuf":
+        raise ValueError("Explicit real native band weights are required")
+    weight_values = np.asarray(weight_values, dtype=np.float64)
     if weight_values.shape != (5,) or not np.isfinite(weight_values).all():
         raise ValueError("Expected finite native weights[5]")
     if np.any(weight_values <= 0):
@@ -132,6 +138,8 @@ def _validate_cases(cases, *, fitting=False):
         raise ValueError("Expected nonempty TaskCase sequence")
     if any(c.role not in (("fit",) if fitting else ("fit", "validation")) for c in cases):
         raise PermissionError("Role is not allowed for this operation")
+    if len({c.role for c in cases}) != 1:
+        raise PermissionError("Mixed roles would merge separate donor partitions")
     if len({c.key for c in cases}) != len(cases):
         raise ValueError("Duplicate participant/condition case")
     ids = tuple(sorted({c.participant_id for c in cases}))
@@ -331,7 +339,11 @@ def predict(pipeline, cases, arm="Q"):
     """In-memory source/validation scores. No final-query reader is invoked."""
     if arm not in ("ISO", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING"):
         raise ValueError("Unknown positive-mass arm")
-    cases, _ = _validate_cases(cases)
+    cases, ids = _validate_cases(cases)
+    if cases[0].role == "validation" and set(ids) & set(pipeline.fit_ids):
+        raise PermissionError("Validation IDs overlap fitted participants")
+    if cases[0].role == "fit" and set(ids) != set(pipeline.fit_ids):
+        raise PermissionError("Fit diagnostics must preserve the complete fitted donor partition")
     lookup = {c.key: c for c in cases}
     donors = _donors(cases) if arm in ("SHAM_REFIT", "PERMUTED") else None
     result = {}
