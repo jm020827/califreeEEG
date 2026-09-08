@@ -3,17 +3,17 @@
 2026-09-08. **고정 규제γ=.1이 공간필터를 크게 바꾼다는 것은 확인했다.**
 Metadata가 도움이 되는지, γ를 줄이면 좋아지는지는 이번 진단으로 확인하지 않았다.
 기존 [metadata-prior 효과 미확립](metadata_prior_source39_v1_results.md) 판정은 그대로다.
-[고정 설계](trca_support_geometry_v1_design.md), [전체18조건 집계](reports/trca_support_geometry_v1_summary.json),
+[고정 설계](trca_support_geometry_v1_design.md), [8조건·전체의 k별18개 집계](reports/trca_support_geometry_v1_summary.json),
 [원 결과](/home/whwovy/trca-support-geometry-v1/result.json)를 보존한다.
 
 ## 쉽게 설명하면
 
 공간필터는8개 전극 신호를 어떤 비율로 섞을지 정하는 방법이다.
 이전 실험은 그 비율이 너무 극단적이지 않도록 공통 규제를 넣고, metadata로 채널별 규제를 조금 조정했다.
-그런데 **공통 규제만으로도 원래 비율이 크게 달라졌다.** Metadata의 작은 조정보다 앞선 단계의 문제다.
+그런데 **공통 규제만으로도 원래 비율이 크게 달라졌다.** Metadata의 작은 조정보다 앞선 단계의 큰 변화다.
 
 규제값0.1은 “모든 신호를10%씩만 바꾼다”는 뜻이 아니다.
-추가값은 공분산 전체 크기의10%를 기준으로 하지만, 개별 신호 방향의 크기는 서로 다르다.
+각 방향에 더하는 값은 공분산 고유값 평균의10%다(추가행렬 trace는 C trace의10%). 개별 신호 방향의 크기는 서로 다르다.
 크기가 작은 방향에서는 같은 추가값이 기존 분모보다 더 클 수 있다.
 이것은 전극이 손상됐다는 진단이나 metadata의 무용성 판정이 아니다.
 

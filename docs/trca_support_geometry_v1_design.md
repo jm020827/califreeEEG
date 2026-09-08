@@ -1,5 +1,7 @@
 # TRCA support-only geometry 진단 — 결과를 본 뒤의 별도 분석
 
+> 완료 상태: [실제39명 진단·독립 검산 결과](trca_support_geometry_v1_results.md). 아래 미래형은 실제 입력 전에 고정한 계약의 기록이다.
+
 2026-09-08. 원 연구목표는 acquisition metadata가 EEG 정보 이상의 저보정 이득을 주는지 검증하는 것이다.
 [이전 후보](metadata_prior_source39_v1_results.md)는 효과 미확립으로 종료했다. 이번 작업은 후보 재개나
 새 효능실험이 아니다. **Metadata를 넣기 전 공통 규제부터 성능이 떨어진 이유를 좁히는 진단**이다.

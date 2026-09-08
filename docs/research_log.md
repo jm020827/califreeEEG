@@ -1133,3 +1133,11 @@
 - 결과문서 docs/trca_support_geometry_v1_results.md와전체18summaryprojection, README/protocol/execution/current-data-first/goal-loop최상단을업데이트했다. 기존효능결과/설계/operator파일은그대로다. 전체1,877testsPASS232.34초(기존Torch68warnings),새57testsPASS1.20초. 후속독립감사script는이fullcollection이후보존했으며위실제derived-only실행으로별도검증했다.
 - academic-research 신규claim:f3a9afa0287b22ca qualified에관측과인과한계2evidence를분리했다. Technique:feb2f44f47a68444와gap:6a8254f849b36b2f를기하진단완료/더넓은M질문open으로갱신했다. 원negativeclaim6c575153b9f5a422/외부optionalgap/다른종료판정은유지했다. 새검색/PDF0,39claims/71evidence이며검색수78/논문1053/카드41는그대로다.
 - Main단독writer·read-only3reviewers로sharedtree동시작성/통합충돌0. 리뷰에서발견한coldcodec/provenance/집계축/대수overflow는실제입력전에수정했다. 신규worktree0,기존32개보존. Actual산출물61,367,147bytes(59,936KiB사용),인공3temp와전체회귀temp를합쳐298,364KiB로1GiB예산내. 설치/push/cleanup/원본삭제0이다. 이번은진단완료이며metadata저보정목표의효능입증은아니다.
+
+## VERIFY/CLOSE-20260908-079 — 고정 기하 진단 통합 완료
+
+- 보고/독립감사225ed18caa672e210b4bc6d1a346159dde5f21b5를commit한뒤main이clean상태에서보존auditor를다시실행PASS2.400223초. 저장된2.3552초감사와시간외모든출력exact일치,새sourceEEG·M·query분류없음. Audit코드SHA78c2d49caeca675206846053a60d264189da76a0769bdb93a57fa122c9a191f8,저장감사SHAf6e43f1403b25ad4cb9e800c6913b3dcc81f519914233a236ef41c1ed911088a.
+- 최종읽기전용보고검토에서‘18조건’을‘8조건+ALL의k별18집계’로, ‘전체크기의10%’를‘평균고유값의10%를각방향추가’로, ‘앞선문제’를‘앞선큰변화’로명료화했다. 설계문서미래형은pre-access계약기록임을표시했다. 수식/과학config/실제result/geometry는변경하지않았다.
+- Source6hash불변,plan/start/result/geometry·보고projection/audit정합,기존local links114개검증PASS. 완료설계링크추가후최종링크재확인한다. Ruff7files/diffcheckPASS. 전체1877tests는직전43a6f4b에서완료했고이후producer변경0,새독립audit는위실제경로로별도검증했다.
+- 연구공간claimf3a9afa0287b22ca에독립감사3번째근거c233aeb50d9eb6f9를연결해qualified유지. 원claim6c575153b9f5a422도qualified,broadergap6a8254f849b36b2f/외부optionalgapb8962f3a060b9d96은open유지. Render완료/SQLitequick_checkok,1053papers/78searches/41cards/39claims/72evidence/37gaps/9techniques/5analogies/36deepreads. 새검색/PDF0이다.
+- Basef5454bd→fe7b7e7계획→43a6f4b구현/실제진단→225ed18보고/독립replay순서로통합했다. 기존32worktree/브랜치/환경보존,동시writer와textconflict0,cleanup/push0. 이번단계의실행·검산·설계반영은완료하며기존metadata효용미확립과후속효능계약미정경계를보존한다.
