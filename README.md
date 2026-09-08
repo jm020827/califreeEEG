@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-08 [필터 부호 독립 수학·인공 검증 완료](docs/task_trca_shape_signfree_v1_engineering.md): 새 C-normalized projector와 성분별 시간중심 점수의32tests·CPU/CUDA·독립 SciPy 검산을 통과했다. 보존된 실패 행렬 한 지점에서도 계산·1차 미분을 확인했다. **Native 점수와 일반적으로 다른 별도 후보이며 metadata 효과·보정량 절감은 미평가**다. 기존 실제 후보는 종료 유지, 새 사람 학습·query·held60 접근0(이미 노출된 작은 진단 JSON만 재검산). 다음은 동일 새 scorer의 Q/QM 및 native/centered FULL 대조 설계·실제 learner 결합 검증이다. 자동 사람 재실행은 없다. 아래는 이전 단계 이력이다.
+
 > 2026-09-08 [task-shape 실제 실행 종료](docs/task_trca_shape_source39_v1_results.md): `VALIDITY_FAILURE`. 첫 외부 분할10pipelines는 완료·독립 검산했으나 두 번째 분할의 SHAM 학습이 native 기준 정렬 하한을 위반했다. 같은 실패 지점의 CPU/GPU 재현으로 확인했으며 최종 query·held60 접근0이다. **Metadata 효과 없음이 아니라 효능 미평가**다. 연구목표는 유지하고 다음은 별도 필터 방향·부호 규칙의 수학/인공 검증 설계다. 원 후보 재실행·실패 대조군 제외·threshold 완화·held60 자동 개봉은 없다. 아래는 이전 단계 이력이다.
 
 > 2026-09-08 학습기·인공 검증 완료: [task-shape 구현 결과](docs/task_trca_shape_engineering_v1_results.md). Q 분류 학습·동결 후 M/Q2/SHAM 잔차, bounded projector, mask-only Q와 참가자 분리 선택을 구현했다. 신규180/전체2057tests PASS, CPU 학습·CUDA forward/gradient 일치·실제 native 인공 bridge·인공6명 중첩8000steps를 확인했다. **사람 실험/metadata 효능 확인은 아니다.** 다음은 실제 역할 제한 reader와 독립 auditor/cold CLI이며 held60은 열지 않았다. 아래는 이전 단계 기록이다.

@@ -1,0 +1,164 @@
+{
+  "schema": "task-trca-shape-signfree-engineering-v1",
+  "status": "ENGINEERING_VERIFIED_HUMAN_PIPELINE_PENDING",
+  "runtime_revision": "f00ec3f464c18b8cc3727686e262f6707efa0207",
+  "source39_old_candidate_status": "VALIDITY_FAILURE_UNCHANGED",
+  "scientific_boundary": {
+    "new_human_training_updates": 0,
+    "new_source_archive_access": false,
+    "query_outcomes_access": false,
+    "held60_access": false,
+    "known_source_derived_diagnostic_json_access": true,
+    "metadata_effect": "NOT_EVALUATED",
+    "calibration_savings": "NOT_EVALUATED",
+    "automatic_human_execution": false,
+    "original_native_score_equivalence": "FALSE_FOR_GENERAL_NONZERO_TEMPORAL_MEANS"
+  },
+  "artifacts": {
+    "verified": {
+      "path": "/home/whwovy/task-trca-shape-signfree-engineering-UQgWDi/verified.json",
+      "sha256": "0467941977362b51cd906a88eeda262526ade507fedf79ef65dc8c3c62887cbf",
+      "mode": "0400"
+    },
+    "preliminary_synthetic": {
+      "path": "/home/whwovy/task-trca-shape-signfree-engineering-UQgWDi/synthetic.json",
+      "sha256": "df60bce9fd9ddf42679861b98b0f5f4a8aa948b7194beb1c2684d559af86c9b2",
+      "mode": "0400"
+    },
+    "full_tests": {
+      "path": "/home/whwovy/task-trca-shape-signfree-engineering-UQgWDi/full_tests.xml",
+      "sha256": "27d29bdfe1c124b186a61436690d3e02dff9a28561a99bf741e79d580b289537"
+    }
+  },
+  "verification": {
+    "new_synthetic_tests": 32,
+    "new_tests_seconds": 1.36,
+    "full_suite_passed": 2248,
+    "full_suite_warnings": 68,
+    "full_suite_seconds": 313.18,
+    "full_suite_runtime_revision": "f00ec3f464c18b8cc3727686e262f6707efa0207",
+    "runtime_unchanged_during_suite": true,
+    "old_manifest_code_pins_all_15_unchanged": true,
+    "old_design_and_execution_manifest_unchanged": true,
+    "old_diagnostic_hash_unchanged": true,
+    "ruff": "PASS",
+    "independent_read_only_receipt_review": "PASS: 4 code hashes, traces and CPU/CUDA stored-array errors recalculated",
+    "early_unit_failure": "27 pass/1 fail: exact constant-channel pseudo-variance; fixed only new statistics centering before final32 pass"
+  },
+  "engineering_measurement": {
+    "status": "SIGNFREE_ENGINEERING_PASS",
+    "retrieved_at": "2026-09-08T12:08:05.120030+00:00",
+    "versions": {
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "torch": "2.2.2+cu121"
+    },
+    "code_sha256": {
+      "src/cfeg/analysis/task_trca_shape_operator.py": "e0aab61f200983d83f7b8ff82efe76916e6ccaf3e506b6acd83e9ec1535f0449",
+      "src/cfeg/analysis/task_trca_shape_signfree.py": "62fb9594ec9ae8024eeb9c2860294f35934a2bbd4d5568e58b2892364b43da58",
+      "src/cfeg/analysis/metadata_trca_prior.py": "71f7f54e91b9afaf0f571b75da64d4adb7d36d72dc1fe6c2e0d8afab2425baed",
+      "scripts/check_task_trca_shape_signfree.py": "8083932be0d8d64518f4664f112df01cd5110bc64f2f267cf7c2fbc26e1e5722"
+    },
+    "generated_inputs_sha256": "7d688c2925570dac8d48adb1c01416e69d5aad10878a9f9feee0f9d3da6faa2d",
+    "generated_shape": {
+      "support_blocks": 3,
+      "classes": 3,
+      "bands": 2,
+      "channels": 8,
+      "samples": 31,
+      "source_trials": 3
+    },
+    "cpu_seconds": 0.8358425940386951,
+    "cpu": {
+      "base_initial": 0.000004345660239539206,
+      "base_final": 0.000004345639996200115,
+      "residual_initial": 0.000004345619766148467,
+      "residual_final": 0.0000043456195542466195,
+      "independent_errors": {
+        "projector": 3.469446951953614e-18,
+        "score": 6.661338147750939e-16,
+        "correlation": 4.440892098500626e-16
+      },
+      "score_change": 9.535985935338331e-7
+    },
+    "cuda": {
+      "executed": true,
+      "device": "NVIDIA GeForce RTX 4090",
+      "seconds": 1.714433167129755,
+      "max_abs_errors": {
+        "projectors": 2.168404344971009e-18,
+        "scores": 4.440892098500626e-16,
+        "gradient": 2.9778502051908996e-22,
+        "BASE_LOGITS_coef": 5.390903923350315e-15,
+        "RANDOM_RESIDUAL_coef": 2.613559609312662e-14
+      },
+      "argmax_equal": true,
+      "peak_allocated_bytes": 17320960,
+      "peak_reserved_bytes": 23068672
+    },
+    "saved_failure_point": {
+      "scope": "KNOWN_EXPOSED_FAILURE_POINT_NOT_INDEPENDENT_SYNTHETIC_DATA",
+      "input_path": "/home/whwovy/task-trca-shape-anchor-failure-diagnostic-v1.json",
+      "input_sha256": "86eda34fc11f9e20a3874ef0e952a2aedc8b60e7f908bdd290b84ccf84b1561b",
+      "case_key": [
+        41,
+        1,
+        188,
+        5
+      ],
+      "band_zero_based": 0,
+      "class_zero_based": 4,
+      "old_error": "native anchor is nearly C-orthogonal to the leading direction",
+      "old_cpu_cosine": 6.105745589974016e-7,
+      "new_c_trace": 0.9999999999999982,
+      "new_scipy_max_abs_error": 4.328135072562134e-15,
+      "first_order_gradcheck": true,
+      "cuda": {
+        "executed": true,
+        "max_projector_error": 4.4278816724308e-15,
+        "max_gradient_error": 9.183277104246948e-17
+      },
+      "training_updates": 0,
+      "query_score_computed": false
+    },
+    "limitations": [
+      "new score semantics, no human execution adapter",
+      "two artificial heads, not complete source39 pipeline/nested selection",
+      "base is 16 free band/channel logits, NOT the shared Q15 feature learner",
+      "residual inputs are generated random features, NOT acquisition metadata",
+      "toy CE uses scores/.1, NOT frozen source39 scores/sum(weights)/.1",
+      "this easy generated case has near-zero initial CE; reduction is not utility evidence",
+      "known failure point is regression evidence, not a fresh validation sample",
+      "simple top eigenspace/positive temporal variance still required",
+      "first-order derivatives only; no timing speed claim"
+    ]
+  },
+  "coordination": {
+    "base": "ea33fcc4a87acdb77ec91cbd266f874b89b03ef3",
+    "branch": "main",
+    "writer": "root",
+    "read_only_reviewers": 2,
+    "new_worktrees": 0,
+    "preserved_worktrees": 36,
+    "new_output_budget_bytes": 1073741824,
+    "gpu_additional_allocation_budget_bytes": 1073741824,
+    "commits": [
+      "e7726e4",
+      "f00ec3f"
+    ],
+    "concurrent_shared_tree_writers": 0,
+    "installs": 0,
+    "pushes": 0,
+    "cleanup": 0
+  },
+  "research": {
+    "claim": "cd7b8f8e8baa9c02",
+    "claim_status": "qualified",
+    "technique": "47cef6b1d1f74633",
+    "native_compatible_gap": "55b7acd812b0003e remains open",
+    "broad_new_paper_searches": 0,
+    "pdfs_read": 0,
+    "official_implementation_verification": "pytorch v2.2.2 eigh contract, remote/installed SHA d0a40f59375463726f9dbe5b758505966b3a6c0fe71eda600bfded3ecbd3fc7a"
+  },
+  "next_step": "Define a separate matched temporal-score Q/QM experiment including FULL_NATIVE/A0/FULL_CENTERED; actual Q15/head/normalized loss/nested pipeline and independent completed-path audit remain unimplemented. No automatic human execution."
+}
