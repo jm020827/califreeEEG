@@ -4,9 +4,10 @@ NumPy/SciPy and the independent audit implementation only. No training/operator
 producer imports and no raw EEG/archive access. This verifies downstream of the
 recorded sufficient statistics, not native preprocessing or full Adam replay.
 """
+
 from __future__ import annotations
+
 import hashlib
-import json
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +17,8 @@ from cfeg.analysis import task_trca_shape_audit as independent
 
 ARMS = ("FULL", "ISO", "Q", "Q2", "QM", "SHAM_REFIT", "PERMUTED", "STALE", "MISSING")
 STATS = ("query_gram", "template_gram", "cross_gram", "query_mean", "template_mean")
-LAMBDAS = (.0001, .001, .01)
+LAMBDAS = (0.0001, 0.001, 0.01)
+SAMPLES = (125, 188, 250, 500)
 
 
 def sha(path):
@@ -35,7 +37,7 @@ def require(value, message):
 def donor_positions(data, positions):
     groups = {}
     for j in positions:
-        pid, interface, samples, k = data["keys"][j]
+        _pid, interface, samples, k = data["keys"][j]
         mask = np.isfinite(data["packet5"][j, :k])
         key = int(interface), int(samples), int(k), int(data["orders"][j]), mask.tobytes()
         groups.setdefault(key, []).append(j)
@@ -59,10 +61,18 @@ def stale_features(packet):
 
 def prior(data, j, pipeline, arm, donors):
     donor_m = data["m"][donors[j]] if arm in ("SHAM_REFIT", "PERMUTED") else None
-    stale_m, stale_available = stale_features(data["packet5"][j]) if arm == "STALE" else (None, None)
+    stale_m, stale_available = (
+        stale_features(data["packet5"][j]) if arm == "STALE" else (None, None)
+    )
     return independent.independent_prior(
-        data["q"][j], data["m"][j], data["available"][j], pipeline, arm,
-        donor_m=donor_m, stale_m=stale_m, stale_available=stale_available,
+        data["q"][j],
+        data["m"][j],
+        data["available"][j],
+        pipeline,
+        arm,
+        donor_m=donor_m,
+        stale_m=stale_m,
+        stale_available=stale_available,
     )
 
 
@@ -75,7 +85,7 @@ def scores(data, j, pipeline, arm, donors):
 
 
 def ce(values, weights):
-    scaled = values / np.sum(weights) / .1
+    scaled = values / np.sum(weights) / 0.1
     truth = np.tile(np.arange(12), len(values) // 12)
     return float(np.mean(logsumexp(scaled, axis=-1) - scaled[np.arange(len(truth)), truth]))
 
@@ -98,20 +108,57 @@ def check_record(data, pipeline, ids):
         np.testing.assert_allclose(pipeline[name]["mean"], mean, atol=1e-12, rtol=1e-12)
         np.testing.assert_allclose(pipeline[name]["scale"], scale, atol=1e-12, rtol=1e-12)
     actual = {tuple(d["case"]): d["donor_id"] for d in pipeline["donors"]}
-    expected = {tuple(data["keys"][j]): int(data["keys"][donor, 0]) for j, donor in donor_positions(data, positions).items()}
+    expected = {
+        tuple(data["keys"][j]): int(data["keys"][donor, 0])
+        for j, donor in donor_positions(data, positions).items()
+    }
     require(actual == expected, "fit donor partition/map")
     for head in (pipeline["Q"], *pipeline["residuals"].values()):
         require(head["steps"] == 200 and len(head["trace"]) == 200, "fixed optimizer length")
         require([r["step"] for r in head["trace"]] == list(range(1, 201)), "optimizer step indices")
         require(np.isfinite(head["coefficients"]).all(), "coefficients")
-        require(np.isfinite([[r["loss_before_step"], r["ce_before_step"], r["gradient_norm"]] for r in head["trace"]]).all(), "trace finiteness")
+        require(
+            np.isfinite(
+                [
+                    [r["loss_before_step"], r["ce_before_step"], r["gradient_norm"]]
+                    for r in head["trace"]
+                ]
+            ).all(),
+            "trace finiteness",
+        )
     return positions
+
+
+def check_features(data):
+    for j, (_, _, _, k) in enumerate(data["keys"]):
+        require(k in (3, 5), "support budget")
+        packet = data["packet5"][j]
+        require(np.isnan(packet[k:]).all(), "k3 must not contain future support M")
+        m, available = independent.independent_metadata(packet[:k])
+        np.testing.assert_allclose(data["m"][j], m, atol=1e-12, rtol=1e-12)
+        np.testing.assert_array_equal(data["available"][j], available)
+        np.testing.assert_allclose(
+            data["q"][j, :, :, 4],
+            np.broadcast_to(np.isfinite(packet[:k]).mean(0), (5, 8)),
+            atol=1e-12,
+            rtol=0,
+        )
 
 
 def audit_training(data, model, outer_ids, evaluation_ids):
     require(sorted(set(data["keys"][:, 0].tolist())) == list(outer_ids), "source participant roles")
     require(not set(outer_ids) & set(evaluation_ids), "outer role overlap")
     require(len(data["keys"]) == len(outer_ids) * 16, "complete source16case grid")
+    require(len({tuple(v) for v in data["keys"]}) == len(data["keys"]), "unique source case keys")
+    require(
+        data["keys"].tolist()
+        == [[p, i, n, k] for p in outer_ids for i in (0, 1) for n in SAMPLES for k in (3, 5)],
+        "exact ordered source grid",
+    )
+    check_features(data)
+    np.testing.assert_array_equal(
+        data["labels"], np.broadcast_to(np.arange(12), (len(data["keys"]), 12))
+    )
     selection = model["selection"]
     require(selection["outer_evaluation_ids"] == list(evaluation_ids), "selection evaluation IDs")
     require(len(selection["inner"]) == 9, "nine inner fits")
@@ -121,7 +168,10 @@ def audit_training(data, model, outer_ids, evaluation_ids):
         require(inner in (0, 1, 2) and row["lambda"] in LAMBDAS, "inner grid")
         validation_ids = list(outer_ids[inner::3])
         training_ids = [p for p in outer_ids if p not in validation_ids]
-        require(row["validation_ids"] == validation_ids and row["fit_ids"] == training_ids, "inner role split")
+        require(
+            row["validation_ids"] == validation_ids and row["fit_ids"] == training_ids,
+            "inner role split",
+        )
         pipeline = row["pipeline"]
         require(pipeline["lambda"] == row["lambda"], "lambda fit identity")
         check_record(data, pipeline, training_ids)
@@ -129,7 +179,14 @@ def audit_training(data, model, outer_ids, evaluation_ids):
         donors = donor_positions(data, positions)
         losses = {}
         for arm in ("Q", "Q2", "QM", "SHAM_REFIT"):
-            loss = float(np.mean([ce(scores(data, j, pipeline, arm, donors)[0], data["weights"][j]) for j in positions]))
+            loss = float(
+                np.mean(
+                    [
+                        ce(scores(data, j, pipeline, arm, donors)[0], data["weights"][j])
+                        for j in positions
+                    ]
+                )
+            )
             error = abs(loss - row["validation_ce"][arm])
             require(error <= 1e-8, "independent validation CE differs")
             errors.append(error)
@@ -140,18 +197,42 @@ def audit_training(data, model, outer_ids, evaluation_ids):
         rows = means[value]
         require(sorted(v[0] for v in rows) == [0, 1, 2], "unique inner lambda grid")
         weighted[value] = float(np.average([v[1] for v in rows], weights=[v[2] for v in rows]))
-    selected = max(value for value, loss in weighted.items() if loss <= min(weighted.values()) + 1e-12)
-    require(selected == selection["selected_lambda"] == model["pipeline"]["lambda"], "Q-only lambda selection")
+    selected = max(
+        value for value, loss in weighted.items() if loss <= min(weighted.values()) + 1e-12
+    )
+    require(
+        selected == selection["selected_lambda"] == model["pipeline"]["lambda"],
+        "Q-only lambda selection",
+    )
     check_record(data, model["pipeline"], outer_ids)
-    return {"status": "SOURCE_SELECTION_AUDIT_PASS", "selected_lambda": selected,
-            "max_validation_ce_abs_error": max(errors), "validation_ce_comparisons": len(errors),
-            "scope": "scalers/donors/200-step traces and independent inner-validation scores; not full independent Adam replay"}
+    return {
+        "status": "SOURCE_SELECTION_AUDIT_PASS",
+        "selected_lambda": selected,
+        "max_validation_ce_abs_error": max(errors),
+        "validation_ce_comparisons": len(errors),
+        "scope": "scalers/donors/200-step traces and independent inner-validation scores; not full independent Adam replay",
+    }
 
 
 def audit_evaluation(data, pipeline):
+    check_features(data)
+    require(
+        not set(data["keys"][:, 0].tolist()) & set(pipeline["fit_ids"]), "evaluation fit overlap"
+    )
+    ids = sorted(set(data["keys"][:, 0].tolist()))
+    require(
+        data["keys"].tolist()
+        == [[p, i, n, k] for p in ids for i in (0, 1) for n in SAMPLES for k in (3, 5)],
+        "exact ordered evaluation grid",
+    )
     positions = range(len(data["keys"]))
     donors = donor_positions(data, positions)
-    errors = {"r": 0., "filters": 0., "scores": 0.}
+    if "donor_id" in data:
+        require(
+            all(data["donor_id"][j] == data["keys"][donors[j], 0] for j in positions),
+            "saved evaluation donor IDs",
+        )
+    errors = {"r": 0.0, "filters": 0.0, "scores": 0.0}
     for j in positions:
         for index, arm in enumerate(ARMS[1:], start=1):
             actual, r, w = scores(data, j, pipeline, arm, donors)
@@ -166,8 +247,21 @@ def audit_evaluation(data, pipeline):
             np.testing.assert_array_equal(actual.argmax(-1), data["scores"][j, index].argmax(-1))
         full = np.einsum("nbc,b->nc", data["native_full_correlations"][j], data["weights"][j])
         np.testing.assert_array_equal(full, data["scores"][j, 0])
-        np.testing.assert_allclose(data["native_full_correlations"][j], data["cached_full_correlations"][j], atol=1e-9, rtol=0)
+        np.testing.assert_allclose(
+            data["native_full_correlations"][j],
+            data["cached_full_correlations"][j],
+            atol=1e-9,
+            rtol=0,
+        )
+        cached = np.einsum("nbc,b->nc", data["cached_full_correlations"][j], data["weights"][j])
+        np.testing.assert_array_equal(cached.argmax(-1), full.argmax(-1))
         np.testing.assert_array_equal(data["scores"][j, 2], data["scores"][j, 8])
-    return {"status": "EVALUATION_AUDIT_PASS", "cases": len(data["keys"]), "max_abs_errors": errors,
-            "positive_argmax_exact": True, "missing_exact_q": True, "full_native_compatibility": True,
-            "scope": "independent downstream sufficient-statistic reconstruction; support feature/raw preprocessing covered by separate construction tests"}
+    return {
+        "status": "EVALUATION_AUDIT_PASS",
+        "cases": len(data["keys"]),
+        "max_abs_errors": errors,
+        "positive_argmax_exact": True,
+        "missing_exact_q": True,
+        "full_native_compatibility": True,
+        "scope": "independent downstream sufficient-statistic reconstruction; support feature/raw preprocessing covered by separate construction tests",
+    }

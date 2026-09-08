@@ -1,0 +1,50 @@
+{
+  "status": "ARTIFICIAL_BATCH_PARITY_PASS",
+  "seed": 20260909,
+  "human_data_access": false,
+  "prediction_parity": true,
+  "coefficient_errors": {
+    "cpu_batch": {
+      "Q": 6.245004513516506e-16,
+      "Q2": 5.4643789493269423e-17,
+      "QM": 4.85722573273506e-17,
+      "SHAM_REFIT": 2.0296264668928643e-16
+    },
+    "cuda_batch": {
+      "Q": 6.38378239159465e-16,
+      "Q2": 1.0885389811754465e-16,
+      "QM": 2.2898349882893854e-16,
+      "SHAM_REFIT": 4.588343593958655e-16
+    }
+  },
+  "workload_probe": {
+    "cpu": {
+      "cases": 416,
+      "seconds": [
+        0.37587033212184906,
+        0.35389894898980856,
+        0.3471459583379328
+      ]
+    },
+    "cuda": {
+      "cases": 416,
+      "seconds": [
+        0.024794748052954674,
+        0.024963528849184513,
+        0.02449494320899248
+      ],
+      "peak_allocated_bytes": 767801856,
+      "peak_reserved_bytes": 926941184,
+      "name": "NVIDIA GeForce RTX 4090"
+    }
+  },
+  "fit_seconds": {
+    "cpu_scalar": 14.825540259014815,
+    "cpu_batch": 5.781102046370506,
+    "cuda_batch": 4.298188401851803
+  },
+  "full_receipt": {
+    "path": "/home/whwovy/task-trca-shape-execution-engineering-pdnQo9/batch.json",
+    "sha256": "9360aeec82502d729bd90fb8df63fb4c140c627131f1548bc87684ddb275226c"
+  }
+}

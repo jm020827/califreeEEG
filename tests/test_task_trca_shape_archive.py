@@ -126,6 +126,16 @@ def test_fixed_source_and_sample_allowlists():
     assert not {1, 2, 3, 5, 7, 9, 10} & set(core.SOURCE_IDS)
 
 
+def test_failed_authorized_query_keeps_attempt_event(archive_builder, freeze_builder):
+    spec = archive_builder(poison_future=True)
+    token, _, _ = freeze_token(freeze_builder)
+    with core.NativeArchive(spec, outer(0)) as reader:
+        with pytest.raises(ValueError, match="Nonfinite"):
+            reader.query(0, 13, token)
+        assert reader.access_log[0]["kind"] == "query"
+        assert reader.access_log[0]["freeze_sha256"] == token.receipt_sha256
+
+
 @pytest.mark.parametrize("role", ["fit", "validation", "evaluation"])
 @pytest.mark.parametrize("k", [3, 5])
 def test_support_exact_prefix_no_future_or_score_decode(archive_builder, monkeypatch, role, k):

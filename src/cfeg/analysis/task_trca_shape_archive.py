@@ -323,6 +323,8 @@ class NativeArchive:
         freeze.authorize(self.spec.participant_id, self.partition)
 
     def _event(self, kind, interface, samples, blocks, freeze=None):
+        # Authorized read attempt, recorded before decoding so a nonfinite or
+        # truncated array cannot erase evidence that its read was attempted.
         event = {
             "participant_id": self.spec.participant_id,
             "role": self.role,
@@ -349,44 +351,44 @@ class NativeArchive:
     def support(self, interface, samples, k):
         require(type(k) is int and k in (3, 5), "Only support budgets3/5 allowed")
         self._context(interface, samples)
-        result = self._eeg(interface, samples, 0, k)
         self._event("support", interface, samples, range(k))
+        result = self._eeg(interface, samples, 0, k)
         return result
 
     def supervision(self, interface, samples):
         if self.role not in ("fit", "validation"):
             raise PermissionError("Evaluation block5 denied before decoding")
         self._context(interface, samples)
-        result = self._eeg(interface, samples, 5, 1)[0]
         self._event("source_supervision", interface, samples, (5,))
+        result = self._eeg(interface, samples, 5, 1)[0]
         return result
 
     def query(self, interface, samples, freeze=None):
         self._query_authority(freeze)
         self._context(interface, samples)
-        result = self._eeg(interface, samples, 6, 4)
         self._event("query", interface, samples, range(6, 10), freeze)
+        result = self._eeg(interface, samples, 6, 4)
         return result
 
     def full_correlations(self, interface, samples, k, freeze=None):
         self._query_authority(freeze)
         require(type(k) is int and k in (3, 5), "Only full budgets3/5 allowed")
         self._context(interface, samples)
+        self._event(f"full_k{k}", interface, samples, range(6, 10), freeze)
         data = _npy_data(self._file.fd, self._spans[f"full_{samples}.npy"], (2, 2, 4, 12, 5, 12))
         count = 4 * 12 * 5 * 12
         result = _decode_float64(
             self._file.fd, count, data + (interface * 2 + (k == 5)) * count * 8, (4, 12, 5, 12)
         )
-        self._event(f"full_k{k}", interface, samples, range(6, 10), freeze)
         return result
 
     def a0_correlations(self, interface, samples, freeze=None):
         self._query_authority(freeze)
         self._context(interface, samples)
+        self._event("a0", interface, samples, range(6, 10), freeze)
         data = _npy_data(self._file.fd, self._spans[f"a0_{samples}.npy"], (2, 4, 12, 5, 12))
         count = 4 * 12 * 5 * 12
         result = _decode_float64(self._file.fd, count, data + interface * count * 8, (4, 12, 5, 12))
-        self._event("a0", interface, samples, range(6, 10), freeze)
         return result
 
 
@@ -618,6 +620,15 @@ class SupportMetadata:
         require(type(interface) is int and interface in (0, 1), "Interface must be integer0/1")
         require(type(k) is int and k in (3, 5), "Only metadata support budgets3/5 allowed")
         self._file.check()
+        self.access_log.append(
+            {
+                "participant_id": participant_id,
+                "role": role,
+                "kind": "metadata_support",
+                "interface": interface,
+                "blocks": list(range(k)),
+            }
+        )
         rows = [
             self._json.decode(self._packets[participant_id, interface, block]) for block in range(k)
         ]
@@ -628,13 +639,4 @@ class SupportMetadata:
             "Authorized impedance must be nonnegative finite or missing",
         )
         result = np.frombuffer(result.tobytes(), dtype=np.float64).reshape(k, 8)
-        self.access_log.append(
-            {
-                "participant_id": participant_id,
-                "role": role,
-                "kind": "metadata_support",
-                "interface": interface,
-                "blocks": list(range(k)),
-            }
-        )
         return result, self._orders[participant_id]

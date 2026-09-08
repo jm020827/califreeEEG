@@ -49,3 +49,49 @@ filters, scores, and argmax differences, not just accuracy.
 Both leaves may commit only their owned files and return revision, tests,
 assumptions, evidence gaps. Main inspects semantic compatibility before cherry-pick.
 No leaf may inspect real numeric EEG/M/outcomes or write the research database.
+
+## Integrated engineering checkpoint
+
+Reader7b0bcbe → main32ca62e; auditor2b57bbef → maind76f946, disjoint files and no
+textual conflicts. Main evaluated semantic contracts and corrected event naming,
+failed-decode attempt logging, case/Gram sample equality, exact grids/labels,
+saved donor/M reconstruction, cached-native FULL argmax, and final receipt order.
+Read-only review stayed in the shared repository. Two new worktrees stay intact.
+
+Task-shape suite336 PASS38.57s; whole repository regression is running at this
+checkpoint, not claimed complete. Artificial saved evaluation NPZ is reopened
+and independently reconstructed; deliberate feature/key/donor/score/R corruption
+and source-selection/label corruption are rejected. New cold auditor reconstructs
+the three full source/evaluation folds, access rights, aggregate scores/A0,
+coverage/actuation and exact terminal summary. It imports no producer code.
+
+[Artificial batch receipt](reports/task_trca_shape_batch_engineering_v1.json):
+8 generated cases, all4heads×200steps, CPU scalar14.826s / CPU batch5.781s /
+CUDA batch4.298s. Largest CUDA-vs-scalar coefficient difference6.39e−16;
+all tested argmaxes identical. Representative416-case forward/backward after
+warmup: CPU .347–.376s, RTX4090 .0245–.0250s, peak allocated767,801,856bytes.
+This is a computational workload probe, not an efficacy or full source39 fit.
+Runtime frozen to float64 CUDA batch, one CPU thread, GPU process budget16% of
+24GiB, output12GiB and whole-attempt7200s; no silent runtime/scientific fallback.
+
+Authority is the user's current continuation of the fixed candidate. An exact
+code/input/runtime manifest is written only after integrated verification; it
+does not modify the historical DESIGN_ONLY document. No human EEG/M values have
+been accessed at this checkpoint. A separate cold process must pass the saved
+artifact audit before the final scientific report is accepted.
+
+## Execution freeze
+
+Whole-suite2213 PASS251.86s,68 existing Torch warnings. JUnit receipt:
+`/home/whwovy/task-trca-shape-execution-engineering-pdnQo9/full-tests.xml`,
+SHA81991c81ed7e38b142c93b2b51239488afa0010c41a402170a1f3a4ba9efd703.
+The cold auditor's explicit method/interface weight-binding assertions were added
+while the full suite ran; that CLI is not imported by the suite and is additionally
+checked by Ruff/CLI import now and by its actual cold execution after the study.
+The previously tested scientific operator/features/design are unchanged.
+
+Separate [execution manifest](../configs/analysis/task_trca_shape_source39_execution_v1.json)
+pins15 implementation dependencies, native input provenance, the exact old
+design hash and all runtime/evidence limits. No final query can be read before
+all3 models and their selection/source records are hashed in globalfreeze.
+This checkpoint precedes the first actual input read of the new candidate.

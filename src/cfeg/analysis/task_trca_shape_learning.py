@@ -430,7 +430,9 @@ def nested_fit(outer_training_cases, *, outer_evaluation_ids=(), backend="scalar
         for value in LAMBDAS:
             if progress is not None:
                 progress({"event": "inner_start", "fold": fold, "lambda": value})
-            fitted = fit_pipeline(train, value, **({"backend": backend} if backend != "scalar" else {}))
+            fitted = fit_pipeline(
+                train, value, **({"backend": backend} if backend != "scalar" else {})
+            )
             rows.append(
                 {
                     "inner_fold": fold,

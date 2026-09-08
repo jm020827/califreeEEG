@@ -1,12 +1,14 @@
 """Artificial batch/scalar/CUDA parity and workload sizing before human access."""
+
 from __future__ import annotations
+
 import argparse
-from dataclasses import replace, fields
 import hashlib
 import json
-from pathlib import Path
 import sys
 import time
+from dataclasses import fields, replace
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -18,11 +20,14 @@ from cfeg.analysis.task_trca_shape_batch import TaskBatch
 
 
 def move(case, device):
-    values = {name: getattr(case, name).to(device) for name in ("s", "c", "anchors", "weights", "labels")}
+    values = {
+        name: getattr(case, name).to(device) for name in ("s", "c", "anchors", "weights", "labels")
+    }
     stats = case.statistics
-    values["statistics"] = replace(stats, **{
-        f.name: getattr(stats, f.name).to(device) for f in fields(stats) if f.name != "samples"
-    })
+    values["statistics"] = replace(
+        stats,
+        **{f.name: getattr(stats, f.name).to(device) for f in fields(stats) if f.name != "samples"},
+    )
     return replace(case, **values)
 
 
@@ -33,20 +38,32 @@ def cases():
         packet5 = rng.uniform(0, 30, (5, 8))
         packet5[:, 2] = np.nan
         for n in (17, 23):
-            proto = rng.normal(size=(12, 5, 8, n)) + .7
+            proto = rng.normal(size=(12, 5, 8, n)) + 0.7
             x = proto[None] + rng.normal(size=(5, 12, 5, 8, n))
             y = proto + rng.normal(size=proto.shape)
             for k in (3, 5):
-                result.append(learning.make_task_case(
-                    pid, 0, 0, x[:k], packet5[:k], np.linspace(9, 14.5, 12), y,
-                    weights=np.array([1.25, .67, .50, .43, .38]),
-                ))
+                result.append(
+                    learning.make_task_case(
+                        pid,
+                        0,
+                        0,
+                        x[:k],
+                        packet5[:k],
+                        np.linspace(9, 14.5, 12),
+                        y,
+                        weights=np.array([1.25, 0.67, 0.50, 0.43, 0.38]),
+                    )
+                )
     return tuple(result)
 
 
 def probe(rows):
     batch = TaskBatch(rows)
-    logits = torch.linspace(-.2, .2, len(rows) * 40, dtype=torch.float64, device=rows[0].s.device).reshape(-1, 5, 8).requires_grad_()
+    logits = (
+        torch.linspace(-0.2, 0.2, len(rows) * 40, dtype=torch.float64, device=rows[0].s.device)
+        .reshape(-1, 5, 8)
+        .requires_grad_()
+    )
     # One warmup then three complete forward/backward calls, no scientific fit.
     values = []
     for iteration in range(4):
@@ -54,9 +71,9 @@ def probe(rows):
             torch.cuda.synchronize()
         start = time.perf_counter()
         scores = batch.scores(logits)
-        scaled = scores / batch.weights.sum(-1)[:, None, None] / .1
+        scaled = scores / batch.weights.sum(-1)[:, None, None] / 0.1
         loss = torch.nn.functional.cross_entropy(scaled.flatten(0, 1), batch.labels.flatten())
-        grad, = torch.autograd.grad(loss, logits)
+        (grad,) = torch.autograd.grad(loss, logits)
         if rows[0].s.is_cuda:
             torch.cuda.synchronize()
         if iteration:
@@ -69,11 +86,18 @@ def run():
     rows = cases()
     receipt = {"seed": 20260909, "human_data_access": False, "held60_access": False, "fits": {}}
     fits = {}
-    for name, device, backend in (("cpu_scalar", "cpu", "scalar"), ("cpu_batch", "cpu", "batch"), ("cuda_batch", "cuda", "batch")):
+    for name, device, backend in (
+        ("cpu_scalar", "cpu", "scalar"),
+        ("cpu_batch", "cpu", "batch"),
+        ("cuda_batch", "cuda", "batch"),
+    ):
         selected = tuple(move(c, device) for c in rows)
         start = time.perf_counter()
-        fits[name] = learning.fit_pipeline(selected, .001, backend=backend)
-        receipt["fits"][name] = {"seconds": time.perf_counter() - start, "record": fits[name].record()}
+        fits[name] = learning.fit_pipeline(selected, 0.001, backend=backend)
+        receipt["fits"][name] = {
+            "seconds": time.perf_counter() - start,
+            "record": fits[name].record(),
+        }
         print(json.dumps({"event": name, "seconds": receipt["fits"][name]["seconds"]}), flush=True)
     reference = fits["cpu_scalar"]
     errors = {}
@@ -110,7 +134,9 @@ def run():
                 peak_reserved_bytes=torch.cuda.max_memory_reserved(),
                 name=torch.cuda.get_device_name(),
             )
-        print(json.dumps({"event": "workload_probe", "device": device, "seconds": times}), flush=True)
+        print(
+            json.dumps({"event": "workload_probe", "device": device, "seconds": times}), flush=True
+        )
     for a, b in zip(outputs["cpu"], outputs["cuda"]):
         np.testing.assert_allclose(a, b, atol=1e-8, rtol=1e-5)
     np.testing.assert_array_equal(outputs["cpu"][0].argmax(-1), outputs["cuda"][0].argmax(-1))
@@ -133,4 +159,13 @@ if __name__ == "__main__":
         raise
     with args.output.open("x") as stream:
         json.dump(receipt, stream, indent=2, allow_nan=False)
-    print(json.dumps({"status": receipt["status"], "receipt": str(args.output), "sha256": hashlib.sha256(args.output.read_bytes()).hexdigest()}), flush=True)
+    print(
+        json.dumps(
+            {
+                "status": receipt["status"],
+                "receipt": str(args.output),
+                "sha256": hashlib.sha256(args.output.read_bytes()).hexdigest(),
+            }
+        ),
+        flush=True,
+    )

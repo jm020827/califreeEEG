@@ -13,7 +13,10 @@ from cfeg.analysis import task_trca_shape_operator as op
 
 class TaskBatch:
     def __init__(self, cases):
-        if any(type(c.samples) is not int or c.samples < 2 or c.samples != c.statistics.samples for c in cases):
+        if any(
+            type(c.samples) is not int or c.samples < 2 or c.samples != c.statistics.samples
+            for c in cases
+        ):
             raise ValueError("Case and Gram sample counts must agree")
         self.s = torch.stack([c.s for c in cases])
         self.c = torch.stack([c.c for c in cases])
@@ -29,7 +32,11 @@ class TaskBatch:
         )
         # Validate all immutable statistics once, before any optimization step.
         for value in (self.s, self.c, self.anchors, self.weights, *self.stats.values()):
-            if value.dtype != torch.float64 or value.requires_grad or not torch.isfinite(value).all():
+            if (
+                value.dtype != torch.float64
+                or value.requires_grad
+                or not torch.isfinite(value).all()
+            ):
                 raise ValueError("Invalid detached float64 batch constant")
         if (self.weights <= 0).any():
             raise ValueError("Native weights must be positive")
@@ -41,20 +48,26 @@ class TaskBatch:
 
     def scores(self, logits):
         r = op.shape_prior(logits)
-        filters = op.bounded_filters(
-            self.s, self.c, self.anchors, r[:, :, None, :]
-        ).transpose(-1, -2)
+        filters = op.bounded_filters(self.s, self.c, self.anchors, r[:, :, None, :]).transpose(
+            -1, -2
+        )
         j = filters @ filters.transpose(-1, -2)
         centered = filters - filters.mean(dim=-1, keepdim=True)
         h = centered @ centered.transpose(-1, -2)
         mx, mt = self.stats["query_mean"], self.stats["template_mean"]
         dot = torch.einsum("pbij,pncbij->pnbc", j, self.stats["cross_gram"])
-        dot = dot + self.samples[:, None, None, None] * torch.einsum("pnbi,pbij,pcbj->pnbc", mx, h, mt)
+        dot = dot + self.samples[:, None, None, None] * torch.einsum(
+            "pnbi,pbij,pcbj->pnbc", mx, h, mt
+        )
         xx = torch.einsum("pbij,pnbij->pnb", j, self.stats["query_gram"])
         xx = xx + self.samples[:, None, None] * torch.einsum("pnbi,pbij,pnbj->pnb", mx, h, mx)
         tt = torch.einsum("pbij,pcbij->pbc", j, self.stats["template_gram"])
         tt = tt + self.samples[:, None, None] * torch.einsum("pcbi,pbij,pcbj->pbc", mt, h, mt)
-        if not all(torch.isfinite(v).all() for v in (dot, xx, tt)) or (xx <= 0).any() or (tt <= 0).any():
+        if (
+            not all(torch.isfinite(v).all() for v in (dot, xx, tt))
+            or (xx <= 0).any()
+            or (tt <= 0).any()
+        ):
             raise ValueError("VALIDITY_FAILURE: invalid batch projected variance")
         corr = dot / xx.sqrt().unsqueeze(-1) / tt.sqrt().unsqueeze(1)
         if not torch.isfinite(corr).all():

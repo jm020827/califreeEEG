@@ -1,0 +1,142 @@
+{
+  "schema": "cfeg.task_trca_shape.source39_execution.v1",
+  "study_id": "task-aligned-trca-shape-v1",
+  "attempt_id": "task-trca-shape-source39-v1-attempt1",
+  "status": "EXECUTION_FROZEN",
+  "date": "2026-09-08",
+  "authority": "User: 응 다음할일 계속 끝까지. Complete remaining fixed-candidate infrastructure and one source39 development attempt.",
+  "source_ids": [
+    4,
+    6,
+    8,
+    11,
+    14,
+    21,
+    22,
+    25,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    37,
+    41,
+    42,
+    43,
+    44,
+    46,
+    54,
+    55,
+    56,
+    61,
+    63,
+    65,
+    67,
+    73,
+    74,
+    77,
+    80,
+    82,
+    83,
+    84,
+    89,
+    92,
+    97,
+    100,
+    102
+  ],
+  "held60_authorized": false,
+  "retired1_3_authorized": false,
+  "old_attempts_reopened": false,
+  "design": {
+    "path": "/home/whwovy/califreeEEG/configs/analysis/task_aligned_trca_shape_v1_design.json",
+    "sha256": "5e17b2368a84174f008ce31e4c7a3de1836e69b4e5c1570e8722aa6b2c56d696",
+    "unchanged": true
+  },
+  "native_plan": {
+    "path": "/home/whwovy/califreeEEG/configs/analysis/metadata_prior_source39_v1.json",
+    "sha256": "ed67cc1f361ed89c37b6f7c5df1e9170b78484e428a5105020485c8c03e3934b",
+    "use": "native input/preprocessing/weight provenance only; not old scientific learner"
+  },
+  "native_root": "/home/whwovy/metadata-prior-source39-v1/native-cold-r1",
+  "native_manifest_sha256": "15c088048f3435a500d3758138c3cd6a1616e869d568bdf68d10bcc5e978d83a",
+  "numeric_metadata": "Existing source39 projection SHA1082a81d23ebffe26e8451a9e99f1a7d4c84d0ba2d9d00c6695b3a5c6a5114d4; lexical index all780 packets, convert exact support prefixes only. Inherited float32 precision, not fresh independent metadata.",
+  "native_weights": {
+    "ETRCA": [
+      [
+        1.25,
+        0.6704482076268572,
+        0.5032785618838642,
+        0.42677669529663687,
+        0.3837480609952844
+      ],
+      [
+        1.5,
+        0.7973017787506802,
+        0.6462304458836103,
+        0.5883883476483185,
+        0.5598139512488488
+      ]
+    ],
+    "A0_author": [
+      [
+        1.25,
+        0.5,
+        0.3611111111111111,
+        0.3125,
+        0.29
+      ],
+      [
+        1,
+        0.42044820762685725,
+        0.25327856188386416,
+        0.1767766952966369,
+        0.1337480609952844
+      ]
+    ]
+  },
+  "output_root": "/home/whwovy/task-trca-shape-source39-v1-attempt1",
+  "output_budget_bytes": 12884901888,
+  "max_seconds": 7200,
+  "device": "cuda",
+  "backend": "batch",
+  "precision": "float64",
+  "cpu_threads": 1,
+  "gpu_memory_fraction": 0.16,
+  "code_pins": {
+    "src/cfeg/analysis/task_trca_shape_archive.py": "475e563f663108667fea644d5563e6d828e8af03ad3830b5af0da8250af09923",
+    "src/cfeg/analysis/task_trca_shape_artifact_audit.py": "780e5de51ac65e0d900a8762ddc3b514a4929625ba9490edab87bb86453755b1",
+    "src/cfeg/analysis/task_trca_shape_audit.py": "4b462b90f213d8e4e89e20adf4868ef8f3f39bd8be77c96a153016f9c7c256b8",
+    "src/cfeg/analysis/task_trca_shape_batch.py": "771f98b519a19660e707c72fbf4dc0120aa12c6db514597255a061f622691b4a",
+    "src/cfeg/analysis/task_trca_shape_evaluation.py": "27d2f3350f56f00560f3af3d562051c997be70f7ab5c8a78b6e4da7a56c0cc79",
+    "src/cfeg/analysis/task_trca_shape_features.py": "feb77445244e5b6e81c2137176f03ae9d0daf7e34f96fd35c38deaa017ce5ec5",
+    "src/cfeg/analysis/task_trca_shape_inputs.py": "a85d60eac7094aacc07b609bb79f7c8eda5e8f4feb97e845c58593194d3f3f44",
+    "src/cfeg/analysis/task_trca_shape_learning.py": "06eeb2888615b18b714153f8c4aa6a967433ea44957e2e28c0cc81bfcd39a340",
+    "src/cfeg/analysis/task_trca_shape_operator.py": "e0aab61f200983d83f7b8ff82efe76916e6ccaf3e506b6acd83e9ec1535f0449",
+    "src/cfeg/analysis/native_support_prefix.py": "181de5fed9a26ba5dfe4a1c07cbdab57a1af82a25c37c8d1a2b46a6adaeac16f",
+    "src/cfeg/analysis/metadata_prior_source.py": "35f96be11900fc20923ba67090c0da19df3ad86ad894f344fc4ebc0c4744a849",
+    "src/cfeg/analysis/metadata_trca_prior.py": "71f7f54e91b9afaf0f571b75da64d4adb7d36d72dc1fe6c2e0d8afab2425baed",
+    "scripts/run_task_trca_shape_source39.py": "dd9ff7434d15b081d055e86da0c3d84c757cd29fb987bd256cd539b10dd74d2c",
+    "scripts/audit_task_trca_shape_source39.py": "27ae645a2cc04f091a77b7e403e3b8c6c7814759a7563bb2b216180f29ecea4e",
+    "scripts/check_task_trca_shape_batch.py": "5cfa6b0cf7dbdae56321844e3e72e6ac03a02a4fe4b8c3b273e8ba18177d43b1"
+  },
+  "verification": {
+    "task_shape_tests": 336,
+    "full_suite_tests": 2213,
+    "full_suite_seconds": 251.86,
+    "existing_warnings": 68,
+    "batch_receipt": "/home/whwovy/task-trca-shape-execution-engineering-pdnQo9/batch.json",
+    "batch_receipt_sha256": "9360aeec82502d729bd90fb8df63fb4c140c627131f1548bc87684ddb275226c",
+    "native_bridge_receipt": "docs/reports/task_trca_shape_native_bridge_v1.json",
+    "artificial_batch_coef_atol": 1e-7,
+    "artificial_batch_coef_rtol": 0.00001
+  },
+  "scientific_changes": false,
+  "scientific_retries": 0,
+  "post_outcome_tuning": false,
+  "automatic_held60_promotion": false,
+  "infrastructure_recovery": "Preserve failed attempt. Only input/transport/persistence defects may be corrected under unchanged science in a separately pinned receipt; numerical-policy/model/hyperparameter changes are not recovery.",
+  "completion": "All three source nested pipelines frozen before query. Internal independent statistic replay, then separate cold saved-artifact audit before accepted final report. Any unresolved input/numeric/audit error is VALIDITY_FAILURE, not negative efficacy.",
+  "evidence_scope": "repeatedly exposed source39 development, not independent confirmation"
+}
