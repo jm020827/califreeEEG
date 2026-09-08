@@ -22,8 +22,8 @@ import scipy
 from scipy.stats import t
 
 ROOT = Path(__file__).resolve().parents[1]
-PLAN_PATH = "configs/analysis/native_subset_headroom_source39_v1.json"
-PLAN_SHA = "d60578316bf55819f3ae19ae17f1dc43c506fed3fe8aaafd2dff8306d87644f6"
+PLAN_PATH = "configs/analysis/native_subset_headroom_source39_cold_r1.json"
+PLAN_SHA = "e7affb66540ed68703ac8aaea53c24841f32df944feaa4e698f073863b4e69a0"
 CELL = ("participant", "interface", "n_samples", "k")
 ROW = (*CELL, "method")
 METRICS = (
@@ -356,6 +356,28 @@ def guard_for(plan):
     return guard
 
 
+def validate_recovery(plan, previous):
+    require(
+        set(plan) == set(previous) | {"attempt_id", "prior_plan", "prior_attempt"},
+        "Recovery fields",
+    )
+    for key in previous:
+        if key not in ("authority", "output_root"):
+            require(plan[key] == previous[key], "Recovery changed scientific contract: " + key)
+    require(set(plan["authority"]) == set(previous["authority"]), "Recovery authority fields")
+    for key in previous["authority"]:
+        if key != "basis":
+            require(
+                plan["authority"][key] == previous["authority"][key], "Recovery authority drift"
+            )
+    require(plan["output_root"] != previous["output_root"], "Failed attempt must remain untouched")
+    require(
+        plan["attempt_id"]
+        == Path(plan["output_root"]).name.replace("headroom-", "native-subset-headroom-", 1),
+        "Explicit new attempt identity",
+    )
+
+
 def preflight():
     require(len(sys.argv) == 1, "No CLI overrides")
     raw = (ROOT / PLAN_PATH).read_bytes()
@@ -379,6 +401,7 @@ def preflight():
     commit, tree = [git("rev-parse", spec).decode().strip() for spec in ("HEAD", "HEAD^{tree}")]
     sources = {
         PLAN_PATH: PLAN_SHA,
+        plan["prior_plan"]["path"]: plan["prior_plan"]["sha256"],
         plan["science"]["path"]: plan["science"]["sha256"],
         **plan["helpers"],
         "scripts/native_subset_headroom.py": None,
@@ -390,6 +413,7 @@ def preflight():
         hashes[relative] = digest(content)
         require(pin is None or hashes[relative] == pin, "Pinned source drift")
         loaded[relative] = content
+    validate_recovery(plan, json.loads(loaded[plan["prior_plan"]["path"]]))
     for relative in plan["helpers"]:
         module = ModuleType(Path(relative).stem)
         module.__file__ = str(ROOT / relative)
@@ -408,6 +432,8 @@ def execute():
     codecs.lookup("cp437")  # ZIP member-name decoding, no human data required.
     common = {
         "study_id": plan["study_id"],
+        "attempt_id": plan["attempt_id"],
+        "prior_attempt": plan["prior_attempt"],
         "source_commit": commit,
         "source_tree": tree,
         "execution_plan_sha256": PLAN_SHA,

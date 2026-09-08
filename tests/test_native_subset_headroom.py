@@ -319,3 +319,22 @@ def test_preflight_pins_git_and_runtime_without_human_reads(monkeypatch, failure
     else:
         with pytest.raises(ValueError):
             H.preflight()
+
+
+@pytest.mark.parametrize(
+    "changed", [None, "inputs", "reporting", "runtime", "authority", "output_root"]
+)
+def test_recovery_changes_identity_not_science(changed):
+    plan = json.loads((H.ROOT / H.PLAN_PATH).read_text())
+    previous = json.loads((H.ROOT / plan["prior_plan"]["path"]).read_text())
+    if changed == "authority":
+        plan[changed]["policy_fit"] = True
+    elif changed == "output_root":
+        plan[changed] = previous[changed]
+    elif changed is not None:
+        plan[changed] = {}
+    if changed is None:
+        H.validate_recovery(plan, previous)
+    else:
+        with pytest.raises(ValueError):
+            H.validate_recovery(plan, previous)
