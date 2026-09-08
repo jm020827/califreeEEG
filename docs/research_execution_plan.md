@@ -1,5 +1,7 @@
 # califreeEEG 연구 실행 계획
 
+> 2026-09-09 **새 goal 진행 중**: [Metadata 학습 후보2개 프로그램](metadata_learning_program_v1.md)의 가족·예산·중단 규칙을 고정했다. C1 temporal-R 다음 조건부 C2 pair-S이며 C2 수식/특징도 새 사람 학습 전에 고정했다. 이번 명시적 위임은 사전검증을 통과한 새 source39 개발 실행을 포함한다. 현재 reader/실행/독립 감사 구현 중, 새 사람 학습·query0이다. Held60·외부 요청·유료 자원·옛 종료 후보 재개는 제외하며 문서/단위테스트만으로 연구 goal을 완료하지 않는다. 아래 engineering-only 권한은 이전 단계 이력이다.
+
 > 2026-09-09 [Temporal Q/QM 학습기 통합 검증 완료](task_trca_temporal_v1_engineering.md): 같은 새 점수의 Q/QM/Q2/SHAM 및 원 FULL_NATIVE/별도 FULL_CENTERED 대조 설계를 고정했다. 실제 Q15·Q 동결·잔차·nested 학습을 생성6명에서 연결했고, 네 head CPU/CUDA 일치·독립 cold 감사·전체2376tests PASS를 확인했다. **사람 EEG 효능·metadata 보정량 절감은 미평가**다. 이번 source archive/실제 M/기존 실패 진단/사람 query/held60 접근0. 다음은 새 역할 제한 reader·완료 경로 감사·실행 manifest의 별도 구현·생성 검증이며, 기존 실패 후보 재개나 source39 자동 실행은 없다. 아래는 이전 단계 이력이다.
 
 > 2026-09-08 [필터 부호 독립 수학·인공 검증 완료](task_trca_shape_signfree_v1_engineering.md): 새 C-normalized projector와 성분별 시간중심 점수의32tests·CPU/CUDA·독립 SciPy 검산을 통과했다. 보존된 실패 행렬 한 지점에서도 계산·1차 미분을 확인했다. **Native 점수와 일반적으로 다른 별도 후보이며 metadata 효과·보정량 절감은 미평가**다. 기존 실제 후보는 종료 유지, 새 사람 학습·query·held60 접근0(이미 노출된 작은 진단 JSON만 재검산). 다음은 동일 새 scorer의 Q/QM 및 native/centered FULL 대조 설계·실제 learner 결합 검증이다. 자동 사람 재실행은 없다. 아래는 이전 단계 이력이다.

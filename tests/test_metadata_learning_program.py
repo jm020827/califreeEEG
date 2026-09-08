@@ -76,7 +76,9 @@ def test_generated_fixture_deterministic_and_query_not_tiled():
         np.testing.assert_array_equal(left[pid], right[pid])
         np.testing.assert_array_equal(a0[pid], repeated_a0[pid])
         assert left[pid].shape == (2, 10, 12, 5, 8, 17)
-        assert not np.array_equal(left[pid][:, 6], left[pid][:, 7])
+        for first in range(6, 10):
+            for second in range(first + 1, 10):
+                assert not np.array_equal(left[pid][:, first], left[pid][:, second])
 
 
 def test_generated_builder_refuses_overwrite_before_creating_inputs(tmp_path):
@@ -84,3 +86,32 @@ def test_generated_builder_refuses_overwrite_before_creating_inputs(tmp_path):
     with pytest.raises(ValueError, match="new unaliased"):
         module.build_inputs(tmp_path)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_generated_builder_persists_immutable_self_consistent_archives(tmp_path):
+    module = generator()
+    root = tmp_path / "generated-inputs"
+    plan_path, plan = module.build_inputs(root)
+    receipt = json.loads((root / "result.json").read_text())
+    fixture = json.loads((root / "fixture.json").read_text())
+    assert receipt["status"] == "GENERATED_COMPLETE"
+    assert receipt["plan_sha256"] == module.sha(plan_path)
+    assert receipt["source_subject_ids"] == list(module.IDS)
+    assert fixture["human_artifact_reads"] is False
+    assert fixture["metadata_effect"] == "NOT_EVALUATED"
+    projection = json.loads(Path(plan["source_projection"]["path"]).read_text())
+    assert projection["schema"] == "cfeg.GENERATED.temporal.projection.v1"
+    assert len(projection["packets"]) == 780
+    for item in receipt["files"]:
+        path = root / item["filename"]
+        assert module.sha(path) == item["sha256"]
+        assert path.stat().st_size == item["bytes"]
+        with np.load(path, allow_pickle=False) as data:
+            assert set(data.files) == {"x_17", "full_17", "a0_17"}
+            assert data["x_17"].shape == (2, 10, 12, 5, 8, 17)
+            assert data["full_17"].shape == (2, 2, 4, 12, 5, 12)
+            assert data["a0_17"].shape == (2, 4, 12, 5, 12)
+            for name in data.files:
+                assert np.isfinite(data[name]).all()
+    for path in root.iterdir():
+        assert path.is_file() and path.stat().st_mode & 0o777 == 0o400
