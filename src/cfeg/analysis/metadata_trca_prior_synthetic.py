@@ -363,9 +363,11 @@ def run_suite() -> dict:
                         predicted = scores.argmax(axis=-1)
                         predictions[arm] = predicted
                         diagnostics = model.diagnostics
-                        if arm == "MISSING":
-                            np.testing.assert_array_equal(prior[arm], prior["Q"])
-                            np.testing.assert_array_equal(predicted, predictions["Q"])
+                        if arm == "MISSING" and (
+                            not np.array_equal(prior[arm], prior["Q"])
+                            or not np.array_equal(predicted, predictions["Q"])
+                        ):
+                            raise AssertionError("Numeric-denial M must reproduce Q exactly")
                         rows.append(
                             {
                                 "scenario": scenario,

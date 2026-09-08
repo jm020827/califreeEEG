@@ -4,6 +4,8 @@ import ast
 import hashlib
 import importlib.util
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -185,6 +187,7 @@ def test_synthetic_modules_have_no_data_loading_imports():
     }
     assert imports == {"numpy"}
     assert "open(" not in Path(syn.__file__).read_text()
+    assert "np.testing" not in Path(syn.__file__).read_text()
 
 
 def test_frozen_json_and_runner_guards(tmp_path):
@@ -211,3 +214,39 @@ def test_frozen_json_and_runner_guards(tmp_path):
     with pytest.raises(FileExistsError):
         runner.publish(result, {})
     assert result.stat().st_mode & 0o777 == 0o400
+
+
+def test_fresh_child_control_flow_without_testing_preimports():
+    # This is a cold control-flow fixture, not the declared numerical suite:
+    # duplicate four seed4701 participants and stub the eigensolver/scoring.
+    root = Path(__file__).resolve().parents[1]
+    code = """
+import json, sys
+from pathlib import Path
+from types import SimpleNamespace
+sys.path.insert(0,str(Path.cwd()/"src"))
+sys.path.insert(0,str(Path.cwd()/"scripts"))
+import numpy as np
+from cfeg.analysis import metadata_trca_prior_synthetic as syn
+from run_metadata_trca_prior_synthetic import guard
+fixtures={s:syn.generate_participant(4701,s,0) for s in syn.SCENARIOS}
+syn.generate_participant=lambda seed,scenario,participant: fixtures[scenario]
+syn.op.fit_trca=lambda *args: SimpleNamespace(diagnostics={
+    "denominator_min_eigenvalues":[[1.0]], "top_eigenvalue_gaps":[[1.0]],
+    "denominator_norm_errors":[[0.0]], "penalty_trace":[[1.0]]})
+syn.op.score_trca=lambda *args: (np.zeros((24,12)),np.zeros((24,1,12)))
+assert "numpy.testing" not in sys.modules
+sys.addaudithook(guard)
+out=syn.run_suite()
+assert "numpy.testing" not in sys.modules
+print(json.dumps({"rows":len(out["rows"]),"attainment":len(out["attainment"])}))
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=True,
+    )
+    assert json.loads(result.stdout) == {"rows": 1728, "attainment": 864}
