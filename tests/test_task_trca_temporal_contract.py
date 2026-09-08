@@ -45,7 +45,7 @@ def test_frozen_design_keeps_old_metadata_gates_and_tightens_full_controls():
 def test_generated_probe_has_one_fixed_seed_and_shared_metadata_prefix():
     probe = module("check_task_trca_temporal_engineering")
     left, right = probe.fixture(), probe.fixture()
-    assert set(left) == set((*probe.SOURCE_IDS, *probe.EVAL_IDS))
+    assert set(left) == {*probe.SOURCE_IDS, *probe.EVAL_IDS}
     assert not set(probe.SOURCE_IDS) & set(probe.EVAL_IDS)
     for pid in left:
         for a, b in zip(left[pid], right[pid]):

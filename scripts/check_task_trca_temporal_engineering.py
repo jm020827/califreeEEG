@@ -150,13 +150,13 @@ def parity(bundles, *, cuda):
             np.testing.assert_allclose(left.coefficients, right.coefficients, atol=1e-7, rtol=0)
             errors[arm] = float(np.max(np.abs(left.coefficients - right.coefficients)))
         predictions, score_errors = {}, {}
-        for arm in cpu_predictions:
+        for arm, expected_predictions in cpu_predictions.items():
             predictions[arm] = np.stack(list(learn.predict(gpu, gpu_cases, arm).values()))
-            np.testing.assert_allclose(predictions[arm], cpu_predictions[arm], atol=1e-9, rtol=0)
+            np.testing.assert_allclose(predictions[arm], expected_predictions, atol=1e-9, rtol=0)
             np.testing.assert_array_equal(
-                predictions[arm].argmax(-1), cpu_predictions[arm].argmax(-1)
+                predictions[arm].argmax(-1), expected_predictions.argmax(-1)
             )
-            score_errors[arm] = float(np.max(np.abs(predictions[arm] - cpu_predictions[arm])))
+            score_errors[arm] = float(np.max(np.abs(predictions[arm] - expected_predictions)))
         result["cuda"] = {
             "executed": True,
             "device": torch.cuda.get_device_name(),
@@ -307,6 +307,7 @@ def run(output_root, *, cuda):
                 "no actual human reader/execution manifest or completed-path access audit",
                 "independent audit begins after recorded Q/S/C/statistics, not full raw/Adam replay",
                 "synthetic lambda cannot be transferred into a human experiment",
+                "generated evaluation repeats each of12trials four times; not48independent repeats",
             ],
         }
         write_json(output_root / "receipt.json", result)
