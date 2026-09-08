@@ -127,15 +127,85 @@ def run(*, cuda=False):
     }
 
 
+def run_nested():
+    """Execute the full fit graph once on six generated people, one condition.
+
+    Same predeclared seed, no feature/seed/optimizer selection beyond the frozen
+    three-lambda inner loop. This is not the 39-person/8-condition study.
+    """
+    torch.set_num_threads(1)
+    rng = np.random.default_rng(20260908)
+    cases = []
+    digest = hashlib.sha256()
+    for pid in range(20001, 20007):
+        prototype = rng.normal(size=(12, 5, 8, 17))
+        support = prototype[None] + rng.normal(size=(3, 12, 5, 8, 17))
+        source = prototype + rng.normal(size=prototype.shape)
+        packet = rng.uniform(0, 50, (3, 8))
+        for array in (support, source, packet):
+            digest.update(array.astype("<f8").tobytes())
+        cases.append(
+            learning.make_task_case(
+                pid,
+                0,
+                0,
+                support,
+                packet,
+                np.linspace(9, 14.5, 12),
+                source,
+                weights=np.ones(5),
+            )
+        )
+    start = time.perf_counter()
+    model, selection = learning.nested_fit(tuple(cases), outer_evaluation_ids=(30001, 30002))
+    seconds = time.perf_counter() - start
+    for row in selection["inner"]:
+        assert not set(row["fit_ids"]) & set(row["validation_ids"])
+        assert len(row["fit_ids"]) == 4 and len(row["validation_ids"]) == 2
+        assert set(row["pipeline"]["q_scaler"]["fit_ids"]) == set(row["fit_ids"])
+        assert all(d["donor_id"] in row["fit_ids"] for d in row["pipeline"]["donors"])
+        assert row["pipeline"]["Q"]["steps"] == 200
+        assert all(v["steps"] == 200 for v in row["pipeline"]["residuals"].values())
+    assert learning.choose_lambda(selection["inner"]) == selection["selected_lambda"]
+    return {
+        "status": "ARTIFICIAL_NESTED_GRAPH_PASS",
+        "seed": 20260908,
+        "input_sha256": digest.hexdigest(),
+        "artificial_participants": 6,
+        "conditions_per_participant": 1,
+        "samples": 17,
+        "k": 3,
+        "actual_pipeline_fits": 10,
+        "actual_head_fits": 40,
+        "actual_optimizer_steps": 8000,
+        "cpu_seconds": seconds,
+        "selected_lambda": selection["selected_lambda"],
+        "human_data_access": False,
+        "held60_access": False,
+        "efficacy_established": False,
+        "selection": selection,
+        "fit": model.record(),
+        "limitations": [
+            "artificial one-condition six-person engineering graph only",
+            "not source39 or 8-condition study",
+            "no outer-evaluation query values",
+            "not an independent artifact auditor or efficacy experiment",
+        ],
+    }
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cuda", action="store_true")
+    parser.add_argument("--nested", action="store_true", help="Full small artificial nested graph")
     parser.add_argument("--output", type=Path, help="Exclusive new engineering receipt file")
     args = parser.parse_args()
+    if args.cuda and args.nested:
+        parser.error("Nested graph is CPU-only; run CUDA parity separately")
     if args.output is not None and args.output.exists():
         raise FileExistsError("Engineering receipts cannot be overwritten")
     try:
-        result = run(cuda=args.cuda)
+        result = run_nested() if args.nested else run(cuda=args.cuda)
     except Exception as error:
         if args.output is not None:
             with args.output.open("x") as stream:
@@ -155,7 +225,7 @@ if __name__ == "__main__":
     if args.output is not None:
         with args.output.open("x") as stream:
             json.dump(result, stream, indent=2, allow_nan=False)
-        summary = {key: value for key, value in result.items() if key != "fit"}
+        summary = {key: value for key, value in result.items() if key not in ("fit", "selection")}
         summary["full_receipt"] = str(args.output.resolve())
         summary["full_receipt_sha256"] = hashlib.sha256(args.output.read_bytes()).hexdigest()
         print(json.dumps(summary, indent=2, allow_nan=False))
