@@ -1330,3 +1330,12 @@
 - 자원: 입력+실험182.164MiB, 명시적 실험/test parent 할당량합671.309MiB;source/docs/연구DB 증분 여유2GiB 이상이다. 모든 pytest512.04초에 기타검사15초 예약을 더해도1800초 한도 안이다. CPU1/GPU0/peakCUDA0,사람 자료·held60·외부요청·유료·설치·새worktree0이다.31runtime/code/documentpins 최종재확인전부OK,모든study파일0400이며 이전src/config/scripts/tests 수정0이다. 기존4개untracked test디렉터리와 두격리tree의예전출력도 보존했다.
 - `academic-research`: 새claim32189cbc583e2dac을QUALIFIED/3evidence로, 새technique69668107e8ee3d89을GENERATED_LEARNER_INTEGRATION_PASS/HUMAN_NOT_EVALUATED로 추가했다. 기존N1수치claim/옛C1/C2/유효부정결과를 덮어쓰지 않았다. Broadergap6a8254f849b36b2f는OPEN이다. 누적1060papers/80searches/41cards/14techniques/51claims/114evidence/38gaps/36deepreads/5analogies;render완료/SQLitequick_checkok. 이번새검색/PDF0,cutoff2026-09-04의 완전성 주장을 하지 않는다.
 - 유한 인공 통합 단계만 종료하며 원연구 goal은미완료다. 다음은 새N1-source39개발후보1개,새primary1회/모델세트queryreveal1회/24,000updates의 별도 승인 제안이다. 새사람용reader/입력pin/전체shape자원리허설과 고정한 원metadata/calibration/cost/harm대조 기준이 필요하다. 현재 생성A0는실제k0근거가 아니며,source39는노출개발자료다. 옛C1/C2재개·자동N2전환·실자료접근·held60·외부요청·유료실행은 하지 않았다.
+
+## AUTHORIZE/FREEZE/IMPLEMENT-20260909-100 — 새 N1 source39 개발 후보
+
+- 사용자 “응 승인. 계속.”에따라 새후보1회의 설계ac9ff1d SHA bb90cc361a28c3e0a53861564ec007f38602cf5d16554e0923a6550eb1be7c95와38f102f 실행envelope를 등록생성/사람숫자읽기전에고정했다. 원goal미완료/기존C1·C2종료/모든과거실패·유효음성은유지한다.
+- 새study=task-trca-n1-source39-v1; 기존N1 math/algorithm schema는명시적으로재사용하고 새reader/token/manifest/model-source hash로권한을분리한다. Oldglobals monkeypatch나수학복제0이다. 인간primary1회/새모델세트queryreveal1회/24k/CPU1최대21600초/출력12GiB/RSS16GiB/VA32GiB다.
+- 등록seed15의416case/800update resource1에서36*fit+3*prepare+600≤21600,4*RSS≤16GiB를검사하고,새seed14의9ID/N17/24k same-code생성완료·cold1을통과해야human을실행한다. 이를39명fullnested전체생성재현이라고하지않는다. 첫등록관문실패시후속실자료중단/retry·N2fallback0이다. 가용디스크약190GiB/RAM약47GiB에서총16GiB출력을예약했다.
+- coordinate-worktree-changes:40기존tree/실패출력을보존하고2기존tree를새branch로재사용했다. Resource2파일/independent5파일/rootreader·prepare·runtime·tests를격리,root만공통계약/통합/실행/SQLite소유다. 새tree0/설치0/GPU0/held60·외부요청·유료0.
+- Root82tests PASS/pytest3.22초/process3.73초,원JUnit /home/whwovy/task-trca-n1-source39-root-toy-RMlGzW/run1.xml 보존. 정적I001/SIM117은등록전import/test형식만수정했다. 등록resource/생성/human읽기모두0이며독립lane통합/전체회귀가남았다.
+- academic-research 기존context/frontier/열린Mgap을재사용했다. 신규검색/PDF0; 현재불확실성은승인된실험이직접검증한다. Source39는노출개발/기술통계CI/관측0·36·60labels범위이고 결과후새claim/evidence를기록한다. Goal도구의과거blocked상태는resume API가없어유지되지만작업은새승인범위에서진행중이며전체goal완료가아니다.

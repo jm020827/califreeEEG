@@ -115,7 +115,8 @@ Base9d82e59/main, 가용198,971,316KiB(약190GiB), availableRAM약47GiB다.
 Resource packet5 pattern: [0,1]=0, [0,3]=NaN, [1,0]=NaN, [3,2]=NaN; order=full39 rank%2.
 실제 evaluation.pack_cases(cases) 한 벌을 fit 동안 메모리에 유지한다.
 Resource path=fresh /home/whwovy/task-trca-n1-source39-*/resource1.
-Generated는 별도 fresh parent의 inputs/generated_manifest.json(파일은 inputs의 sibling), output=task-trca-n1-source39-generated1.
+Science.inherit의 heads/training은 개념 그룹명이고 옛 JSON의 실제 learner 항목에 해당한다. 고정 수학·상수는 변경하지 않는다.
+Generated는 별도 fresh parent의 inputs/ 디렉터리와 sibling generated_manifest.json, output=task-trca-n1-source39-generated1.
 Human은 새 fresh parent의 human_manifest.json/output=task-trca-n1-source39-primary1이다.
 Generated inputs14개 구조는 옛 N1 그대로; resource/prior proof는 inputs 밖이다.
 Resource receipt 필수: status=GENERATED_RESOURCE_PASS,study_id,design_sha256,code_pins,seed,source_revision,fit_ids,

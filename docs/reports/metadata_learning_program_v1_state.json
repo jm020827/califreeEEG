@@ -1,6 +1,6 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "INCOMPLETE_GENERATED_N1_INTEGRATION_PASSED_NEW_HUMAN_PROGRAM_NOT_AUTHORIZED",
+  "goal_status": "INCOMPLETE_NEW_N1_SOURCE39_PROGRAM_AUTHORIZED_IMPLEMENTING_PREREQUISITES",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-09",
@@ -15,7 +15,7 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Separately approved generated N1 integration completed and independently passed; see docs/reports/task_trca_n1_integration_v1_state.json. Propose one new bounded source39 human-development candidate with separately approved input/model-reveal budget. Numerical-stability-v1 and old C1/C2 remain closed; no human efficacy, held60, outreach or paid action follows automatically.",
+  "next": "User explicitly approved one new N1 source39 developmental candidate. See docs/reports/task_trca_n1_source39_v1_state.json and frozen new design for resource/generated prerequisites before human access. Old C1/C2 remain closed and usage unchanged; held60/outreach/paid/GPU excluded.",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",
   "report": "docs/metadata_learning_program_v1_results.md",
   "completion_reconciliation": "docs/metadata_learning_program_v1_completion_audit.md"
