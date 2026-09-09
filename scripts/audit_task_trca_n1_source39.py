@@ -1,7 +1,7 @@
-"""Independent cold audit of a manifest-bound completed temporal attempt.
+"""Independent terminal audit of one new manifest-bound N1 source39 attempt.
 
-Reads generated source archives/projection only for byte hashes, then saved
-statistics for numerical replay. No producer, optimizer, N1 or source decoder imports.
+Reads authorized source archives/projection only for byte hashes, then completed
+saved statistics for numerical replay. No producer, optimizer or source decoder imports.
 """
 
 from __future__ import annotations
@@ -72,6 +72,18 @@ STUDY_ID = endpoint.STUDY_ID
 AUDIT_SECONDS = 1800
 SHA_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 QUERY_KINDS = ("query", "a0", "full_k3", "full_k5")
+OUTPUT_PARENT_ROOT = Path("/home/whwovy")
+
+
+def scoped_output(path):
+    return (
+        path.is_absolute()
+        and path.resolve() == path
+        and path.parent.parent == OUTPUT_PARENT_ROOT
+        and path.parent.name.startswith("task-trca-n1-source39-")
+        and path.parent.name != "task-trca-n1-source39-"
+        and path.name in ("task-trca-n1-source39-primary1", "task-trca-n1-source39-generated1")
+    )
 
 
 def _identity(info):
@@ -385,6 +397,7 @@ def resource_binding(manifest):
         and path.resolve() == path
         and path.name == "resource.json"
         and root.name == "resource1"
+        and root.parent.parent == OUTPUT_PARENT_ROOT
         and root.parent.name.startswith("task-trca-n1-source39-"),
         "canonical resource prerequisite",
     )
@@ -481,6 +494,7 @@ def generated_preflight_binding(manifest):
         and path.resolve() == path
         and path.name == "cold_audit.json"
         and output.name == "task-trca-n1-source39-generated1"
+        and output.parent.parent == OUTPUT_PARENT_ROOT
         and output.parent.name.startswith("task-trca-n1-source39-"),
         "new generated cold exact path",
     )
@@ -661,11 +675,7 @@ def validate_manifest(manifest, expected_sha, *, failure_only=False, bootstrap=F
     output, native_root = Path(manifest["output_root"]), Path(manifest["native_root"])
     basename = "task-trca-n1-source39-generated1" if generated else "task-trca-n1-source39-primary1"
     audit.require(
-        output.is_absolute()
-        and output.resolve() == output
-        and output.parent.name.startswith("task-trca-n1-source39-")
-        and output.name == basename
-        and manifest["attempt_id"] == basename,
+        scoped_output(output) and output.name == basename and manifest["attempt_id"] == basename,
         "canonical new output path",
     )
     if not failure_only:
@@ -1115,8 +1125,7 @@ def run(output, manifest_path, manifest_sha):
     failure_precedence(output)
     audit.require(not os.path.lexists(output / "cold_audit.json"), "cold audit append-only once")
     audit.require(
-        output.name == "task-trca-n1-source39-primary1"
-        and output.parent.name.startswith("task-trca-n1-source39-")
+        scoped_output(output)
         and Path(manifest_path)
         == output.parent
         / (
@@ -1124,7 +1133,7 @@ def run(output, manifest_path, manifest_sha):
             if output.name.endswith("generated1")
             else "human_manifest.json"
         ),
-        "canonical generated output/manifest before reads",
+        "canonical generated or human output/manifest before reads",
     )
     manifest, _ = read_pinned(manifest_path, manifest_sha)
     profile, contract = validate_manifest(manifest, manifest_sha)
@@ -1445,7 +1454,8 @@ def run_failure(output, manifest_path, manifest_sha):
         else "human_manifest.json"
     )
     audit.require(
-        Path(manifest_path) == output.parent / expected_name, "failure manifest exact path"
+        scoped_output(output) and Path(manifest_path) == output.parent / expected_name,
+        "failure output/manifest exact path",
     )
     manifest, _ = read_pinned(manifest_path, manifest_sha)
     failure, failure_descriptor = read_pinned(output / "failure.json")
@@ -1667,6 +1677,7 @@ def main(argv=None):
     signal.alarm(AUDIT_SECONDS)
     try:
         audit.require(not already_audited, "one terminal audit mode, append-only")
+        audit.require(scoped_output(output), "bounded terminal output path")
         audit.require(
             all(
                 os.environ.get(name) == "1"
@@ -1683,7 +1694,7 @@ def main(argv=None):
         publish(output / success_name, receipt)
     except Exception as exc:
         if (
-            output.resolve() == output
+            scoped_output(output)
             and output.is_dir()
             and not already_audited
             and not os.path.lexists(output / failure_name)

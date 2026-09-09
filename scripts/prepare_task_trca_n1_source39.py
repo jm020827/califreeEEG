@@ -1,6 +1,6 @@
-"""Build fixed GENERATED native archives for the real temporal completed-path rehearsal.
+"""Freeze new N1 generated inputs or a source39 human execution manifest.
 
-No human artifact is opened. This prepares immutable fixture inputs and a
+No human numerical artifact is opened. This prepares immutable inputs and/or a
 manifest; the actual runtime and independent cold CLI execute separately so
 their process-local data guards cannot be bypassed by this fixture builder.
 """
@@ -245,6 +245,15 @@ def prepare(
         or resource_proof.get("human_reads") is not False
     ):
         raise ValueError("Same-code completed full-shape resource proof required")
+    # Complete prerequisite verification precedes registration and the only RNG.
+    # These pure checks do not follow human input paths.
+    cold.prior_binding(design, pins)
+    prerequisite_manifest = {
+        "resource_preflight": artifact(resource_path),
+        "code_pins": pins,
+        "design": {"path": str(DESIGN), "sha256": expected},
+    }
+    cold.resource_binding(prerequisite_manifest)
     preflight = None
     if human:
         preflight_path = Path(preflight_path).absolute()
@@ -263,6 +272,7 @@ def prepare(
         ):
             raise ValueError("Same-code new generated completion required")
         preflight = artifact(preflight_path)
+        cold.generated_preflight_binding({**prerequisite_manifest, "preflight": preflight})
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     profile = design["human_profile"] if human else PROFILE
     started = time.monotonic()

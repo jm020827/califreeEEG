@@ -104,22 +104,32 @@ def descriptor(path):
     return {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
 
 
-def _space(path, required_bytes, output, budget_bytes):
+def _space(path, required_bytes, output, budget_bytes, *, failure_receipt=False):
     path = Path(path).absolute()
-    require(
-        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024 <= 16 * 1024**3,
-        "Frozen16GiB RSS exceeded",
-    )
+    if failure_receipt:
+        require(
+            output == path.parent
+            and path.name == "failure.json"
+            and required_bytes <= 1024**2
+            and type(budget_bytes) is int,
+            "Only bounded terminal failure may bypass the peak RSS check",
+        )
+    else:
+        require(
+            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024 <= 16 * 1024**3,
+            "Frozen16GiB RSS exceeded",
+        )
     if output is not None:
         require(path.parent == output and path.resolve() == path, "Exact output-only publication")
         used = sum(p.stat().st_size for p in output.iterdir() if p.is_file())
-        require(used + required_bytes + 1024**2 <= budget_bytes, "Output budget reserve exhausted")
+        reserve = 0 if failure_receipt else 1024**2
+        require(used + required_bytes + reserve <= budget_bytes, "Output budget reserve exhausted")
     return path
 
 
-def write_json(path, value, *, output=None, budget_bytes=None):
+def write_json(path, value, *, output=None, budget_bytes=None, failure_receipt=False):
     encoded = (json.dumps(value, indent=2, allow_nan=False) + "\n").encode()
-    path = _space(path, len(encoded), output, budget_bytes)
+    path = _space(path, len(encoded), output, budget_bytes, failure_receipt=failure_receipt)
     with path.open("xb") as stream:
         stream.write(encoded)
         stream.flush()
@@ -585,8 +595,6 @@ def _execute(manifest_path, manifest_sha, manifest, old, profile, revision):
     artifacts = {}
     publish_json = partial(write_json, output=output, budget_bytes=manifest["output_budget_bytes"])
     publish_npz = partial(write_npz, output=output, budget_bytes=manifest["output_budget_bytes"])
-    journal = AccessJournal(output / "access.jsonl", state, manifest_sha)
-    event = EventJournal(output / "events.jsonl", journal, started, manifest["output_budget_bytes"])
 
     def progress(row, fold):
         require(
@@ -631,6 +639,10 @@ def _execute(manifest_path, manifest_sha, manifest, old, profile, revision):
                 "generated": profile.generated,
                 "profile": profile.record(),
             },
+        )
+        journal = AccessJournal(output / "access.jsonl", state, manifest_sha)
+        event = EventJournal(
+            output / "events.jsonl", journal, started, manifest["output_budget_bytes"]
         )
         native_root = Path(manifest["native_root"])
         readable = [
@@ -1064,6 +1076,9 @@ def _execute(manifest_path, manifest_sha, manifest, old, profile, revision):
                 "manifest_sha256": manifest_sha,
                 "interpretation": "Candidate attempt stopped; no scientific tuning, sample exclusion, or efficacy interpretation of partial results",
             },
+            output=output,
+            budget_bytes=manifest["output_budget_bytes"],
+            failure_receipt=True,
         )
         raise
     finally:
@@ -1119,6 +1134,9 @@ def main(argv=None):
                         "time": now(),
                         "interpretation": "Invocation failed before numerical input/optimizer; no automatic retry",
                     },
+                    output=output,
+                    budget_bytes=manifest["output_budget_bytes"],
+                    failure_receipt=True,
                 )
         except (OSError, ValueError, KeyError, TypeError) as receipt_error:
             # Preserve the original error; no fallback writes outside the scope.

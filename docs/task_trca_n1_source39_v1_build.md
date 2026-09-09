@@ -134,6 +134,10 @@ BOOTSTRAP_AUTHORITY 예외: exact manifest/code/path 확인 뒤 _execute 이전�
 failure.json만 남긴다. Start/journals가 존재한다고 하지 않으며 partial_files/artifacts={}와
 completed/budgeted/charged/query=0,models_frozen=false,human_numeric_reads=false를요구한다.
 이 좁은 상태도 failure-only 감사로 계보/0counter/단일파일을검사한다. Invalid/broadpath에는쓰지않는다.
+등록 전 교차검토 보충: prepare는 prior/resource/new-generated 증명의 전체 binding을 registration/RNG보다
+먼저 확인한다. Cold도 /home/whwovy 아래 exact parent/두 basename을 독립 확인한다. RSS초과 뒤에는
+1MiB 이하 failure.json만 exact output/전체 byte budget/단일생성/0400 조건으로 RSS검사를 우회해 남긴다.
+Start와 journal 초기화도 예외처리 안이다. 저장장치 자체 실패로 증명이 불완전하면 감사PASS를 보장하지 않는다.
 
 Human isolated zero/nearzero를구조적무작동이라고하지않지만,옛endpoint의 세outer QM잔차전체정확0
 인증은 유지한다. 새로운 same-code완료경로는 작은profile, 별도416case검사는fullwindow부하검사다.

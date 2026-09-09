@@ -6,6 +6,8 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+import types
 import zipfile
 from pathlib import Path
 
@@ -825,7 +827,7 @@ def test_zero_byte_partial_failure_file_can_be_hashed(tmp_path):
 def test_bootstrap_failure_preserves_scoped_zero_read_receipt(tmp_path, monkeypatch, generated):
     output = tmp_path / "new-attempt"
     path = tmp_path / ("generated_manifest.json" if generated else "human_manifest.json")
-    value = {"output_root": str(output)}
+    value = {"output_root": str(output), "output_budget_bytes": 4 * 1024**2}
     binding = write_json(path, value)
     monkeypatch.setattr(runtime, "validate_manifest", lambda data, profile: data)
 
@@ -884,3 +886,114 @@ def test_bootstrap_invalid_authority_writes_nothing(tmp_path, monkeypatch, inval
             ]
         )
     assert not output.exists()
+
+
+def test_memory_limit_still_allows_only_bounded_terminal_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        runtime.resource, "getrusage", lambda _: types.SimpleNamespace(ru_maxrss=17 * 1024**2)
+    )
+    with pytest.raises(ValueError, match="RSS"):
+        runtime.write_json(tmp_path / "start.json", {})
+    for name, size in (("start.json", 1), ("failure.json", 1024**2 + 1)):
+        with pytest.raises(ValueError, match="Only bounded"):
+            runtime.write_json(
+                tmp_path / name,
+                {"x": "x" * size},
+                output=tmp_path,
+                budget_bytes=4 * 1024**2,
+                failure_receipt=True,
+            )
+    pin = runtime.write_json(
+        tmp_path / "failure.json",
+        {"status": "VALIDITY_FAILURE"},
+        output=tmp_path,
+        budget_bytes=4 * 1024**2,
+        failure_receipt=True,
+    )
+    assert pin["bytes"] < 1024**2 and (tmp_path / "failure.json").stat().st_mode & 0o777 == 0o400
+
+
+def test_journal_initialization_failure_is_preserved_before_input_read(monkeypatch):
+    with tempfile.TemporaryDirectory(
+        prefix="task-trca-n1-source39-toy-", dir="/home/whwovy"
+    ) as directory:
+        parent = Path(directory)
+        output = parent / "task-trca-n1-source39-generated1"
+        value = {
+            "output_root": str(output),
+            "output_budget_bytes": 4 * 1024**2,
+            "max_seconds": 20,
+            "device": "cpu",
+        }
+        monkeypatch.setattr(runtime, "_audit_module", lambda: None)
+
+        def failure(*args):
+            raise OSError("Toy journal initialization failure")
+
+        monkeypatch.setattr(runtime, "AccessJournal", failure)
+        with pytest.raises(OSError, match="Toy journal"):
+            runtime._execute(
+                parent / "generated_manifest.json", "a" * 64, value, {}, PROFILE, "toy"
+            )
+        failure_record = json.loads((output / "failure.json").read_text())
+        assert set(failure_record["partial_files"]) == {"start.json"}
+        assert failure_record["state"]["query_access_count"] == 0
+        assert failure_record["state"]["optimizer_updates_charged"] == 0
+
+
+@pytest.mark.parametrize("rejected_gate", ["prior", "resource"])
+def test_prepare_full_prerequisites_precede_registration_and_rng(
+    tmp_path, monkeypatch, rejected_gate
+):
+    spec = importlib.util.spec_from_file_location(
+        "source39_prepare_gate_toy", SCRIPT.parent / "prepare_task_trca_n1_source39.py"
+    )
+    prepare = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(prepare)
+    checks = []
+
+    def gate(name):
+        def check(*args):
+            checks.append(name)
+            if name == rejected_gate:
+                raise ValueError("Toy complete prerequisite rejection")
+
+        return check
+
+    fake_cold = types.SimpleNamespace(
+        CODE_PATHS=runtime.CODE_PATHS,
+        prior_binding=gate("prior"),
+        resource_binding=gate("resource"),
+    )
+    fake_spec = types.SimpleNamespace(loader=types.SimpleNamespace(exec_module=lambda _: None))
+    monkeypatch.setattr(
+        prepare,
+        "importlib",
+        types.SimpleNamespace(
+            util=types.SimpleNamespace(
+                spec_from_file_location=lambda *a: fake_spec, module_from_spec=lambda _: fake_cold
+            )
+        ),
+    )
+    monkeypatch.setattr(prepare, "subprocess", types.SimpleNamespace(run=lambda *a, **kw: None))
+    monkeypatch.setattr(
+        prepare, "generated_values", lambda: pytest.fail("Registered RNG before prerequisite")
+    )
+    pins = {name: sha(runtime.ROOT / name) for name in runtime.CODE_PATHS}
+    resource_pin = write_json(
+        tmp_path / "resource.json",
+        {
+            "status": "GENERATED_RESOURCE_PASS",
+            "code_pins": pins,
+            "design_sha256": runtime.DESIGN_SHA,
+            "updates_completed": 800,
+            "human_reads": False,
+        },
+    )
+    with tempfile.TemporaryDirectory(
+        prefix="task-trca-n1-source39-toy-", dir="/home/whwovy"
+    ) as directory:
+        with pytest.raises(ValueError, match="Toy complete prerequisite"):
+            prepare.prepare(Path(directory), Path(resource_pin["path"]), resource_pin["sha256"])
+        assert not list(Path(directory).iterdir())
+    assert checks == (["prior"] if rejected_gate == "prior" else ["prior", "resource"])

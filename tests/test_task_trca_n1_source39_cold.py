@@ -452,6 +452,7 @@ def manifest_bundle(tmp_path, monkeypatch):
             stream.write(value)
         pins[name] = hashlib.sha256(value).hexdigest()
     monkeypatch.setattr(cold, "ROOT", repo)
+    monkeypatch.setattr(cold, "OUTPUT_PARENT_ROOT", tmp_path)
     monkeypatch.setattr(cold, "prior_binding", lambda *args: None)
     monkeypatch.setattr(cold, "resource_binding", lambda *args: None)
     parent = tmp_path / "task-trca-n1-source39-toy"
@@ -1047,6 +1048,7 @@ def test_resource_proof_independent_binding_and_screening(manifest_bundle, monke
     real_spec = importlib.util.spec_from_file_location("source39_resource_binding_test", SCRIPT)
     real = importlib.util.module_from_spec(real_spec)
     real_spec.loader.exec_module(real)
+    monkeypatch.setattr(real, "OUTPUT_PARENT_ROOT", manifest_bundle["parent"].parent)
     if defect == "status":
         receipt["status"] = "RESOURCE_PREFLIGHT_PASS"
     elif defect == "seed":
@@ -1308,6 +1310,9 @@ def test_bootstrap_failure_empty_scope_and_no_human_input_binding(
 
 @pytest.mark.parametrize("fails", [False, True])
 def test_failure_cli_uses_terminal_receipts_once(tmp_path, monkeypatch, fails):
+    monkeypatch.setattr(cold, "OUTPUT_PARENT_ROOT", tmp_path)
+    tmp_path = tmp_path / "task-trca-n1-source39-toy" / "task-trca-n1-source39-generated1"
+    tmp_path.mkdir(parents=True)
     save(tmp_path / "failure.json", {"original": "preserved"})
 
     def selected(*_args):
@@ -1338,3 +1343,55 @@ def test_failure_cli_uses_terminal_receipts_once(tmp_path, monkeypatch, fails):
     assert not (tmp_path / "cold_audit.json").exists()
     with pytest.raises(ValueError, match="append-only"):
         cold.main(args)
+
+
+@pytest.mark.parametrize("generated", [False, True])
+def test_complete_entry_accepts_both_exact_basenames_before_manifest_read(
+    tmp_path, monkeypatch, generated
+):
+    monkeypatch.setattr(cold, "OUTPUT_PARENT_ROOT", tmp_path)
+    parent = tmp_path / "task-trca-n1-source39-toy"
+    output = parent / (
+        "task-trca-n1-source39-generated1" if generated else "task-trca-n1-source39-primary1"
+    )
+    output.mkdir(parents=True)
+    manifest = parent / ("generated_manifest.json" if generated else "human_manifest.json")
+
+    def reached(path, *args, **kwargs):
+        assert Path(path) == manifest
+        raise LookupError("Reached manifest only after exact entry scope")
+
+    monkeypatch.setattr(cold, "read_pinned", reached)
+    with pytest.raises(LookupError, match="Reached manifest"):
+        cold.run(output, manifest, "a" * 64)
+
+
+@pytest.mark.parametrize("failure_only", [False, True])
+def test_default_root_denies_external_basename_before_read_or_cli_write(
+    tmp_path, monkeypatch, failure_only
+):
+    assert cold.OUTPUT_PARENT_ROOT == Path("/home/whwovy")
+    parent = tmp_path / "task-trca-n1-source39-toy"
+    output = parent / "task-trca-n1-source39-generated1"
+    output.mkdir(parents=True)
+    if failure_only:
+        save(output / "failure.json", {"preserve": True})
+    before = {p.name: p.read_bytes() for p in output.iterdir()}
+    monkeypatch.setattr(cold, "read_pinned", lambda *a, **kw: pytest.fail("Out-of-scope read"))
+    with pytest.raises(ValueError, match="exact path|canonical"):
+        (cold.run_failure if failure_only else cold.run)(
+            output, parent / "generated_manifest.json", "a" * 64
+        )
+    args = [
+        "--output",
+        str(output),
+        "--manifest",
+        str(parent / "generated_manifest.json"),
+        "--manifest-sha256",
+        "a" * 64,
+    ]
+    if failure_only:
+        args.append("--failure-only")
+    with pytest.raises(ValueError, match="bounded terminal"):
+        cold.main(args)
+    assert {p.name: p.read_bytes() for p in output.iterdir()} == before
