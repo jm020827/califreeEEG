@@ -1,6 +1,6 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "INCOMPLETE_GENERATED_M_CAPACITY_PASS_REAL_CALIBRATION_UTILITY_OPEN",
+  "goal_status": "INCOMPLETE_SOURCE_CHANNEL_MARGIN_VALID_NEGATIVE_REAL_CALIBRATION_UTILITY_OPEN",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-10",
@@ -15,7 +15,8 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Generated capacity control remains closed and prior negatives unchanged. New source39 channel-margin probe has a prospective design and pure target tests165PASS, no human reads/fits. Exact k3/N250 support0-2/block5 source-only120ridgefit/oneaudit scope awaits approval; reader/full fitter/supervisor/audit still pending. This is incremental prediction versus fixed representations, not formal conditional independence or calibration savings. No old program reopening, held60, external requests or paid use.",
+  "next": "Separately approved source39 channel-margin probe closed as valid developmental negative: primary120fits/independent120replay,auditPASS;QMvsQ relativeMSEgain−.197percent,vsSHAM+.598percent below2percent. Do not rescue this same representation/target by retuning. Next review genuinely different paired acquisition information and mechanism before any new bounded learner/accuracy/calibration-cost study. Old program usage/failures unchanged; held60/requests/paid remain excluded.",
+  "latest_completed_probe_stage": "docs/reports/source39_channel_margin_probe_v1_execution_state.json",
   "latest_prospective_probe_stage": "docs/reports/source39_channel_margin_probe_v1_state.json",
   "latest_generated_capacity_stage": "docs/reports/n1_metadata_generated_efficacy_v1_state.json",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",

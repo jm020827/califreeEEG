@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **최신 실제 결과**: [channel-margin probe](source39_channel_margin_probe_v1_results.md)는 `NO_PROMISING_SIGNAL_IN_THIS_PROBE`/독립감사PASS로 종료했다. Source39 k3/N250의120fits와별도120감사재구성 완료;QM vsQ MSE−0.197%개선(오히려악화),vsSHAM+0.598%로사전기준미달이다. [실행상태](reports/source39_channel_margin_probe_v1_execution_state.json). 새정보기작없이같은M표현을재시도하지않고원목표/이전부정/held60보호를유지한다. 새분류정확도·보정절감은이번에측정하지않았다. 아래는과거이력이다.
+
 > 2026-09-10 **최신 상태**: [source39 channel-margin probe 사전 설계](source39_channel_margin_probe_v1_design.md)와 M-blind 표적을 구현했다. Generated/관련 회귀165PASS; 새 실제 자료·학습·held60 접근0. [상태·미구현 목록](reports/source39_channel_margin_probe_v1_state.json)에 reader/nested fit/실행·독립 감사가 남았음을 명시했다. 제안은 k3/N250 source blocks0–2와 block5만 사용하는 최대120ridge fits/primary1/audit1/retry0이며 새 범위 승인 전이다. 추가 예측력 진단이지 조건부 독립/정확도/보정 절감 증명이 아니고, 음성도 shared-slope 단일채널 표적에 한정한다. 아래 상태들은 과거 이력이다.
 
 > 2026-09-10 **현재 상태**: [Generated M 능력 대조](n1_metadata_generated_efficacy_v1_results.md)는 생성1/1600updates/독립감사1로 종료했다. 연결M QM−Q+15.7552%p, 비연결M0%p로 좁은 학습 경로의 능력을 확인했다. **실제 acquisition M 효용·보정량 감소는 미확립**이며, [직전 source39 유효음성](task_trca_n1_transport_recovery_r1_results.md)의 결과는 바뀌지 않는다. 연구목표 유지·전체goal미완료. 새로운 사람자료 후보/held60/외부요청/유료를 자동 실행하지 않는다. 후속은 실제M의 task-aligned 조건부 정보 검증 설계 제안이다. 아래 상태들은 과거 이력이다.

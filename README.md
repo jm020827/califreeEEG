@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **실제 source39 채널 판별력 probe 종료**: [결과·후속 판단](docs/source39_channel_margin_probe_v1_results.md). 승인된120ridge fits/독립120재구성/단회 실행을 마쳤고 감사PASS다. QM의 예측 MSE는 Q보다0.197% 증가, SHAM보다0.598% 감소로 사전2% 기준 미달이다. Q2보다13.13% 낮지만 Q2 자체가 Q보다 나빴으므로 metadata 이득으로 승격하지 않는다. 유효성 관문은 모두 통과했으며 이 한정 경로를 부정 결과로 종료한다. 최종 관련486testsPASS, held60/기존query6–9/외부요청/유료/GPU0. 정확도·보정 비용은 이번 단계에서 미측정이며 원 저보정 목표는 미완료다. 아래는 과거 단계 이력이다.
+
 > 2026-09-10 **후속 기작 진단 설계·표적 구현 완료**: [source39 채널 판별력 probe](docs/source39_channel_margin_probe_v1_design.md), [구현/권한 상태](docs/reports/source39_channel_margin_probe_v1_state.json). Metadata가 별도 source block의 상대 채널 판별력을 Q·비선형 Q2·SHAM 이상으로 예측하는지, k3/1초·참가자 분리·최대120ridge fits·유한 중단 규칙을 정했다. 순수 표적/관련 회귀검사165PASS이며 **실제 데이터 읽기·새 학습0**이다. Reader/전체 학습·감사는 아직 미구현, source39 재사용 범위 승인 전이다. 정식 조건부 독립 검정이나 보정 절감 실험으로 부르지 않는다. 원 목표·이전 부정 결과·held60 보호는 유지한다. 아래는 단계별 이력이다.
 
 > 2026-09-10 **인공 metadata 능력 대조 완료**: [결과와 후속 검증 계획](docs/n1_metadata_generated_efficacy_v1_results.md). 사전 고정한 생성1회·1600updates·독립 감사1회를 완료했다. 유용한 M 조건에서 Q49.28%→QM65.04%(+15.76%p), 비연결 M에서는 예측·정확도 변화0이다. **제한된 학습 경로의 인공 능력 증거이며 실제 EEG 효능·보정량 절감 증거는 아니다.** 이전 source39 부정 결과를 유지한다. 전체3692PASS/3CUDA-skips, 새 사람자료·held60·GPU·외부요청·유료0. 이번 단계는 종료, 전체 연구목표는 미완료이며 다음 실제 M의 조건부 정보 검증은 제안 상태다. 아래는 이전 단계 이력이다.
