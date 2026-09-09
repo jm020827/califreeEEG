@@ -1,12 +1,16 @@
 {
   "study_id": "numerical-stability-v1",
-  "status": "READY_FOR_ONE_REGISTERED_GENERATED_ONLY_RUN",
+  "status": "CLOSED_BOTH_NUMERICAL_METHODS_ELIGIBLE",
   "design_sha256": "04d0968d478c795e8a0860c561fcfb881b9d510b5777c1a7ff45e65764b6fbe8",
   "methods": ["N1_SYM_CHOLESKY", "N2_GVD_IMPLICIT"],
-  "registered_runs": 0,
+  "registered_runs": 1,
+  "independent_audits": 1,
+  "recommended_method": "N1_SYM_CHOLESKY",
+  "audit_sha256": "5299bc3412996b2a900597b6434202bd3a0c0d7354127b67faecb8dc213116b7",
+  "report": "docs/numerical_stability_v1_results.md",
   "human_reads": false,
   "query_reads_or_scores": 0,
   "gpu_used": false,
   "thread_goal_complete": false,
-  "note": "User approved only this separate numerical stage. V1 efficacy slots remain closed and all prior efficacy fields unchanged. 3002 full regression tests and independent read-only math review passed; actual registered inputs not yet executed."
+  "note": "Both methods passed all registered generated-only gates and independent high-precision audit; select N1 by prospective rule. Actual learner integration and human efficacy remain untested. This bounded numerical stage is closed; v1 efficacy slots remain closed and all prior efficacy fields unchanged."
 }
