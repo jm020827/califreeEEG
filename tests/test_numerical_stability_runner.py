@@ -1,6 +1,7 @@
 """Toy-only producer checks; registered data/seeds are not executed here."""
 
 import importlib.util
+import itertools
 from pathlib import Path
 
 import numpy as np
@@ -80,3 +81,49 @@ def test_gradient_selection_is_exact_without_registered_inputs():
     mask[960:] = True
     assert mask.sum() == 209
     assert set(np.flatnonzero(mask[:960])) == set(range(0, 960, 60)) | {851}
+
+
+def toy_measurement_inputs(runner):
+    cases = list(itertools.islice(runner.new_cases(31, "toy"), 2))
+    values = {
+        key: np.stack([item[0][j] for item in cases])
+        for j, key in enumerate(("s", "b", "c", "g", "ds", "db", "dc"))
+    }
+    values["gradient_mask"] = np.array([True, False])
+    for key, value in zip(("negative_s", "negative_b", "negative_c"), runner.negative_cases()):
+        values[key] = value
+    return values
+
+
+def test_integrated_measurement_masks_and_real_operator_api(runner):
+    arrays, failures, diagnostics, negative_errors = runner.measure(toy_measurement_inputs(runner))
+    assert failures == []
+    for prefix in ("n1", "n2"):
+        assert arrays[f"{prefix}_ok"].tolist() == [True, True]
+        assert arrays[f"{prefix}_gradient_ok"].tolist() == [True, False]
+        assert np.isfinite(arrays[f"{prefix}_gs"][0]).all()
+        assert np.isnan(arrays[f"{prefix}_gs"][1]).all()
+        assert arrays[f"{prefix}_negative_rejected"].all()
+        assert len(negative_errors[prefix]) == 9 and all(negative_errors[prefix])
+        assert all(d["residual"] <= 1e-12 for d in diagnostics[prefix])
+        np.testing.assert_allclose(arrays[f"{prefix}_f"], arrays[f"{prefix}_batch_f"], atol=1e-12)
+
+
+def test_recorded_scalar_failure_never_becomes_valid_output(runner, monkeypatch):
+    import cfeg.analysis.numerical_stability_operator as operator
+
+    original = operator.projector
+
+    def fail_first_method(s, b, c, method):
+        if method == "N1_SYM_CHOLESKY":
+            raise ValueError("injected fixed-method failure")
+        return original(s, b, c, method)
+
+    monkeypatch.setattr(operator, "projector", fail_first_method)
+    arrays, failures, diagnostics, _ = runner.measure(toy_measurement_inputs(runner))
+    assert not arrays["n1_ok"].any() and np.isnan(arrays["n1_f"]).all()
+    assert not arrays["n1_gradient_ok"].any() and np.isnan(arrays["n1_gs"]).all()
+    assert diagnostics["n1"] == [None, None]
+    assert len(failures) == 3
+    assert [item["stage"] for item in failures] == ["scalar", "scalar", "batch"]
+    assert arrays["n2_ok"].all()
