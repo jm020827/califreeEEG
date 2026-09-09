@@ -48,4 +48,12 @@ supervisor-only 실패를 남기고 감사 미실행·효능 미평가로 닫는
 
 ## 상태
 
-구현/검증 중. 새human numeric reads0, registered recovery primary0. 결과는 실행 후 추가한다.
+구현·실행 전 검증 완료. 새human numeric reads0, registered recovery primary0.
+원EventJournal 직접 closed-pipe 대조는 예상대로 실패했고, 새 일반파일 경로에서는 launcher의
+console/부모 종료 뒤에도 마지막 이벤트가 보존됐다. 관련301tests(새26+기존275) PASS29.16초,
+종료분기 테스트 민감도를 보강한 최종 새26tests PASS5.39초다. 네 pytest 호출 합45.07초에
+기타검사20초를 예약해도300초 이내, 임시출력 약53.0MiB<128MiB다. 원36pins전부불변/Ruff PASS.
+[원 검사 기록](/home/whwovy/task-trca-n1-transport-tests-tc0N2Q/preflight.json).
+수학 관련3575전체검사는 이전 원프로그램의 증거로 유지하며 이번에 다시 실행했다고 하지 않는다.
+독립 읽기전용 검토가 발견한 종료 직전 한도/감사watchdog/잔여자손3항목은 실자료 시작 전 수정했다.
+결과는 새 manifest/복구 receipt를 고정하고 단1회 실행한 뒤 추가한다.
