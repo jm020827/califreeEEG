@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 2026-09-09 추가 승인: [새 N1 source39 개발 후보1회](docs/task_trca_n1_source39_v1_build.md)의 구현·전체3575tests를 통과했다. [사전 검사/실패 보존 기록](docs/reports/task_trca_n1_source39_v1_preflight.json). 검증된 N1 수학은 그대로 재사용하며 최대크기 생성416case 자원 검사와 새 생성 완료경로 검증 뒤에만 실제39명 자료를 읽는다. 사람 primary1회/24,000updates/CPU최대6시간, 실패 후 자동 재시도0,held60·외부요청·유료·GPU0이다. 아래는 이전 완료 이력이다.
+> 2026-09-09 **새 N1 source39 개발 실험 실행 중**: [상태·설계·결과](docs/task_trca_n1_source39_v1_results.md). 전체3575tests,416case/800update 자원 검사,새 생성24,000update 및 독립cold를 모두 통과한 뒤 실제39명 primary1을 시작했다. 성능·보정량 결론은 아직 없다. CPU최대6시간/실제24,000updates/재시도0,held60·외부요청·유료·GPU0이며 기존 실패를 보존한다. 아래는 이전 완료 이력이다.
 
 > 2026-09-09 **N1 인공 학습기 통합 검증 완료**: [결과·해석·다음 제안](docs/task_trca_n1_integration_v1_results.md). 생성9개 ID/24,000updates를 실행하고, 네 학습 경로 작동·전체10arms·36평가조건·모든 모델의 query 전 동결을 독립 검산했다. 전체3300tests PASS. **인공자료 공학 검증이며 실제 metadata 효능·보정량 절감은 미평가**다. 사람 EEG·held60·GPU 접근0, 기존 실패·부정 결과 보존. 다음은 별도 새 후보·입력권한/모델개봉예산의 사람자료 개발 검증 제안이다. 원 goal은 미완료이며 아래는 시점별 이력이다.
 
