@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-09 추가 승인 후 **별도 인공 수치 안정화 검증 진행 중**: [고정 설계](docs/numerical_stability_v1_design.md). 두 수치 정책·1152개 행렬·209개 미분 사례를 사전 고정했다. 아직 등록 실험 전이며, 기존2후보 재개·새 사람자료/held60 접근은 없다. 전체 metadata 효능 goal은 미완료다. 아래 상태들은 시점별 이력이다.
+
 > 2026-09-09 상태 정정: **전체 연구 goal은 미완료·추가 승인 대기**다. 아래의 고정2후보 프로그램 종료는 전체 목표 완료가 아니다. 새 유효한 성능·보정량 비교는 아직 없으며, 다음 수치 검증 단계를 현재 계약 밖에서 자동 실행하지 않는다. [정정 근거](docs/metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정).
 
 > 2026-09-09 **고정 2후보 프로그램 종료**: [종합 결과와 후속 검증 계획](docs/metadata_learning_program_v1_results.md). C1은 source39의24,000updates 뒤 최종 수치 검증 실패, C2는 균일 대조군의 사전 인공 수치 검증 실패로 종료했다. 독립 실패 감사·전체2857tests PASS를 완료했지만 **효능·보정량 감소는 미평가이며 유망 후보는 없다.** 원 저보정 목표와 연구 질문은 유지한다. 사람 attempt1/query모델 개봉1/recovery0; held60·외부 요청·유료 자원0. 다음 수치 검증 연구는 별도 계획/승인 대상으로 남기며 세 번째 후보나 실패 재실행을 자동 추가하지 않는다. 아래는 이전 단계 이력이다.

@@ -1,6 +1,6 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "BLOCKED_REQUIRES_NEW_PROGRAM_AUTHORIZATION",
+  "goal_status": "INCOMPLETE_SEPARATELY_APPROVED_NUMERICAL_STUDY_IN_PROGRESS",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-09",
@@ -15,7 +15,7 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Proposed separate generated-only numerical methods study, requiring a new prospective decision and budget. No automatic rescue, third candidate or human/held60/outreach/paid action.",
+  "next": "User approved separate generated-only numerical-stability-v1; see docs/reports/numerical_stability_v1_state.json. This does not reopen v1 or authorize a human efficacy candidate, held60, outreach or paid action.",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",
   "report": "docs/metadata_learning_program_v1_results.md",
   "completion_reconciliation": "docs/metadata_learning_program_v1_completion_audit.md"

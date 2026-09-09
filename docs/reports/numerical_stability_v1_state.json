@@ -1,0 +1,12 @@
+{
+  "study_id": "numerical-stability-v1",
+  "status": "IMPLEMENTING_FROZEN_GENERATED_ONLY_STUDY",
+  "design_sha256": "04d0968d478c795e8a0860c561fcfb881b9d510b5777c1a7ff45e65764b6fbe8",
+  "methods": ["N1_SYM_CHOLESKY", "N2_GVD_IMPLICIT"],
+  "registered_runs": 0,
+  "human_reads": false,
+  "query_reads_or_scores": 0,
+  "gpu_used": false,
+  "thread_goal_complete": false,
+  "note": "User approved only this separate numerical stage. V1 efficacy slots remain closed and all prior efficacy fields unchanged. Actual registered inputs not yet executed."
+}

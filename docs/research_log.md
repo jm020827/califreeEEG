@@ -1279,3 +1279,10 @@
 - 전체 objective의 성능·보정량 비교는 미완료다. V1두후보 종료를 전체goal 완료로 올린 도구 판정은 부정확했으므로 `thread_goal_complete:false`, `BLOCKED_REQUIRES_NEW_PROGRAM_AUTHORIZATION`으로 정정한다. 원program/config·후보실패·미평가null·과거음성·2857tests기록은 변경하지 않는다. [종료 감사 정정](metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정)에 범위를 명시했다.
 - 현재HEAD75766f0의 계약/terminal과 관련process를 확인했다. 진행 중인 실험0이며 C1전체attempt실패/postquery수리금지, C2자체관문실패 때문에 적격실행경로0이다. 독립 검토자가 대안/복구권한을 다시 확인했다. 같은 추가승인 경계는091종료turn→092재점검turn→093현재turn에 연속되었고, 직전 재검증은 효능/다음행동에 변화를 주지 못해 연구진행 관점 NO_PROGRESS다. 승인 경계가 남아 있는데 완료 표시나 같은 감사만 반복하지 않는다.
 - 최소 다음 요청은 사람자료 재접근 없는 별도generated-only 수치 안정화 검증 단계의 승인이다. 새수식/오차기준/독립reference/미분/미노출사례/방법수·시간·출력 예산을 실행 전에 고정해야 하며 지금 제안 자체를 실행허가로 삼지 않는다. 사람재실험/C3/held60/외부요청/유료/새worktree/cleanup0. 이turn은 상태·권한 구분 정정만 수행했고 새 연구 실험을 한 것으로 보고하지 않는다.
+
+## AUTHORIZE/FREEZE-20260909-094 — 별도 generated-only 수치 안정화 연구 승인·사전 고정
+
+- 사용자 “응 승인.”을 별도 인공 수치 검증 권한으로 적용했다. 전체metadata효능/사람재실험 승인이 아니다. e10d2a8에서 [새설계](numerical_stability_v1_design.md)/JSON SHA04d0968d478c795e8a0860c561fcfb881b9d510b5777c1a7ff45e65764b6fbe8을 고정했다. N1명시적대칭Cholesky, N2고정CPUgvd+일반화projector VJP 두방법, 알려진인공960+새192사례/209gradient/9invalidcontrols,80dpsreference/120dps5점,실행1회/수치7200초/tests1800초/새출력1GiB/CPU1/GPU0이다.
+- Root/독립agent수식 검토는 N2의S/B VJP와C정규화항을 확인했다. 기존 top-only custom derivative도 lower-root중복을 이미 허용하므로 존재하지 않는 버그 수리로 부르지 않는다. 공식LAPACK/SciPy/Greenbaum–Li–Overton HTML의 해당 절을 읽었고 structuredfoundation/contrary검색2회, PDF정독0이다. 대칭화만으로 정확성이 증명되지 않아 실제저장binary64의고정밀해·최고root·C-metric projector·비상수loss방향미분을 판정한다.
+- c0c799e/c536950에서 [소유권/API/산출물 계약](numerical_stability_v1_implementation.md)을 고정했다. 기존 temporal-runtime/cold 두tree를새branch로재사용, main계약/producer/실제실행/SQLite단독, operator/auditor 각각신규2파일소유다. 처음operatorbranch를이전base에만든착오로원branch를보존하고 -main suffix의정확c0c799e기준branch를사용했다. 새tree/삭제/기존untracked변경0. 가용220,224,036KiB에서추가출력/test/checkout예약<1GiB다.
+- Producer ace6cfd와 toy6testsPASS.64초/RuffPASS. Toyseed17/19만사용했고등록seed20260910/11/12와기존인공NPZ는실행하지않았다. 기존programSHA78ca14d5…3a10과사람실패/음성효능자료불변. 구현·독립감사통합후cleanrevision/pins를동결하기전등록실험0이다.
