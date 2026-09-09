@@ -48,7 +48,8 @@ and cold implementation remain sequential until leaf and case contracts are inte
 - `stale_packet(packet) -> float64[k,8]`: block0 values with original prefix mask retained.
 - `fit_weighted_scaler(values, participant_ids, fit_ids, masses, availability=None)`
   -> immutable old `FeatureScaler`. Values [rows,d], IDs/masses [rows], availability [rows].
-  Masses finite nonnegative; available fitting mass globally normalized, weighted population
+  Masses finite strictly positive (all flattened rows are real pairs, no padding); available
+  fitting mass globally normalized, weighted population
   mean/SD; SD<1e-12 ->1; empty available mean0/scale1. Excluded participant/unavailable
   numeric rows may contain NaN and cannot affect fit. Caller assigns each Q/Q2 pair 1/n,
   and deduplicates M by pid/interface/k before flattening; verify duplicate packet equality.
@@ -67,7 +68,8 @@ and cold implementation remain sequential until leaf and case contracts are inte
   constant SPD C. Exactly B=C; original two triangular solves then unchanged
   `leading_projector(H)`; no pre-check H symmetrization. Original first-order/root-gap/
   symmetry guards. Backtransform K, symmetrize K as original, F=K/tr(C@K).
-  C trace near1 is a numerical invariant, not ridge/bounded-denominator logic.
+  Normalization must be finite and strictly positive. C trace near1 is recorded as a
+  diagnostic/test invariant, not a new runtime gate or C1 [1/1.1,1] ridge acceptance band.
 - `pair_projectors(s0,c,pair_cross,logits) -> F` composition only.
 - Temporal Gram constructor/scorer reused unchanged; no native-anchor or old R wrapper.
 
@@ -82,12 +84,23 @@ one deterministic seed 20260909 and records the first outcome. Required original
 stress test uses generated native support k3/5, 12 classes,5 bands,8 channels,N125;
 test target C condition levels [1,1000,100000,120000]. These are a declared engineering
 ladder spanning the approximately117362 maximum already diagnosed, not an efficacy sweep.
-Construct full-rank Gaussian support with class-shared repeat signal plus independent noise,
-then a channel congruence derived from each native C to attain each target spectrum; rebuild
+Use NumPy default_rng(20260909), draw shared[12,5,8,125] standard normal first, then
+noise[5,12,5,8,125] standard normal; support=shared+noise (both amplitude1), k3 is its first3
+blocks, k5 all5. For each k/class/band independently, diagonalize native C=U diag(lambda) U^T
+in ascending eigenvalue order. For target condition t use all8 geometric eigenvalues
+v_j=t^(j/7), j=0..7, mu=v*trace(C)/sum(v). Apply the symmetric orientation-preserving
+congruence T=U diag(sqrt(mu/lambda)) U^T to every block of that class/band. Do not rotate
+into a diagonal C basis. Rebuild
 native S0/C/A from transformed support. Keep templates uniform. Uniform and fixed linearly
 spaced bounded logits (−log2/2 to +log2/2) are evaluated with the original scalar and batch
-operator, no learned head or query/outcome needed for this stress gate. Record every level,
-first failing matrix and the actual condition/symmetry/root-gap diagnostics. Do not change
+operator, no learned head or query/outcome needed for this stress gate. Nonuniform logits
+increase with lexicographic pair index, shared across bands/classes; no reverse-direction
+search. Condition1 uses the same construction, not an alternate easier pipeline.
+Record every level,
+first failing matrix and the actual condition/symmetry/root-gap diagnostics. This gate has
+CPU1/60seconds/64MiB fresh output budget and zero optimizer updates; run every predeclared
+row even after a rejection solely to report this fixed coverage, never select a passing level.
+Do not change
 seed, spectrum, guard or math in response to failure. This is a numerical coverage check,
 not proof of human stability or biological realism; generated matrices never count as people.
 
