@@ -1,0 +1,103 @@
+{
+  "study_id": "task-trca-n1-source39-v1",
+  "status": "PRE_REGISTERED_RESOURCE_ENGINEERING_PASS",
+  "tested_runtime_revision": "4cf4525257c1f5d22dc47ff63b7223ca3f3c688f",
+  "design_sha256": "bb90cc361a28c3e0a53861564ec007f38602cf5d16554e0923a6550eb1be7c95",
+  "build_contract_sha256": "b0166530311296eeb13839ca3525771034c9eb421bca12c9d0a6ca990def8edb",
+  "combined_tests": {
+    "passed": 275,
+    "failures": 0,
+    "errors": 0,
+    "pytest_seconds": 19.34,
+    "process_seconds": 19.81,
+    "junit": "/home/whwovy/task-trca-n1-source39-root-toy-RMlGzW/integrated3.xml",
+    "sha256": "bf9764045e2f75fb6ea6733759ea9619c250526aa5636c36ec7c1a2a60de3f1e"
+  },
+  "full_tests": {
+    "passed": 3575,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "warnings": 68,
+    "pytest_seconds": 347.09,
+    "process_seconds": 348.1,
+    "junit": "/home/whwovy/task-trca-n1-regression-SnwwNY/junit.xml",
+    "sha256": "24ca3c06b0e9a8ca8f9d5d2c9fbd7b062e4923c425fd001b6dc1a163181ed7dc",
+    "allocated_output_kib": 477252
+  },
+  "aborted_full_test": {
+    "passed": 604,
+    "failures": 5,
+    "errors": 14,
+    "process_seconds": 73.29,
+    "junit": "/home/whwovy/task-trca-n1-source39-fulltests-KDKZ4w/junit.xml",
+    "sha256": "f8f4e1ea0f8badf79f3a25d244069037172ea5db8e43179e5849ce2d802a38b4",
+    "allocated_output_kib": 35632,
+    "cause": "Caller temporary parent included source39, correctly denied by existing V2 external-data path guards. Stopped with SIGINT after first failures, preserved JUnit. Only the next fresh test parent name changed; no test, protection or science relaxation."
+  },
+  "root_toy": {
+    "process_seconds": 66.83,
+    "passed_per_invocation": [
+      82,
+      87,
+      267,
+      271,
+      275
+    ],
+    "junit_parent": "/home/whwovy/task-trca-n1-source39-root-toy-RMlGzW",
+    "current_allocated_kib": 82252,
+    "fixture_retention": "Per-invocation JUnits retained; ordinary default .pytest-temp fixtures reused by pytest. No failed toy invocation."
+  },
+  "resource_lane": {
+    "process_seconds": 43.05,
+    "passed_per_invocation": [
+      27,
+      31,
+      32
+    ],
+    "junit_parent": "/tmp/task-trca-n1-source39-resource-toy-hVaY6O",
+    "toy_optimizer_updates": 2403,
+    "logical_output_bytes": 891361
+  },
+  "auditor_lane": {
+    "process_seconds": 14.74,
+    "passed_per_invocation": [
+      116,
+      141,
+      145,
+      148
+    ],
+    "junit_parent": "/tmp/n1-source39-audit-toys-HEjmAP",
+    "logical_output_bytes": 26213282,
+    "allocated_output_kib": 77980
+  },
+  "all_pytest_process_seconds": 546.01,
+  "all_tests_budget_seconds": 1800,
+  "full_regression_total_process_seconds": 421.39,
+  "full_regression_budget_seconds": 900,
+  "full_output_allocated_kib": 512884,
+  "full_output_limit_kib": 655360,
+  "additional_help_import_lint_seconds_reservation": 60,
+  "code_pin_count": 36,
+  "code_pin_sets_equal": true,
+  "imported_cfeg_modules_including_lazy_batch": 27,
+  "missing_import_pins": [],
+  "prior_generated_proof": "VERIFIED_NO_HUMAN_INPUT_READ",
+  "pre_registration_repairs": [
+    "Generated and human cold entry basenames plus canonical output roots",
+    "Complete prior/resource/new-generated bindings before registration/RNG",
+    "Bounded failure receipt despite historical peak RSS; journal initialization inside try",
+    "Small lint/test-format corrections"
+  ],
+  "ruff": "PASS",
+  "independent_read_only_review": "NO_REMAINING_MATERIAL_BLOCKER_AFTER_ACKNOWLEDGED_FIXES_AND_ROOT_REGRESSION",
+  "registered_resource_runs": 0,
+  "registered_fixture_generations": 0,
+  "registered_generated_complete_runs": 0,
+  "human_primary_attempts": 0,
+  "human_numeric_reads": false,
+  "held60": false,
+  "gpu_used": false,
+  "old_candidates_reopened": false,
+  "metadata_efficacy": "NOT_EVALUATED"
+}

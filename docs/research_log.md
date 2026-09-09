@@ -1339,3 +1339,10 @@
 - coordinate-worktree-changes:40기존tree/실패출력을보존하고2기존tree를새branch로재사용했다. Resource2파일/independent5파일/rootreader·prepare·runtime·tests를격리,root만공통계약/통합/실행/SQLite소유다. 새tree0/설치0/GPU0/held60·외부요청·유료0.
 - Root82tests PASS/pytest3.22초/process3.73초,원JUnit /home/whwovy/task-trca-n1-source39-root-toy-RMlGzW/run1.xml 보존. 정적I001/SIM117은등록전import/test형식만수정했다. 등록resource/생성/human읽기모두0이며독립lane통합/전체회귀가남았다.
 - academic-research 기존context/frontier/열린Mgap을재사용했다. 신규검색/PDF0; 현재불확실성은승인된실험이직접검증한다. Source39는노출개발/기술통계CI/관측0·36·60labels범위이고 결과후새claim/evidence를기록한다. Goal도구의과거blocked상태는resume API가없어유지되지만작업은새승인범위에서진행중이며전체goal완료가아니다.
+
+## INTEGRATE/VERIFY/FREEZE-20260909-101 — 새 N1 source39 실행 직전
+
+- Resource6c95aec→fff9c3c/independent e721e41→cb17755를 소유파일만 통합했다. Root 실제diff 검토 및 별도 read-only 교차검토에서 generated cold basename, 등록전 전체prerequisite 순서, RSS초과시 failure 기록, journal 초기화 예외범위를 수리했다. 4cf4525257c1f5d22dc47ff63b7223ca3f3c688f가 테스트한 runtime이다. 수학·features·대조군·문턱·seed 변경0, 등록전 engineering 수리다.
+- 새275tests PASS19.34초/process19.81초. Root5호출82/87/267/271/275 모두PASS66.83초;resource3호출27/31/32 모두PASS43.05초;auditor4호출116/141/145/148 모두PASS14.74초다. JUnit/해시/예산은 [사전 기록](reports/task_trca_n1_source39_v1_preflight.json)에 보존했다.
+- 첫full 호출은 caller임시부모의 source39 문자열이 기존V2 외부자료 보호규칙에 걸려5FAIL/14ERROR/604PASS 뒤SIGINT로73.29초에 중단했다. JUnit/출력35,632KiB 보존. 보호코드/테스트/과학을 바꾸지 않고 새 중립이름 parent에서 동일3575tests 모두PASS347.09초/process348.10초,68기존warnings다. 두full421.39초<900/출력512,884KiB<640MiB;전체pytest546.01초에 기타검사60초를 더해도1800초 이내다.
+- Runner/resource/cold의36pin집합 일치, lazy batch 포함 실제cfeg27모듈 전부pin 안, 이전 생성N1 proof와 공통수학hash 불변을 숫자자료 없이 검증했다. Ruff/diffcheck PASS. 새로운등록resource/fixture/primary/human읽기0이며 아래 clean freeze commit 이후resource1→generated1/cold1→human1/terminal1만 허용한다. 첫등록관문실패시 후보 종료/retry0이다.

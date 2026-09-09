@@ -1,6 +1,6 @@
 {
   "study_id": "task-trca-n1-source39-v1",
-  "status": "AUTHORIZED_IMPLEMENTATION_BEFORE_REGISTERED_RESOURCE_GENERATION_OR_HUMAN_READS",
+  "status": "ENGINEERING_PASS_BEFORE_REGISTERED_RESOURCE_GENERATION_OR_HUMAN_READS",
   "design_sha256": "bb90cc361a28c3e0a53861564ec007f38602cf5d16554e0923a6550eb1be7c95",
   "algorithm_schema": "task-trca-n1-integration-v1",
   "human_candidate_slots": 1,
