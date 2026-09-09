@@ -49,7 +49,7 @@ fulltest640MiB,전체신규출력16GiB다. Root만 실제 등록실행/사람자
 새 파일 `src/cfeg/analysis/task_trca_n1_source39_archive.py`는 옛 temporal archive의 byte/selective
 reader를 명시적 재사용하되 새 token과 HUMAN39/GENERATED9seed14 프로필만 제공한다.
 `SCHEMA`는 알고리즘 포맷, `STUDY_ID`는 새 실험ID, `FREEZE_SCHEMA=cfeg.task_trca_n1_source39.all_models_frozen.v1`.
-기존 `verify_freeze`, `SourceArchive`, `MetadataArchive`, `RuntimeProfile` API/layout 유지.
+기존 `verify_freeze`, `NativeArchive`, `SupportMetadata`, `RuntimeProfile` API/layout 유지.
 Oldtoken/oldmanifest/held/retired/evaluation block5/query-before-freeze/미래M/파일alias를 거부한다.
 
 새 runtime `scripts/run_task_trca_n1_source39.py`는 `--manifest --manifest-sha256` human entry;
@@ -109,3 +109,69 @@ Base9d82e59/main, 가용198,971,316KiB(약190GiB), availableRAM약47GiB다.
 계약/통합/최종실행은 의존성이 있어 root순차 처리하고,독립 두writing lane만 격리한다.
 `academic-research`의 기존근거/열린gap을 읽었고, 새문헌검색보다승인된개발실험이현재불확실성에직접답한다.
 별도외부연구주장을추가하지않으며 결과후새claim/evidence로남긴다.
+
+## 등록 생성 전 실행 envelope 보충
+
+Resource packet5 pattern: [0,1]=0, [0,3]=NaN, [1,0]=NaN, [3,2]=NaN; order=full39 rank%2.
+실제 evaluation.pack_cases(cases) 한 벌을 fit 동안 메모리에 유지한다.
+Resource path=fresh /home/whwovy/task-trca-n1-source39-*/resource1.
+Generated는 별도 fresh parent의 inputs/generated_manifest.json(파일은 inputs의 sibling), output=task-trca-n1-source39-generated1.
+Human은 새 fresh parent의 human_manifest.json/output=task-trca-n1-source39-primary1이다.
+Generated inputs14개 구조는 옛 N1 그대로; resource/prior proof는 inputs 밖이다.
+Resource receipt 필수: status=GENERATED_RESOURCE_PASS,study_id,design_sha256,code_pins,seed,source_revision,fit_ids,
+cases=416,updates_completed=800,preparation_seconds,fit_seconds,elapsed_seconds,peak_rss_bytes,
+projected_seconds=36*fit_seconds+3*preparation_seconds+600,arrays_generated=true,human_reads=false,gpu_used=false,
+pipeline{path,sha256,bytes},start{path,sha256,bytes}. 추가diagnostics는 허용하며 관문 재계산으로 검사한다.
+
+--failure-only는 성공경로와 분리한다. manifest/start/failure bytebinding, 실제partial파일목록·bytes·SHA,
+연속 access seq/허용multiset부분집합/역할·freeze전후권한,완성모델·freeze만결합,
+completed≤charged=budgeted≤24000/querycount를검사한다. 미완성NPZ numericdecode/실패수치재실행0.
+terminal_audit.json status=FIRST_FAILURE_PROVENANCE_AUDIT_PASS,terminal=VALIDITY_FAILURE,
+efficacy=NOT_EVALUATED,calibration=NOT_EVALUATED,numeric_failure_replayed=false와partialinventory/한계.
+감사실패는terminal_audit_failure.json,선택한cold mode1회이며retry0이다.
+
+Human isolated zero/nearzero를구조적무작동이라고하지않지만,옛endpoint의 세outer QM잔차전체정확0
+인증은 유지한다. 새로운 same-code완료경로는 작은profile, 별도416case검사는fullwindow부하검사다.
+이둘을39명fullnested전체생성재현이라고하지않는다. 생성A0와human A0 차이를유지한다.
+
+정확 CODE_PATHS36개는 다음과 같고 runner/resource/cold 각각 literal집합이 일치해야 한다.
+Generator는cold상수를 읽어hash만만들수있다. 모든실제import cfeg모듈포함을root가등록전에확인한다.
+
+```text
+configs/analysis/task_trca_n1_integration_v1.json
+configs/analysis/metadata_prior_source39_v1.json
+src/cfeg/__init__.py
+src/cfeg/metrics.py
+src/cfeg/analysis/__init__.py
+src/cfeg/analysis/ood_coverage.py
+src/cfeg/analysis/primary_aggregate.py
+src/cfeg/analysis/primary_inference.py
+src/cfeg/analysis/provenance.py
+src/cfeg/analysis/metadata_prior_validation.py
+src/cfeg/analysis/metadata_prior_source.py
+src/cfeg/analysis/metadata_trca_prior.py
+src/cfeg/analysis/native_support_prefix.py
+src/cfeg/analysis/task_trca_shape_inputs.py
+src/cfeg/analysis/task_trca_shape_archive.py
+src/cfeg/analysis/task_trca_shape_features.py
+src/cfeg/analysis/task_trca_shape_operator.py
+src/cfeg/analysis/task_trca_shape_signfree.py
+src/cfeg/analysis/task_trca_shape_audit.py
+src/cfeg/analysis/numerical_stability_operator.py
+src/cfeg/analysis/task_trca_n1_signfree.py
+src/cfeg/analysis/task_trca_n1_learning.py
+src/cfeg/analysis/task_trca_n1_batch.py
+src/cfeg/analysis/task_trca_n1_evaluation.py
+src/cfeg/analysis/task_trca_n1_audit.py
+configs/analysis/task_trca_n1_source39_v1.json
+configs/analysis/task_trca_temporal_v1_design.json
+docs/task_trca_n1_source39_v1_build.md
+scripts/prepare_task_trca_n1_source39.py
+scripts/run_task_trca_n1_source39.py
+scripts/audit_task_trca_n1_source39.py
+scripts/check_task_trca_n1_source39_resources.py
+src/cfeg/analysis/task_trca_n1_source39_archive.py
+src/cfeg/analysis/task_trca_n1_source39_audit.py
+src/cfeg/analysis/task_trca_n1_source39_artifact_audit.py
+src/cfeg/analysis/task_trca_temporal_audit.py
+```
