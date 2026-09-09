@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-09 추가 승인 후 **N1 인공 학습기 통합 검증 진행 중**: [고정 범위·예산](docs/task_trca_n1_integration_v1_build.md). 기존 temporal-R 방식에 N1만 연결하는 새 버전이며, 생성9개 ID/24,000updates/전체10대조군·독립 감사를 사전 고정했다. 아직 등록 실행 전이고 사람 EEG·held60·GPU는 범위 밖이다. 원 metadata 효능 goal은 계속 미완료다. 아래는 시점별 이력이다.
+
 > 2026-09-09 **별도 인공 수치 안정화 검증 완료**: [결과와 후속 계획](docs/numerical_stability_v1_results.md). 두 방법 모두1152개 행렬·209개 방향미분 사례·9개 잘못된 입력의 고정 기준과 독립80/120자리 검산을 통과했다. 사전 규칙대로 N1을 다음 통합 후보로 선택한다. 전체3002tests PASS. **실제 학습기 통합·metadata 효능·보정량 절감은 아직 미검증**이며, 기존2후보 재개·새 사람자료/held60 접근0이다. 다음은 별도 범위/승인의 인공 학습기 통합 검증이다. 아래 상태들은 시점별 이력이다.
 
 > 2026-09-09 상태 정정: **전체 연구 goal은 미완료·추가 승인 대기**다. 아래의 고정2후보 프로그램 종료는 전체 목표 완료가 아니다. 새 유효한 성능·보정량 비교는 아직 없으며, 다음 수치 검증 단계를 현재 계약 밖에서 자동 실행하지 않는다. [정정 근거](docs/metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정).

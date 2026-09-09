@@ -553,9 +553,11 @@ def test_old_temporal_token_rejected(source):
     from cfeg.analysis import task_trca_temporal_archive as previous
 
     obsolete = object.__new__(previous.AllModelsFrozen)
-    with archive.NativeArchive(source, partition(), event_sink=lambda _: None) as reader:
-        with pytest.raises(PermissionError):
-            reader.query(0, 17, obsolete)
+    with (
+        archive.NativeArchive(source, partition(), event_sink=lambda _: None) as reader,
+        pytest.raises(PermissionError),
+    ):
+        reader.query(0, 17, obsolete)
 
 
 def test_failure_precedence(tmp_path):

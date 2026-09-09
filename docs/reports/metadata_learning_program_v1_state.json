@@ -1,6 +1,6 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "INCOMPLETE_NUMERICAL_STAGE_PASSED_FOLLOWUP_REQUIRES_NEW_SCOPE",
+  "goal_status": "INCOMPLETE_SEPARATELY_APPROVED_GENERATED_N1_INTEGRATION_IN_PROGRESS",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-09",
@@ -15,7 +15,7 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Separate numerical-stability-v1 closed with both methods eligible and N1 selected prospectively; see docs/numerical_stability_v1_results.md. Next propose a separately scoped generated learner-integration stage, then a new bounded human efficacy program if valid. This does not reopen v1 or authorize human efficacy, held60, outreach or paid action.",
+  "next": "User separately approved generated N1 learner integration; see docs/reports/task_trca_n1_integration_v1_state.json. Numerical-stability-v1 and old C1/C2 remain closed. No human efficacy, held60, outreach or paid action is authorized by this stage.",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",
   "report": "docs/metadata_learning_program_v1_results.md",
   "completion_reconciliation": "docs/metadata_learning_program_v1_completion_audit.md"

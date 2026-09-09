@@ -1,0 +1,16 @@
+{
+  "study_id": "task-trca-n1-integration-v1",
+  "status": "IMPLEMENTING_FROZEN_GENERATED_ONLY_INTEGRATION",
+  "design_sha256": "15d5ee385bc0f30d5dff780ae582034597db06793d34c9c8029c44f42adf25cd",
+  "registered_generations": 0,
+  "registered_primary_runs": 0,
+  "registered_updates": 0,
+  "independent_cold_audits": 0,
+  "human_reads": false,
+  "held60": false,
+  "gpu_used": false,
+  "old_candidates_reopened": false,
+  "thread_goal_complete": false,
+  "metadata_efficacy": "NOT_EVALUATED",
+  "note": "User approved the separately proposed generated N1 learner integration. Human efficacy remains outside this stage."
+}
