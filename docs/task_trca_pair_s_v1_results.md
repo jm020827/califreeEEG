@@ -75,4 +75,5 @@ toy75tests PASS7.85초 및 최초 실제 감사를 실행했다. 출력은 gate�
 - 이는 generated 수치 실패 감사다. 사람 효능·actuallearner/CUDA/nested·OSsandbox 검증은 아니다.
 
 원 실패와 산출물은 불변이다. C2는 `GENERATED_PREFLIGHT_VALIDITY_FAILURE / efficacy NOT_EVALUATED`
-종료이며, [프로그램 종합](metadata_learning_program_v1_results.md)의 최종 전체 회귀·보고를 마무리한다.
+종료이며, [프로그램 종합](metadata_learning_program_v1_results.md)의 최종 전체2857tests PASS와
+보고를 완료했다. Unit/regression PASS가 실패한 수치 관문이나 효능 미평가를 덮어쓰지 않는다.

@@ -2,8 +2,9 @@
   "schema": "cfeg.metadata_learning_program.results.v1",
   "program_id": "metadata-learning-program-v1",
   "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",
-  "status": "AWAITING_FINAL_REGRESSION_AND_REPORT_PUBLICATION",
-  "planned_stop": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
+  "status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
+  "program_goal_complete": true,
+  "closed_at_utc": "2026-09-09T02:24:05Z",
   "research_question_resolved": false,
   "original_low_calibration_ssvep_goal_preserved": true,
   "metadata_benefit_demonstrated": false,
@@ -16,6 +17,6 @@
   "usage": {"candidate_slots": 2, "human_primary_attempts": 1, "human_total_attempts": 1, "human_optimizer_updates_including_partial": 24000, "distinct_final_query_model_reveals_including_partial": 1, "infrastructure_recoveries": 0, "human_seconds": 587.19494638592, "new_worktrees": 2},
   "unspent_allowance_is_not_new_authority": true,
   "exclusions": {"held60_access": false, "external_outreach": false, "paid_resources": false, "old_terminal_candidates_reopened": false, "third_candidate_added": false},
-  "verification": {"c1_generated_completed_path_cold": "PASS", "c1_human_complete_efficacy_cold": "NOT_APPLICABLE_INCOMPLETE_EVALUATION", "c1_terminal_provenance": "INDEPENDENT_JSON_REVIEW_VERIFIED_NOT_NPZ_REPLAY", "c2_independent_terminal_audit": "GENERATED_TERMINAL_VALIDITY_FAILURE_VERIFIED", "c2_terminal_audit_sha256": "2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a", "final_full_regression": "PENDING"},
+  "verification": {"c1_generated_completed_path_cold": "PASS", "c1_human_complete_efficacy_cold": "NOT_APPLICABLE_INCOMPLETE_EVALUATION", "c1_terminal_provenance": "INDEPENDENT_JSON_REVIEW_VERIFIED_NOT_NPZ_REPLAY", "c2_independent_terminal_audit": "GENERATED_TERMINAL_VALIDITY_FAILURE_VERIFIED", "c2_terminal_audit_sha256": "2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a", "final_full_regression": "PASS", "final_full_tests": 2857, "full_test_seconds": 314.59, "full_test_warnings": 68, "full_test_sha256": "8525423bcc8cbb402c3e0451cb4eae3ba6c81225d7465a3553cd24a169186c91", "full_test_output": "/home/whwovy/task-trca-program-final-tests-Uv1w9v", "full_test_output_kib": 417820, "code_config_pins_preserved": true},
   "next_plan": "Separately authorized prospective generated-only numerical methods study with frozen error/reference/gradient/unseen-fixture criteria; no current-program rescue or automatic human model/reveal. Independent efficacy and paired acquisition-M remain open questions."
 }

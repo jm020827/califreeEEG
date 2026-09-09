@@ -2,7 +2,8 @@
 
 2026-09-09. **유망 후보를 확보하지 못했다. 연구목표는 유지하지만 이번 두 후보로 metadata의
 추가 성능 이득이나 보정량 감소를 입증하지 못했다.** 두 후보 모두 유효성 실패로 효능 미평가다.
-현재 C2 독립 terminal 감사·최종 전체 회귀가 진행 중이며, 이 검증이 끝난 뒤 유한 프로그램을 닫는다.
+C2 독립 terminal 감사와 최종 전체2857tests를 완료했고 사전 중단 규칙대로 유한 프로그램을 닫았다.
+이는 연구 질문의 해결이나 metadata 효능 성공이 아니라, 고정된 두 슬롯의 검증·보고 완료다.
 
 ## 처음의 질문은 그대로다
 
@@ -133,12 +134,28 @@ GPUpeak가 없어 확정 peak를 보고하지 않는다. 다른 GPU process와 �
 하지 않는다. `coordinate-worktree-changes`는 두 기존 분리 작업공간 재사용, 단독 통합/GPU/SQLite,
 읽기전용 교차 검토에 사용했다. Code/test PASS, 실패기록 감사 PASS, 효능 PASS를 구분한다.
 
-최종 독립 감사·전체 테스트와 closure 상태는 아래에 추가한다.
+최종 독립 감사·전체 테스트와 closure 상태는 다음과 같다.
 
-### 종료 검증 진행 기록
+### 종료 검증 완료
 
 C2 terminal 감사는 source16행/8case를 독립 재구성하고 원 실패를 확인했다.
 Receipt SHA `2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a`, .617036초,
 `GENERATED_TERMINAL_VALIDITY_FAILURE_VERIFIED`다. Root 통합 auditor toy75tests도7.85초에 통과했다.
 최종 전체 회귀는 추가900초/출력2GiB 한도, CPU threads1, 독립 pytest 임시 경로로 실행하며
-출력을 주기적으로 확인한다. 전체회귀 결과는 아직 대기 중이다.
+출력을 주기적으로 확인했다. 전체 **2857tests PASS314.59초/기존68Torchwarnings**, 실패·skip0이다.
+JUnit SHA `8525423bcc8cbb402c3e0451cb4eae3ba6c81225d7465a3553cd24a169186c91`를0400보존했다.
+실행시점 e96ee82의 runtime/tests와 종료시점 runtime/tests는 같고 이후 변경은 결과 문서다.
+새C2의8Python파일 Ruff/format PASS, 원program/C1/C2설계 및 원25C1/15oldcodepins를 보존했다.
+
+최종 test parent는417,820KiB, C2 gate+독립감사 parent는22,080KiB로 측정했다. 같은 명시
+경로들과 최종test parent를 다시 측정한 scoped 합계는752,344KiB(약0.718GiB)다.
+중간 출력도 주기적으로 확인했고2GiB test상한을 넘는 관측은 없었다. 통합 compute/과거peak의
+미계측 한계는 그대로다. 확인된 예산을 넘어 추가사람학습·세번째후보·복구를 실행하지 않았다.
+
+통합 경로는 root 공통계약→C1 runtime/cold→실제C1→제한진단→C2 features5955042→
+operator7c1c9d4→gate48407d7→독립audit c506b12→최종회귀였다. 독립 lane의 소유파일은
+겹치지 않았고 root가 의미·수식·형식·failure우선권을 검토한 뒤 통합했다. 두 새tree는 여러
+단계에 재사용했고 기존40worktrees·branch·untrackedtest출력·실패자료를 삭제하지 않았다.
+
+최종 상태: `CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE`.
+모든 효능 null/미평가와 기존 음성 결과를 보존하고, 후속 수치 검증을 제안 상태로 남긴다.

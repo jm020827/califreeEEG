@@ -31,6 +31,6 @@
   "held60_access": false,
   "external_outreach": false,
   "paid_resources": false,
-  "c2_status": "ELIGIBILITY_REVIEW; ownengineeringandhumanpreflightpending",
-  "program_goal_complete": false
+  "c2_status": "TERMINAL_GENERATED_PREFLIGHT_VALIDITY_FAILURE_VERIFIED; HUMAN_NOT_EVALUATED",
+  "program_goal_complete": true
 }
