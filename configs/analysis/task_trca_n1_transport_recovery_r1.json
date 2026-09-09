@@ -1,0 +1,15 @@
+{
+  "recovery_id": "task-trca-n1-source39-transport-recovery-r1",
+  "authority": "2026-09-09 user: 고치고 계속. Approval of transport-only repair, generated disconnect verification, one fresh same-science human attempt and its terminal audit.",
+  "parent": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau",
+  "old_failure": {"path": "/home/whwovy/task-trca-n1-source39-K1qYuE/task-trca-n1-source39-primary1/failure.json", "sha256": "e4ebf797526580fd3a163038832e2f0d09dd3fd639140929ee8144bf96f2a107"},
+  "old_terminal": {"path": "/home/whwovy/task-trca-n1-source39-K1qYuE/task-trca-n1-source39-primary1/terminal_audit.json", "sha256": "3e92cd6b2328c5f20cdba27507e860ee683644a73e8f50b8a0e088c6c76a92a9"},
+  "old_manifest": {"path": "/home/whwovy/task-trca-n1-source39-K1qYuE/human_manifest.json", "sha256": "c1780ad0f3edcccef5b32cbf1a097d21255d54b11a7c0154f3cfc0f2cb5a380d"},
+  "science_identity": "Same task-trca-n1-source39-v1 candidate and exact36 original code pins. This is its separately authorized infrastructure recovery, not a new scientific candidate or a continuation of partial models.",
+  "override": "Permit only one fresh human primary beyond the previously closed one-attempt envelope; all science, inputs, controls, thresholds and data rights unchanged. Old primary1 basename is compatibility format; this recovery ID, unique parent and manifest hash are the execution identity.",
+  "budget": {"fresh_human_attempts": 1, "human_updates": 24000, "human_seconds": 21600, "terminal_audits_max": 1, "audit_seconds": 1800, "signal_grace_seconds": 10, "tests_and_generated_disconnect_seconds": 300, "test_bytes": 134217728, "human_output_bytes": 12884901888, "all_new_output_bytes": 17179869184, "supervisor_log_bytes": 134217728, "rss_bytes": 17179869184, "additional_retries": 0},
+  "excluded": ["held60", "retired1_3", "raw_MAT", "full_original_metadata", "GPU", "paid_resources", "outreach", "packages", "old_model_reuse", "math_or_scoring_changes"],
+  "verification": "Short generated process/pipe-loss and fail-closed tests using unchanged EventJournal; reuse same-code prior resource and generated full-learning cold proofs, no new full generated24000update run.",
+  "terminal": "Producer failure takes precedence and selects failure-only audit. Normal exit0 plus result selects complete audit. Missing producer receipt, timeout without failure receipt, or supervisor failure remains infrastructure inconclusive with audit unavailable, never fabricated producer evidence. No automatic retry. Report efficacy only after complete independent cold PASS.",
+  "limits": "Regular-file logs and separate sessions cover stdout consumer and launcher-parent loss, not host/cgroup/OOM cancellation. Disk errors remain fatal. Source39 remains exposed development; observed label saving is not total setup burden."
+}
