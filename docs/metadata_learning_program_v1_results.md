@@ -92,6 +92,15 @@ PERMUTED donorS84 경로가 동일 검사를 거절했다. 허용치의1.05653�
 Engineering의 측정 receipt 및 단위/전체 tests는 실행 이력에 따로 기록한다. C1 실패 receipt에는
 GPUpeak가 없어 확정 peak를 보고하지 않는다. 다른 GPU process와 기존 작업·데이터를 보존했다.
 
+독립 읽기전용 자원 점검에서 명시된 생성 출력·진단·JUnit·main test출력과 두 worktree 전체는
+333,748KiB(0.31829GiB)였다. 이전 보존 test도 포함한 보수적 현재 스냅샷이며, 모든 시점의 peak는
+아니다. 두 tree의 tracked checkout은11.035/11.094MiB, 측정 test출력은26.617/73.145MiB로
+각64/512MiB 상한 안이다. 각 tree를 상한 전체로 치환하고 감사 출력64MiB까지 예약해도1.38711GiB다.
+최종 전체 tests는 별도 `/home/whwovy/task-trca-program-final-tests-Uv1w9v`에서 실행한다.
+문서로 추적된 main engineering job 경과시간의 부분합은439.939초이며, 모든 agent/test/retry의
+통합 CPU/GPU 사용량은 계측하지 않았다. 이 부분합으로 프로그램 전체 compute12시간 준수를
+정밀 인증했다고 주장하지 않는다. 최종 감사/회귀 실측은 종료 기록에 추가한다.
+
 ## 다음 연구: 같은 목표, 별도 수치 검증 단계부터
 
 다음은 **제안만 하며 이번 프로그램에서 자동 실행하지 않는다.**
