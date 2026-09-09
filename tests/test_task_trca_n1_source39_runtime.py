@@ -819,3 +819,68 @@ def test_zero_byte_partial_failure_file_can_be_hashed(tmp_path):
     empty.touch()
     item = runtime.descriptor(empty)
     assert item["bytes"] == 0 and item["sha256"] == hashlib.sha256(b"").hexdigest()
+
+
+@pytest.mark.parametrize("generated", [False, True])
+def test_bootstrap_failure_preserves_scoped_zero_read_receipt(tmp_path, monkeypatch, generated):
+    output = tmp_path / "new-attempt"
+    path = tmp_path / ("generated_manifest.json" if generated else "human_manifest.json")
+    value = {"output_root": str(output)}
+    binding = write_json(path, value)
+    monkeypatch.setattr(runtime, "validate_manifest", lambda data, profile: data)
+
+    def rejected(*args):
+        raise ValueError("Toy prerequisite failed before any numerical reads")
+
+    monkeypatch.setattr(runtime, "run_generated" if generated else "run", rejected)
+    args = ["--manifest", str(path), "--manifest-sha256", binding["sha256"]]
+    if generated:
+        args.append("--generated")
+    with pytest.raises(ValueError, match="Toy prerequisite"):
+        runtime.main(args)
+    assert [p.name for p in output.iterdir()] == ["failure.json"]
+    receipt = json.loads((output / "failure.json").read_text())
+    assert receipt["human_numeric_reads"] is False
+    assert receipt["generated"] is generated
+    assert receipt["partial_files"] == receipt["artifacts"] == {}
+    assert receipt["state"] == {
+        "stage": "BOOTSTRAP_AUTHORITY",
+        "outer_fold": None,
+        "optimizer_updates_completed": 0,
+        "optimizer_updates_budgeted": 0,
+        "optimizer_updates_charged": 0,
+        "query_access_count": 0,
+        "models_frozen": False,
+    }
+    before = (output / "failure.json").read_bytes()
+    with pytest.raises(ValueError, match="Toy prerequisite"):
+        runtime.main(args)
+    assert (output / "failure.json").read_bytes() == before
+
+
+@pytest.mark.parametrize("invalid", ["sha", "scope", "sibling"])
+def test_bootstrap_invalid_authority_writes_nothing(tmp_path, monkeypatch, invalid):
+    output = tmp_path / "new-attempt"
+    path = tmp_path / ("wrong.json" if invalid == "sibling" else "human_manifest.json")
+    binding = write_json(path, {"output_root": str(output)})
+
+    def validation(data, profile):
+        if invalid == "scope":
+            raise ValueError("Toy invalid scope")
+        return data
+
+    def rejected(*args):
+        raise ValueError("Original rejection")
+
+    monkeypatch.setattr(runtime, "validate_manifest", validation)
+    monkeypatch.setattr(runtime, "run", rejected)
+    with pytest.raises(ValueError, match="Original rejection"):
+        runtime.main(
+            [
+                "--manifest",
+                str(path),
+                "--manifest-sha256",
+                "0" * 64 if invalid == "sha" else binding["sha256"],
+            ]
+        )
+    assert not output.exists()

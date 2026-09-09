@@ -130,6 +130,10 @@ completed≤charged=budgeted≤24000/querycount를검사한다. 미완성NPZ num
 terminal_audit.json status=FIRST_FAILURE_PROVENANCE_AUDIT_PASS,terminal=VALIDITY_FAILURE,
 efficacy=NOT_EVALUATED,calibration=NOT_EVALUATED,numeric_failure_replayed=false와partialinventory/한계.
 감사실패는terminal_audit_failure.json,선택한cold mode1회이며retry0이다.
+BOOTSTRAP_AUTHORITY 예외: exact manifest/code/path 확인 뒤 _execute 이전에 실패하면 새output의
+failure.json만 남긴다. Start/journals가 존재한다고 하지 않으며 partial_files/artifacts={}와
+completed/budgeted/charged/query=0,models_frozen=false,human_numeric_reads=false를요구한다.
+이 좁은 상태도 failure-only 감사로 계보/0counter/단일파일을검사한다. Invalid/broadpath에는쓰지않는다.
 
 Human isolated zero/nearzero를구조적무작동이라고하지않지만,옛endpoint의 세outer QM잔차전체정확0
 인증은 유지한다. 새로운 same-code완료경로는 작은profile, 별도416case검사는fullwindow부하검사다.

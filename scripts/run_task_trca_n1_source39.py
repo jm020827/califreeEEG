@@ -1070,10 +1070,61 @@ def _execute(manifest_path, manifest_sha, manifest, old, profile, revision):
         signal.alarm(0)
 
 
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--manifest-sha256", required=True)
     parser.add_argument("--generated", action="store_true")
-    args = parser.parse_args()
-    (run_generated if args.generated else run)(args.manifest, args.manifest_sha256)
+    args = parser.parse_args(argv)
+    try:
+        return (run_generated if args.generated else run)(args.manifest, args.manifest_sha256)
+    except BaseException as error:
+        # Preserve a scoped invocation that failed before _execute created output.
+        # Never write anything for an invalid/aliased/broad caller path.
+        try:
+            profile = archive.GENERATED_PROFILE if args.generated else archive.HUMAN_PROFILE
+            manifest = validate_manifest(read_json(args.manifest, args.manifest_sha256), profile)
+            output = Path(manifest["output_root"])
+            expected = output.parent / (
+                "generated_manifest.json" if args.generated else "human_manifest.json"
+            )
+            require(args.manifest.absolute() == expected, "Exact bootstrap manifest path")
+            if not output.exists():
+                output.mkdir()
+                write_json(
+                    output / "failure.json",
+                    {
+                        "status": "VALIDITY_FAILURE",
+                        "study_id": archive.STUDY_ID,
+                        "algorithm_schema": learning.SCHEMA,
+                        "design_sha256": DESIGN_SHA,
+                        "profile": profile.record(),
+                        "generated": profile.generated,
+                        "manifest_sha256": args.manifest_sha256,
+                        "partial_files": {},
+                        "artifacts": {},
+                        "state": {
+                            "stage": "BOOTSTRAP_AUTHORITY",
+                            "outer_fold": None,
+                            "optimizer_updates_completed": 0,
+                            "optimizer_updates_budgeted": 0,
+                            "optimizer_updates_charged": 0,
+                            "query_access_count": 0,
+                            "models_frozen": False,
+                        },
+                        "human_numeric_reads": False,
+                        "held60_access": False,
+                        "error_type": type(error).__name__,
+                        "error": str(error),
+                        "time": now(),
+                        "interpretation": "Invocation failed before numerical input/optimizer; no automatic retry",
+                    },
+                )
+        except (OSError, ValueError, KeyError, TypeError) as receipt_error:
+            # Preserve the original error; no fallback writes outside the scope.
+            print(f"Bootstrap failure receipt unavailable: {receipt_error}", file=sys.stderr)
+        raise
+
+
+if __name__ == "__main__":
+    main()
