@@ -1,7 +1,7 @@
 # C2 결과 — 사람 실험 전 수치 관문 실패
 
 2026-09-09. **Metadata 효과 없음이 아니라, 효능 미평가다.** 미리 정한 C2의 자체 수치 관문이
-실패했으므로 사람 학습·최종 query를 시작하지 않는다. 독립 terminal 감사는 현재 진행 중이다.
+실패했으므로 사람 학습·최종 query를 시작하지 않는다. 독립 terminal 감사가 실패 기록을 확인했다.
 
 ## 구현한 것과 아직 하지 않은 것
 
@@ -55,5 +55,24 @@ Scalar와 batch 모두 거절했다. 비균일 행이 통과했다고 실패한 
 사전 규칙에 따라 C2를 `NOT_EVALUATED`로 닫는다. 남은 사람 실행 예산은 세 번째 후보나
 허용오차 완화 권한이 아니다. 현재 두 슬롯의 종합 보고·후속 검증 계획을 작성한다.
 별도 고정 [독립 감사 계약](task_trca_pair_s_conditioning_audit_contract.md)에 따라 원 생성 배열,
-raw H, 고정 코드·수치 결과를 확인 중이며 이 문서에 최종 상태를 추가한다. 완료 감사의 PASS는
-실패 기록이 정확하다는 뜻이지 C2가 실험 관문을 통과했다는 뜻이 아니다.
+raw H, 고정 코드·수치 결과를 확인했다. 감사 통과는 실패 기록이 정확하다는 뜻이지 C2가 실험
+관문을 통과했다는 뜻이 아니다.
+
+## 독립 terminal 감사 완료
+
+원audit commit a3e95d747843a5b47cc7cc01803dac60e56bac7b를 root main c506b12로 통합한 뒤,
+toy75tests PASS7.85초 및 최초 실제 감사를 실행했다. 출력은 gate폴더 밖 별도 읽기전용
+`/home/whwovy/task-trca-pair-s-conditioning-Vqli4o/terminal_audit.json`, SHA
+`2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a`다.
+
+- .617036초, `GENERATED_TERMINAL_VALIDITY_FAILURE_VERIFIED`. 고정18code/configpin,
+  result/start/NPZ hash·형식·전체재고·실패우선권, 16행/8case 및 정확한 실패 위치를 확인했다.
+- 별도 NumPy 수식으로 base/support/S0/C/A를 재구성한 최대오차0; weighted S는3.638e−12.
+- 저장 S/C에서 별도 작성한 원 Torch 계산으로 H/F/진단을 재현한 오차0. 원 backend와의
+  정확한 재현이며 다른 backend가 같은 반올림 경계에서 실패해야 한다는 뜻은 아니다.
+- SciPy의 독립 계산과 H 차이1.512e−11, 통과행 F 차이3.009e−11. 미리 정한 감사 오차 기준
+  안이며 실패행의 F를 만들어 채우지 않았다. NumPy 대칭비율 차이2.220e−16.
+- 이는 generated 수치 실패 감사다. 사람 효능·actuallearner/CUDA/nested·OSsandbox 검증은 아니다.
+
+원 실패와 산출물은 불변이다. C2는 `GENERATED_PREFLIGHT_VALIDITY_FAILURE / efficacy NOT_EVALUATED`
+종료이며, [프로그램 종합](metadata_learning_program_v1_results.md)의 최종 전체 회귀·보고를 마무리한다.
