@@ -1,12 +1,17 @@
 {
   "study_id": "task-trca-n1-source39-v1",
-  "status": "ENGINEERING_PASS_BEFORE_REGISTERED_RESOURCE_GENERATION_OR_HUMAN_READS",
+  "status": "GENERATED_PRIMARY_RUNNING_AFTER_REGISTERED_RESOURCE_PASS",
   "design_sha256": "bb90cc361a28c3e0a53861564ec007f38602cf5d16554e0923a6550eb1be7c95",
   "algorithm_schema": "task-trca-n1-integration-v1",
   "human_candidate_slots": 1,
   "human_input_authorized_only_after_prerequisites": true,
-  "registered_resource_runs": 0,
-  "registered_generated_complete_runs": 0,
+  "registered_resource_runs": 1,
+  "registered_fixture_generations": 1,
+  "registered_generated_complete_runs": 1,
+  "generated_primary_completed": false,
+  "registered_generated_cold_audits": 0,
+  "resource_receipt": {"path": "/home/whwovy/task-trca-n1-source39-Nyp4o0/resource1/resource.json", "sha256": "526ef01b8b5b3422b0dfbe3d7bbfec0f04d4625193703648111ce2088c6320e8"},
+  "generated_manifest": {"path": "/home/whwovy/task-trca-n1-source39-Pborkn/generated_manifest.json", "sha256": "5e82d09ca8e2b432f978ba051a46fc48e07144365f61f5d8371c2b8c40aaca5d"},
   "human_primary_attempts": 0,
   "human_model_set_reveals": 0,
   "human_optimizer_updates": 0,
@@ -18,5 +23,5 @@
   "old_candidates_reopened": false,
   "thread_goal_complete": false,
   "efficacy": "NOT_EVALUATED",
-  "note": "Explicit user approval of new bounded source39 developmental candidate. Same N1 math, new experiment authority. Resource1 and new same-code generated completion required first."
+  "note": "Resource1 passed; registered new generated primary1 is running. Counts are initiated attempts, not completed efficacy results. Human source39 is still unopened in this study; new generated cold PASS remains prerequisite. Same36 code pins frozen at693440d."
 }

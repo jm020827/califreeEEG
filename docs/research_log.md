@@ -1346,3 +1346,9 @@
 - 새275tests PASS19.34초/process19.81초. Root5호출82/87/267/271/275 모두PASS66.83초;resource3호출27/31/32 모두PASS43.05초;auditor4호출116/141/145/148 모두PASS14.74초다. JUnit/해시/예산은 [사전 기록](reports/task_trca_n1_source39_v1_preflight.json)에 보존했다.
 - 첫full 호출은 caller임시부모의 source39 문자열이 기존V2 외부자료 보호규칙에 걸려5FAIL/14ERROR/604PASS 뒤SIGINT로73.29초에 중단했다. JUnit/출력35,632KiB 보존. 보호코드/테스트/과학을 바꾸지 않고 새 중립이름 parent에서 동일3575tests 모두PASS347.09초/process348.10초,68기존warnings다. 두full421.39초<900/출력512,884KiB<640MiB;전체pytest546.01초에 기타검사60초를 더해도1800초 이내다.
 - Runner/resource/cold의36pin집합 일치, lazy batch 포함 실제cfeg27모듈 전부pin 안, 이전 생성N1 proof와 공통수학hash 불변을 숫자자료 없이 검증했다. Ruff/diffcheck PASS. 새로운등록resource/fixture/primary/human읽기0이며 아래 clean freeze commit 이후resource1→generated1/cold1→human1/terminal1만 허용한다. 첫등록관문실패시 후보 종료/retry0이다.
+
+## RESOURCE/GENERATED-RUN-20260909-102 — 자원 관문 통과, 새 생성 완료경로 실행
+
+- Clean693440d5804bec2229c7a867f5518d11aedddc23에서 resource seed20260915를 단1회 실행했다. 원 /home/whwovy/task-trca-n1-source39-Nyp4o0/resource1/resource.json SHA526ef01b8b5b3422b0dfbe3d7bbfec0f04d4625193703648111ce2088c6320e8;416case/4heads/800updates 완료, prep8.812557초/fit516.884804초/전체525.709660초/process527.10초다. PeakRSS2,341,466,112bytes/2.18066GiB, 실제packed208,329,752bytes를 fit동안 유지했다.
+- 고정 식36*fit+3*prep+600=19,234.290603초<21,600,4*RSS=9,365,864,448bytes<16GiB로 GENERATED_RESOURCE_PASS다. 독립 작성자가 별도 읽기전용으로3개0400파일·36codepin·start/model/SHA·26ID/lambda.001·각200행의유한trace와800counter·자원식을 확인했다. 재학습/수치 재실행0이며 실제30pipeline human 실행시간 보증·독립Adam재현·M효능 증거가 아니다.
+- 같은36pin의 새 /home/whwovy/task-trca-n1-source39-Pborkn에서 registration c22e62c08b16acad8e76b59d5ac8c16f9afd8f96506175dc04f066bcb912b148을 RNG보다 먼저 기록했다. seed20260914 생성1회/입력13,317,971bytes;manifest5e82d09ca8e2b432f978ba051a46fc48e07144365f61f5d8371c2b8c40aaca5d. 새generated primary1이24,000update 고정일정으로 실행 중이며 source39 숫자·held60·GPU0이다. 진행 기록은 output의 events/access JSONL에 보존하고, 완료 및 cold 결과는 다음 로그로 추가한다. 이 로그는 실행 중 문서 갱신이며36runtime핀을 바꾸지 않는다.
