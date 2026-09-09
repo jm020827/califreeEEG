@@ -1286,3 +1286,10 @@
 - Root/독립agent수식 검토는 N2의S/B VJP와C정규화항을 확인했다. 기존 top-only custom derivative도 lower-root중복을 이미 허용하므로 존재하지 않는 버그 수리로 부르지 않는다. 공식LAPACK/SciPy/Greenbaum–Li–Overton HTML의 해당 절을 읽었고 structuredfoundation/contrary검색2회, PDF정독0이다. 대칭화만으로 정확성이 증명되지 않아 실제저장binary64의고정밀해·최고root·C-metric projector·비상수loss방향미분을 판정한다.
 - c0c799e/c536950에서 [소유권/API/산출물 계약](numerical_stability_v1_implementation.md)을 고정했다. 기존 temporal-runtime/cold 두tree를새branch로재사용, main계약/producer/실제실행/SQLite단독, operator/auditor 각각신규2파일소유다. 처음operatorbranch를이전base에만든착오로원branch를보존하고 -main suffix의정확c0c799e기준branch를사용했다. 새tree/삭제/기존untracked변경0. 가용220,224,036KiB에서추가출력/test/checkout예약<1GiB다.
 - Producer ace6cfd와 toy6testsPASS.64초/RuffPASS. Toyseed17/19만사용했고등록seed20260910/11/12와기존인공NPZ는실행하지않았다. 기존programSHA78ca14d5…3a10과사람실패/음성효능자료불변. 구현·독립감사통합후cleanrevision/pins를동결하기전등록실험0이다.
+
+## VERIFY/FREEZE-20260909-095 — 수치 방법·독립 검산 통합, 등록 실행 직전
+
+- Operator94f8b3d→15676db, 독립auditor4faf43b→41141c6으로 순서대로 통합했다. 공유tree 동시writer0이며 root가 공통계약/producer/최종통합을 소유했다. Input hash와 decode가 같은 bound bytes를 쓰도록 하고 hardlink/CPU1 launch 환경을 검사했다. 과학config·옛operator는 불변이다. 독립 읽기전용 최종 수식검토에서 실행 전 blocker0이다.
+- [사전검증 기록](reports/numerical_stability_v1_preflight.json): 새145tests PASS3.11초/process3.57초, 전체3002tests PASS350.47초/process351.40초/기존68warnings, failures/errors/skips0. Full JUnit SHA9bb2b61d72e551725d29828075d7f9feac151325a8b0f71f0de4cbe66837a9e9를0400보존했다. Runtime/tests는41141c66d4707ddae51cf1acc42c77805c31a57b 이후 불변이다.
+- Operator 최초toy83PASS/2FAIL은 top-gap scale의 잘못된 test 기대값만 수정했고 최종91PASS다. Auditor 최초36PASS/1FAIL은 없는threadpoolctl 의존성을 없애고 기존환경에서CPU1 guard로 확인, 후속38/45PASS다. 모든 실패JUnit을 보존했고 기준·seed·사후결과수리0이다. 보고된 tests 합366.07초와 초기root process startup 미계측분60초 예약은1800초 안이다. 전자는 혼합 elapsed subtotal이며 완전 CPU/peak 계측 인증이 아니다.
+- 등록입력은 아직0회다. 다음은 fresh `/home/whwovy/numerical-stability-v1-REcwR9/primary1` 한 번과 별도 `audit.json` 한 번이며 producer start에서9code/config pins를 기록한다. 사람자료/query/optimizer/GPU/held60/외부요청/유료/설치/삭제0을 유지한다.
