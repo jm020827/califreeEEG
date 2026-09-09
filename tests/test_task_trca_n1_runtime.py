@@ -4,6 +4,8 @@ import hashlib
 import importlib.util
 import json
 import os
+import subprocess
+import sys
 import zipfile
 from pathlib import Path
 
@@ -547,6 +549,48 @@ def test_no_optimizer_warmup_step():
         and n.func.attr in ("step", "backward")
         for n in ast.walk(function)
     )
+
+
+def test_first_cpu_adam_update_under_actual_file_guard(tmp_path):
+    code = """
+import importlib.util, sys
+from pathlib import Path
+import torch
+spec = importlib.util.spec_from_file_location('guarded_n1_toy', sys.argv[1])
+runtime = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(runtime)
+torch.set_num_threads(1)
+parameter = torch.nn.Parameter(torch.tensor([1.0], dtype=torch.float64))
+optimizer = torch.optim.Adam([parameter], lr=.01)
+output = Path(sys.argv[2])
+runtime.install_guard([], output)
+parameter.square().sum().backward()
+optimizer.step()
+assert 0 < float(parameter.detach()) < 1
+try:
+    open('/explicit/forbidden-input.npy', 'rb')
+except PermissionError:
+    pass
+else:
+    raise AssertionError('Forbidden input was allowed')
+assert not torch.cuda.is_initialized()
+print('ONE_TOY_UPDATE_GUARDED_NO_CUDA')
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(SCRIPT), str(tmp_path)],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env={
+            **os.environ,
+            "OPENBLAS_NUM_THREADS": "1",
+            "OMP_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "PYTHONDONTWRITEBYTECODE": "1",
+        },
+    )
+    assert "ONE_TOY_UPDATE_GUARDED_NO_CUDA" in result.stdout
 
 
 def test_old_temporal_token_rejected(source):
