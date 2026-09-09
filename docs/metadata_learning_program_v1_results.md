@@ -5,6 +5,10 @@
 C2 독립 terminal 감사와 최종 전체2857tests를 완료했고 사전 중단 규칙대로 유한 프로그램을 닫았다.
 이는 연구 질문의 해결이나 metadata 효능 성공이 아니라, 고정된 두 슬롯의 검증·보고 완료다.
 
+**전체 thread goal은 미완료·추가 승인 대기다.** 앞서 프로그램 종료를 근거로 전체 goal 도구를
+완료 처리한 것은 부정확했다. `program_goal_complete`는 v1 범위만 뜻하며,
+`thread_goal_complete`는 false다. 자세한 [정정 근거](metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정)를 남긴다.
+
 ## 처음의 질문은 그대로다
 
 새 사용자가 적은 보정 EEG로 SSVEP를 잘 분류하도록 할 수 있는가? 특히 EEG 자체에서 얻는

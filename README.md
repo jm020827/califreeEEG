@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-09 상태 정정: **전체 연구 goal은 미완료·추가 승인 대기**다. 아래의 고정2후보 프로그램 종료는 전체 목표 완료가 아니다. 새 유효한 성능·보정량 비교는 아직 없으며, 다음 수치 검증 단계를 현재 계약 밖에서 자동 실행하지 않는다. [정정 근거](docs/metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정).
+
 > 2026-09-09 **고정 2후보 프로그램 종료**: [종합 결과와 후속 검증 계획](docs/metadata_learning_program_v1_results.md). C1은 source39의24,000updates 뒤 최종 수치 검증 실패, C2는 균일 대조군의 사전 인공 수치 검증 실패로 종료했다. 독립 실패 감사·전체2857tests PASS를 완료했지만 **효능·보정량 감소는 미평가이며 유망 후보는 없다.** 원 저보정 목표와 연구 질문은 유지한다. 사람 attempt1/query모델 개봉1/recovery0; held60·외부 요청·유료 자원0. 다음 수치 검증 연구는 별도 계획/승인 대상으로 남기며 세 번째 후보나 실패 재실행을 자동 추가하지 않는다. 아래는 이전 단계 이력이다.
 
 > 2026-09-09 [Temporal Q/QM 학습기 통합 검증 완료](docs/task_trca_temporal_v1_engineering.md): 같은 새 점수의 Q/QM/Q2/SHAM 및 원 FULL_NATIVE/별도 FULL_CENTERED 대조 설계를 고정했다. 실제 Q15·Q 동결·잔차·nested 학습을 생성6명에서 연결했고, 네 head CPU/CUDA 일치·독립 cold 감사·전체2376tests PASS를 확인했다. **사람 EEG 효능·metadata 보정량 절감은 미평가**다. 이번 source archive/실제 M/기존 실패 진단/사람 query/held60 접근0. 다음은 새 역할 제한 reader·완료 경로 감사·실행 manifest의 별도 구현·생성 검증이며, 기존 실패 후보 재개나 source39 자동 실행은 없다. 아래는 이전 단계 이력이다.

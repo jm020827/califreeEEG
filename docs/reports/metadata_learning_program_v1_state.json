@@ -1,6 +1,8 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "COMPLETE_BOUNDED_PROGRAM_RESEARCH_QUESTION_OPEN",
+  "goal_status": "BLOCKED_REQUIRES_NEW_PROGRAM_AUTHORIZATION",
+  "thread_goal_complete": false,
+  "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-09",
   "runtime_snapshot_utc": "2026-09-09T02:24:05Z",
   "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",

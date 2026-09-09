@@ -1273,3 +1273,9 @@
 - [종료 재점검](metadata_learning_program_v1_completion_audit.md)을 추가했다. 독립 읽기전용 검토자는 원 위임문과 초기4a28e81의 후보2개·공학실패 종료·수치정책 변경 금지·닫힌 후보군 보고 조건을 대조했고, C2상세/대조군 고정6f5e587/51a9cfc가 C1사람시작10a0522보다 앞섬을 확인했다. 사후 종료기준 축소가 아니라 고정 후보군 종료다. 성능/보정비용/harm은 계속 null이며 연구질문 해결로 표시하지 않는다.
 - Root가 기준HEAD1cd0b70에서 원program/C1/C2설계/manifest,25C1+15old+18C2+2audit pins, C1 failure의18artifact descriptor, C2start/result/생성NPZ/audit, 최종JUnit과audit-unit.xml을 다시 SHA검사했다. 사람NPZ는 bytehash만 확인했고 배열·예측·정답 decode/score0. 접근2719행에서fit0–2183→freeze2184→firstquery2445이며274query-bearing요청, 모델3개동결·평가파일8개를 확인했다. 최종2857tests/errors0/failures0/skips0 XML과runtime변경0이므로 실험/전체tests 재실행0이다.
 - 과학적 효능 미완료, 실패 선행관문 뒤 C2미구현 항목, 누적engineering compute/과거GPUpeak 미계측을 명시했다. 실패를 검증한 감사 PASS를 효능 PASS로 바꾸지 않는다. `academic-research` 근거 구분을 적용했고 새문헌검색0; `coordinate-worktree-changes`에 따라 root단독 문서작성/agent읽기전용, 새tree/cleanup/새사람실험/C3/held60/외부요청/유료0이다. 기존 결과와 실패 산출물은 그대로 보존한다.
+
+## CORRECT/BLOCK-20260909-093 — 전체 goal 완료 오표시 정정 및 추가 범위 승인 대기
+
+- 전체 objective의 성능·보정량 비교는 미완료다. V1두후보 종료를 전체goal 완료로 올린 도구 판정은 부정확했으므로 `thread_goal_complete:false`, `BLOCKED_REQUIRES_NEW_PROGRAM_AUTHORIZATION`으로 정정한다. 원program/config·후보실패·미평가null·과거음성·2857tests기록은 변경하지 않는다. [종료 감사 정정](metadata_learning_program_v1_completion_audit.md#전체-thread-goal-상태-정정)에 범위를 명시했다.
+- 현재HEAD75766f0의 계약/terminal과 관련process를 확인했다. 진행 중인 실험0이며 C1전체attempt실패/postquery수리금지, C2자체관문실패 때문에 적격실행경로0이다. 독립 검토자가 대안/복구권한을 다시 확인했다. 같은 추가승인 경계는091종료turn→092재점검turn→093현재turn에 연속되었고, 직전 재검증은 효능/다음행동에 변화를 주지 못해 연구진행 관점 NO_PROGRESS다. 승인 경계가 남아 있는데 완료 표시나 같은 감사만 반복하지 않는다.
+- 최소 다음 요청은 사람자료 재접근 없는 별도generated-only 수치 안정화 검증 단계의 승인이다. 새수식/오차기준/독립reference/미분/미노출사례/방법수·시간·출력 예산을 실행 전에 고정해야 하며 지금 제안 자체를 실행허가로 삼지 않는다. 사람재실험/C3/held60/외부요청/유료/새worktree/cleanup0. 이turn은 상태·권한 구분 정정만 수행했고 새 연구 실험을 한 것으로 보고하지 않는다.
