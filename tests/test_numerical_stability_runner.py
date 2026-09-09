@@ -2,6 +2,7 @@
 
 import importlib.util
 import itertools
+import os
 from pathlib import Path
 
 import numpy as np
@@ -72,6 +73,18 @@ def test_legacy_path_rejects_before_access(runner):
     config = {"known_generated_regression": {"result_path": "/forbidden/human/result.json"}}
     with pytest.raises(ValueError, match="Unauthorized legacy"):
         list(runner.load_known(config))
+
+
+def test_bound_read_bytes_pin_and_hardlink_guard(runner, tmp_path):
+    path = tmp_path / "bound.json"
+    runner.write_json(path, {"toy": True})
+    expected = runner.sha(path)
+    assert runner.bound_bytes(path, expected) == path.read_bytes()
+    with pytest.raises(ValueError, match="hash mismatch"):
+        runner.bound_bytes(path, "0" * 64)
+    os.link(path, tmp_path / "second.json")
+    with pytest.raises(ValueError, match="Hardlinked"):
+        runner.bound_bytes(path, expected)
 
 
 def test_gradient_selection_is_exact_without_registered_inputs():

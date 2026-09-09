@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import platform
@@ -66,8 +67,24 @@ def regular_readonly(path):
     require(path.is_absolute() and path.resolve() == path, "Unaliased absolute input required")
     info = path.lstat()
     require(stat.S_ISREG(info.st_mode), "Regular input required")
+    require(info.st_nlink == 1, "Hardlinked input is not unaliased")
     require(stat.S_IMODE(info.st_mode) == 0o400, "Input must be immutable mode0400")
     return path
+
+
+def bound_bytes(path, expected_hash):
+    path = regular_readonly(path)
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(fd, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        require(
+            stat.S_ISREG(info.st_mode) and info.st_nlink == 1, "Unaliased regular input required"
+        )
+        require(stat.S_IMODE(info.st_mode) == 0o400, "Bound input must be mode0400")
+        value = stream.read()
+        require(len(value) == info.st_size, "Bound input size changed")
+    require(hashlib.sha256(value).hexdigest() == expected_hash, "Legacy input hash mismatch")
+    return value
 
 
 def sym(x):
@@ -139,11 +156,10 @@ def load_known(config):
     arrays_path = LEGACY / "generated_arrays.npz"
     require(spec["result_path"] == str(result_path), "Unauthorized legacy result path")
     require(spec["arrays_path"] == str(arrays_path), "Unauthorized legacy array path")
-    for p, expected in ((result_path, spec["result_sha256"]), (arrays_path, spec["arrays_sha256"])):
-        regular_readonly(p)
-        require(sha(p) == expected, "Legacy input hash mismatch")
-    require(arrays_path.stat().st_size == spec["arrays_bytes"], "Legacy input size mismatch")
-    receipt = json.loads(result_path.read_text())
+    result_bytes = bound_bytes(result_path, spec["result_sha256"])
+    array_bytes = bound_bytes(arrays_path, spec["arrays_sha256"])
+    require(len(array_bytes) == spec["arrays_bytes"], "Legacy input size mismatch")
+    receipt = json.loads(result_bytes)
     require(
         receipt["status"] == "GENERATED_CONDITIONING_VALIDITY_FAILURE", "Legacy failure required"
     )
@@ -153,7 +169,7 @@ def load_known(config):
     )
     rng = np.random.default_rng(20260912)
     w, es, eb, ec = (probe(rng.normal(size=(8, 8))) for _ in range(4))
-    with np.load(arrays_path, allow_pickle=False) as archive:
+    with np.load(io.BytesIO(array_bytes), allow_pickle=False) as archive:
         row = 0
         for k in (3, 5):
             for condition in (1, 1000, 100000, 120000):
@@ -338,6 +354,13 @@ def run(output):
     )
     require(sha(DESIGN) == DESIGN_SHA, "Frozen design changed")
     config = json.loads(DESIGN.read_text())
+    require(
+        all(
+            os.environ.get(key) == "1"
+            for key in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
+        ),
+        "Launch with all BLAS/OpenMP thread environment limits set to1 before imports",
+    )
     for args in (("diff", "--quiet"), ("diff", "--cached", "--quiet")):
         subprocess.run(["git", *args], cwd=ROOT, check=True)
     pins = {name: sha(ROOT / name) for name in PIN_FILES}
