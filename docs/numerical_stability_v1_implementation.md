@@ -96,3 +96,44 @@ metrics, elapsed wall/CPU/bytes. Status `NUMERICAL_STUDY_VERIFIED` only for inta
 even if methods rejected; separately `recommended_method` may be null. A method requires everyfixed
 gate. Missing reference/integrity cannot produce verified promotion. Tests must detect wrong lower
 eigenpair, zero/scaled F, detached gradient, missing case, forged descriptor and unauthorized path.
+
+## Concrete envelope and float recipe (fixed before implementation/results)
+
+Validation order: raw type/shape/finite/relative-symmetry checks for ALL S/B/C; average only accepted
+inputs; strict SPD of accepted symmetric B/C; solve. This does not allow averaging before the raw
+symmetry guard. Runtime residual/diagnostics use the original supplied matrices.
+
+New generation operation grouping is fixed: `h=(v@diag(roots))@v.T; s=sym((lb@h)@lb.T)`;
+`c=scale*sym((u@diag(condition**(-arange(8)/7)))@u.T)` except exact condition1 identity;
+`g=sym((lc@w)@lc.T)` and likewise dS/dB/dC with lb/lc. Reference reconstruction tolerance is
+relative Fro <=1e-13 per array (scale=max(expected Fro,float64 tiny)), bool masks exact, metadata
+exact. This small implementation-order tolerance is not the eigenproblem accuracy gate.
+
+Start keys exactly: `schema`=`cfeg.numerical_stability.start.v1`, `design_path` absolute,
+`design_sha256`, `code_pins` relative-repo-path->SHA mapping, `source_revision`, `started_utc`,
+`versions` (python,numpy,scipy,torch,mpmath strings), `budget` exact contract object,
+`exclusions` exact object below. Code pins must include the design, both design/implementation
+documents, run/audit scripts, new operator, original shape operator and cfeg/analysis init files.
+
+Exclusions exactly: `human_reads:false`, `query_reads_or_scores:0`, `optimizer_updates:0`,
+`gpu_used:false`, `held60:false`, `external_outreach:false`, `paid_resources:false`.
+
+Result keys exactly: `schema,status,start_sha256,inputs,measurements,case_metadata,method_failures,
+diagnostics,negative_errors,numeric_wall_seconds,numeric_cpu_seconds,output_bytes_before_result,
+versions,exclusions`. File descriptors exactly `{path,sha256,bytes}`.
+`case_metadata` old entries exactly `{id,group:"known_regression",row,k,condition,arm,band,class}`;
+new entries exactly `{id,group:"registered_development"|"registered_unexposed_validation",
+seed,condition,scale,spectrum,gap,denominator}`. All integer ids0..1151 contiguous.
+`method_failures` list entries exactly `{method:"n1"|"n2",case:int|null,stage:string,error:string}`.
+Stages `scalar`,`gradient`,`batch`,`negative`; batch case is null. A returned invalid negative
+control uses error `NEGATIVE_CONTROL_ACCEPTED`. `status` is MEASUREMENT_FAILURE iff failures nonempty.
+`diagnostics` maps n1/n2 to1152 entries: null on failed scalar, otherwise a mapping of the five
+detached API names to finite float values. `negative_errors` maps n1/n2 to9 error strings on expected
+rejection or null on improper acceptance. Expected negative exceptions are not method_failures.
+Record exact bytes present before result is written; auditor computes final archive bytes independently.
+
+Auditor output envelope is owned by independent auditor, not producer, but must report source SHA,
+code pins, per-method verdict/reasons, complete forward/gradient maxima and failures, reference
+convergence/precision, recommendation (N1 if both eligible), resource use and limitations. CLI0 only
+for NUMERICAL_STUDY_VERIFIED;2 for intact inconclusive reference or integrity/audit failure with
+immutable failure receipt. Root must not promote a method solely because a CLI exited0.
