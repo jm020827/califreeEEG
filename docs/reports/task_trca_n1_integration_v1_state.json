@@ -1,6 +1,6 @@
 {
   "study_id": "task-trca-n1-integration-v1",
-  "status": "IMPLEMENTING_FROZEN_GENERATED_ONLY_INTEGRATION",
+  "status": "ENGINEERING_PASS_READY_FOR_ONE_REGISTERED_GENERATED_EXECUTION",
   "design_sha256": "15d5ee385bc0f30d5dff780ae582034597db06793d34c9c8029c44f42adf25cd",
   "registered_generations": 0,
   "registered_primary_runs": 0,

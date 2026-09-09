@@ -1313,3 +1313,10 @@
 - `coordinate-worktree-changes`: main42333af에서 기존 runtime/cold 두tree를 a4c3636/1daa284 기준 새branch로 재사용했다. Learner6파일/independent5파일/rootreader·builder·runner·tests를 분리하고 root만 공통계약/통합/실제실행/SQLite를 소유한다. 신규tree0/기존40개와 untracked실패출력 보존,가용218,370,292KiB에서 예산 충분하다. 기존module globals monkeypatch나 기존과학코드수정0이다.
 - Root archive/prepare/runtime e8718e8, learner aa866ba→1dac690 통합 후 새155tests PASS17.19초/process17.66초, 별도 실제 fileguard 하의 첫CPU Adam 업데이트1test PASS2.28초/process2.62초다. 후자는 toy업데이트1회이며 등록24,000에 섞지 않는다. CUDA context 미초기화도 검사했다. 원runner의 미계측 warmup optimizer.step을 새runner에서는 제거했고 초기화만 수행한다. 학습lane의 최초70PASS/1FAIL은 metadata guard 순서의 기대값오류였으며 수정후77PASS,두호출34.89초/6400toyupdates/80KiB/JUnit보존이다. Root 최초Ruff SIM117 지적은 등록 전 test코드만 정리했다.
 - `academic-research`의 기존 context/frontier와 N1 측정 근거를 재사용했다. 이번 남은 불확실성은 문헌수보다 전체 통합 실행으로 직접 검증할 수 있어 새검색/PDF0이다. 현재등록생성/실행0이며 cold 통합·전체회귀·최종pin고정 후에만 시작한다. 실제결과와한계는 새claim/evidence로 분리해 다음 기록에 남긴다.
+
+## VERIFY/FREEZE-20260909-098 — N1 통합 등록 실행 직전
+
+- 독립 audit lane e400332를 f73ee0d로 통합했다. Reader/learner/producer/N1을 import하지 않는 NumPy/SciPy 감사로 raw S/C 검사, 저장 통계 이후 모든 대조군/선택/정확한 counts·argmax/권한·파일·동결을 검산한다. Adam/Q15/raw 전처리의 독립 전체 재현이라고 하지 않는다. prepare_failure.json 및 이전 별칭 prep_failure.json 모두 실패 우선으로 거부한다.
+- Auditor toy 첫95PASS/2FAIL(0400 fixture 기대), 다음137PASS/3FAIL(명시적 tamper를 위한 chmod와 cold 범위 밖 Q15 기대), 최종142PASS다. 실패 JUnit을 `/tmp/n1-integration-audit-toys-1NMVqP`에 보존했다. 이는 등록 전 test fixture/expectation 수리이고 등록 seed 실행은0이다. 총11.63초/13,088KiB다.
+- 통합298PASS23.40초/process23.96초; 전체3300PASS/68기존warnings420.06초/process421.28초. [사전 검사 기록](reports/task_trca_n1_integration_v1_preflight.json)에 원 JUnit/SHA와 모든 pytest 호출512.04초를 기록했다. Help/import/lint 소규모 검사에는 별도15초 보수적 예약을 더해도 총1800초 이내다. Full출력424,916KiB<640MiB/roottoy62,788KiB<128MiB다. Ruff PASS, 실제 import된 cfeg24개 모두31pin 안에 있다.
+- Root가 prepare/runner/cold 실제 교차계약을 읽고, 별도 읽기전용 agent도14입력/31pin/24k/325/72/coverage 범위 일치를 확인했다. N1 원module와 이전 과학 계약·실패는 수정하지 않았다. 이 기록만 추가한 clean commit 뒤 단1회 generated preparation/primary/cold를 시작한다. 아직 사람 효능이나 GPU 근거가 아니다.
