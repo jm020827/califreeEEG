@@ -134,3 +134,11 @@ GPUpeak가 없어 확정 peak를 보고하지 않는다. 다른 GPU process와 �
 읽기전용 교차 검토에 사용했다. Code/test PASS, 실패기록 감사 PASS, 효능 PASS를 구분한다.
 
 최종 독립 감사·전체 테스트와 closure 상태는 아래에 추가한다.
+
+### 종료 검증 진행 기록
+
+C2 terminal 감사는 source16행/8case를 독립 재구성하고 원 실패를 확인했다.
+Receipt SHA `2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a`, .617036초,
+`GENERATED_TERMINAL_VALIDITY_FAILURE_VERIFIED`다. Root 통합 auditor toy75tests도7.85초에 통과했다.
+최종 전체 회귀는 추가900초/출력2GiB 한도, CPU threads1, 독립 pytest 임시 경로로 실행하며
+출력을 주기적으로 확인한다. 전체회귀 결과는 아직 대기 중이다.
