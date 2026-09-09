@@ -1,6 +1,6 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "INCOMPLETE_NEW_N1_SOURCE39_EXECUTION_FAILURE_CLOSED_RECOVERY_AUTHORIZATION_REQUIRED",
+  "goal_status": "INCOMPLETE_AUTHORIZED_N1_TRANSPORT_RECOVERY_RUNNING",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
   "updated_date_kst": "2026-09-09",
@@ -15,7 +15,7 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "New N1 source39 primary closed after BrokenPipeError at8800updates/query0; its single failure-provenance audit passed, efficacy/calibration remain NOT_EVALUATED. See docs/task_trca_n1_source39_v1_results.md for separately approved transport-only recovery proposal. Old C1/C2 usage remains unchanged; new study counters are separate. No automatic retry, held60/outreach/paid/GPU.",
+  "next": "Subsequently authorized N1 transport recovery r1 is running with unchanged science and new separate counters in task_trca_n1_transport_recovery_r1_state.json. Original N1 BrokenPipe failure and old C1/C2 usage remain unchanged. No additional retry/held60/outreach/paid/GPU; original goal is incomplete until valid efficacy/calibration evidence.",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",
   "report": "docs/metadata_learning_program_v1_results.md",
   "completion_reconciliation": "docs/metadata_learning_program_v1_completion_audit.md"

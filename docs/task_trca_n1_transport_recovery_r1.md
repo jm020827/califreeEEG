@@ -57,3 +57,17 @@ console/부모 종료 뒤에도 마지막 이벤트가 보존됐다. 관련301te
 수학 관련3575전체검사는 이전 원프로그램의 증거로 유지하며 이번에 다시 실행했다고 하지 않는다.
 독립 읽기전용 검토가 발견한 종료 직전 한도/감사watchdog/잔여자손3항목은 실자료 시작 전 수정했다.
 결과는 새 manifest/복구 receipt를 고정하고 단1회 실행한 뒤 추가한다.
+
+### 실제 시작
+
+Clean91b7282에서 원prepare를1회 실행해 새manifest SHA
+`e940f436781292b32a8e6fffb32f8573069767472ea1aad9f8337b90ebff996c`를 고정했다.
+원manifest와 출력 경로 외 모든 필드가 같음을 실행기가 검사했다. Recovery receipt SHA
+`ed8dfe176d418a3280a96c2a4a3d34d66fbe67a0cdfb3ebf64fc906e7c81d179`에 원36pins와
+새코드/tests/검사근거/원실패/새권한을 결합했다. Prepare는numericreads0/process.23초다.
+2026-09-09T12:31:10Z 단1회 launch. Supervisor684632(PPID1), primary684633 각각 독립SID/PGID,
+실제 /proc/fd0은/dev/null, fd1/2는supervisor/primary.stdout.log·stderr.log 일반파일임을 확인했다.
+첫416sourcecases/728fit읽기 준비 후 학습 중이며 이 시작 snapshot에서는query0/완료updates0이다.
+이후 완료 카운터는 primary의events, 종료/자원/감사는supervisor receipts가 기준이다.
+**자동 감사는 supervisor가 소유하므로 수동으로 두 번째 감사를 실행하지 않는다.**
+현재efficacy/calibration미평가. [기계 상태](reports/task_trca_n1_transport_recovery_r1_state.json).
