@@ -1,0 +1,21 @@
+{
+  "schema": "cfeg.metadata_learning_program.results.v1",
+  "program_id": "metadata-learning-program-v1",
+  "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",
+  "status": "AWAITING_INDEPENDENT_TERMINAL_AUDIT_AND_FINAL_REGRESSION",
+  "planned_stop": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
+  "research_question_resolved": false,
+  "original_low_calibration_ssvep_goal_preserved": true,
+  "metadata_benefit_demonstrated": false,
+  "calibration_benefit_demonstrated": false,
+  "efficacy_measurements": {
+    "C1": {"status": "NOT_EVALUATED", "qm_minus_q": null, "qm_minus_q2": null, "qm_minus_sham": null, "label_savings": null, "harm": null},
+    "C2": {"status": "NOT_EVALUATED", "qm_minus_q": null, "qm_minus_q2": null, "qm_minus_sham": null, "label_savings": null, "harm": null}
+  },
+  "candidate_reports": {"C1": "docs/reports/task_trca_temporal_source39_v1_terminal.json", "C2": "docs/reports/task_trca_pair_s_v1_terminal.json"},
+  "usage": {"candidate_slots": 2, "human_primary_attempts": 1, "human_total_attempts": 1, "human_optimizer_updates_including_partial": 24000, "distinct_final_query_model_reveals_including_partial": 1, "infrastructure_recoveries": 0, "human_seconds": 587.19494638592, "new_worktrees": 2},
+  "unspent_allowance_is_not_new_authority": true,
+  "exclusions": {"held60_access": false, "external_outreach": false, "paid_resources": false, "old_terminal_candidates_reopened": false, "third_candidate_added": false},
+  "verification": {"c1_generated_completed_path_cold": "PASS", "c1_human_complete_efficacy_cold": "NOT_APPLICABLE_INCOMPLETE_EVALUATION", "c1_terminal_provenance": "INDEPENDENT_JSON_REVIEW_VERIFIED_NOT_NPZ_REPLAY", "c2_independent_terminal_audit": "PENDING", "final_full_regression": "PENDING"},
+  "next_plan": "Separately authorized prospective generated-only numerical methods study with frozen error/reference/gradient/unseen-fixture criteria; no current-program rescue or automatic human model/reveal. Independent efficacy and paired acquisition-M remain open questions."
+}
