@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **인공 metadata 능력 대조 완료**: [결과와 후속 검증 계획](docs/n1_metadata_generated_efficacy_v1_results.md). 사전 고정한 생성1회·1600updates·독립 감사1회를 완료했다. 유용한 M 조건에서 Q49.28%→QM65.04%(+15.76%p), 비연결 M에서는 예측·정확도 변화0이다. **제한된 학습 경로의 인공 능력 증거이며 실제 EEG 효능·보정량 절감 증거는 아니다.** 이전 source39 부정 결과를 유지한다. 전체3692PASS/3CUDA-skips, 새 사람자료·held60·GPU·외부요청·유료0. 이번 단계는 종료, 전체 연구목표는 미완료이며 다음 실제 M의 조건부 정보 검증은 제안 상태다. 아래는 이전 단계 이력이다.
+
 > 2026-09-10 **복구 실험·독립 검산 완료, metadata 이득 미확립**: [결과와 후속 판단](docs/task_trca_n1_transport_recovery_r1_results.md). 출력 연결 오류를 고친 뒤 같은 과학설정으로24,000updates·전체 평가를 완료했다. QM3−Q3는0%p, QM5−Q5는−0.006677%p(정답1개 감소),312개 조건의 보정량은 전부 같아 절감0이다. Metadata는 학습·필터·점수에 반영됐지만 유용한 예측 변화로 이어지지 않았다. 이번 후보는 유효한 개발자료상 부정 결과로 종료하며, 원 연구목표는 미완료다. 이전8,800update 실패 보존·held60/외부요청/유료/GPU0. [복구·쉬운 실험 설명](docs/task_trca_n1_transport_recovery_r1.md). 아래는 이전 단계 이력이다.
 
 > 2026-09-09 **새 N1 source39 실행 실패·감사 완료**: [결과·원인·후속 복구 제안](docs/task_trca_n1_source39_v1_results.md). 전체3575tests·자원·생성24,000updates/cold를 통과했으나 실자료 실행은8,800/24,000updates 뒤 진행 로그 출력의 `BrokenPipeError`로 종료했다. 독립 실패 감사PASS, 평가query0으로 **성능·보정량은 미평가**다. 가설 실패나 수치 오류로 단정하지 않는다. 기존/이번 실패를 보존하며 재실행0·held60·외부요청·유료·GPU0이다. 다음은 과학설정을 유지한 출력/실행수명 복구의 별도 승인 제안이며 전체 연구goal은 미완료다. 아래는 이전 완료 이력이다.

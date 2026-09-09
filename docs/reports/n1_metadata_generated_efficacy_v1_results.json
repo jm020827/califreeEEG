@@ -1,0 +1,218 @@
+{
+  "study_id": "n1-metadata-generated-efficacy-v1",
+  "status": "CLOSED_GENERATED_M_CAPACITY_PASS_REAL_CALIBRATION_UTILITY_OPEN",
+  "terminal": "GENERATED_M_CAPACITY_PASS",
+  "thread_goal_complete": false,
+  "stage_complete": true,
+  "source_revision": "17d22c4a134253a4891358eba0ed7fb091add1a6",
+  "design_commit": "7d0af63",
+  "output": "/home/whwovy/n1-generated-efficacy-v1-gyVfMl",
+  "registration_sha256": "0cbaf6c1f83811382376ecf51447880bcd3a22b4cd8379bbe58188d1ed5b69a5",
+  "result_sha256": "f29ad47f3b8ac9b924972a8c2bda315bd0f68c5a3acd456e88f8cc66fc29828f",
+  "audit_sha256": "5c256230f1377aa5b6b05377e4de1f9b7d741b91ee585e155cb44fe740b71d1a",
+  "completion_sha256": "cab749a45599b4716d9d3b5a5eed70291890db7ff0182109a49eaf673b8d111f",
+  "registered_generations": 1,
+  "primary_runs": 1,
+  "pipelines": 2,
+  "heads": 8,
+  "optimizer_updates": 1600,
+  "independent_audits": 1,
+  "retries": 0,
+  "fit_groups": 8,
+  "evaluation_groups": 32,
+  "records_per_group": 2,
+  "query_count_per_regime": 3072,
+  "arms": [
+    "FULL_NATIVE",
+    "FULL_CENTERED",
+    "ISO",
+    "Q",
+    "Q2",
+    "QM",
+    "SHAM_REFIT",
+    "PERMUTED",
+    "STALE",
+    "MISSING",
+    "ORACLE"
+  ],
+  "accuracy_percent": [
+    [
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      65.03906250000001,
+      50.065104166666664,
+      49.088541666666664,
+      65.03906250000001,
+      49.283854166666664,
+      66.66666666666667
+    ],
+    [
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.283854166666664,
+      49.93489583333333
+    ]
+  ],
+  "correct_counts": [
+    [
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1998,
+      1538,
+      1508,
+      1998,
+      1514,
+      2048
+    ],
+    [
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1514,
+      1534
+    ]
+  ],
+  "count_derivation": "Integer counts derived from independently matched32group accuracies; no fresh raw/query decoding by root.",
+  "contrasts": {
+    "coupled_QM_minus_Q": {
+      "mean_pp": 15.755208333333332,
+      "mcse_pp": 1.0115674046702512,
+      "low_pp": 13.692103009572039,
+      "high_pp": 17.818313657094627,
+      "n_groups": 32
+    },
+    "coupled_QM_minus_Q2": {
+      "mean_pp": 15.755208333333332,
+      "mcse_pp": 1.0115674046702512,
+      "low_pp": 13.692103009572039,
+      "high_pp": 17.818313657094627,
+      "n_groups": 32
+    },
+    "coupled_QM_minus_SHAM_REFIT": {
+      "mean_pp": 14.973958333333332,
+      "mcse_pp": 1.4625200917461614,
+      "low_pp": 11.991128940592128,
+      "high_pp": 17.956787726074538,
+      "n_groups": 32
+    },
+    "coupled_ORACLE_minus_Q": {
+      "mean_pp": 17.3828125,
+      "mcse_pp": 1.0484046818867834,
+      "low_pp": 15.244577054026957,
+      "high_pp": 19.521047945973045,
+      "n_groups": 32
+    },
+    "null_QM_minus_Q": {
+      "mean_pp": 0,
+      "mcse_pp": 0,
+      "low_pp": 0,
+      "high_pp": 0,
+      "n_groups": 32
+    },
+    "interaction": {
+      "mean_pp": 15.755208333333332,
+      "mcse_pp": 1.0115674046702512,
+      "low_pp": 13.692103009572039,
+      "high_pp": 17.818313657094627,
+      "n_groups": 32
+    }
+  },
+  "checks": {
+    "finite_arrays": true,
+    "common_q_hashes": true,
+    "constant_support_geometry": true,
+    "donors_cross_group": true,
+    "positive_headroom": true,
+    "null_equivalence": true,
+    "positive_improvement": true,
+    "metadata_learned_and_actuated": true
+  },
+  "actuation": {
+    "coupled": {
+      "max_abs_R": 0.06077635620293731,
+      "max_abs_F": 1.312538150476496e-7,
+      "max_abs_J": 0.0000015750457805656696,
+      "max_abs_score": 0.011562460743042013,
+      "argmax_changed": 484,
+      "gradient_max": 0.02613521705409231,
+      "coefficient_max_abs": 1.3665317903657037
+    },
+    "null": {
+      "max_abs_R": 1.4901220257712566e-9,
+      "max_abs_F": 3.2140868471471767e-15,
+      "max_abs_J": 3.855856606227448e-14,
+      "max_abs_score": 1.4153300753605436e-10,
+      "argmax_changed": 0,
+      "gradient_max": 0.000004812106255840251,
+      "coefficient_max_abs": 1.6687016672837528e-7
+    }
+  },
+  "resource": {
+    "primary": {
+      "pid": 1810811,
+      "exit_code": 0,
+      "watchdog_reason": null,
+      "elapsed_seconds": 46.97197640500963,
+      "peak_rss_kib": 1240636,
+      "user_seconds": 43.349529,
+      "system_seconds": 3.559793,
+      "process_group_remaining": false,
+      "utc": "2026-09-09T16:42:08.119947+00:00"
+    },
+    "audit": {
+      "pid": 1814348,
+      "exit_code": 0,
+      "watchdog_reason": null,
+      "elapsed_seconds": 9.642672655172646,
+      "peak_rss_kib": 649620,
+      "user_seconds": 7.575595,
+      "system_seconds": 2.003892,
+      "process_group_remaining": false,
+      "utc": "2026-09-09T16:42:17.816197+00:00"
+    },
+    "study_allocated_kib": 535484,
+    "test_snapshot_kib": 972892,
+    "charged_test_seconds": 1248.6823517298326
+  },
+  "tests": {
+    "integrated_passed": 94,
+    "full_passed": 3692,
+    "full_skipped": 3,
+    "full_failed": 0,
+    "full_errors": 0,
+    "full_seconds": 467.22
+  },
+  "new_human_reads": false,
+  "held60_access": false,
+  "gpu_used": false,
+  "new_external_outreach": false,
+  "paid_resources_used": false,
+  "old_failures_and_negatives_preserved": true,
+  "real_metadata_utility": "NOT_ESTABLISHED",
+  "real_calibration_savings": "NOT_ESTABLISHED",
+  "next": "Propose a new task-aligned actual-M conditional-information test before another human learning candidate; not launched. No automatic new human/held60/outreach/paid action.",
+  "report": "docs/n1_metadata_generated_efficacy_v1_results.md",
+  "research_claim": "claim:1c18ea450cdfb82d",
+  "research_technique": "technique:782f50eef1938cc4",
+  "broader_gap": "gap:6a8254f849b36b2f",
+  "broader_gap_status": "OPEN"
+}

@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **현재 상태**: [Generated M 능력 대조](n1_metadata_generated_efficacy_v1_results.md)는 생성1/1600updates/독립감사1로 종료했다. 연결M QM−Q+15.7552%p, 비연결M0%p로 좁은 학습 경로의 능력을 확인했다. **실제 acquisition M 효용·보정량 감소는 미확립**이며, [직전 source39 유효음성](task_trca_n1_transport_recovery_r1_results.md)의 결과는 바뀌지 않는다. 연구목표 유지·전체goal미완료. 새로운 사람자료 후보/held60/외부요청/유료를 자동 실행하지 않는다. 후속은 실제M의 task-aligned 조건부 정보 검증 설계 제안이다. 아래 상태들은 과거 이력이다.
+
 > 2026-09-09 **고정 2후보 프로그램 종료**: [종합 결과와 후속 검증 계획](metadata_learning_program_v1_results.md). C1은 source39의24,000updates 뒤 최종 수치 검증 실패, C2는 균일 대조군의 사전 인공 수치 검증 실패로 종료했다. 독립 실패 감사·전체2857tests PASS를 완료했지만 **효능·보정량 감소는 미평가이며 유망 후보는 없다.** 원 저보정 목표와 연구 질문은 유지한다. 사람 attempt1/query모델 개봉1/recovery0; held60·외부 요청·유료 자원0. 다음 수치 검증 연구는 별도 계획/승인 대상으로 남기며 세 번째 후보나 실패 재실행을 자동 추가하지 않는다. 아래는 이전 단계 이력이다.
 
 > 2026-09-09 [Temporal Q/QM 학습기 통합 검증 완료](task_trca_temporal_v1_engineering.md): 같은 새 점수의 Q/QM/Q2/SHAM 및 원 FULL_NATIVE/별도 FULL_CENTERED 대조 설계를 고정했다. 실제 Q15·Q 동결·잔차·nested 학습을 생성6명에서 연결했고, 네 head CPU/CUDA 일치·독립 cold 감사·전체2376tests PASS를 확인했다. **사람 EEG 효능·metadata 보정량 절감은 미평가**다. 이번 source archive/실제 M/기존 실패 진단/사람 query/held60 접근0. 다음은 새 역할 제한 reader·완료 경로 감사·실행 manifest의 별도 구현·생성 검증이며, 기존 실패 후보 재개나 source39 자동 실행은 없다. 아래는 이전 단계 이력이다.
