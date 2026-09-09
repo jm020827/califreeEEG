@@ -1,0 +1,39 @@
+{
+  "schema": "cfeg.task_trca_n1.integration_design.v1",
+  "study_id": "task-trca-n1-integration-v1",
+  "status": "FROZEN_BEFORE_IMPLEMENTATION_AND_REGISTERED_GENERATION",
+  "base_revision": "42333af0d5a79ed5d335c0037e3b59ddc8154586",
+  "authority": {"generated_integration": true, "human_inputs": false, "human_efficacy": false, "old_candidates_reopened": false, "held60": false, "outreach": false, "paid_resources": false, "gpu": false},
+  "numerical_prerequisite": {"audit_path": "/home/whwovy/numerical-stability-v1-REcwR9/audit.json", "audit_sha256": "5299bc3412996b2a900597b6434202bd3a0c0d7354127b67faecb8dc213116b7", "selected_method": "N1_SYM_CHOLESKY", "scientific_contract_sha256": "04d0968d478c795e8a0860c561fcfb881b9d510b5777c1a7ff45e65764b6fbe8"},
+  "mechanism": {
+    "inherit": "Temporal denominator-R mechanism, NOT C2 pair-S. Existing feature, head, loss, optimizer, donor, split, temporal score and native controls unchanged in new versioned modules.",
+    "source_design_path": "configs/analysis/task_trca_temporal_v1_design.json",
+    "source_design_sha256": "e456c3bcfc066e6ba3cb95a9c76798a006416bee11d064d083d9bd98ce7b97da",
+    "schema": "task-trca-n1-integration-v1",
+    "score_schema": "component-time-centered-ensemble-pearson-v1",
+    "formula": "Q15->16coef frozen-Q; Q2 indices1:3, numeric M2 or partition-local SHAM each3coef; logits=.8A*tanh(Q)+.2A*tanh(residual)*available; A=log(2)/2; R=8softmax(logits); tau=.1lambda_min(C)/(16/9); B=C+tau diag(R); F=N1(S,B,C); J=sum_classes F; unchanged temporal Pearson.",
+    "raw_input_policy": "S/C detached float64 CPU; validate original raw S/C with numerical_stability_operator._inputs(S,C,C) BEFORE averaging; use accepted symmetric C for tau, B=C_original+tau diag(R); pass original S/C and B to N1. No old _symmetric pre-averaging.",
+    "normalization_bound": "Replace inaccessible pre-normalization tr(CK) by exactly declared reciprocal tr(CF)/tr(BF) in [1/1.1-1e-10,1+1e-10]; this is an equivalent exact-arithmetic identity with a new numerical evaluation, not byte-identical old guard. Retain N1 original-pair residual<=1e-12 and input/top-gap policy unchanged.",
+    "unsupported": ["CUDA", "higher derivatives", "arbitrary caller policy", "old checkpoint schema", "human runtime entry point"]
+  },
+  "generated_profile": {"source_ids": [4,6,8,11,14,21,22,25,28], "interfaces": [0,1], "samples": [17], "budgets": [3,5], "generated": true, "seed": 20260913},
+  "fixture": {
+    "recipe": "Use the exact generated_values/build_inputs recipe of scripts/check_task_trca_temporal_source39_generated.py at base_revision with ONLY seed20260913, new study/envelope identity and new output paths. Nine generated EEG tensors: per pid prototype normal(2,12,5,8,17), independent block noise normal(2,10,12,5,8,17), offsets normal(2,10,12,5,8,1). Then780 generated routing metadata packets with original missing/zero pattern; then generated random A0 correlations. Native FULL computed unchanged from generated support. All query blocks6:10 have independent noise, not tiled copies.",
+    "native_numeric_free_configuration": "configs/analysis/metadata_prior_source39_v1.json",
+    "follow_referenced_human_paths": false,
+    "metadata_causal_efficacy_relation": false,
+    "a0_is_generated_random_correlation_placeholder": true,
+    "registered_seed_in_toy_tests": false
+  },
+  "training": {"outer_folds": 3, "inner_folds": 3, "lambdas": [0.0001,0.001,0.01], "selection": "Q-only validation CE; within1e-12 tie choose larger lambda", "heads": ["Q","Q2","QM","SHAM_REFIT"], "steps_per_head": 200, "optimizer": "float64 CPU full-batch Adam lr.01 betas.9/.999 eps1e-8; zero initialization; no uncounted warmup optimizer step", "pipelines": 30, "heads_total": 120, "registered_updates": 24000},
+  "evaluation": {"arms": ["FULL_NATIVE","FULL_CENTERED","ISO","Q","Q2","QM","SHAM_REFIT","PERMUTED","STALE","MISSING"], "source_block": 5, "query_blocks": [6,7,8,9], "queries_per_condition": 48, "participant_conditions": 36, "expected_query_bearing_calls": 72, "expected_access_rows": 325, "all_three_models_frozen_before_any_query": true, "old_model_or_freeze_reuse": false},
+  "verification": {
+    "toy_seed": 73,
+    "scalar_batch": "Actual four-head200step fits on identical nonregistered generated cases, coefficient and score absolute tolerance1e-8, argmax exact; scalar/batch fixed-logit loss and gradients tolerance1e-8. No scientific tuning if disparity.",
+    "learning_path_coverage": "Across all30 registered pipelines, each Q/Q2/QM/SHAM head must have at least one gradient norm>1e-12 and one final maxabs coefficient>1e-12. Otherwise PATH_NOT_EXERCISED, not efficacy failure or permission to change data.",
+    "independent_cold": "Independent NumPy/SciPy gvd reconstruction from saved Q/S/C/M/statistics; retain exact source/eval role, scaler/donor/Q-only lambda, all10arms counts/argmax, FULL native1e-9 and positive arms1e-8 thresholds, exact inventory/pins and ordered predecode journals. No producer/N1 import; no independent Adam or raw Q15/preprocessing reconstruction claim.",
+    "required_guards": ["old schemas/tokens rejected", "human profile/path rejected before decode", "evaluation block5 rejected", "query before all-model freeze rejected", "future M prefix excluded", "detached/wrong-gradient sensitivity", "tampered/missing files or saved values rejected", "MISSING exactly Q", "full scalar/batch optimizer parity"]
+  },
+  "budget": {"candidate_policies": 1, "registered_fixture_generations": 1, "registered_primary_runs": 1, "registered_cold_audits": 1, "registered_updates_max": 24000, "registered_runtime_seconds_max": 7200, "registered_audit_seconds_max": 1800, "all_tests_seconds_max": 1800, "root_toy_seconds_max": 300, "each_agent_toy_seconds_max": 300, "full_regression_seconds_max": 900, "generated_input_and_run_bytes_max": 2147483648, "all_new_output_bytes_max": 3221225472, "new_worktrees": 0, "reused_worktrees": 2, "cpu_threads_per_process": 1, "gpu": false, "packages_installed": 0},
+  "stop": {"success": "All generated integration/coverage/independent audit gates pass; close engineering stage and report. No human efficacy promotion.", "failure": "Preserve first registered failure and stop this fixed study; no retry, seed swap, tolerance change or failed case/control removal. Pre-registration implementation fixes and toy reruns count toward test budget.", "next": "Only propose separately bounded human efficacy program after integration success; user must approve new human input/model-reveal scope. held60/outreach/paid always separate."}
+}
