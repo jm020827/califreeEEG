@@ -71,3 +71,6 @@ Clean91b7282에서 원prepare를1회 실행해 새manifest SHA
 이후 완료 카운터는 primary의events, 종료/자원/감사는supervisor receipts가 기준이다.
 **자동 감사는 supervisor가 소유하므로 수동으로 두 번째 감사를 실행하지 않는다.**
 현재efficacy/calibration미평가. [기계 상태](reports/task_trca_n1_transport_recovery_r1_state.json).
+
+13:33:17Z에8,800updates 완료와다음inner_start(seq74)를기록했다. 이전실패의seq73출력지점을
+통과했으며 model0저장/1456fit-only읽기/query0이다. 전체학습완료·효능성공을뜻하지않는다.
