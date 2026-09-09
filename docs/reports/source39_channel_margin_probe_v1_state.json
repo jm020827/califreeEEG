@@ -1,0 +1,35 @@
+{
+  "schema": "cfeg.source39-channel-margin-probe.state.v1",
+  "date_kst": "2026-09-10",
+  "status": "DESIGN_AND_PURE_TARGET_VERIFIED_HUMAN_EXECUTION_NOT_AUTHORIZED",
+  "thread_goal_complete": false,
+  "human_metadata_utility": "UNESTABLISHED",
+  "calibration_reduction": "UNESTABLISHED",
+  "design": "docs/source39_channel_margin_probe_v1_design.md",
+  "config": "configs/analysis/source39_channel_margin_probe_v1.json",
+  "base_commit": "8108a0f12f4ee99d442e214bc925024cd4eccffb",
+  "pins": {
+    "design_sha256": "049e11667a96765a79b79327e70265cd79a38e8faac3ccb26721a1095e6773f3",
+    "config_sha256": "236f15e8bc08eae604364e5752be323a86233158604f3df8b406e22f551577f3",
+    "target_module_sha256": "05bca8e9307b573f9eda5c61df083c49d73ae78fd292950d00e8a69d09dd8dc4",
+    "target_tests_sha256": "813c900793ee3c959a899c00f7fe95ddc193ae9cd802677e12ac046d038fa9ec"
+  },
+  "implemented": ["M-blind signed Pearson source-template channel target", "channel-centered primary target", "equal-participant loss helper", "generated unit and reused feature regression tests"],
+  "not_implemented": ["new scoped human reader facade", "full joint ridge and nested crossfit orchestration", "paired-interface SHAM feature-change gate", "supervisor and pre-decode durable journal", "independent end-to-end numerical auditor", "human execution manifest"],
+  "verification": {
+    "test_parent": "/home/whwovy/channel-margin-unit-v1-P7KE0J",
+    "calls": [
+      {"passed": 162, "failed": 0, "seconds_pytest": 1.53, "junit": "junit.xml", "sha256": "213c742cae655a0ace48a444b461b0fcf2c38971e2dcaebffca05a3d6282e77e"},
+      {"passed": 165, "failed": 0, "seconds_pytest": 1.45, "junit": "junit2.xml", "sha256": "8ed2e3d1de7badc80989b935a98a9cbf3172da91afbddb2c8e0b0c09fbceb5b3"}
+    ],
+    "counts_overlap": true,
+    "current_turn_full_suite_run": false,
+    "new_python_ruff_and_format": "PASS",
+    "test_parent_kib_snapshot": 156,
+    "runtime_peak_rss_measured": false
+  },
+  "current_stage_usage": {"human_numeric_reads": 0, "human_archive_hash_reads": 0, "human_fits": 0, "registered_efficacy_runs": 0, "held60_reads": 0, "external_data_requests": 0, "paid_resources": 0, "new_worktrees": 0},
+  "review": "Two read-only agents; root sole writer. Corrected old-proxy description, shared-slope scope, pooled inner OOF weighting, consumed-feature SHAM coverage and numerical tie/terminal precedence. Added correlation-floor and template-cancellation tests.",
+  "literature": {"searches": 2, "records_ingested": 8, "paper_cards": 1, "pdf_reads": 0, "cutoff": "2026-09-04", "source_gap": "Semantic Scholar429 on first query; core seed missed there and resolved with exact-title Crossref search."},
+  "next": "Obtain approval for the prospective source39-only k3/N250 support0-2/block5 read and finite120fit primary+oneaudit envelope. Then complete reader/runner/audit and generated verification before registration, without per-step approvals inside that scope. No original query blocks6-9, held60, external requests or paid resources."
+}
