@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 2026-09-09 **승인된 동일설계 복구 실험 실행 중**: [transport recovery r1](docs/task_trca_n1_transport_recovery_r1.md). 원 학습·평가36핀은 그대로 두고 파일 로그·독립 process group·시간 제한·단일 terminal 감사 실행기를 추가했다. 관련301tests와 보강 후 새26tests PASS; 12:31:10Z에 새 실자료1회를 시작했다. 이전8,800update 실패는 보존하며 metadata 효능은 아직 미평가다. 아래는 이전 단계 이력이다.
+> 2026-09-10 **복구 실험·독립 검산 완료, metadata 이득 미확립**: [결과와 후속 판단](docs/task_trca_n1_transport_recovery_r1_results.md). 출력 연결 오류를 고친 뒤 같은 과학설정으로24,000updates·전체 평가를 완료했다. QM3−Q3는0%p, QM5−Q5는−0.006677%p(정답1개 감소),312개 조건의 보정량은 전부 같아 절감0이다. Metadata는 학습·필터·점수에 반영됐지만 유용한 예측 변화로 이어지지 않았다. 이번 후보는 유효한 개발자료상 부정 결과로 종료하며, 원 연구목표는 미완료다. 이전8,800update 실패 보존·held60/외부요청/유료/GPU0. [복구·쉬운 실험 설명](docs/task_trca_n1_transport_recovery_r1.md). 아래는 이전 단계 이력이다.
 
 > 2026-09-09 **새 N1 source39 실행 실패·감사 완료**: [결과·원인·후속 복구 제안](docs/task_trca_n1_source39_v1_results.md). 전체3575tests·자원·생성24,000updates/cold를 통과했으나 실자료 실행은8,800/24,000updates 뒤 진행 로그 출력의 `BrokenPipeError`로 종료했다. 독립 실패 감사PASS, 평가query0으로 **성능·보정량은 미평가**다. 가설 실패나 수치 오류로 단정하지 않는다. 기존/이번 실패를 보존하며 재실행0·held60·외부요청·유료·GPU0이다. 다음은 과학설정을 유지한 출력/실행수명 복구의 별도 승인 제안이며 전체 연구goal은 미완료다. 아래는 이전 완료 이력이다.
 

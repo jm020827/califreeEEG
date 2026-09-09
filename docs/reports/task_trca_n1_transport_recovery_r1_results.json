@@ -1,0 +1,587 @@
+{
+  "schema": "cfeg.task_trca_n1_transport_recovery_r1.report.v1",
+  "status": "CLOSED_VALID_DEVELOPMENT_NEGATIVE",
+  "completed_utc": "2026-09-09T15:22:08.935010+00:00",
+  "source_revision": "91b728229a3e3871fb0403f48a7a50b6ea3fd7de",
+  "parent": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau",
+  "summary": {
+    "terminal": "METADATA_INCREMENT_NOT_ESTABLISHED",
+    "arms": [
+      "FULL_NATIVE",
+      "FULL_CENTERED",
+      "ISO",
+      "Q",
+      "Q2",
+      "QM",
+      "SHAM_REFIT",
+      "PERMUTED",
+      "STALE",
+      "MISSING"
+    ],
+    "budgets": [
+      3,
+      5
+    ],
+    "windows": [
+      125,
+      188,
+      250,
+      500
+    ],
+    "accuracy_by_budget_arm": [
+      [
+        0.344150641025641,
+        0.344150641025641,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544,
+        0.34328258547008544
+      ],
+      [
+        0.41038995726495725,
+        0.4104567307692308,
+        0.4093215811965812,
+        0.4094551282051282,
+        0.4094551282051282,
+        0.4093883547008547,
+        0.4094551282051282,
+        0.4093883547008547,
+        0.4093883547008547,
+        0.4094551282051282
+      ]
+    ],
+    "nll_by_budget_arm": [
+      [
+        2.6539576166177126,
+        2.653725772337128,
+        2.658613604323769,
+        2.658617546261838,
+        2.658615277852755,
+        2.658625882884854,
+        2.658639678409756,
+        2.6586081021772836,
+        2.6586238065525927,
+        2.658617546261838
+      ],
+      [
+        2.3461642317871307,
+        2.3459592119387565,
+        2.3513279284839412,
+        2.351080446430834,
+        2.3510772329875875,
+        2.3510846646994223,
+        2.351093118484664,
+        2.3510772911131883,
+        2.3510827149610924,
+        2.351080446430834
+      ]
+    ],
+    "a0_accuracy": 0.3922275641025641,
+    "a0_nll": 2.0125825912395956,
+    "nll_note": "each arm's score / explicit native interface band-weight sum / .1; FULL_NATIVE global, other arms temporal; not calibrated probabilities",
+    "metadata_increment_checks": {
+      "primary_mean_at_least_1pp": false,
+      "primary_ci_low_gt_0": false,
+      "qm3_minus_q2_ci_low_gt_0": false,
+      "qm3_minus_sham_ci_low_gt_0": false,
+      "sham_coverage_at_least_half": true
+    },
+    "metadata_increment_passed": false,
+    "calibration_additional_checks": {
+      "qm3_minus_q5_ci_low_gt_minus_1pp": false,
+      "qm3_mean_accuracy_at_least_point8": false,
+      "qm3_minus_a0_ci_low_gt_minus_1pp": false,
+      "harmed_not_more_than_helped": true,
+      "positive_observed_label_savings": false,
+      "new_attainment_not_less_than_lost": true,
+      "qm3_minus_full_native3_ci_low_gt_minus_1pp": true,
+      "qm3_minus_full_centered3_ci_low_gt_minus_1pp": true
+    },
+    "calibration_additional_passed": false,
+    "validity_errors": [],
+    "comparisons": {
+      "QM3_minus_Q3": {
+        "mean_pp": 0,
+        "ci_low_pp": 0,
+        "ci_high_pp": 0,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 0,
+        "tied": 39,
+        "harmed": 0,
+        "worst_participant_change_pp": 0
+      },
+      "QM3_minus_Q2_3": {
+        "mean_pp": 0,
+        "ci_low_pp": 0,
+        "ci_high_pp": 0,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 0,
+        "tied": 39,
+        "harmed": 0,
+        "worst_participant_change_pp": 0
+      },
+      "QM3_minus_SHAM3": {
+        "mean_pp": 0,
+        "ci_low_pp": 0,
+        "ci_high_pp": 0,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 0,
+        "tied": 39,
+        "harmed": 0,
+        "worst_participant_change_pp": 0
+      },
+      "QM3_minus_Q5": {
+        "mean_pp": -6.617254273504274,
+        "ci_low_pp": -8.205877508984388,
+        "ci_high_pp": -5.028631038024161,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 3,
+        "tied": 0,
+        "harmed": 36,
+        "worst_participant_change_pp": -16.666666666666668
+      },
+      "QM3_minus_A0": {
+        "mean_pp": -4.894497863247863,
+        "ci_low_pp": -7.980682043203172,
+        "ci_high_pp": -1.8083136832925528,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 12,
+        "tied": 0,
+        "harmed": 27,
+        "worst_participant_change_pp": -31.250000000000004
+      },
+      "QM5_minus_Q5": {
+        "mean_pp": -0.006677350427350428,
+        "ci_low_pp": -0.02019493966287373,
+        "ci_high_pp": 0.006840238808172874,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 0,
+        "tied": 38,
+        "harmed": 1,
+        "worst_participant_change_pp": -0.2604166666666667
+      },
+      "QM3_minus_FULL_NATIVE3": {
+        "mean_pp": -0.08680555555555557,
+        "ci_low_pp": -0.20826607232577238,
+        "ci_high_pp": 0.03465496121466126,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 11,
+        "tied": 10,
+        "harmed": 18,
+        "worst_participant_change_pp": -1.0416666666666667
+      },
+      "QM3_minus_FULL_CENTERED3": {
+        "mean_pp": -0.08680555555555557,
+        "ci_low_pp": -0.2051378082408449,
+        "ci_high_pp": 0.03152669712973377,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 11,
+        "tied": 11,
+        "harmed": 17,
+        "worst_participant_change_pp": -1.0416666666666667
+      },
+      "FULL_CENTERED3_minus_FULL_NATIVE3": {
+        "mean_pp": 0,
+        "ci_low_pp": -0.02738859449685134,
+        "ci_high_pp": 0.02738859449685134,
+        "df": 38,
+        "interval_kind": "descriptive paired t, repeatedly exposed development",
+        "helped": 2,
+        "tied": 35,
+        "harmed": 2,
+        "worst_participant_change_pp": -0.2604166666666667
+      }
+    },
+    "grid_attainment": {
+      "cells": 312,
+      "threshold_correct_of_48": 39,
+      "both_attain": 77,
+      "new_attain": 0,
+      "lost_attainment": 0,
+      "neither_attain": 235,
+      "pooled_label_savings_total": 0,
+      "pooled_label_savings_mean": 0,
+      "q_cost_mean_among_both": 16.363636363636363,
+      "qm_cost_mean_among_both": 16.363636363636363
+    },
+    "all312_costs_identical": true,
+    "coverage": {
+      "changed_units": 78,
+      "total_units": 78,
+      "fraction": 1
+    },
+    "actuation": {
+      "structural_no_actuation": false,
+      "structural_certificate": "none; no argmax change does not establish dormancy",
+      "by_k": {
+        "3": {
+          "score_max_abs": 0.0008855487943408291,
+          "score_changed_cells_exact": 312,
+          "score_changed_cells_above_1e_12": 312,
+          "argmax_changed_queries": 0,
+          "changed_to_correct": 0,
+          "changed_from_correct": 0,
+          "changed_wrong_to_different_wrong": 0,
+          "helped_cells": 0,
+          "tied_cells": 312,
+          "harmed_cells": 0,
+          "worst_cell_integer_change": 0,
+          "r_max_abs_qm_minus_q": {
+            "maximum": 0.04439190743137211,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          },
+          "projector_max_abs_qm_minus_q": {
+            "maximum": 0.012369956190245723,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          },
+          "q_top_two_temporal_margin_min": 0.00000918224118798272,
+          "q_top_two_temporal_margin_median": 0.18193592821252863,
+          "q_top_two_temporal_margins_at_most_1e_12": 0,
+          "j_max_abs_qm_minus_q": {
+            "maximum": 0.020563155263669586,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          }
+        },
+        "5": {
+          "score_max_abs": 0.0008820428697735305,
+          "score_changed_cells_exact": 312,
+          "score_changed_cells_above_1e_12": 312,
+          "argmax_changed_queries": 1,
+          "changed_to_correct": 0,
+          "changed_from_correct": 1,
+          "changed_wrong_to_different_wrong": 0,
+          "helped_cells": 0,
+          "tied_cells": 311,
+          "harmed_cells": 1,
+          "worst_cell_integer_change": -1,
+          "r_max_abs_qm_minus_q": {
+            "maximum": 0.04468374640443207,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          },
+          "projector_max_abs_qm_minus_q": {
+            "maximum": 0.00349827690321014,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          },
+          "q_top_two_temporal_margin_min": 0.000022323272732549526,
+          "q_top_two_temporal_margin_median": 0.20413409217753808,
+          "q_top_two_temporal_margins_at_most_1e_12": 0,
+          "j_max_abs_qm_minus_q": {
+            "maximum": 0.007541659424715519,
+            "changed_cells_exact": 312,
+            "changed_cells_above_1e_12": 312
+          }
+        }
+      }
+    }
+  },
+  "learning_path_coverage": {
+    "pipelines": 30,
+    "heads_total": 120,
+    "registered_updates": 24000,
+    "families": {
+      "Q": {
+        "max_gradient_norm": 0.0019037818088314614,
+        "max_abs_coefficient": 1.5043344735452522,
+        "head_records": 30,
+        "exercised": true
+      },
+      "Q2": {
+        "max_gradient_norm": 0.00015577314958226373,
+        "max_abs_coefficient": 0.4377596492368599,
+        "head_records": 30,
+        "exercised": true
+      },
+      "QM": {
+        "max_gradient_norm": 0.00020356623997756272,
+        "max_abs_coefficient": 0.9069661915282644,
+        "head_records": 30,
+        "exercised": true
+      },
+      "SHAM_REFIT": {
+        "max_gradient_norm": 0.00021439774374517747,
+        "max_abs_coefficient": 1.0141469053349905,
+        "head_records": 30,
+        "exercised": true
+      }
+    },
+    "exercised": true,
+    "descriptive_only": true,
+    "metadata_effect": "DETERMINED_BY_FROZEN_ENDPOINT_NOT_GRADIENT_COVERAGE",
+    "scope": "Recorded gradient/coefficient actuation; not independent Adam replay or efficacy"
+  },
+  "exact_access_counts": {
+    "evaluation:a0": 312,
+    "evaluation:full_k3": 312,
+    "evaluation:full_k5": 312,
+    "evaluation:metadata_support": 156,
+    "evaluation:query": 312,
+    "evaluation:support": 624,
+    "fit:metadata_support": 312,
+    "fit:source_supervision": 624,
+    "fit:support": 1248
+  },
+  "event_barriers": {
+    "event_count": 182,
+    "access_count": 4213,
+    "all_models_frozen_access_seq": 2185,
+    "publication_barrier_verified": true
+  },
+  "primary": {
+    "pid": 684633,
+    "exit_code": 0,
+    "watchdog_reason": null,
+    "elapsed_seconds": 10168.490964886732,
+    "peak_rss_kib": 2804920,
+    "rss_source": "Linux wait4 child rusage; not supervisor-wide sampled RSS",
+    "user_seconds": 9162.437763,
+    "system_seconds": 996.818028,
+    "time": "2026-09-09T15:20:39.181755+00:00",
+    "stdout": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/primary.stdout.log",
+      "sha256": "08b145ee22fd9ea5b1530f593760df8a9e75a067a3e95a38ad4ca5c9bc0c9c06",
+      "bytes": 37738
+    },
+    "stderr": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/primary.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "audit": {
+    "pid": 1373230,
+    "exit_code": 0,
+    "watchdog_reason": null,
+    "elapsed_seconds": 89.74823043262586,
+    "peak_rss_kib": 1768576,
+    "rss_source": "Linux wait4 child rusage; not supervisor-wide sampled RSS",
+    "user_seconds": 74.066093,
+    "system_seconds": 15.444701,
+    "time": "2026-09-09T15:22:08.931409+00:00",
+    "stdout": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/audit.stdout.log",
+      "sha256": "5df15979142d358c47f009ef9b195ea4edf168db25cf2979ed54c22ea014148f",
+      "bytes": 12193
+    },
+    "stderr": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/audit.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "audit_status": "COLD_INDEPENDENT_AUDIT_PASS",
+  "source_audits": [
+    {
+      "status": "TEMPORAL_SOURCE_SELECTION_AUDIT_PASS",
+      "schema": "task-trca-n1-integration-v1",
+      "score_schema": "component-time-centered-ensemble-pearson-v1",
+      "cases": 416,
+      "selected_lambda": 0.001,
+      "weighted_q_validation_ce": {
+        "0.0001": 2.5482125506337803,
+        "0.001": 2.5481377467396578,
+        "0.01": 2.548182457969749
+      },
+      "max_validation_ce_abs_error": 6.217248937900877e-15,
+      "validation_ce_comparisons": 36,
+      "scope": "independent prefix M/scalers/donors/temporal validation/selection; not raw preprocessing, Q15 EEG, Adam or provenance",
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human"
+    },
+    {
+      "status": "TEMPORAL_SOURCE_SELECTION_AUDIT_PASS",
+      "schema": "task-trca-n1-integration-v1",
+      "score_schema": "component-time-centered-ensemble-pearson-v1",
+      "cases": 416,
+      "selected_lambda": 0.001,
+      "weighted_q_validation_ce": {
+        "0.0001": 2.352398825560784,
+        "0.001": 2.352373537150491,
+        "0.01": 2.3524179676907875
+      },
+      "max_validation_ce_abs_error": 5.329070518200751e-15,
+      "validation_ce_comparisons": 36,
+      "scope": "independent prefix M/scalers/donors/temporal validation/selection; not raw preprocessing, Q15 EEG, Adam or provenance",
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human"
+    },
+    {
+      "status": "TEMPORAL_SOURCE_SELECTION_AUDIT_PASS",
+      "schema": "task-trca-n1-integration-v1",
+      "score_schema": "component-time-centered-ensemble-pearson-v1",
+      "cases": 416,
+      "selected_lambda": 0.001,
+      "weighted_q_validation_ce": {
+        "0.0001": 2.441736812137841,
+        "0.001": 2.441707732957711,
+        "0.01": 2.4418681054005478
+      },
+      "max_validation_ce_abs_error": 1.2878587085651816e-14,
+      "validation_ce_comparisons": 36,
+      "scope": "independent prefix M/scalers/donors/temporal validation/selection; not raw preprocessing, Q15 EEG, Adam or provenance",
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human"
+    }
+  ],
+  "evaluation_audits": [
+    {
+      "status": "TEMPORAL_EVALUATION_AUDIT_PASS",
+      "cases": 208,
+      "max_abs_errors": {
+        "r": 6.661338147750939e-16,
+        "projectors": 3.86575216282381e-11,
+        "scores": 5.477840403500522e-13,
+        "native": 9.475753515175711e-13,
+        "centered": 5.92081939032596e-13,
+        "cached": 7.96143012626871e-12
+      },
+      "integer_count_comparisons": 2288,
+      "ten_arm_argmax_exact": true,
+      "missing_exact_q": true,
+      "both_full_same_native_filters": true,
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human",
+      "scope": "saved Q/S/C/prefix M/Grams/native filters through all ten scores/counts; not independent raw preprocessing, Q15, native fitting, Adam or access provenance"
+    },
+    {
+      "status": "TEMPORAL_EVALUATION_AUDIT_PASS",
+      "cases": 208,
+      "max_abs_errors": {
+        "r": 6.661338147750939e-16,
+        "projectors": 1.0772271963332969e-11,
+        "scores": 1.056710274838224e-12,
+        "native": 1.3591350267461166e-12,
+        "centered": 8.656408923002346e-13,
+        "cached": 1.8574169979856947e-12
+      },
+      "integer_count_comparisons": 2288,
+      "ten_arm_argmax_exact": true,
+      "missing_exact_q": true,
+      "both_full_same_native_filters": true,
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human",
+      "scope": "saved Q/S/C/prefix M/Grams/native filters through all ten scores/counts; not independent raw preprocessing, Q15, native fitting, Adam or access provenance"
+    },
+    {
+      "status": "TEMPORAL_EVALUATION_AUDIT_PASS",
+      "cases": 208,
+      "max_abs_errors": {
+        "r": 6.661338147750939e-16,
+        "projectors": 5.794920099333467e-11,
+        "scores": 5.950795411990839e-13,
+        "native": 9.188205751797796e-13,
+        "centered": 8.699707620962727e-13,
+        "cached": 1.933675441989635e-12
+      },
+      "integer_count_comparisons": 2288,
+      "ten_arm_argmax_exact": true,
+      "missing_exact_q": true,
+      "both_full_same_native_filters": true,
+      "fixed_source39_grid_verified": true,
+      "fixed_profile_grid_verified": true,
+      "profile": "human",
+      "scope": "saved Q/S/C/prefix M/Grams/native filters through all ten scores/counts; not independent raw preprocessing, Q15, native fitting, Adam or access provenance"
+    }
+  ],
+  "limitations": [
+    "saved Q/S/C evidence, not independent raw preprocessing/Q15/native fit/Adam replay",
+    "workflow provenance, not an OS sandbox",
+    "development, not independent confirmation"
+  ],
+  "artifacts": {
+    "manifest": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/human_manifest.json",
+      "sha256": "e940f436781292b32a8e6fffb32f8573069767472ea1aad9f8337b90ebff996c",
+      "bytes": 7542
+    },
+    "result": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/task-trca-n1-source39-primary1/result.json",
+      "sha256": "4eae8d40f99fe3c8dda083d02c4717f497d74ad0853f1da9e3e7edbc67adba1a",
+      "bytes": 223791
+    },
+    "cold": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/task-trca-n1-source39-primary1/cold_audit.json",
+      "sha256": "5df15979142d358c47f009ef9b195ea4edf168db25cf2979ed54c22ea014148f",
+      "bytes": 12193
+    },
+    "recovery": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/recovery.json",
+      "sha256": "ed8dfe176d418a3280a96c2a4a3d34d66fbe67a0cdfb3ebf64fc906e7c81d179",
+      "bytes": 6179
+    },
+    "completion": {
+      "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/completion.json",
+      "sha256": "3f702ea159595e892a2b5b12f2a3d1d529e824233580a74e51b8b747043f9359",
+      "bytes": 2402
+    }
+  },
+  "scope": {
+    "scientific_candidate": "Same N1-R/source39-v1; separately authorized transport recovery, not a new method",
+    "previous_human_attempts": 1,
+    "previous_human_updates": 8800,
+    "previous_model_set_reveals": 0,
+    "recovery_human_attempts": 1,
+    "recovery_human_updates": 24000,
+    "recovery_model_set_reveals": 1,
+    "recovery_terminal_audits": 1,
+    "additional_retries": 0,
+    "old_failure_preserved": true,
+    "original36_pins_unchanged": true,
+    "held60": false,
+    "raw_mat_or_full_m": false,
+    "gpu": false,
+    "outreach": false,
+    "paid": false,
+    "source39_evidence": "Repeatedly exposed development; descriptive participant intervals, not independent confirmation"
+  },
+  "resource_accounting": {
+    "primary_internal_seconds": 10163.623720460106,
+    "audit_internal_seconds": 89.25904448423535,
+    "human_seconds_limit": 21600,
+    "human_rss_limit_bytes": 17179869184,
+    "audit_seconds_limit": 1800,
+    "new_output_limit_bytes": 17179869184,
+    "recovery_parent_allocated_kib": 2911412,
+    "test_prepare_parent_allocated_kib": 54288,
+    "transport_tests_all_process_seconds": 45.07,
+    "other_test_checks_reserved_seconds": 20,
+    "transport_test_seconds_limit": 300,
+    "post_terminal_tests": 0,
+    "notes": "Directory allocation snapshots, not total CPU accounting or process-tree concurrent RSS. Empty unbound supervisor stdout/stderr remain0664; primary55 artifacts and supervisor10JSON plus primary/audit logs0400 single-link."
+  },
+  "decision": {
+    "promising_candidates": 0,
+    "candidate_closed": true,
+    "thread_goal_complete": false,
+    "next_action_authorized": false,
+    "next_proposal": "Freeze a bounded generated efficacy positive/negative-control test of whether this restricted M-to-decision path can use deliberately informative M beyond Q. Not started. Pass would not prove human utility; no automatic new human run or held60."
+  },
+  "research_record": {
+    "new_searches": 0,
+    "new_pdf_reads": 0,
+    "new_dataset_collection": 0,
+    "literature_cutoff": "2026-09-04",
+    "report": "docs/task_trca_n1_transport_recovery_r1_results.md"
+  }
+}

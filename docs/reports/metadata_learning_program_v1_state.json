@@ -1,9 +1,9 @@
 {
   "program_id": "metadata-learning-program-v1",
-  "goal_status": "INCOMPLETE_AUTHORIZED_N1_TRANSPORT_RECOVERY_RUNNING",
+  "goal_status": "INCOMPLETE_N1_RECOVERY_VALID_NEGATIVE_NO_PROMISING_CANDIDATE",
   "thread_goal_complete": false,
   "bounded_program_status": "CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE",
-  "updated_date_kst": "2026-09-09",
+  "updated_date_kst": "2026-09-10",
   "runtime_snapshot_utc": "2026-09-09T02:24:05Z",
   "program_sha256": "78ca14d5c155841b727ef8b35b958188639dd7677d1e41ca9e8ffa9bc3bc3a10",
   "candidates": {
@@ -15,7 +15,7 @@
   "held60_access": false,
   "new_external_outreach": false,
   "paid_resources_used": false,
-  "next": "Subsequently authorized N1 transport recovery r1 is running with unchanged science and new separate counters in task_trca_n1_transport_recovery_r1_state.json. Original N1 BrokenPipe failure and old C1/C2 usage remain unchanged. No additional retry/held60/outreach/paid/GPU; original goal is incomplete until valid efficacy/calibration evidence.",
+  "next": "Subsequently authorized N1 transport recovery r1 completed with unchanged science and independent cold PASS: no metadata accuracy gain or observed calibration savings. Its counters are separate in task_trca_n1_transport_recovery_r1_state.json. Original N1 BrokenPipe failure and C1/C2 usage remain unchanged. Original goal remains incomplete; no promising candidate, further recovery/held60/outreach/paid/GPU or new scientific test authorized.",
   "completion_basis": "Both frozen slots closed by verified validity failure; all required terminal audits, full2857tests and complete program report/next verification plan finished. Research question and efficacy remain unresolved.",
   "report": "docs/metadata_learning_program_v1_results.md",
   "completion_reconciliation": "docs/metadata_learning_program_v1_completion_audit.md"

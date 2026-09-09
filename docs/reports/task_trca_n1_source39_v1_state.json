@@ -52,7 +52,7 @@
   "observed_label_savings": null,
   "helped": null,
   "harmed": null,
-  "next_action_authorized": true,
-  "next": "User subsequently approved transport-only recovery r1; it is running with a fresh manifest and detached file-backed supervisor. See task_trca_n1_transport_recovery_r1_state.json. This original attempt remains closed and its counters/failed artifacts are unchanged.",
+  "next_action_authorized": false,
+  "next": "The separately authorized transport recovery r1 has now completed and passed its independent cold: METADATA_INCREMENT_NOT_ESTABLISHED, zero observed label savings. See task_trca_n1_transport_recovery_r1_state.json and results report. This original failed attempt and all its counters remain unchanged; no further recovery is authorized.",
   "note": "All prerequisites passed, but human primary failed2026-09-09T10:54:25Z while printing a durable inner_complete event. One failure-only audit verified partial provenance without numeric replay. Old and current failures preserved. Same36 pins; no post-outcome runtime/science edits or retry. This bounded attempt is closed; broader efficacy goal remains incomplete."
 }
