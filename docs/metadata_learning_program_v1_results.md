@@ -159,3 +159,7 @@ operator7c1c9d4→gate48407d7→독립audit c506b12→최종회귀였다. 독립
 
 최종 상태: `CLOSED_CANDIDATE_FAMILY_NO_PROMISING_CANDIDATE`.
 모든 효능 null/미평가와 기존 음성 결과를 보존하고, 후속 수치 검증을 제안 상태로 남긴다.
+
+원 요청과 사전 중단 규칙을 대조한 [종료 재점검](metadata_learning_program_v1_completion_audit.md)에서도
+같은 판정을 유지했다. 원 산출물·코드 pin·JUnit을 다시 확인했으며, 유한 후보군의 종료와
+미해결 효능 질문, 불완전한 누적 자원 계측을 구분했다. 재점검에 따른 새 실험은 없다.
