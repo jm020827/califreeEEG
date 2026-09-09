@@ -1,6 +1,6 @@
 {
   "study_id": "task-trca-n1-source39-v1",
-  "status": "GENERATED_PRIMARY_RUNNING_AFTER_REGISTERED_RESOURCE_PASS",
+  "status": "HUMAN_PRIMARY_RUNNING_AFTER_ALL_PREREQUISITES_PASSED",
   "design_sha256": "bb90cc361a28c3e0a53861564ec007f38602cf5d16554e0923a6550eb1be7c95",
   "algorithm_schema": "task-trca-n1-integration-v1",
   "human_candidate_slots": 1,
@@ -8,14 +8,17 @@
   "registered_resource_runs": 1,
   "registered_fixture_generations": 1,
   "registered_generated_complete_runs": 1,
-  "generated_primary_completed": false,
-  "registered_generated_cold_audits": 0,
+  "generated_primary_completed": true,
+  "registered_generated_cold_audits": 1,
+  "generated_cold": {"path": "/home/whwovy/task-trca-n1-source39-Pborkn/task-trca-n1-source39-generated1/cold_audit.json", "sha256": "25c62abe79166ff33779a2ac805846779b8dae60875b96901bad6f37f682cad1"},
+  "human_manifest": {"path": "/home/whwovy/task-trca-n1-source39-K1qYuE/human_manifest.json", "sha256": "c1780ad0f3edcccef5b32cbf1a097d21255d54b11a7c0154f3cfc0f2cb5a380d"},
+  "human_output": "/home/whwovy/task-trca-n1-source39-K1qYuE/task-trca-n1-source39-primary1",
   "resource_receipt": {"path": "/home/whwovy/task-trca-n1-source39-Nyp4o0/resource1/resource.json", "sha256": "526ef01b8b5b3422b0dfbe3d7bbfec0f04d4625193703648111ce2088c6320e8"},
   "generated_manifest": {"path": "/home/whwovy/task-trca-n1-source39-Pborkn/generated_manifest.json", "sha256": "5e82d09ca8e2b432f978ba051a46fc48e07144365f61f5d8371c2b8c40aaca5d"},
-  "human_primary_attempts": 0,
+  "human_primary_attempts": 1,
   "human_model_set_reveals": 0,
   "human_optimizer_updates": 0,
-  "human_numeric_reads": false,
+  "human_numeric_reads": true,
   "held60": false,
   "outreach": false,
   "paid_resources": false,
@@ -23,5 +26,5 @@
   "old_candidates_reopened": false,
   "thread_goal_complete": false,
   "efficacy": "NOT_EVALUATED",
-  "note": "Resource1 passed; registered new generated primary1 is running. Counts are initiated attempts, not completed efficacy results. Human source39 is still unopened in this study; new generated cold PASS remains prerequisite. Same36 code pins frozen at693440d."
+  "note": "Resource1 and new same-code generated primary/cold1 passed. Human primary1 started2026-09-09T09:51:53Z, first26 fit IDs prepared728 access rows. This snapshot has zero complete800-update pipelines and no query reveal; current progress is append-only events/access journals. Same36 code pins; no retry or science change."
 }
