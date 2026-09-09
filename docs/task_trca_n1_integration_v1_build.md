@@ -82,6 +82,61 @@ METADATA_NOT_EVALUATED를 추가한다. 기록누락·reference부재는 통과�
 Root runner는 clean tracked diff를 요구하지만 기존4개 untracked test dirs는 허용·보존한다.
 미계측 warmup optimizer.step은 제거한다. 실제primary 전 scientific/runtime pins를 고정한다.
 
+### 실행 pins와 envelope 보충 — 등록 입력 전 고정
+
+CODE_PATHS는 아래 정확한 집합이다. Runner/cold는 각자 독립 상수로 선언하며 generator는
+cold의 상수를 읽어 hash만 만들 수 있다. 이 문서 자체와 JSON의 해시도 포함한다.
+
+```text
+configs/analysis/task_trca_n1_integration_v1.json
+configs/analysis/metadata_prior_source39_v1.json
+docs/task_trca_n1_integration_v1_build.md
+scripts/prepare_task_trca_n1_integration.py
+scripts/run_task_trca_n1_integration.py
+scripts/audit_task_trca_n1_integration.py
+src/cfeg/__init__.py
+src/cfeg/metrics.py
+src/cfeg/analysis/__init__.py
+src/cfeg/analysis/ood_coverage.py
+src/cfeg/analysis/primary_aggregate.py
+src/cfeg/analysis/primary_inference.py
+src/cfeg/analysis/provenance.py
+src/cfeg/analysis/metadata_prior_validation.py
+src/cfeg/analysis/metadata_prior_source.py
+src/cfeg/analysis/metadata_trca_prior.py
+src/cfeg/analysis/native_support_prefix.py
+src/cfeg/analysis/task_trca_shape_inputs.py
+src/cfeg/analysis/task_trca_shape_archive.py
+src/cfeg/analysis/task_trca_shape_features.py
+src/cfeg/analysis/task_trca_shape_operator.py
+src/cfeg/analysis/task_trca_shape_signfree.py
+src/cfeg/analysis/task_trca_shape_audit.py
+src/cfeg/analysis/numerical_stability_operator.py
+src/cfeg/analysis/task_trca_n1_signfree.py
+src/cfeg/analysis/task_trca_n1_learning.py
+src/cfeg/analysis/task_trca_n1_batch.py
+src/cfeg/analysis/task_trca_n1_evaluation.py
+src/cfeg/analysis/task_trca_n1_audit.py
+src/cfeg/analysis/task_trca_n1_archive.py
+src/cfeg/analysis/task_trca_n1_artifact_audit.py
+```
+
+Native fixture root는 execution output의 sibling `inputs`, manifest basename은 `manifest.json`;
+둘의 parent는 root가 mktemp로 만든 fresh `task-trca-n1-integration-*` directory다. Output은
+같은 parent의 `task-trca-n1-integration-primary1`이다. 기존 generated-builder의 projection/plan/
+start/result/fixture와 S{id}.npz layout을 유지한다. Fixture origin schema/study는 반드시
+`GENERATED`와 새 study 문자열을 포함한다. Manifest는 `fixture` descriptor(path/SHA/bytes)도
+필수로 포함하고 generator/code/nativeconfig/seed/profile과 일치시킨다. Producer/cold의 숫자 접근은
+오직 이 bound fixture/output 자식만 허용한다. Code pin 확인 뒤 fixture에 없는 추가 입력·oldhuman
+path·상위root alias/symlink/hardlink는 거부한다.
+
+Archive output의 기존 start/events/access/source0..2/model0..2/globalfreeze/evaluation9개/
+scores/result inventory를 유지한다. `fixture`는 입력 provenance이므로 output artifact dictionary에
+섞지 않는다. Independent cold의 최종 receipt에 `learning_path_coverage`를 기록한다. 네 head 각각
+전체30pipeline 중 최대gradient_norm과 최대abscoef를 집계하며 둘 다1e−12 초과일 때만
+`exercised:true`. 이 항목이 false면 성공 문자열을 발행하지 않는다. 새 summary의
+`metadata_effect`는 항상 `NOT_EVALUATED`다.
+
 ## 연구 근거 적용
 
 `academic-research`의 기존 frontier와 직전 N1의80/120자리 검증을 재사용한다. 이번 불확실성은
