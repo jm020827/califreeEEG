@@ -62,10 +62,14 @@ def _data(value):
         raise ValueError("target must be channel centered")
     if raw.issubset(value):
         support, source = np.asarray(value["support"]), np.asarray(value["source_block"])
-        if (support.dtype != np.dtype("float64") or support.ndim != 7
-                or support.shape[:6] != (p, 2, 3, 12, 5, 8) or support.shape[-1] < 24
-                or source.dtype != np.dtype("float64")
-                or source.shape != (p, 2, 12, 5, 8, support.shape[-1])):
+        if (
+            support.dtype != np.dtype("float64")
+            or support.ndim != 7
+            or support.shape[:6] != (p, 2, 3, 12, 5, 8)
+            or support.shape[-1] < 24
+            or source.dtype != np.dtype("float64")
+            or source.shape != (p, 2, 12, 5, 8, support.shape[-1])
+        ):
             raise ValueError("raw support/source geometry or float64 dtype mismatch")
         _finite(support, "support")
         _finite(source, "source_block")
@@ -146,8 +150,11 @@ def _design(data, rows, model, donor_rows=None):
 
 def _ridge(record):
     return RidgeModel(
-        np.asarray(record["mean"]), np.asarray(record["scale"]),
-        np.asarray(record["coefficient"]), record["intercept"], record["alpha"],
+        np.asarray(record["mean"]),
+        np.asarray(record["scale"]),
+        np.asarray(record["coefficient"]),
+        record["intercept"],
+        record["alpha"],
         record["design_rank"],
     )
 
@@ -167,9 +174,12 @@ def _coverage(data, rows, model):
     change = np.max(np.abs(own_consumed - donor_consumed), axis=(2, 3, 4)) > TIE_ATOL
     both = change.all(axis=1)
     return {
-        "ids": data["ids"][rows].tolist(), "donor_ids": data["ids"][donor].tolist(),
-        "raw_changed": raw_changed.tolist(), "raw_changed_fraction": float(raw_changed.mean()),
-        "design_changed_by_interface": change.tolist(), "design_changed_both": both.tolist(),
+        "ids": data["ids"][rows].tolist(),
+        "donor_ids": data["ids"][donor].tolist(),
+        "raw_changed": raw_changed.tolist(),
+        "raw_changed_fraction": float(raw_changed.mean()),
+        "design_changed_by_interface": change.tolist(),
+        "design_changed_both": both.tolist(),
         "design_changed_fraction": float(both.mean()),
     }
 
@@ -177,10 +187,15 @@ def _coverage(data, rows, model):
 def _fit_model(data, rows, arm, alpha):
     ids = data["ids"][rows].tolist()
     model = {
-        "arm": arm, "fit_ids": ids, "alpha": float(alpha),
+        "arm": arm,
+        "fit_ids": ids,
+        "alpha": float(alpha),
         "q_scaler": _scaler(data["q"][rows], ids),
-        "m_scaler": (_scaler(data["m"][rows], ids, data["available"][rows])
-                     if arm in ("QM", "SHAM") else None),
+        "m_scaler": (
+            _scaler(data["m"][rows], ids, data["available"][rows])
+            if arm in ("QM", "SHAM")
+            else None
+        ),
         "nominal_coefficients": 16 if arm == "Q" else 18,
     }
     design = _design(data, rows, model)
@@ -199,8 +214,12 @@ def _predict(data, rows, model):
 
 def _select_alpha(scores):
     minimum = min(row["mean_participant_mse"] for row in scores)
-    return next(alpha for alpha in ALPHAS for row in scores
-                if row["alpha"] == alpha and row["mean_participant_mse"] <= minimum + TIE_ATOL)
+    return next(
+        alpha
+        for alpha in ALPHAS
+        for row in scores
+        if row["alpha"] == alpha and row["mean_participant_mse"] <= minimum + TIE_ATOL
+    )
 
 
 def fit_probe(data, event_sink=None):
@@ -213,8 +232,12 @@ def fit_probe(data, event_sink=None):
         raise ValueError("event_sink must be callable")
     values = _data(data)
     record = {
-        "schema": MODELS_SCHEMA, "arms": list(ARMS), "ids": values["ids"].tolist(),
-        "fold_assignment": values["fold_assignment"].tolist(), "ridge_fit_count": 0, "outer": [],
+        "schema": MODELS_SCHEMA,
+        "arms": list(ARMS),
+        "ids": values["ids"].tolist(),
+        "fold_assignment": values["fold_assignment"].tolist(),
+        "ridge_fit_count": 0,
+        "outer": [],
     }
 
     def completed(outer, arm, stage, inner, alpha, fit, valid):
@@ -222,19 +245,30 @@ def fit_probe(data, event_sink=None):
         if record["ridge_fit_count"] > FIT_COUNT:
             raise RuntimeError("Ridge fit budget exceeded")
         if event_sink is not None:
-            event_sink({
-                "event": "ridge_fit_completed", "fit_index": record["ridge_fit_count"],
-                "outer_fold": outer, "arm": arm, "stage": stage, "inner_fold": inner,
-                "alpha": float(alpha), "fit_ids": values["ids"][fit].tolist(),
-                "validation_ids": values["ids"][valid].tolist(),
-            })
+            event_sink(
+                {
+                    "event": "ridge_fit_completed",
+                    "fit_index": record["ridge_fit_count"],
+                    "outer_fold": outer,
+                    "arm": arm,
+                    "stage": stage,
+                    "inner_fold": inner,
+                    "alpha": float(alpha),
+                    "fit_ids": values["ids"][fit].tolist(),
+                    "validation_ids": values["ids"][valid].tolist(),
+                }
+            )
 
     for fold in range(3):
         train = _sorted_rows(values, values["fold_assignment"] != fold)
         evaluation = _sorted_rows(values, values["fold_assignment"] == fold)
         inner_assignment = participant_folds(values["ids"][train])
-        outer = {"fold": fold, "fit_ids": values["ids"][train].tolist(),
-                 "evaluation_ids": values["ids"][evaluation].tolist(), "arms": {}}
+        outer = {
+            "fold": fold,
+            "fit_ids": values["ids"][train].tolist(),
+            "evaluation_ids": values["ids"][evaluation].tolist(),
+            "arms": {},
+        }
         for arm in ARMS:
             inner_records, scores = [], []
             for alpha in ALPHAS:
@@ -243,25 +277,40 @@ def fit_probe(data, event_sink=None):
                     fit, valid = train[inner_assignment != inner], train[inner_assignment == inner]
                     model = _fit_model(values, fit, arm, alpha)
                     completed(fold, arm, "inner", inner, alpha, fit, valid)
-                    loss = participant_margin_mse(_predict(values, valid, model), values["target"][valid])
+                    loss = participant_margin_mse(
+                        _predict(values, valid, model), values["target"][valid]
+                    )
                     losses[inner_assignment == inner] = loss
-                    inner_records.append({
-                        "fold": inner, "alpha": float(alpha),
-                        "validation_ids": values["ids"][valid].tolist(),
-                        "validation_participant_mse": loss.tolist(),
-                        "validation_coverage": _coverage(values, valid, model), "model": model,
-                    })
+                    inner_records.append(
+                        {
+                            "fold": inner,
+                            "alpha": float(alpha),
+                            "validation_ids": values["ids"][valid].tolist(),
+                            "validation_participant_mse": loss.tolist(),
+                            "validation_coverage": _coverage(values, valid, model),
+                            "model": model,
+                        }
+                    )
                 with np.errstate(over="ignore", invalid="ignore"):
                     mean_loss = float(losses.mean())
                 _finite(mean_loss, "inner pooled participant MSE")
-                scores.append({"alpha": float(alpha), "participant_ids": values["ids"][train].tolist(),
-                               "participant_mse": losses.tolist(), "mean_participant_mse": mean_loss})
+                scores.append(
+                    {
+                        "alpha": float(alpha),
+                        "participant_ids": values["ids"][train].tolist(),
+                        "participant_mse": losses.tolist(),
+                        "mean_participant_mse": mean_loss,
+                    }
+                )
             selected = _select_alpha(scores)
             final = _fit_model(values, train, arm, selected)
             completed(fold, arm, "final", None, selected, train, evaluation)
             outer["arms"][arm] = {
-                "selected_alpha": selected, "alpha_scores": scores, "inner": inner_records,
-                "final": final, "evaluation_coverage": _coverage(values, evaluation, final),
+                "selected_alpha": selected,
+                "alpha_scores": scores,
+                "inner": inner_records,
+                "final": final,
+                "evaluation_coverage": _coverage(values, evaluation, final),
             }
         record["outer"].append(outer)
     if record["ridge_fit_count"] != FIT_COUNT:
@@ -272,8 +321,12 @@ def fit_probe(data, event_sink=None):
 
 
 def _validate_fit(record, arm, ids, alpha):
-    if (record["arm"] != arm or record["fit_ids"] != ids or record["alpha"] != alpha
-            or record["nominal_coefficients"] != (16 if arm == "Q" else 18)):
+    if (
+        record["arm"] != arm
+        or record["fit_ids"] != ids
+        or record["alpha"] != alpha
+        or record["nominal_coefficients"] != (16 if arm == "Q" else 18)
+    ):
         raise ValueError("Model identity/fit partition/alpha mismatch")
     for name, dimension in (("q_scaler", 15), ("m_scaler", 2)):
         scaler = record[name]
@@ -282,46 +335,69 @@ def _validate_fit(record, arm, ids, alpha):
                 raise ValueError("M-blind arm must not have an M scaler")
             continue
         mean, scale = _finite(scaler["mean"], name), _finite(scaler["scale"], name)
-        if mean.shape != (dimension,) or scale.shape != mean.shape or np.any(scale <= 0) or scaler["fit_ids"] != ids:
+        if (
+            mean.shape != (dimension,)
+            or scale.shape != mean.shape
+            or np.any(scale <= 0)
+            or scaler["fit_ids"] != ids
+        ):
             raise ValueError("Scaler shape/fit IDs mismatch")
     ridge, dimension = record["ridge"], 15 if arm == "Q" else 17
     for name in ("mean", "scale", "coefficient"):
         array = _finite(ridge[name], f"ridge {name}")
         if array.shape != (dimension,) or (name == "scale" and np.any(array <= 0)):
             raise ValueError("Ridge vector shape/value mismatch")
-    if (_finite(ridge["intercept"], "intercept").ndim != 0 or ridge["alpha"] != alpha
-            or type(ridge["design_rank"]) is not int or not 0 <= ridge["design_rank"] <= dimension):
+    if (
+        _finite(ridge["intercept"], "intercept").ndim != 0
+        or ridge["alpha"] != alpha
+        or type(ridge["design_rank"]) is not int
+        or not 0 <= ridge["design_rank"] <= dimension
+    ):
         raise ValueError("Invalid ridge scalar record")
 
 
 def _validate_models(data, models):
     """Reject foreign schemas/partitions; independent audit verifies arithmetic."""
     try:
-        if (models["schema"] != MODELS_SCHEMA or models["arms"] != list(ARMS)
-                or models["ids"] != data["ids"].tolist()
-                or models["fold_assignment"] != data["fold_assignment"].tolist()
-                or models["ridge_fit_count"] != FIT_COUNT or len(models["outer"]) != 3):
+        if (
+            models["schema"] != MODELS_SCHEMA
+            or models["arms"] != list(ARMS)
+            or models["ids"] != data["ids"].tolist()
+            or models["fold_assignment"] != data["fold_assignment"].tolist()
+            or models["ridge_fit_count"] != FIT_COUNT
+            or len(models["outer"]) != 3
+        ):
             raise ValueError("Incomplete or foreign probe models")
         for fold, outer in enumerate(models["outer"]):
             fit = _sorted_rows(data, data["fold_assignment"] != fold)
             valid = _sorted_rows(data, data["fold_assignment"] == fold)
             ids = data["ids"][fit].tolist()
             inner_assignment = participant_folds(data["ids"][fit])
-            if (outer["fold"] != fold or outer["fit_ids"] != ids
-                    or outer["evaluation_ids"] != data["ids"][valid].tolist()
-                    or set(outer["arms"]) != set(ARMS)):
+            if (
+                outer["fold"] != fold
+                or outer["fit_ids"] != ids
+                or outer["evaluation_ids"] != data["ids"][valid].tolist()
+                or set(outer["arms"]) != set(ARMS)
+            ):
                 raise ValueError("Outer model partition mismatch")
             for arm in ARMS:
                 selected = outer["arms"][arm]
-                if (len(selected["inner"]) != 9 or len(selected["alpha_scores"]) != 3
-                        or [item["alpha"] for item in selected["alpha_scores"]] != list(ALPHAS)
-                        or selected["selected_alpha"] != _select_alpha(selected["alpha_scores"])):
+                if (
+                    len(selected["inner"]) != 9
+                    or len(selected["alpha_scores"]) != 3
+                    or [item["alpha"] for item in selected["alpha_scores"]] != list(ALPHAS)
+                    or selected["selected_alpha"] != _select_alpha(selected["alpha_scores"])
+                ):
                     raise ValueError("Incomplete fixed inner selection")
                 for index, inner in enumerate(selected["inner"]):
                     alpha, inner_fold = ALPHAS[index // 3], index % 3
                     inner_ids = data["ids"][fit[inner_assignment != inner_fold]].tolist()
                     valid_ids = data["ids"][fit[inner_assignment == inner_fold]].tolist()
-                    if inner["fold"] != inner_fold or inner["alpha"] != alpha or inner["validation_ids"] != valid_ids:
+                    if (
+                        inner["fold"] != inner_fold
+                        or inner["alpha"] != alpha
+                        or inner["validation_ids"] != valid_ids
+                    ):
                         raise ValueError("Inner model partition mismatch")
                     _validate_fit(inner["model"], arm, inner_ids, alpha)
                 _validate_fit(selected["final"], arm, ids, selected["selected_alpha"])
@@ -334,9 +410,11 @@ def _summarize(values, predictions, coverages):
     losses = np.stack([participant_margin_mse(prediction, target) for prediction in predictions])
     with np.errstate(over="ignore", invalid="ignore"):
         mean = losses.mean(axis=1)
-        fold_mean = np.stack([losses[:, values["fold_assignment"] == fold].mean(axis=1) for fold in range(3)], axis=1)
+        fold_mean = np.stack(
+            [losses[:, values["fold_assignment"] == fold].mean(axis=1) for fold in range(3)], axis=1
+        )
         interface_mean = ((predictions - target[None]) ** 2).mean(axis=(1, 3, 4))
-        energy = float(np.mean(target ** 2))
+        energy = float(np.mean(target**2))
     _finite(mean, "pooled participant MSE")
     _finite(fold_mean, "outer-fold MSE")
     _finite(interface_mean, "interface MSE")
@@ -347,7 +425,9 @@ def _summarize(values, predictions, coverages):
             continue
         delta = fold_mean[index] - fold_mean[2]
         comparisons[arm] = {
-            "relative_mse_gain": float((mean[index] - mean[2]) / mean[index]) if mean[index] > HEADROOM else None,
+            "relative_mse_gain": float((mean[index] - mean[2]) / mean[index])
+            if mean[index] > HEADROOM
+            else None,
             "absolute_mse_gain": float(mean[index] - mean[2]),
             "fold_absolute_mse_gain": delta.tolist(),
             "positive_outer_folds": int(np.count_nonzero(delta > TIE_ATOL)),
@@ -360,14 +440,25 @@ def _summarize(values, predictions, coverages):
         "metadata_coverage": int(covered.sum()) >= MIN_COVERED,
         "sham_coverage": all(row["design_changed_fraction"] >= 0.8 for row in coverages),
         "comparator_headroom": all(mean[ARMS.index(arm)] > HEADROOM for arm in comparisons),
-        "relative_gain": all(row["relative_mse_gain"] is not None and row["relative_mse_gain"] >= 0.02 for row in comparisons.values()),
-        "positive_outer_folds": all(row["positive_outer_folds"] >= 2 for row in comparisons.values()),
-        "positive_q_interfaces": bool(np.all(np.asarray(comparisons["Q"]["interface_absolute_mse_gain"]) > TIE_ATOL)),
+        "relative_gain": all(
+            row["relative_mse_gain"] is not None and row["relative_mse_gain"] >= 0.02
+            for row in comparisons.values()
+        ),
+        "positive_outer_folds": all(
+            row["positive_outer_folds"] >= 2 for row in comparisons.values()
+        ),
+        "positive_q_interfaces": bool(
+            np.all(np.asarray(comparisons["Q"]["interface_absolute_mse_gain"]) > TIE_ATOL)
+        ),
     }
     names = (
-        "INSUFFICIENT_TARGET_VARIATION", "INSUFFICIENT_METADATA_COVERAGE",
-        "INSUFFICIENT_SHAM_DESIGN_COVERAGE", "INSUFFICIENT_COMPARATOR_HEADROOM",
-        "RELATIVE_GAIN_BELOW_THRESHOLD", "INSUFFICIENT_POSITIVE_OUTER_FOLDS", "NONPOSITIVE_Q_INTERFACE_GAIN",
+        "INSUFFICIENT_TARGET_VARIATION",
+        "INSUFFICIENT_METADATA_COVERAGE",
+        "INSUFFICIENT_SHAM_DESIGN_COVERAGE",
+        "INSUFFICIENT_COMPARATOR_HEADROOM",
+        "RELATIVE_GAIN_BELOW_THRESHOLD",
+        "INSUFFICIENT_POSITIVE_OUTER_FOLDS",
+        "NONPOSITIVE_Q_INTERFACE_GAIN",
     )
     failures = [name for name, passed in zip(names, gates.values()) if not passed]
     if not gates["target_variation"]:
@@ -381,15 +472,29 @@ def _summarize(values, predictions, coverages):
     else:
         terminal = "NO_PROMISING_SIGNAL_IN_THIS_PROBE"
     return {
-        "schema": RESULT_SCHEMA, "arms": list(ARMS), "ids": values["ids"].tolist(),
-        "fold_assignment": values["fold_assignment"].tolist(), "ridge_fit_count": FIT_COUNT,
-        "terminal": terminal, "failure_reasons": failures, "target_energy": energy,
-        "metadata": {"available_channel_counts": available.tolist(),
-                     "covered_participant_ids": values["ids"][covered].tolist(),
-                     "covered_participant_count": int(covered.sum()), "minimum_covered_participants": MIN_COVERED},
-        "sham_outer_coverage": coverages, "participant_mse": losses.tolist(), "mean_mse": mean.tolist(),
-        "comparisons": comparisons, "fold_mean_mse": fold_mean.tolist(), "interface_mean_mse": interface_mean.tolist(),
-        "participant_mse_range": np.stack((losses.min(axis=1), losses.max(axis=1)), axis=1).tolist(),
+        "schema": RESULT_SCHEMA,
+        "arms": list(ARMS),
+        "ids": values["ids"].tolist(),
+        "fold_assignment": values["fold_assignment"].tolist(),
+        "ridge_fit_count": FIT_COUNT,
+        "terminal": terminal,
+        "failure_reasons": failures,
+        "target_energy": energy,
+        "metadata": {
+            "available_channel_counts": available.tolist(),
+            "covered_participant_ids": values["ids"][covered].tolist(),
+            "covered_participant_count": int(covered.sum()),
+            "minimum_covered_participants": MIN_COVERED,
+        },
+        "sham_outer_coverage": coverages,
+        "participant_mse": losses.tolist(),
+        "mean_mse": mean.tolist(),
+        "comparisons": comparisons,
+        "fold_mean_mse": fold_mean.tolist(),
+        "interface_mean_mse": interface_mean.tolist(),
+        "participant_mse_range": np.stack(
+            (losses.min(axis=1), losses.max(axis=1)), axis=1
+        ).tolist(),
         "gates": {name: bool(value) for name, value in gates.items()},
     }
 

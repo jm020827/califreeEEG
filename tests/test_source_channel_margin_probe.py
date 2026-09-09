@@ -23,8 +23,11 @@ def fixture(p=9, seed=431):
     target = rng.normal(size=(p, 2, 5, 8))
     target -= target.mean(axis=-1, keepdims=True)
     return {
-        "ids": np.arange(p, dtype=np.int64), "orders": np.zeros(p, dtype=np.int64),
-        "packet": rng.uniform(0, 50, size=(p, 2, 3, 8)), "q": q, "target": target,
+        "ids": np.arange(p, dtype=np.int64),
+        "orders": np.zeros(p, dtype=np.int64),
+        "packet": rng.uniform(0, 50, size=(p, 2, 3, 8)),
+        "q": q,
+        "target": target,
     }
 
 
@@ -70,7 +73,10 @@ def test_full120_fit_program_and_json_contract(fitted):
                     assert model["m_scaler"] is None
                     assert item["validation_coverage"] is None
             if arm == "SHAM":
-                for coverage in [selection["final"]["fit_coverage"], selection["evaluation_coverage"]]:
+                for coverage in [
+                    selection["final"]["fit_coverage"],
+                    selection["evaluation_coverage"],
+                ]:
                     assert set(coverage["donor_ids"]).issubset(coverage["ids"])
     np.testing.assert_array_equal(data["ids"], np.arange(9))
 
@@ -110,9 +116,12 @@ def test_pooled_participant_selection_not_equal_fold_means():
     for outer in models["outer"]:
         for selection in outer["arms"].values():
             for index, candidate in enumerate(selection["alpha_scores"]):
-                inner = selection["inner"][index * 3:(index + 1) * 3]
-                mapped = {pid: loss for row in inner for pid, loss in
-                          zip(row["validation_ids"], row["validation_participant_mse"])}
+                inner = selection["inner"][index * 3 : (index + 1) * 3]
+                mapped = {
+                    pid: loss
+                    for row in inner
+                    for pid, loss in zip(row["validation_ids"], row["validation_participant_mse"])
+                }
                 losses = [mapped[pid] for pid in candidate["participant_ids"]]
                 np.testing.assert_array_equal(candidate["participant_mse"], losses)
                 assert candidate["mean_participant_mse"] == np.mean(losses)
@@ -122,8 +131,10 @@ def test_pooled_participant_selection_not_equal_fold_means():
 
 
 def test_global_min_tie_rule_prefers_larger_alpha():
-    scores = [{"alpha": alpha, "mean_participant_mse": loss} for alpha, loss in
-              zip(probe.ALPHAS, (2e-12, 1e-12, 0.4e-12))]
+    scores = [
+        {"alpha": alpha, "mean_participant_mse": loss}
+        for alpha, loss in zip(probe.ALPHAS, (2e-12, 1e-12, 0.4e-12))
+    ]
     assert probe._select_alpha(scores) == 0.01
     for row in scores:
         row["mean_participant_mse"] = 1.0
@@ -156,8 +167,9 @@ def test_joint_ridge_matches_mean_loss_normal_equations_and_rank(arm):
     scale = np.where(scale < 1e-12, 1.0, scale)
     z = (x - mean) / scale
     y = values["target"][rows].reshape(-1)
-    coefficient = np.linalg.solve(z.T @ z / len(z) + 0.01 * np.eye(z.shape[1]),
-                                  z.T @ (y - y.mean()) / len(z))
+    coefficient = np.linalg.solve(
+        z.T @ z / len(z) + 0.01 * np.eye(z.shape[1]), z.T @ (y - y.mean()) / len(z)
+    )
     np.testing.assert_allclose(model["ridge"]["coefficient"], coefficient, atol=1e-12, rtol=0)
     assert model["ridge"]["intercept"] == y.mean()
     assert model["ridge"]["design_rank"] == np.linalg.matrix_rank(z / np.sqrt(len(z)))
@@ -174,7 +186,9 @@ def test_initial_scalers_population_stats_and_missing_neutral():
     q_rows = data["q"][fit].reshape(-1, 15)
     np.testing.assert_array_equal(model["q_scaler"]["mean"], q_rows.mean(axis=0))
     expected_sd = q_rows.std(axis=0)
-    np.testing.assert_array_equal(model["q_scaler"]["scale"], np.where(expected_sd < 1e-12, 1, expected_sd))
+    np.testing.assert_array_equal(
+        model["q_scaler"]["scale"], np.where(expected_sd < 1e-12, 1, expected_sd)
+    )
     m_rows = values["m"][fit][values["available"][fit]]
     np.testing.assert_array_equal(model["m_scaler"]["mean"], m_rows.mean(axis=0))
     standardized = probe._standardize(values["m"][fit], model["m_scaler"], values["available"][fit])
@@ -223,7 +237,9 @@ def test_donor_pairs_full_mask_order_partition_and_sorted_next():
     np.testing.assert_array_equal(probe._donor_rows(values, np.array([3, 1])), [1, 3])
     data["packet"][np.isfinite(data["packet"])] *= 101
     data["target"] *= -30
-    np.testing.assert_array_equal(probe._donor_rows(probe._data(data), rows), [1, 2, 3, 0, 5, 4, 6, 7, 8])
+    np.testing.assert_array_equal(
+        probe._donor_rows(probe._data(data), rows), [1, 2, 3, 0, 5, 4, 6, 7, 8]
+    )
 
 
 def test_raw_swaps_can_be_inactive_consumed_design():
@@ -277,16 +293,23 @@ def test_generated_actual_q_and_target_constructor_smoke_and_immutable():
     rng = np.random.default_rng(433)
     data["support"] = rng.normal(size=(9, 2, 3, 12, 5, 8, 24))
     data["source_block"] = rng.normal(size=(9, 2, 12, 5, 8, 24))
-    frequency = np.array([9.25, 11.25, 13.25, 9.75, 11.75, 13.75, 10.25, 12.25, 14.25, 10.75, 12.75, 14.75])
+    frequency = np.array(
+        [9.25, 11.25, 13.25, 9.75, 11.75, 13.75, 10.25, 12.25, 14.25, 10.75, 12.75, 14.75]
+    )
     for p in range(9):
         for interface in range(2):
             data["q"][p, interface] = support_q_mask(
-                data["support"][p, interface], np.isfinite(data["packet"][p, interface]),
-                interface, 0, frequency,
+                data["support"][p, interface],
+                np.isfinite(data["packet"][p, interface]),
+                interface,
+                0,
+                frequency,
             )
             data["target"][p, interface] = source_channel_margin(
-                data["support"][p, interface], data["source_block"][p, interface],
-                np.arange(12), np.arange(12),
+                data["support"][p, interface],
+                data["source_block"][p, interface],
+                np.arange(12),
+                np.arange(12),
             ).channel_shape
     copies = {name: value.copy() for name, value in data.items()}
     for value in data.values():
@@ -319,7 +342,9 @@ def test_promising_decision_requires_all_fixed_gates():
         assert comparison["positive_outer_folds"] == 3
 
 
-@pytest.mark.parametrize("failure", ["target", "metadata", "sham", "headroom", "q2", "one_fold", "one_interface"])
+@pytest.mark.parametrize(
+    "failure", ["target", "metadata", "sham", "headroom", "q2", "one_fold", "one_interface"]
+)
 def test_terminal_gates_and_precedence(failure):
     values, predictions, coverage = summarize_case()
     expected = "NO_PROMISING_SIGNAL_IN_THIS_PROBE"
@@ -328,7 +353,7 @@ def test_terminal_gates_and_precedence(failure):
         values["available"].fill(False)
         expected = "INSUFFICIENT_TARGET_VARIATION"
     elif failure == "metadata":
-        values["available"][:8].fill(False)  #31covered; literal32 fails
+        values["available"][:8].fill(False)  # 31covered; literal32 fails
         expected = "UNINFORMATIVE_CONTROL"
     elif failure == "sham":
         coverage[0] = {"design_changed_fraction": 10 / 13}
@@ -361,11 +386,31 @@ def test_exact_coverage_and_positive_tolerance_boundaries():
     assert not result["gates"]["positive_q_interfaces"]
 
 
-@pytest.mark.parametrize("mutation", [
-    "duplicate_ids", "negative_ids", "float_ids", "bool_ids", "order2", "bool_orders",
-    "p8", "p10", "packet_inf", "packet_negative", "q_nan", "target_nan", "not_centered",
-    "q_float32", "packet_float32", "bad_q_shape", "extra", "missing", "support_only", "source_only",
-])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "duplicate_ids",
+        "negative_ids",
+        "float_ids",
+        "bool_ids",
+        "order2",
+        "bool_orders",
+        "p8",
+        "p10",
+        "packet_inf",
+        "packet_negative",
+        "q_nan",
+        "target_nan",
+        "not_centered",
+        "q_float32",
+        "packet_float32",
+        "bad_q_shape",
+        "extra",
+        "missing",
+        "support_only",
+        "source_only",
+    ],
+)
 def test_invalid_inputs_reject_before_fit(monkeypatch, mutation):
     data = fixture(10 if mutation == "p10" else (8 if mutation == "p8" else 9))
     if mutation == "duplicate_ids":
@@ -413,7 +458,9 @@ def test_invalid_inputs_reject_before_fit(monkeypatch, mutation):
         probe.fit_probe(data)
 
 
-@pytest.mark.parametrize("mutation", ["short_samples", "wrong_source", "support_nan", "source_float32"])
+@pytest.mark.parametrize(
+    "mutation", ["short_samples", "wrong_source", "support_nan", "source_float32"]
+)
 def test_optional_raw_inputs_still_validate_geometry_and_finiteness(mutation):
     data = fixture()
     data["support"] = np.ones((9, 2, 3, 12, 5, 8, 24), dtype=np.float64)
@@ -431,7 +478,10 @@ def test_optional_raw_inputs_still_validate_geometry_and_finiteness(mutation):
         probe.fit_probe(data)
 
 
-@pytest.mark.parametrize("mutation", ["schema", "ids", "outer", "inner", "scaler_ids", "m_leak", "nan_coef", "scale0", "count"])
+@pytest.mark.parametrize(
+    "mutation",
+    ["schema", "ids", "outer", "inner", "scaler_ids", "m_leak", "nan_coef", "scale0", "count"],
+)
 def test_frozen_models_reject_legacy_or_partition_mutation(fitted, mutation):
     data, original, *_ = fitted
     model = copy.deepcopy(original)
