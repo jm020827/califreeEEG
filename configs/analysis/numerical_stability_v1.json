@@ -1,0 +1,102 @@
+{
+  "schema": "cfeg.numerical_stability.design.v1",
+  "study_id": "numerical-stability-v1",
+  "status": "FROZEN_BEFORE_IMPLEMENTATION_AND_NUMERICAL_INPUT",
+  "base_revision": "6302b1c01ff107a3c6ea518e01a15c5ee5d02042",
+  "authority": {
+    "basis": "User approved a separate bounded generated-only numerical stability study after explicit permission request.",
+    "generated_numerical_policy_reformulation": true,
+    "human_eeg_metadata_artifact_reads": false,
+    "human_query_or_labels": false,
+    "held60": false,
+    "external_outreach": false,
+    "paid_resources": false,
+    "old_candidates_reopened": false,
+    "new_human_efficacy_candidate": false
+  },
+  "methods": ["N1_SYM_CHOLESKY", "N2_GVD_IMPLICIT"],
+  "formulations": {
+    "N1_SYM_CHOLESKY": "B=LLt; Hraw=solve(L,S)solve(Lt); H=sym(Hraw); P=top-only differentiable projector(H); K=L^-t P L^-1; F=K/tr(CK). Preserve rawH skew; validate original pair residual. Existing top-only derivative is already lower-multiplicity safe.",
+    "N2_GVD_IMPLICIT": "CPU scipy.linalg.eigh(S,B,type=1,lower=True,driver=gvd) with B-orthonormal Z. K=zzT. VJP t=Zrest[(ZrestT(G+GT)z)/(lambda-lambda_rest)]; gradS=sym(tzT); gradB=-lambda*gradS-(zTGz)*zzT. F=K/tr(CK) outside custom function supplies C gradient. First derivatives only."
+  },
+  "input_policy": {
+    "shape": "identical float64 CPU [...,8,8] S,B,C without broadcasting",
+    "symmetry_relative_fro_max": 1e-12,
+    "symmetry_scale": "max(Frobenius norm, float64 tiny); reject nonfinite arithmetic then symmetrize accepted inputs",
+    "b_and_c_strictly_positive_definite": true,
+    "top_gap_min": 1e-10,
+    "top_gap_scale": "max(1,max(abs(generalized eigenvalues)))",
+    "jitter_gap_clipping_casewise_fallback": false,
+    "runtime_original_pair_residual_max": 1e-12
+  },
+  "new_fixtures": {
+    "seeds": [20260910, 20260911],
+    "seed_roles": ["registered_development", "registered_unexposed_validation"],
+    "both_seeds_generated_only_after_all_code_and_criteria_frozen": true,
+    "c_conditions": [1, 1000, 120000, 1000000],
+    "common_scales": [0.00000095367431640625, 1, 1048576],
+    "lower_spectra": ["distinct", "repeated"],
+    "top_gaps": [0.25, 0.001],
+    "denominators": ["B_EQUALS_C", "BOUNDED_DIAGONAL"],
+    "cases_per_seed": 96,
+    "total_cases": 192,
+    "recipe": "For each seed draw Uraw,Vraw,Wraw,Esraw,Ebraw,Ecraw sequentially, each normal(8,8), ONCE. Canonical QR U/V: multiply each Q column by sign(diag(R)), replacing zero sign by +1. W,Es,Eb,Ec=sym(raw)/Fro(sym(raw)). Reuse those six matrices for the whole seed grid. Lexicographic loop condition,scale,spectrum,gap,denominator. C=scale*sym(U diag(condition**(-arange(8)/7)) Ut), except condition1 uses exact scale*I. r=8*softmax(linspace(-log(2)/2,log(2)/2,8)). B=C or sym(C+(.1*lambda_min(C)/(16/9))*diag(r)). LB/LC=numpy.linalg.cholesky. Distinct roots [-2,-1.5,-1,-.5,0,.5,1-gap,1]; repeated roots [-1,-1,-1,-1,-1,-1,1-gap,1]. S=sym(LB V diag(roots) Vt LBt). G=sym(LC W LCt) frozen at base C. dS=sym(LB Es LBt); dB=sym(LB Eb LBt); dC=sym(LC Ec LCt). Directions S-only/B-only/C-only/joint are dimensionless perturbation coefficients applied to these stored arrays."
+  },
+  "known_generated_regression": {
+    "result_path": "/home/whwovy/task-trca-pair-s-conditioning-Vqli4o/primary1/result.json",
+    "result_sha256": "98ea5607b72d47174c2f0e3c1569bf9a872bca7230c160f29554b8b9cd841ee2",
+    "arrays_path": "/home/whwovy/task-trca-pair-s-conditioning-Vqli4o/primary1/generated_arrays.npz",
+    "arrays_sha256": "01ad4233bba861f32f0a4ca5f68e1f1af883ffc5d51c55fa1b04cbb423421211",
+    "arrays_bytes": 22286792,
+    "allowed_members": "Only k{k}_cond{condition}_c and k{k}_cond{condition}_{arm}_s for k3/5,condition1/1000/100000/120000,arm UNIFORM_C2/FIXED_BOUNDED_PAIR_LOGITS. Validate entire descriptor hash before decode; no human files or other NPZ members.",
+    "case_order": "Original16 rows, band0..4, class0..11. S=sym(saved s), B=C=sym(saved c). All960 matrices; known-not-unseen.",
+    "gradient_indices": "band0/class0 for every old row plus row14/band0/class11 (flat index851), total17; seed20260912 draws Wraw,Esraw,Ebraw,Ecraw in that order once, sym/Fro normalize as new recipe; directions/probe use base Cholesky factors."
+  },
+  "negative_controls": {
+    "recipe": "Base S=diag([-2,-1.5,-1,-.5,0,.5,.75,1]), B=C=I. Independent cases: asymmetric S, B, C each [0,1]+=.001; nonfinite S[0,0]=NaN; singular B[0,0]=0; indefinite B[0,0]=-1; singular C[0,0]=0; top tie S[-2,-2]=1; near tie S[-2,-2]=1-5e-12. Nine cases must reject, without jitter or fallback.",
+    "oracle_sensitivity_unit_tests": ["wrong nonleading eigenprojector despite zero eigen-residual", "C-normalization error", "detached zero gradient against nonzero reference", "missing required case", "tampered pin or array", "unexpected human input path"]
+  },
+  "independent_reference": {
+    "backend": "mpmath1.3.0 80decimal digits, spectral B^-1/2 from eigsy(B), eigsy(sym(B^-1/2 S B^-1/2)), recover top vector then C-normalize",
+    "input_values": "exact binary64 floats converted to mpf via integer ratio, not decimal truncation or intended generator eigensystem",
+    "forward_cases": 1152,
+    "gradient_cases": 209,
+    "gradient_reference": "For each frozen G and S/B/C/joint direction, symmetric highprecision differences h=1e-20 and1e-25. Do not round perturbed matrices to float64. Base G remains fixed under C perturbation.",
+    "fd_agreement": "abs(g_h-g_h2)<=1e-20*max(1,abs(g_h2))",
+    "precision_recheck": "120digits on known index851 and first/last new case of each seed; normalized reference eigenvalue/F difference<=1e-50",
+    "independence": "Auditor imports neither producer nor cfeg operator. Reconstruct exact fixture recipe, solve actual stored floats, validate complete inventory/pins/status and each case."
+  },
+  "audit_thresholds": {
+    "original_pair_residual_relative_fro": 1e-12,
+    "residual_definition": "norm(SF-lambda*BF,Fro)/((norm(S,Fro)+abs(lambda)*norm(B,Fro))*norm(F,Fro)); engineering normwise residual, not certified minimal structured backward error",
+    "c_normalization_absolute": 1e-10,
+    "output_symmetry_relative_fro": 1e-12,
+    "top_eigenvalue_error": "abs(lambda-lambda_ref)/max(1,abs(lambda_ref))<=1e-8",
+    "c_whitened_projector_fro_error": 1e-6,
+    "projector_definition": "norm(LCt*(F-Fref)*LC,Fro) with reference C factor; no absolute raw F allclose floor",
+    "gradient_error": "abs(g-gref)<=1e-7+1e-4*max(abs(g),abs(gref))",
+    "scalar_batch_projector_relative_fro": 1e-8,
+    "all_nine_negative_controls_rejected": true,
+    "coverage": "Each seed and denominator family must have at least one absolute nonzero S and B reference directional gradient>1e-4; constant probe or detached gradients cannot yield an unqualified pass."
+  },
+  "budget": {
+    "methods_max": 2,
+    "registered_primary_runs_max": 1,
+    "numerical_compute_seconds_total_max": 7200,
+    "tests_seconds_total_max": 1800,
+    "new_output_bytes_total_max": 1073741824,
+    "cpu_threads_per_process": 1,
+    "gpu_use": false,
+    "new_worktrees_max": 0,
+    "reused_worktrees_max": 2,
+    "new_parameter_seed_threshold_sweeps": 0,
+    "unregistered_post_outcome_scientific_repair": false
+  },
+  "stops": {
+    "method_eligible": "All forward/gradient/reference/negative/oracle-sensitivity/pin/coverage checks pass across complete fixed grid and independent audit. If both eligible choose N1 prospectively for torch-native implementation; N2 is CPU-only comparator, not CUDA-ready.",
+    "method_failure": "Preserve all results; any required failure rejects this method for this fixed study. Do not weaken thresholds, remove cases or switch per-case methods.",
+    "reference_or_integrity_failure": "Study inconclusive, preserve failure; no method promotion from unverified references.",
+    "after_numerical_success": "Report numerical evidence and next generated learner-integration/human-program prerequisites. No automatic human run or old candidate reopening. Full metadata efficacy goal remains incomplete.",
+    "after_budget_or_two_methods": "Stop and report all failures/coverage/limits and next decision; no third numerical policy."
+  }
+}
