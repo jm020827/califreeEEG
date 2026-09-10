@@ -1,0 +1,61 @@
+{
+  "schema": "cfeg.mobilebci-public-pair-preflight.v1",
+  "date": "2026-09-10",
+  "base_commit": "2a55f4f",
+  "authority": "User directs a different public candidate, followed by active 계속 연구 continuation. Implement previously proposed one-pair public acquisition/schema preflight; no author request or efficacy execution.",
+  "input_projection": "docs/reports/mobilebci_figshare_v1_metadata_projection.json",
+  "projection_sha256": "605ed6f319e2845e2b71a92312c22183675e79d551acb4fc1a5afcf482a7555e",
+  "output_dir": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY",
+  "files": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "bytes": 10489800,
+      "md5": "520d733439a30cb4d7a83e3e2d2fbeb6",
+      "url": "https://ndownloader.figshare.com/files/26094953"
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "bytes": 32937882,
+      "md5": "cff48844f263bbb8682bae7a93af50c5",
+      "url": "https://ndownloader.figshare.com/files/26094980"
+    }
+  ],
+  "budget": {
+    "files_max": 2,
+    "get_attempts_per_file": 1,
+    "redirects_per_file_max": 3,
+    "socket_timeout_seconds": 15,
+    "file_wall_seconds": 90,
+    "total_retained_bytes_max": 67108864,
+    "error_body_bytes_max": 4096,
+    "io_chunk_bytes": 65536,
+    "selftest_calls_max": 2,
+    "selftest_fixture_bytes_max": 65536,
+    "top_level_variables_max": 128,
+    "name_bytes_max": 256,
+    "metadata_values_total_elements_max": 8192,
+    "schema_passes_per_file": 1,
+    "raw_waveform_numeric_array_decodes": 0,
+    "marker_value_decodes": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60": 0,
+    "new_worktrees": 0,
+    "outreach": 0,
+    "paid": 0
+  },
+  "schema_scope": "After size/MD5 match, scipy.io.whosmat only: top-level variable name/shape/MATLAB type. Its compressed-byte decompression is not numerical waveform analysis. Nested structs/HDF5-only or unlisted fields remain unresolved; no loadmat/signal/marker values. Choose any exact metadata follow-up from observed schema, not guessed fields.",
+  "stops": [
+    "Stop the pair at first unsuccessful file; do not try other participants or request private access.",
+    "No normal-GET retry/cachebuster/authentication/captcha workaround. Cache-Control:no-cache may be sent on the single ordinary initial request.",
+    "Keep partial payloads and error status, but strip signed redirect URLs and do not persist raw error bodies.",
+    "On access failure retire this public-acquisition route for current candidate; no metadata-efficiency conclusion. Public availability elsewhere remains unknown.",
+    "If bytes/schema are available, record exact next required fields without learner activation; no completed timing/alignment claim from top-level names."
+  ],
+  "ownership": {
+    "root": "sole files/code/data/DB writer",
+    "reviewer": "read-only code/contract review, no data opens/network/tests"
+  }
+}
