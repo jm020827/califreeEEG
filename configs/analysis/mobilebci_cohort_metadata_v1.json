@@ -1,0 +1,1364 @@
+{
+  "schema": "cfeg.mobilebci-cohort-metadata-config.v1",
+  "acquisition_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_cohort_acquisition_v1_observation.json",
+  "acquisition_sha256": "aaaf5968f163780871b1850cee11c53b2cf445c674348ac5fec21af3a85b7727",
+  "original_pair_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_public_pair_preflight_v1_observation.json",
+  "original_pair_sha256": "7f3601a7b9c1bee4165437f3a5700f65f9890dbd92d770d82e95aa12dbf123f0",
+  "files": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat",
+      "bytes": 10489800,
+      "sha256": "8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456",
+      "subject": "s01",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        73652,
+        27
+      ]
+    },
+    {
+      "id": 26094956,
+      "name": "s01_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_IMU_SSVEP_0.8.mat",
+      "bytes": 15180517,
+      "sha256": "1e85d1cf214224c461766b0c2829dce269a1391b2cbc3d6a8ece0889754aa659",
+      "subject": "s01",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        71935,
+        27
+      ]
+    },
+    {
+      "id": 26094959,
+      "name": "s01_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_IMU_SSVEP_1.6.mat",
+      "bytes": 16264311,
+      "sha256": "858dbe2fefac4ed7bb781df79ff2adbfec37c16619b0c4a9b23acc846552453e",
+      "subject": "s01",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        76419,
+        27
+      ]
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat",
+      "bytes": 32937882,
+      "sha256": "b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7",
+      "subject": "s01",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        287705,
+        36
+      ]
+    },
+    {
+      "id": 26094983,
+      "name": "s01_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_scalp_SSVEP_0.8.mat",
+      "bytes": 33492144,
+      "sha256": "e514e813780565395787522471045ce9ec416e8c0e06b963585e5f56b5a4bb80",
+      "subject": "s01",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        280996,
+        36
+      ]
+    },
+    {
+      "id": 26094986,
+      "name": "s01_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_scalp_SSVEP_1.6.mat",
+      "bytes": 35138077,
+      "sha256": "ee5f5a387ba3be9523e77b9a1b53518952c992eb5597c8983b9ebc53d8e98c5a",
+      "subject": "s01",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        298512,
+        36
+      ]
+    },
+    {
+      "id": 26095121,
+      "name": "s03_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_0.0.mat",
+      "bytes": 9517263,
+      "sha256": "53c51f3c63c4cacb351081dcace08e67e6e367cd971b2161445935528d446aa5",
+      "subject": "s03",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        76291,
+        27
+      ]
+    },
+    {
+      "id": 26095124,
+      "name": "s03_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_0.8.mat",
+      "bytes": 15087773,
+      "sha256": "3ea6a3418ceb408fee8ede0bf9b2fd5ef787fd4a8c3a37520d406bcf86549788",
+      "subject": "s03",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        73375,
+        27
+      ]
+    },
+    {
+      "id": 26095127,
+      "name": "s03_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_1.6.mat",
+      "bytes": 15059980,
+      "sha256": "c8719527990ee4a294a65ed5367d117c9cb5a1c7f398d506e1dc8942e8f95b3d",
+      "subject": "s03",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        69408,
+        27
+      ]
+    },
+    {
+      "id": 26095148,
+      "name": "s03_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_0.0.mat",
+      "bytes": 33494850,
+      "sha256": "c26c8115deec688d2835682cecb120f3b80fa6850ffc11ba89e81d584824304d",
+      "subject": "s03",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        298011,
+        36
+      ]
+    },
+    {
+      "id": 26095151,
+      "name": "s03_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_0.8.mat",
+      "bytes": 32819652,
+      "sha256": "a5ab3273c6cc148583d63686ee194468ce3c14c68d9488eb1ab97d14c17f8dff",
+      "subject": "s03",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        286622,
+        36
+      ]
+    },
+    {
+      "id": 26095154,
+      "name": "s03_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_1.6.mat",
+      "bytes": 32233129,
+      "sha256": "a7545fadcbe028b2844623c07bc6bb3bd47e066020869ae88bf9ffcef07f4361",
+      "subject": "s03",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        271124,
+        36
+      ]
+    },
+    {
+      "id": 26095202,
+      "name": "s04_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_0.0.mat",
+      "bytes": 11773547,
+      "sha256": "a75f6c06a2eb3c7beea6f05ebffe15dc7e25b80594b36849a3f883929d0fbab1",
+      "subject": "s04",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        68777,
+        27
+      ]
+    },
+    {
+      "id": 26095205,
+      "name": "s04_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_0.8.mat",
+      "bytes": 15848699,
+      "sha256": "46c1a3b72f2ad8801f6debc735d095c03880d14f397c786740b50aaa3f9f5dc7",
+      "subject": "s04",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        76184,
+        27
+      ]
+    },
+    {
+      "id": 26095208,
+      "name": "s04_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_1.6.mat",
+      "bytes": 15119746,
+      "sha256": "f050e331a41f91b667def16f7267c751643ad400a6c3360adeda0ff426eb9a1b",
+      "subject": "s04",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68780,
+        27
+      ]
+    },
+    {
+      "id": 26095229,
+      "name": "s04_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_0.0.mat",
+      "bytes": 31246658,
+      "sha256": "fb38232ed42320a1a753cee6d5fe8f9eca1b74ce2dd01d55f258fcf7f065c1c5",
+      "subject": "s04",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        268660,
+        36
+      ]
+    },
+    {
+      "id": 26095232,
+      "name": "s04_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_0.8.mat",
+      "bytes": 34335169,
+      "sha256": "3108f5379495eb27eb9e82c7fc1125d6e049dfb670c381345103d3ff28145fad",
+      "subject": "s04",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        297592,
+        36
+      ]
+    },
+    {
+      "id": 26095235,
+      "name": "s04_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_1.6.mat",
+      "bytes": 31259720,
+      "sha256": "6588475ebbb7e1157f30dea65ecc854b554a71cd17d03bce9c883481b2785c10",
+      "subject": "s04",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        268670,
+        36
+      ]
+    },
+    {
+      "id": 26095283,
+      "name": "s05_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_0.0.mat",
+      "bytes": 11445342,
+      "sha256": "4e7eef58c8966c9c35a82205de196f81a61726a10592bebafb6e8035633d8478",
+      "subject": "s05",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        69269,
+        27
+      ]
+    },
+    {
+      "id": 26095286,
+      "name": "s05_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_0.8.mat",
+      "bytes": 14748805,
+      "sha256": "c7cbc90d146a199f1d9b5852e197b56fc3eaca896522edf7ce0a3011bf8f7345",
+      "subject": "s05",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        68588,
+        27
+      ]
+    },
+    {
+      "id": 26095289,
+      "name": "s05_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_1.6.mat",
+      "bytes": 14998917,
+      "sha256": "293ea1d5cc5de30cad181ed474625ddd88f03e51c13b4ab0d800b0d40005d852",
+      "subject": "s05",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68515,
+        27
+      ]
+    },
+    {
+      "id": 26095313,
+      "name": "s05_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_0.0.mat",
+      "bytes": 30500987,
+      "sha256": "664d0006fc53126daf27deab8e92861ac3959f7a03f34cd6d350dad7e1f07e27",
+      "subject": "s05",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        270581,
+        36
+      ]
+    },
+    {
+      "id": 26095316,
+      "name": "s05_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_0.8.mat",
+      "bytes": 31084066,
+      "sha256": "d0df33b0103a096f2d065009e75b7bb297b418844a88d4e96edf8fd5a7dca00b",
+      "subject": "s05",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        267922,
+        36
+      ]
+    },
+    {
+      "id": 26095319,
+      "name": "s05_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_1.6.mat",
+      "bytes": 30943107,
+      "sha256": "e7712a0b43052aaabb0e70bef73abdc2ce7aaf5f3210dbd34ed6eabbf09b3bde",
+      "subject": "s05",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        267636,
+        36
+      ]
+    },
+    {
+      "id": 26095367,
+      "name": "s06_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_0.0.mat",
+      "bytes": 10636809,
+      "sha256": "be5f1a9233a96d33cb79bbd5e581361984140805722a66cecee6f6fb4a830b27",
+      "subject": "s06",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        68845,
+        27
+      ]
+    },
+    {
+      "id": 26095370,
+      "name": "s06_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_0.8.mat",
+      "bytes": 14742546,
+      "sha256": "dcaa96a520171bae845adf4d2229e794c48dcee78458c7d8d461d4953e8ef122",
+      "subject": "s06",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69768,
+        27
+      ]
+    },
+    {
+      "id": 26095376,
+      "name": "s06_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_1.6.mat",
+      "bytes": 15008408,
+      "sha256": "96d7855807d935a4ed2c3a9dba8f3de344d88c712f4958b9ebaeb301c402a037",
+      "subject": "s06",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        69053,
+        27
+      ]
+    },
+    {
+      "id": 26095397,
+      "name": "s06_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_0.0.mat",
+      "bytes": 30573930,
+      "sha256": "8836a2e7935d68a31b1765fdc579b5ecfd582709aabfac172a2d0116a8ff5554",
+      "subject": "s06",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        268925,
+        36
+      ]
+    },
+    {
+      "id": 26095400,
+      "name": "s06_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_0.8.mat",
+      "bytes": 31991153,
+      "sha256": "474933ad05d38daad5588ddae884d54a1cc6443d7860c06730b3cc360a2d9b81",
+      "subject": "s06",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        272533,
+        36
+      ]
+    },
+    {
+      "id": 26095403,
+      "name": "s06_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_1.6.mat",
+      "bytes": 32024247,
+      "sha256": "795e58ccd7a35c16c90eddfe5155a236bf6c95810c45e4ef39bf0ab3962d2056",
+      "subject": "s06",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        269738,
+        36
+      ]
+    },
+    {
+      "id": 26095451,
+      "name": "s07_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_0.0.mat",
+      "bytes": 12712674,
+      "sha256": "f46c6c16bb38cf716764d0cc2d607c38a833c4c0ea58f802a0377313c3161ba2",
+      "subject": "s07",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        83808,
+        27
+      ]
+    },
+    {
+      "id": 26095454,
+      "name": "s07_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_0.8.mat",
+      "bytes": 16034930,
+      "sha256": "000f01347ac9ec59b6318d9e9975ed4aae3d74c4498b1b69bff2cadc039cc3e0",
+      "subject": "s07",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        79442,
+        27
+      ]
+    },
+    {
+      "id": 26095457,
+      "name": "s07_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_1.6.mat",
+      "bytes": 15495846,
+      "sha256": "d847320ed79d915b3c5ae64b0881ae89c4899d1b2b333ee5b26a5841bf74ac1c",
+      "subject": "s07",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        71851,
+        27
+      ]
+    },
+    {
+      "id": 26095478,
+      "name": "s07_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_0.0.mat",
+      "bytes": 35188574,
+      "sha256": "ceab1716f43e871ac6254a2319d3883953fe6f60e1f3f2be0a1f499810265058",
+      "subject": "s07",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        327375,
+        36
+      ]
+    },
+    {
+      "id": 26095481,
+      "name": "s07_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_0.8.mat",
+      "bytes": 34588482,
+      "sha256": "78d4c94ff9624bcd88bfba56288832adbb8d72229d97c597dbbebc6bfc3e9fae",
+      "subject": "s07",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        310320,
+        36
+      ]
+    },
+    {
+      "id": 26095484,
+      "name": "s07_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_1.6.mat",
+      "bytes": 32336647,
+      "sha256": "e5617417f8b475d522787362d363c749d9d4dcad076735d4d64df531e6363a06",
+      "subject": "s07",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        280667,
+        36
+      ]
+    },
+    {
+      "id": 26095532,
+      "name": "s08_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_0.0.mat",
+      "bytes": 10936807,
+      "sha256": "9a6cf1922396e7aab1270548145ec8d748418856920261e403a9a9f4d2bb4687",
+      "subject": "s08",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        68772,
+        27
+      ]
+    },
+    {
+      "id": 26095535,
+      "name": "s08_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_0.8.mat",
+      "bytes": 14707665,
+      "sha256": "2d2f97f427ca3b9503771c71006f595dfdfd4152bfff4623d9893a7e5586e756",
+      "subject": "s08",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        68775,
+        27
+      ]
+    },
+    {
+      "id": 26095541,
+      "name": "s08_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_1.6.mat",
+      "bytes": 15019483,
+      "sha256": "63b1098bb0fc3415acccda1d82eca943cc8690c24cb6f1fd0f6d1275ef1ce665",
+      "subject": "s08",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68156,
+        27
+      ]
+    },
+    {
+      "id": 26095565,
+      "name": "s08_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_0.0.mat",
+      "bytes": 30707759,
+      "sha256": "32ee9df9ba5e44e5ad25bd8ddedac20a8229852367f4693d838c98712b223034",
+      "subject": "s08",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        268639,
+        36
+      ]
+    },
+    {
+      "id": 26095568,
+      "name": "s08_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_0.8.mat",
+      "bytes": 30678624,
+      "sha256": "bfacdb89de0dff6b2946deb492b5431f356f7adb2c647bac8befa927914ee12c",
+      "subject": "s08",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        268654,
+        36
+      ]
+    },
+    {
+      "id": 26095574,
+      "name": "s08_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_1.6.mat",
+      "bytes": 31054983,
+      "sha256": "753d0a7ef4187d3bd94e2931bbadad7c9c1a6c546ce6f96e713c863e4b4dd452",
+      "subject": "s08",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        266236,
+        36
+      ]
+    },
+    {
+      "id": 26095622,
+      "name": "s09_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_0.0.mat",
+      "bytes": 11951886,
+      "sha256": "bda66996da9da580b472738032fddd4f1a02f2001d5220b1e410e81337d8cfcd",
+      "subject": "s09",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        68980,
+        27
+      ]
+    },
+    {
+      "id": 26095625,
+      "name": "s09_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_0.8.mat",
+      "bytes": 14724431,
+      "sha256": "17411be5a5b77f6bc00b1456b53b6c6ec3ccd8cf06b0932053466f639158f4bf",
+      "subject": "s09",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        68892,
+        27
+      ]
+    },
+    {
+      "id": 26095628,
+      "name": "s09_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_1.6.mat",
+      "bytes": 15108496,
+      "sha256": "2ebaa11f25a4553b9c2baa3c3b67b7180050ab8c7d5a96d46f08e4f607267cdf",
+      "subject": "s09",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        69196,
+        27
+      ]
+    },
+    {
+      "id": 26095649,
+      "name": "s09_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_0.0.mat",
+      "bytes": 32171057,
+      "sha256": "e1cf51d00d36bede0452e3666b2c6084e26302eac2ed55bdc3f211a0c77435b5",
+      "subject": "s09",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        269454,
+        36
+      ]
+    },
+    {
+      "id": 26095652,
+      "name": "s09_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_0.8.mat",
+      "bytes": 32782341,
+      "sha256": "6801531aec07559fc78b5375404c348ba6d22e212b1d1f8f5a3258ea4c756aa5",
+      "subject": "s09",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        269111,
+        36
+      ]
+    },
+    {
+      "id": 26095655,
+      "name": "s09_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_1.6.mat",
+      "bytes": 32934765,
+      "sha256": "53743882f50db58b124a197aeeefefabc13a6dbcd51401a0d6c33490ae5d6a3d",
+      "subject": "s09",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        270297,
+        36
+      ]
+    },
+    {
+      "id": 26095703,
+      "name": "s10_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_0.0.mat",
+      "bytes": 10134810,
+      "sha256": "7cd417221f8d5d485f034b6cf401e329a55b8ea922633d3a72d31a2d78130838",
+      "subject": "s10",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        69622,
+        27
+      ]
+    },
+    {
+      "id": 26095706,
+      "name": "s10_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_0.8.mat",
+      "bytes": 14464496,
+      "sha256": "a8cb8a5151ae74ed93e8653871552b04f3deb30c04ac3d782811ebe4394d977c",
+      "subject": "s10",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        68524,
+        27
+      ]
+    },
+    {
+      "id": 26095709,
+      "name": "s10_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_1.6.mat",
+      "bytes": 14999145,
+      "sha256": "d838d73c1d8bc24053245faa85e380f8ff43a11fc076027619a884b5a82803ca",
+      "subject": "s10",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68729,
+        27
+      ]
+    },
+    {
+      "id": 26095733,
+      "name": "s10_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_0.0.mat",
+      "bytes": 32101602,
+      "sha256": "0e6b9b0915d22101c450948ef2161f1c72bc8f125e75100e77b7a3c815c4cafe",
+      "subject": "s10",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        271959,
+        36
+      ]
+    },
+    {
+      "id": 26095736,
+      "name": "s10_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_0.8.mat",
+      "bytes": 31397364,
+      "sha256": "662dade439f109db67a74cd955fa87cf2c204b17ff932b1f98eda643ac19d8a3",
+      "subject": "s10",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        267672,
+        36
+      ]
+    },
+    {
+      "id": 26095745,
+      "name": "s10_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_1.6.mat",
+      "bytes": 32064358,
+      "sha256": "74854a321f7855fc06f2f7d72cf3e9fa1c3e94eb8c39bd6ebabad8b8b574ae49",
+      "subject": "s10",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        268472,
+        36
+      ]
+    },
+    {
+      "id": 26095796,
+      "name": "s11_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_0.0.mat",
+      "bytes": 9894076,
+      "sha256": "d44e63c449a92268e058287c8e8fea1a5dc71d7202727f856850522733fc9dd5",
+      "subject": "s11",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        68848,
+        27
+      ]
+    },
+    {
+      "id": 26095799,
+      "name": "s11_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_0.8.mat",
+      "bytes": 14527341,
+      "sha256": "6c1f1bb3f85d39e21ef04180359b64d6d2bee0c848174d070296d77c4825a1f2",
+      "subject": "s11",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69041,
+        27
+      ]
+    },
+    {
+      "id": 26095802,
+      "name": "s11_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_1.6.mat",
+      "bytes": 14996095,
+      "sha256": "abd83169835ee9787b1923737b8c784a25275d251f3b52a50435c78c3f070371",
+      "subject": "s11",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68668,
+        27
+      ]
+    },
+    {
+      "id": 26095826,
+      "name": "s11_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_0.0.mat",
+      "bytes": 31273749,
+      "sha256": "23fdd34c4080e111ceaf8cbdfcf375119fb43cafb16d2d18e419e5e1e5b0d0f0",
+      "subject": "s11",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        268938,
+        36
+      ]
+    },
+    {
+      "id": 26095832,
+      "name": "s11_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_0.8.mat",
+      "bytes": 31652390,
+      "sha256": "887a22a5d6b29d37f99e59d4a8f753760c605069b5ad187eb5233e34b839606d",
+      "subject": "s11",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        269690,
+        36
+      ]
+    },
+    {
+      "id": 26095835,
+      "name": "s11_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_1.6.mat",
+      "bytes": 30006046,
+      "sha256": "dde8b26808cf979400a92c4e330a958db7039ec49665ea6e2fb161583273c1a9",
+      "subject": "s11",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        268236,
+        36
+      ]
+    },
+    {
+      "id": 26095883,
+      "name": "s12_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_0.0.mat",
+      "bytes": 10890699,
+      "sha256": "8a05f14cf98ffb4b313f0cfd435569caeb245de2236dfd5f21f7d02021bc80fe",
+      "subject": "s12",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        70492,
+        27
+      ]
+    },
+    {
+      "id": 26095886,
+      "name": "s12_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_0.8.mat",
+      "bytes": 14827173,
+      "sha256": "0703cc13ee72c9bab9ac324dd23e7bdfd3521a7e56ff54154129d62d63a595ea",
+      "subject": "s12",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69230,
+        27
+      ]
+    },
+    {
+      "id": 26095889,
+      "name": "s12_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_1.6.mat",
+      "bytes": 15055980,
+      "sha256": "60698777130087bb5e75f692f1c866528cc420a36ed1d8c504b36361ca15e8e5",
+      "subject": "s12",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68799,
+        27
+      ]
+    },
+    {
+      "id": 26095919,
+      "name": "s12_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_0.0.mat",
+      "bytes": 31048426,
+      "sha256": "e84a4170420e7a07a0e96fa08c8bf71e5cbcb795ee6e1844236157db7ea1d7ff",
+      "subject": "s12",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        275360,
+        36
+      ]
+    },
+    {
+      "id": 26095922,
+      "name": "s12_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_0.8.mat",
+      "bytes": 32699975,
+      "sha256": "80231bb6f6a761d5bd36a4d2fb9989c95f8e6a06e833d546cb22715498f447cc",
+      "subject": "s12",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        270431,
+        36
+      ]
+    },
+    {
+      "id": 26095925,
+      "name": "s12_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_1.6.mat",
+      "bytes": 32299024,
+      "sha256": "3f9cd71ddee70a5488ef712c8d50bb6b8542e6a8d4d3f396312d6a263118f5cc",
+      "subject": "s12",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        268745,
+        36
+      ]
+    },
+    {
+      "id": 26095973,
+      "name": "s13_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_0.0.mat",
+      "bytes": 10686434,
+      "sha256": "2fdf9a1a5e2264fe9ad62e64a076bfaeb7f11b5a395b809a3c69519ad6da4fdb",
+      "subject": "s13",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        69212,
+        27
+      ]
+    },
+    {
+      "id": 26095976,
+      "name": "s13_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_0.8.mat",
+      "bytes": 14596453,
+      "sha256": "33b3010440bb68c52f4e5f5709f059e3e90e73ba44356a5c2ff543c6a0e2404f",
+      "subject": "s13",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69267,
+        27
+      ]
+    },
+    {
+      "id": 26095979,
+      "name": "s13_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_1.6.mat",
+      "bytes": 14978349,
+      "sha256": "1a8670ec4bafbca67c793b689f84980c8083f13ebf8becc1307a9b6d46885783",
+      "subject": "s13",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68812,
+        27
+      ]
+    },
+    {
+      "id": 26095997,
+      "name": "s13_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_0.0.mat",
+      "bytes": 31676420,
+      "sha256": "8007d307ba52b02ff8c1a3d73bafe7fbbce30991d2ba084022a5d452c0989644",
+      "subject": "s13",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        270359,
+        36
+      ]
+    },
+    {
+      "id": 26096000,
+      "name": "s13_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_0.8.mat",
+      "bytes": 32131245,
+      "sha256": "c5448b6306dedebe454871591dd355d7a8f711855837eff1a8c92d8564e71760",
+      "subject": "s13",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        270574,
+        36
+      ]
+    },
+    {
+      "id": 26096003,
+      "name": "s13_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_1.6.mat",
+      "bytes": 32475112,
+      "sha256": "8d813fc4233d9907f35dfb556dcfb4d95ba446cb11f4c777ce81db6265cf3702",
+      "subject": "s13",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        268796,
+        36
+      ]
+    },
+    {
+      "id": 26096042,
+      "name": "s14_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_0.0.mat",
+      "bytes": 10440825,
+      "sha256": "604c9376b70843ca3b8a205d11364566d8938e15df080aff412cda6bfadce0c2",
+      "subject": "s14",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        71980,
+        27
+      ]
+    },
+    {
+      "id": 26096045,
+      "name": "s14_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_0.8.mat",
+      "bytes": 14910335,
+      "sha256": "909726807f50b743358f89fb2fb5da096e595b3c81714efa9e07dc6db994b2f1",
+      "subject": "s14",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69355,
+        27
+      ]
+    },
+    {
+      "id": 26096048,
+      "name": "s14_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_1.6.mat",
+      "bytes": 15141710,
+      "sha256": "2c35b22149bbd78ca1305bfd6aa62ee9e257ac35334b4224cbea1c6c51c4d77c",
+      "subject": "s14",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        68970,
+        27
+      ]
+    },
+    {
+      "id": 26096069,
+      "name": "s14_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_0.0.mat",
+      "bytes": 31641980,
+      "sha256": "fc97c44b45c17c5d7ddc43f5bc50d0d2da2a41f49c4bc992ada6e3a6287dbdbe",
+      "subject": "s14",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        281172,
+        36
+      ]
+    },
+    {
+      "id": 26096072,
+      "name": "s14_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_0.8.mat",
+      "bytes": 30807743,
+      "sha256": "3814864caad91e61112bbf88b3dd8afed019750fbd9c5a65013e767d0a45571e",
+      "subject": "s14",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        270918,
+        36
+      ]
+    },
+    {
+      "id": 26096075,
+      "name": "s14_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_1.6.mat",
+      "bytes": 30848922,
+      "sha256": "ea066eff6030b400bfefbc26862bd4ba3bacda6599968fb1816d2991df15b707",
+      "subject": "s14",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        269414,
+        36
+      ]
+    },
+    {
+      "id": 26096111,
+      "name": "s15_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_0.0.mat",
+      "bytes": 8893178,
+      "sha256": "f3bb679c4a941b1eeed1c7a16a4ec3a121a4df3705cb47f4d9e28bddba6ac502",
+      "subject": "s15",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        70397,
+        27
+      ]
+    },
+    {
+      "id": 26096117,
+      "name": "s15_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_0.8.mat",
+      "bytes": 14785725,
+      "sha256": "55e2d8e2b2babdab7525e50e004764d2a81d21e756c3ed658640a4298cf0b279",
+      "subject": "s15",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        69866,
+        27
+      ]
+    },
+    {
+      "id": 26096120,
+      "name": "s15_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_1.6.mat",
+      "bytes": 15075133,
+      "sha256": "a9d1251902be694efccaf6aa4cc47aee821493673e128733f743b9ad4ac50c3b",
+      "subject": "s15",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        69386,
+        27
+      ]
+    },
+    {
+      "id": 26096135,
+      "name": "s15_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_0.0.mat",
+      "bytes": 30749722,
+      "sha256": "6321ba0a73a5112571d36b45347642a73de6a6cee7855ee522ef327e9f8e986a",
+      "subject": "s15",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        274987,
+        36
+      ]
+    },
+    {
+      "id": 26096138,
+      "name": "s15_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_0.8.mat",
+      "bytes": 31370269,
+      "sha256": "fe2c809ffb2b75e4a1f5c06d5ba239326d1ecc69327774f51aafb5e9ba4371ba",
+      "subject": "s15",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        272916,
+        36
+      ]
+    },
+    {
+      "id": 26096147,
+      "name": "s15_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_1.6.mat",
+      "bytes": 31586389,
+      "sha256": "659035c4898a0f7a6f53e4fc716eac49a7010d533d7c503fc6cbbe00fbea2f41",
+      "subject": "s15",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        271038,
+        36
+      ]
+    },
+    {
+      "id": 26096210,
+      "name": "s16_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_0.0.mat",
+      "bytes": 11104542,
+      "sha256": "26d222236951720f4fc8c833f8c3f923393e7b46ee0f97642a9eee67107e2215",
+      "subject": "s16",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        76074,
+        27
+      ]
+    },
+    {
+      "id": 26096216,
+      "name": "s16_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_0.8.mat",
+      "bytes": 16116457,
+      "sha256": "eab837bf734e5983d566cededd27cf6441c318c8fce0709300c87ea37d2db5ba",
+      "subject": "s16",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        78088,
+        27
+      ]
+    },
+    {
+      "id": 26096222,
+      "name": "s16_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_1.6.mat",
+      "bytes": 17369387,
+      "sha256": "63c29fa069511672554364ba020fda682bdad42f67303c115ffaf9694b90b841",
+      "subject": "s16",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        82656,
+        27
+      ]
+    },
+    {
+      "id": 26096273,
+      "name": "s16_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_0.0.mat",
+      "bytes": 33005664,
+      "sha256": "bf010f863ef971d5e05d107c39de7e309e103a380b5e15e97e166ee773ad001f",
+      "subject": "s16",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        297163,
+        36
+      ]
+    },
+    {
+      "id": 26096276,
+      "name": "s16_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_0.8.mat",
+      "bytes": 34950695,
+      "sha256": "a7d844f9c704e028113d25c4fc0e521cb833ee1eae7ec1fb9e1f59267f9aa794",
+      "subject": "s16",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        305030,
+        36
+      ]
+    },
+    {
+      "id": 26096279,
+      "name": "s16_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_1.6.mat",
+      "bytes": 36943435,
+      "sha256": "3348db0f559cfb5a4297abc4e5f039f484a1321ef223c299257d38bac8a11045",
+      "subject": "s16",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        322875,
+        36
+      ]
+    },
+    {
+      "id": 26096324,
+      "name": "s17_IMU_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_0.0.mat",
+      "bytes": 10101049,
+      "sha256": "3256ad2bbc13ea1d89601275a08fdd69ccc5005fb6dc1de09ae2f6304777bc71",
+      "subject": "s17",
+      "speed": "0.0",
+      "device": "IMU",
+      "raw_shape": [
+        76081,
+        27
+      ]
+    },
+    {
+      "id": 26096327,
+      "name": "s17_IMU_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_0.8.mat",
+      "bytes": 14645513,
+      "sha256": "395669793ca59dc4f9cebcf235a3f2524d7add37f0b817eddb92a093602ce2c4",
+      "subject": "s17",
+      "speed": "0.8",
+      "device": "IMU",
+      "raw_shape": [
+        68742,
+        27
+      ]
+    },
+    {
+      "id": 26096330,
+      "name": "s17_IMU_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_1.6.mat",
+      "bytes": 15113808,
+      "sha256": "48ebc063d58aac8c316e246964d8eb099b041822bc476df6a28d49098da67343",
+      "subject": "s17",
+      "speed": "1.6",
+      "device": "IMU",
+      "raw_shape": [
+        69094,
+        27
+      ]
+    },
+    {
+      "id": 26096399,
+      "name": "s17_scalp_SSVEP_0.0.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_0.0.mat",
+      "bytes": 33820457,
+      "sha256": "e415000b986ac1a2c36f63bf8f1af72204af9df000cc7414c1adb522221bf5dd",
+      "subject": "s17",
+      "speed": "0.0",
+      "device": "scalp",
+      "raw_shape": [
+        297190,
+        36
+      ]
+    },
+    {
+      "id": 26096414,
+      "name": "s17_scalp_SSVEP_0.8.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_0.8.mat",
+      "bytes": 32346135,
+      "sha256": "bc0bbcb8ca54a5ae44fac5e29f60bd2aeb224cbda9e7b2d6dd161bcf85939ab8",
+      "subject": "s17",
+      "speed": "0.8",
+      "device": "scalp",
+      "raw_shape": [
+        268524,
+        36
+      ]
+    },
+    {
+      "id": 26096417,
+      "name": "s17_scalp_SSVEP_1.6.mat",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_1.6.mat",
+      "bytes": 32666882,
+      "sha256": "9fc8ceca96e010786f8db007259cd1ebfbfc1b1695e8891e1b58aae47ce4cffe",
+      "subject": "s17",
+      "speed": "1.6",
+      "device": "scalp",
+      "raw_shape": [
+        269898,
+        36
+      ]
+    }
+  ],
+  "limits": {
+    "batch_seconds": 600,
+    "file_seconds": 30,
+    "address_space_bytes": 805306368,
+    "visited_units": 8192,
+    "string_bytes": 8192,
+    "nesting_depth": 5,
+    "output_bytes": 4194304
+  },
+  "output_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_cohort_metadata_v1_observation.json",
+  "journal_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_cohort_metadata_v1_records.jsonl"
+}

@@ -12,6 +12,8 @@ report4MiB/newgeneratedartifacts16MiB; generated tests at most3calls, each fixtu
 numeric elements/64KiB. No raw_x/preprocess_x/interp_clab, fits/outcomes, network/paid/
 outreach/held60/source39/GPU. Unexpected IO/parser/guard error stops with durable progress,
 no automatic retry. Structural scientific mismatches are reported, not silently repaired.
+The 600-second deadline covers checks, selective decoding, pairing and normal report
+serialization; durable failure serialization and final fsync are outside that compute cap.
 
 ## Prespecified metadata checks
 
@@ -27,6 +29,7 @@ no automatic retry. Structural scientific mismatches are reported, not silently 
   classifier/feature support is exactly firstk/class(3k total), allselectedindices<40.
   Count all chronological prefix trials through the latestselectedtrial as acquired cost.
   Unusedprefixtrials and gap before query are not model inputs. Record gap separately.
+  A negative support-ready-to-query-marker gap is a structural overlap failure.
 - If a run fails these prespecified metadata rules, mark it and its participant incomplete
   for primary3condition pairing; no per-k/outcome-favorable deletion. Require>=12complete
   participants for the proposed3outer/2inner development design, otherwise stop for redesign.

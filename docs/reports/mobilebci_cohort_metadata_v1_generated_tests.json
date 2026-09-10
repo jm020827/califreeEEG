@@ -1,0 +1,29 @@
+{
+  "schema": "cfeg.mobilebci-cohort-metadata-generated-tests.v1",
+  "suite_calls_used": 1,
+  "suite_calls_budget": 3,
+  "tests_run": 10,
+  "failures": 0,
+  "errors": 0,
+  "suite_body_seconds": 0.011,
+  "human_files_opened": 0,
+  "human_waveform_decodes": 0,
+  "human_fits": 0,
+  "checks": [
+    "exact selective variable list; raw_x sentinel not requested",
+    "observed onehot retained",
+    "checksum before decoding",
+    "file mutation detected",
+    "scientific metadata mismatches retained",
+    "first k/class support and full prefix trial charging",
+    "complete three-condition subject requirement and paired class mismatch",
+    "missing query class and support/query index overlap",
+    "support/query time overlap despite disjoint indices",
+    "bounded report fallback",
+    "EOF durable stop with no retry or restart"
+  ],
+  "reader_sha256": "19535bb699cfe4a0af54153849b235c7511469e555fc6df772d2804d18e95d7c",
+  "test_sha256_after_import_format_only": "89313ae48d1a140cf0810e681b794b28d5c0c96787ff99c3a63a269b6e82340c",
+  "config_sha256": "7dd9d34decd58b92012d9997034847c44e9db921156eef313c5f8416d9b9f713",
+  "interpretation": "Generated parser/role checks only; not human timing validity or metadata learning benefit."
+}
