@@ -1,5 +1,7 @@
 # 현재 자료 우선 — 연구계획 수정과 단일 선택공간 진단
 
+> 2026-09-10 **다른 공개 후보로 전환**: [head-IMU 후보 설계](mobilebci_head_motion_candidate_v1.md). Choi 문의를 현재 진행의 선행조건에서 제거했다. Lee2021 actual IMU를 공통 speed/order 및 Q 이상으로 활용하는 one-shot ridge 공간회귀를 선택해 공개 접근부터 확인한다. 공개18명Figshare와 최종23명SSVEP를 혼합하지 않으며 raw다운로드·효능은 아직0이다. 기존 종료/부정 결과는 보존한다.
+
 > 2026-09-10 **남았던 로컬 구조 확인 완료**: [점검 결과·재개 조건](choi_header_census_v1_results.md). Root/cnt 직접 이름 공간에서 명시적 처리 이력을 찾지 못했다. 모든 파일에 정보가 없다는 뜻은 아니다. 새 단서 없는 raw 탐색은 끝내고, 실제 Gyro–IMU–EEG 대응과 export/marker 처리 설명을 저자에게 확인하는 것을 제안한다. 문의는 미발송·별도 승인, 실험은 DEFER이며 원 저보정 metadata 목표와 기존 결과는 유지한다.
 
 > 2026-09-10 **온도 제외 근거 확보, motion 처리 이력은 미해결**: [보충문서 결과](choi_supplement_documents_v1_results.md). 저자의 온도 제외 답변을 확인했지만 미연결/무효 raw 값까지 뜻하지는 않는다. 공개 두 문서의 확인은 마쳤고, 기존 cnt에 export history가 있는지 전체키를 확인하는 로컬 metadata 경로가 남아 있다. 외부 문의만이 유일하다고 하지 않으며, 최소 질문은 미발송 초안으로 준비했다.

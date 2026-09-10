@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **Choi 대기 해제 방향 전환 / 새 후보는 preflight 전**: 사용자가 비공개 의존 경로를 내려놓고 다른 후보를 지시했다. [Lee2021 measured head-IMU 설계](mobilebci_head_motion_candidate_v1.md)를 선택했으며 speed-only 비교는 primary에서 제외한다. Triage만 완료, raw access/scientific eligibility/fit/outcome은 미완료다. 기존 blocked 기록은 Choi 의존 경로의 당시 상태이며 새 후보를 기각한 판정이 아니다.
+
 > 2026-09-10 **Metadata-only census 완료**: [결과](choi_header_census_v1_results.md). 기존 cnt 한 파일을 1회 열어 root/cnt 전체 직접 키와 attribute 이름을 확인했다. 명시적 센서/export 이력 이름은 없었고 값·파형·marker·fit/outcome/held60 접근0이다. Choi DEFER 유지, 무단 확장 없이 이 점검 종료. 다음은 미발송 두 주제 문의의 방향/별도 발송 승인이다. 전체 goal은 active다.
 
 > 2026-09-10 **두 DOCX 표적 검토 완료**: [결과](choi_supplement_documents_v1_results.md). 저자 답변에서 온도 공개 결과의 제외 이유를 확인했고 보충 IMU 그림을 직접 봤다. 실제 Gyro/export/marker 사양은 미해결·기존 Choi DEFER 유지다. 이전 헤더는 전체 schema census가 아니므로 다음에 기존 한 파일의 키/attribute 이름만 확인한다. 8/8요청·문서2개, XLSX/파형/fit/outcome/held60/발송0, 전체 연구 goal은 active다.

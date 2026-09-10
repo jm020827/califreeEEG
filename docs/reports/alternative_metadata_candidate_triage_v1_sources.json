@@ -1,0 +1,56 @@
+{
+  "schema": "cfeg.alternative-metadata-candidate-triage-sources.v1",
+  "retrieved_at": "2026-09-10",
+  "scope": "Selected primary HTML/API/author-code review and metadata only; no PDF or raw EEG/IMU content.",
+  "sources": [
+    {
+      "id": "kwak2017",
+      "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0172578",
+      "locator": "Data Availability",
+      "finding": "Paper explicitly says raw data cannot be made public due to IRB restrictions and requires an author request.",
+      "decision": "REJECT_FOR_THIS_PUBLIC_ACCESS_BRANCH; no request or retry"
+    },
+    {
+      "id": "lee2021",
+      "url": "https://www.nature.com/articles/s41597-021-01094-4",
+      "locator": "Methods: Experimental setup, Experimental paradigms/procedure; Data Records: Data format, Preprocessing",
+      "finding": "Read-only scout reports head and two ankle APDM IMUs (three axes each of accelerometer/gyroscope/magnetometer), IMU128Hz/EEG500Hz, simultaneous device triggers, repeated fixed-order speeds and the same three SSVEP classes. Raw and100Hz preprocessed exports are distinct.",
+      "limits": "Root saw official discovery abstract but full-page retrieval failed Nature redirect; scout's selected HTML reading is not independent two-source verification. Table1 failed, so exact raw axis/units and residual alignment remain unverified. Not fulltext_complete."
+    },
+    {
+      "id": "author_loader",
+      "url": "https://github.com/youngeun1209/MobileBCI_Data/blob/main/a_load_all_data.m",
+      "locator": "SSVEP trigger mapping/100Hz load",
+      "finding": "Scout reports11/12/13 mapped to5.45/8.57/12Hz; loader does not establish raw IMU conversion or clock-error correction.",
+      "limits": "Public current code, not pinned or executed; no claim of raw export reproducibility."
+    },
+    {
+      "id": "osf",
+      "url": "https://osf.io/r7s9b/",
+      "finding": "Author-linked public release, but scout received403; root API web access also failed.",
+      "decision": "PUBLIC_REPORTED_CURRENT_INVENTORY_UNVERIFIED; no authentication/captcha bypass"
+    },
+    {
+      "id": "figshare_v1",
+      "url": "https://api.figshare.com/v2/articles/13604078/versions/1",
+      "locator": "license/description/files metadata",
+      "finding": "Live API accessible: version1/CCBY4, description18participants,445files/8953349317bytes,191SSVEP files. EEG/IMU pairs are listed, with declared sizes andMD5. This is not automatically the final paper's24participants/23SSVEP release.",
+      "projection": "docs/reports/mobilebci_figshare_v1_metadata_projection.json",
+      "projection_sha256": "605ed6f319e2845e2b71a92312c22183675e79d551acb4fc1a5afcf482a7555e",
+      "limits": "Hash identifies saved selected API projection, not entire API or downloaded MAT; release equivalence and bytes integrity not verified."
+    },
+    {
+      "id": "figshare_imu_head_check",
+      "url": "https://ndownloader.figshare.com/files/26094953",
+      "finding": "One redirected HEAD chain returned HTTP403,body0; curl22.",
+      "decision": "Do not claim successful download or assume GET failure from HEAD alone. A bounded normal public GET belongs to a separately recorded acquisition preflight, not this no-raw-download triage."
+    },
+    {
+      "id": "pmc_failure",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8688416/",
+      "finding": "Root response was browser/reCAPTCHA interstitial, not article text. Stopped; no bypass.",
+      "artifact": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/mobilebci_lee2021_pmc_tool_extract_20260910.json",
+      "sha256": "93b31321481bbb47af2074b14e8ca2225f07e31778206db5c0de5f7ba5108d14"
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Choi export 최소 확인 질문 — 조건부 미발송 초안
 
+> 2026-09-10 사용자 후속 지시: 공개되지 않아 구하기 힘든 경로는 내려놓고 다른 후보를 검토한다.
+> 이 초안은 역사 기록으로만 보존하며 현재 발송·답변 대기의 대상이 아니다.
+> [새 후보](mobilebci_head_motion_candidate_v1.md)로 진행한다.
+
 2026-09-10. **발송하지 않았다. 외부 문의는 별도 승인이다.**
 기존 cnt 한 파일의 root/cnt 전체 키와 attribute 이름 [점검](choi_header_census_v1_results.md)을
 마쳤지만 명시적인 sensor/export 이력 이름은 없었다. 조사한 이름 공간에 한정된 결과이며,

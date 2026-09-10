@@ -1,0 +1,34 @@
+{
+  "id": 13604078,
+  "title": "Mobile BCI dataset of scalp- and ear-EEG with ERP and SSVEP paradigms during standing, walking, and running",
+  "version": 1,
+  "doi": "10.6084/m9.figshare.13604078.v1",
+  "license": {
+    "value": 1,
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "description": "<div>We present a mobile dataset of electroencephalography (EEG) from scalp and ear and locomotion sensors collected from 18 subjects moving at different speeds while performing brain-computer interface (BCI) tasks. The experiments were performed under 16 different conditions (2 types of EEG devices x 4 speeds of movements x 2 types of BCI paradigms). The data were collected from 32-channel scalp-EEG, 14-channel ear-EEG, 4-channel electrooculography, and 3 inertial measurement units at the forehead, left ankle, and right ankle simultaneously. The conditions of recording were standing, slow walking, fast walking, and slight running at speeds of 0, 0.8, 1.6, and 2.0 m/sec, respectively. At each speed, two different BCI paradigms, event-related potential (ERP) and steady-state visual evoked potential (SSVEP), were recorded. To evaluate the signal quality, scalp- and ear-EEG data were qualitatively and quantitatively validated at each speed. We expect that the dataset will facilitate BCIs in diverse mobile environments to analyze brain activities and to evaluate the performance quantitatively, so as to broaden the use of practical BCIs.</div>",
+  "files_count": 445,
+  "total_bytes": 8953349317,
+  "ssvep_files": 191,
+  "selected_pair": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "size": 10489800,
+      "download_url": "https://ndownloader.figshare.com/files/26094953",
+      "supplied_md5": "520d733439a30cb4d7a83e3e2d2fbeb6",
+      "computed_md5": "520d733439a30cb4d7a83e3e2d2fbeb6"
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "size": 32937882,
+      "download_url": "https://ndownloader.figshare.com/files/26094980",
+      "supplied_md5": "cff48844f263bbb8682bae7a93af50c5",
+      "computed_md5": "cff48844f263bbb8682bae7a93af50c5"
+    }
+  ],
+  "references": []
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "cfeg.alternative-metadata-candidate-triage-state.v1",
+  "date": "2026-09-10",
+  "base_commit": "63adad5",
+  "freeze_commit": "b219064",
+  "status": "COMPLETE_TRIAGE_ONE_CONDITIONAL_CANDIDATE_SELECTED",
+  "user_direction": "Leave hard-to-obtain/nonpublic Choi branch aside and select another candidate.",
+  "selected": "mobilebci-head-motion-reference-ridge-v1",
+  "candidate_status": "PUBLIC_METADATA_CONFIRMED_RAW_PAIR_AND_SCIENTIFIC_ELIGIBILITY_UNVERIFIED",
+  "choi_status": "DEFER_PRESERVED_PARKED_BY_USER_NO_OUTREACH",
+  "research_objective_changed": false,
+  "scientific_efficacy": "NOT_EVALUATED",
+  "learner_implemented": false,
+  "raw_files_downloaded": 0,
+  "decisions": [
+    {
+      "candidate": "Kwak2017",
+      "status": "REJECT_REQUEST_ONLY"
+    },
+    {
+      "candidate": "Lee2021 speed-only",
+      "status": "REJECT_AS_PRIMARY_INCREMENT_BEYOND_SHARED_ORDER"
+    },
+    {
+      "candidate": "Lee2021 measuredheadIMU",
+      "status": "SELECT_FOR_BOUNDED_PUBLIC_ACQUISITION_PREFLIGHT"
+    }
+  ],
+  "access": {
+    "figshare_metadata_http_success": true,
+    "figshare_version": 1,
+    "description_participants": 18,
+    "listed_files": 445,
+    "listed_ssvep_files": 191,
+    "full_bytes_declared": 8953349317,
+    "selected_pair_bytes_declared": 43427682,
+    "checksum_verified_locally": false,
+    "head_http_status": 403,
+    "head_body_bytes": 0,
+    "normal_get_attempted": false,
+    "osf_inventory_verified": false,
+    "final_paper_release_equivalence_verified": false,
+    "axis_unit_clock_verified": false
+  },
+  "usage": {
+    "logical_search_queries": 8,
+    "root_queries": 4,
+    "scout_queries": 4,
+    "root_workspace_discover_calls": 2,
+    "scout_structured_search_calls": 1,
+    "web_queries": 5,
+    "document_target_slots_charged": 12,
+    "root_document_slots_charged": 7,
+    "scout_document_slots_charged": 5,
+    "document_slots_note": "Includes failedtargets, separateversionendpoint andmetadataHEAD; overlapping root/scout Nature conservatively counted twice. Not totalHTTPrequest count.",
+    "pdf_downloads": 0,
+    "raw_downloads": 0,
+    "human_value_reads": 0,
+    "fits": 0,
+    "outcomes": 0,
+    "held60": 0,
+    "external_outreach": 0,
+    "paid_resources": 0,
+    "gpu": 0,
+    "new_worktrees": 0,
+    "tests": 0,
+    "pushes": 0
+  },
+  "reviews": {
+    "local_history": "10documents read-only; covarianceprior notnewbyitself, k1reference-ridge proposed",
+    "public_sources": "Selected primaryHTML/authorloader; Table1/OSFfailures retained",
+    "final_scope": "No material issue found by read-only reviewer",
+    "sqlite_quick_check": "ok",
+    "full_suite": "NOT_RUN; documentation/triage only"
+  },
+  "artifacts": [
+    {
+      "path": "docs/reports/mobilebci_figshare_v1_metadata_projection.json",
+      "sha256": "605ed6f319e2845e2b71a92312c22183675e79d551acb4fc1a5afcf482a7555e"
+    },
+    {
+      "path": "docs/reports/alternative_metadata_candidate_triage_v1_sources.json",
+      "sha256": "6d9516a200c326c007bed14818847f54e3c26b05da9ada7bc96d90e8334458bb"
+    },
+    {
+      "path": "docs/mobilebci_head_motion_candidate_v1.md",
+      "sha256": "6cc1ed59ef0605f2588fa15ffa09edc5d0292351c55fd0a2a2b4842e757d58b3"
+    }
+  ],
+  "scholarly": {
+    "claim_id": "claim:29933b0392a6e6d5",
+    "claim_status": "qualified",
+    "new_gap": "gap:c365520c93cb5ad1",
+    "choi_gap": "gap:b654467d1d604de0",
+    "broad_gap": "gap:6a8254f849b36b2f",
+    "counts": {
+      "papers": 1085,
+      "search_runs": 87,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 64,
+      "evidence": 162,
+      "gaps": 40,
+      "analogies": 5,
+      "deep_reads": 36
+    }
+  },
+  "next": "Freeze exact public one-pairGET/schema contract before raw access. If private access or unresolved source mapping is required, retire instead of waiting for author. Future336fit/1h is a proposal, not active efficacy execution authority."
+}
