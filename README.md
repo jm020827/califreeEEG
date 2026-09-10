@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **후속 시간경계·실제 수집비용 구현**: [결과와 한계](docs/acquisition_boundary_generated_v1_results.md). 별도 generated-only 경로의 최종34tests와 독립 검토를 마쳤다. 금지된 미래/다른 clock·trial의 혼입과 수집 전 baseline 비용 누락을 검사한다. 기존 회귀 fixture의 배열상한 이탈은 기록했으므로 전체 예산 준수 PASS는 아니다. 사람 학습·효능 평가0, Choi 후보 DEFER 유지. 현재 새 `계속 연구` goal은 active이며 아래의 완료는 이전 유한 루프의 상태다.
+
 > 2026-09-10 **후속 Choi 보조센서 검토 완료 — 새 실험은 보류**: [근거·쉬운 설명·다음 설계](docs/choi_aux_context_feasibility_v1_results.md). 논문은 실제 머리 IMU 기록을 보고하지만 `Gyro`의 물리량/변환·사전 시간경계는 미확정이다. 온도도 연결·부위가 확인되지 않았다. 기존 전체-run 양방향 전처리와 선택 label 수를 실제 수집 비용으로 보는 해석을 새 설계에서 분리한다. 아래 유한 루프 완료/부정 결과는 유지하며 새 학습·outcome·held60 접근0이다. 확인 질문은 미발송 초안이다.
 
 > 2026-09-10 **유한 연구 루프 통합 완료 — 실제 metadata 효용은 미확립**: [전체 결과·요구사항별 완료 감사·후속 검증 계획](docs/metadata_research_loop_closeout_20260910.md). 원 후보2개와 별도 승인된 N1/복구/인공 능력/채널 진단 단계가 모두 종료됐다. N1-R는 공정한 실제 정확도·관측 보정량 비교를 완료했고 절감0이었다. 따라서 연구 작업의 완료와 양성 가설 입증을 구분한다. 시간·compute 상한 전부 소진이나 metadata 일반의 무용성을 주장하지 않는다. 원본 JSON21개 hash 일치·독립 읽기전용 검토, 신규 실험0; 기존 실패와 held60 보호 유지. 아래 ‘전체 goal 미완료’는 당시 단계의 기록이며 현재 전체 상태는 이 통합 보고를 따른다.

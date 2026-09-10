@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **새 goal 연구 진행 중**: [인공 시간경계·collection-cost 구현 결과](acquisition_boundary_generated_v1_results.md), [상태](reports/acquisition_boundary_generated_v1_state.json). 최종 신규34tests·독립 검토 완료; 기존 회귀배열 상한 이탈1종은 보존한다. 센서 timing 미확정과 Choi DEFER를 바꾸지 않았으며 사람파형·fit·outcome0이다. 다음은 actual export/marker 공식 근거의 좁은 조사다. 이전 유한 goal 완료를 현재 `계속 연구` goal 전체 완료로 확장하지 않는다.
+
 > 2026-09-10 **후속 outcome-free 검토 완료**: [Choi auxiliary feasibility](choi_aux_context_feasibility_v1_results.md), [상태](reports/choi_aux_context_feasibility_v1_state.json). 실제 head-motion 센서의 저자 보고는 확인했으나 export 의미/시간·Temperature 연결은 미확정이라 후보 활성화를 보류했다. 사람 파형/학습/outcome0, 기존 유한 goal 완료와 V2 deny/held60 보호는 유지한다. 다음 pre-support motion 학습·인공 시간경계 검증은 제안이지 승인된 사람 실험이 아니다.
 
 > 2026-09-10 **통합 완료 상태 정정**: [요구사항별 전체 감사](metadata_research_loop_closeout_20260910.md)에 따라 승인된 유한 연구 루프는 완료다. N1-R에서 실제 Q/Q2/QM/SHAM 성능·관측0/36/60label 비용 비교를 끝냈고, 후속 인공 능력/margin 단계도 단회 종료했다. **Metadata 효용은 미확립이며 유망 후보0**이다. 옛 C1/C2의 효능 미평가를 바꾸지 않고, 양성 미확립과 작업 미완료를 구분한다. [현재 전체 JSON](reports/metadata_research_loop_closeout_20260910.json). 새 실험/held60/외부요청/유료 권한은 생기지 않으며 아래 미완료·다음 제안 표기는 과거 단계의 이력이다.

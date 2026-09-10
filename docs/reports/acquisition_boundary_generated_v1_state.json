@@ -1,0 +1,262 @@
+{
+  "schema": "cfeg.acquisition-boundary-generated-state.v1",
+  "date_kst": "2026-09-10",
+  "stage_status": "COMPLETE_ENGINEERING_WITH_RECORDED_BUDGET_DEVIATION",
+  "functional_verification": "PASS_WITH_SCOPED_GENERATED_EVIDENCE",
+  "budget_compliance": "DEVIATION_NOT_PASS",
+  "current_goal": {
+    "objective": "계속 연구",
+    "status": "active",
+    "previous_turn_classification": "PROGRESS: source review changed authoritative evidence and next action; this turn implemented and tested the next engineering step"
+  },
+  "scientific_efficacy": "NOT_EVALUATED",
+  "choi_human_candidate": "DEFER_UNCHANGED",
+  "original_finite_loop": "COMPLETE_UNCHANGED",
+  "base_commit": "915cc509fe52449489037276d0daf4d86de398b5",
+  "freeze_commit": "9e33c0e17fd3baae0c821f273cbf944e166d14e8",
+  "source_commit": "c4942bef0621d7b2df12a7ec4a208c2d8f7460a1",
+  "integration_commits": [
+    "6caf9310135bdc50c938cc15103b1f32140a9535",
+    "5e242c6",
+    "c4942bef0621d7b2df12a7ec4a208c2d8f7460a1"
+  ],
+  "cost_branch_commit": "b630ff0de4ba968edd6796bac30f3e5b9bd27439",
+  "artifacts": [
+    {
+      "path": "configs/analysis/acquisition_boundary_generated_v1.json",
+      "sha256": "d39f725d7a84aa3392d5940b6b4f5944b24cd51bd7f7616acab4198ff6814c29"
+    },
+    {
+      "path": "src/cfeg/data/acquisition_context_contract.py",
+      "sha256": "bcb8b58e5612b09ca4289678722624e55d7da11c02fc953b3c8aa134da9f92ae"
+    },
+    {
+      "path": "src/cfeg/data/acquisition_context_boundary.py",
+      "sha256": "589ecd3e6eb9cadb2e32cc48f45d9304dade91d44fafc805fe22d1bbbd44a272"
+    },
+    {
+      "path": "src/cfeg/analysis/calibration_collection_cost.py",
+      "sha256": "a7e221017fab9c3774b81f03e833400feb38e3571e2a8dff08b889c324173a69"
+    },
+    {
+      "path": "src/cfeg/analysis/acquisition_context_support.py",
+      "sha256": "25827504b4870e6eeae3e5bf9091698ce3d59fabe67e2b2df7d57e3e3302ce61"
+    },
+    {
+      "path": "tests/test_acquisition_context_boundary.py",
+      "sha256": "016eec78fa5e8d4c3881166a585350ca09c2c07db6de077da91509c0a8941cfe"
+    },
+    {
+      "path": "tests/test_calibration_collection_cost.py",
+      "sha256": "8337f2b9b802eeb92ffc69be9b6056455c1742bcd48469d6331b100fd948143b"
+    },
+    {
+      "path": "tests/test_acquisition_context_support.py",
+      "sha256": "9deccc32f394d9bf362fa1f5071a56dd6ec48076f6a192eb2fccc20bbe6ebd68"
+    },
+    {
+      "path": "docs/reports/choi_aux_context_feasibility_v1_state.json",
+      "sha256": "e66f8dd8c650468d98b1981ce77eb9f109bba1ce706d55474c598e145163680b"
+    },
+    {
+      "path": "docs/reports/metadata_research_loop_closeout_20260910.json",
+      "sha256": "d8a437f852abd66af0450346cd19c2c90a4c3331ed4b0fe54bbfe750f1687a8f"
+    },
+    {
+      "path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+      "sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
+    }
+  ],
+  "test_calls": [
+    {
+      "path": "/home/whwovy/acquisition-boundary-tests-DOwcsR/root-call1.xml",
+      "sha256": "13c12f2faba9e496e4c042267900210905eeaea25aa8c8e3e3b75b4e26cb6bbd",
+      "process_elapsed_seconds": 0.17,
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "/home/whwovy/acquisition-boundary-tests-DOwcsR/root-call2.xml",
+      "sha256": "169bf9dcadcee6ebb9462f8c91896788e895831a8a5e8fde17efcf556fd7ff5b",
+      "process_elapsed_seconds": 2.18,
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "/home/whwovy/acquisition-boundary-tests-DOwcsR/cost-call1/junit.xml",
+      "sha256": "bf2a37f106da1ffee38f868c6cb8c19ffafb9cbef58a0fbfeaa252bd16eaeae3",
+      "process_elapsed_seconds": 0.68,
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "/home/whwovy/acquisition-boundary-tests-DOwcsR/root-call3.xml",
+      "sha256": "fae4f3342ecd664991e2dc29f18fe0e15f8e4024540765be8f007caa0b832d2d",
+      "process_elapsed_seconds": 2.01,
+      "tests": 56,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "/home/whwovy/acquisition-boundary-tests-DOwcsR/root-call4.xml",
+      "sha256": "2e774c59b1deadfa14a213a2f84066d9144fd22df68bcaad873299504f4cda4a",
+      "process_elapsed_seconds": 0.59,
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "verification": {
+    "final_new_module_tests": 34,
+    "final_modules": {
+      "temporal": 14,
+      "collection_cost": 16,
+      "integration": 4
+    },
+    "prior_combined_tests": 56,
+    "prior_existing_choi_regressions": 23,
+    "prior_combined_before_final_baseline_fix": true,
+    "full_repo_suite_run": false,
+    "ruff": "PASS",
+    "diff_check": "PASS",
+    "independent_read_only_review": "PASS after3fixes",
+    "issues_fixed": [
+      "nested frozen field revalidation",
+      "feature and collection receipt clock/rate/onset binding",
+      "precollection context baseline cost omission"
+    ],
+    "counterexample_sensitivity": [
+      "deliberately full-run-centered reference changes with future perturbation",
+      "causal finite context unchanged when forbidden/future data replaced",
+      "generated upstream future sample actually influences last legal output",
+      "uncovered gap/unknown timing/wrongrun rejected beforefetch"
+    ],
+    "limits": [
+      "No device/export truth validation",
+      "No arbitrary callback physical-IO sandbox",
+      "No human file reader or Q/QM learner",
+      "No empirical metadata benefit or actual accuracy-target stopping policy"
+    ]
+  },
+  "budget": {
+    "test_invocations": 5,
+    "test_invocations_max": 10,
+    "aggregate_process_elapsed_seconds": 5.63,
+    "aggregate_test_wall_seconds_max": 1800,
+    "max_test_process_seconds": 2.18,
+    "per_invocation_seconds_max": 180,
+    "new_worktrees": 1,
+    "new_worktrees_max": 1,
+    "worktree_allocated_kib_snapshot": 13240,
+    "test_output_allocated_kib_snapshot": 50212,
+    "total_new_output_reserve_mib": 384,
+    "new_context_fixture_max_elements": 6000,
+    "frozen_max_array_elements_per_scenario": 200000,
+    "violations": [
+      {
+        "code": "LEGACY_REGRESSION_FIXTURE_SIZE_CAP_EXCEEDED",
+        "source": "tests/test_prepare_choi2019.py:_write_cnt",
+        "shape": [
+          39,
+          10000
+        ],
+        "elements": 390000,
+        "affected_calls": [
+          "root-call2",
+          "root-call3"
+        ],
+        "oversized_fixture_executions": 2,
+        "detected": "After root-call3 by source inspection",
+        "response": "Kept frozen cap and receipts, did not repeat legacy suite; repaired remaining baseline check within unchanged invariants and remaining call/time/output budgets using small new fixtures only",
+        "not_claimed": "Exact maximum of all internal allocations or full budget compliance"
+      }
+    ]
+  },
+  "generated_examples": {
+    "selected_vs_collected": {
+      "k": 1,
+      "selected_labels": 4,
+      "collected_labels": 5,
+      "elapsed_recording_seconds": 10.5,
+      "total_seconds": null,
+      "reason_total_unknown": "setup unknown"
+    },
+    "precollection": {
+      "collection_start_sample": 400,
+      "earliest_context_dependency_sample": 378,
+      "sfreq": 200,
+      "required_extra_seconds": 0.11,
+      "known_extra_below_required": "REJECT",
+      "unknown_extra": "ALLOW_WITH_TOTAL_UNKNOWN"
+    },
+    "k0": "No selected/collected task trials; known setup/baseline retained",
+    "k5": "Requested balanced support unavailable in fixture; selected/totalcostNone, observed collected12 retained",
+    "attained_means": "k-shot availability, NOT accuracy target attainment"
+  },
+  "non_actions": {
+    "human_waveform_reads": 0,
+    "human_fits": 0,
+    "human_outcome_reveals": 0,
+    "held60_access": 0,
+    "new_searches": 0,
+    "new_pdfs": 0,
+    "new_dataset_downloads": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0,
+    "gpu": 0,
+    "packages_installed": 0,
+    "cleanup": 0,
+    "push": 0
+  },
+  "coordination": {
+    "root_owner": "main/sharedcontracts/temporal/integration/finalreview/researchDB",
+    "cost_worktree": "/home/whwovy/califreeEEG-wt-acquisition-cost-v1",
+    "cost_branch": "codex/acquisition-cost-generated-v1",
+    "cost_owned_paths": [
+      "src/cfeg/analysis/calibration_collection_cost.py",
+      "tests/test_calibration_collection_cost.py"
+    ],
+    "readonly_reviewer": "task_shape_reader",
+    "same_tree_concurrent_writers": false,
+    "textual_conflicts": 0,
+    "semantic_issues_repaired": 3,
+    "original_worktrees_preserved": 40,
+    "total_worktrees": 41,
+    "original_untracked_outputs_preserved": 8,
+    "available_disk_kib_before": 94327528
+  },
+  "research": {
+    "workspace": "/home/whwovy/research-spaces/califree-eeg-experiment-design",
+    "cutoff": "2026-09-04",
+    "claim": "claim:1cf125821296466c",
+    "claim_status": "qualified",
+    "new_evidence": 5,
+    "updated_gap": "gap:b654467d1d604de0",
+    "gap_status": "open",
+    "render": "COMPLETE",
+    "sqlite_quick_check": "ok",
+    "source_note": "No new external literature claims; prior Choi evidence and new local implementation linked. One read-only context-output BrokenPipe occurred due head, no research/fit retry or source failure."
+  },
+  "next": {
+    "action": "Narrow bounded official acquisition/export documentation followup to resolve actual sensor and temporal provenance; do not replace this with more artificial PASS tests",
+    "human_execution_authorized": false,
+    "external_email_authorized": false,
+    "paid_authorized": false,
+    "held60_authorized": false,
+    "prerequisites_for_new_human_candidate": [
+      "measurement qualification and timing envelope",
+      "new explicit execution scope",
+      "one preregistered mechanism with Q/Q2/SHAM controls",
+      "participant split and actual collection-cost target",
+      "finite fit/reveal and stop budget"
+    ]
+  }
+}
