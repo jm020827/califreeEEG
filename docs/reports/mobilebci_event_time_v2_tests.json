@@ -1,0 +1,1 @@
+{"schema":"cfeg.mobilebci-event-time-v2-tests.v1","calls":2,"call_budget":3,"cases_by_call":[15,18],"status":"PASS","human_reads":0,"fixtures":"tiny generated MAT only;13 numeric elements/file,2files per integration fixture; per-file64KiB guard","scope":"projection and inspect integration; no claim of whole-repository or actual timing verification"}
