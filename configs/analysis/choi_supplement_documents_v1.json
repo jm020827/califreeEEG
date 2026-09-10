@@ -1,0 +1,79 @@
+{
+  "schema": "cfeg.choi-supplement-documents.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "a6c650f42b63acab55b6e756da716688d652a717",
+  "authority": "Active goal 계속 연구: public supplementary-document source reading, limited to the2previously identified document candidates. No new EEG/participant spreadsheet experiment or outreach.",
+  "question": "Do the two published supplementary documents supply actual sensor-to-Gyro mapping or1000-to200Hz/marker timing provenance needed for fair prequery metadata learning?",
+  "sources": {
+    "publisher_html": "https://oup.silverchair-cdn.com/article-minimal/5641733",
+    "zip_path": "/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+    "expected_archive_bytes": 10814732,
+    "expected_etag": "\"7f22da8c6004697471d66ec42f173a2a\""
+  },
+  "candidates": [
+    {
+      "name_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805",
+      "category": "document_candidate",
+      "compressed_bytes": 757350,
+      "uncompressed_bytes_declared": 817595,
+      "compression_method": 8,
+      "local_header_offset_declared": 1638324,
+      "crc32_declared": "3e9b93ec",
+      "next_structure_offset": 2395735
+    },
+    {
+      "name_sha256": "24fe2cd55aff4a7adfeb8bd721118ee4d9f2b4e75d58b5ced2b18e62171f1ee2",
+      "category": "document_candidate",
+      "compressed_bytes": 645869,
+      "uncompressed_bytes_declared": 729188,
+      "compression_method": 8,
+      "local_header_offset_declared": 10164864,
+      "crc32_declared": "0c37ad49",
+      "next_structure_offset": 10810789
+    }
+  ],
+  "budget": {
+    "http_requests_max": 8,
+    "redirects": 0,
+    "retries": 0,
+    "identity_execution_attempts": 1,
+    "member_execution_attempts_max": 2,
+    "html_bytes_max": 524288,
+    "local_header_bytes": 30,
+    "name_extra_bytes_max": 4096,
+    "member_compressed_bytes_max": 1048576,
+    "member_decoded_bytes_max": 1048576,
+    "network_body_bytes_max": 3145728,
+    "request_timeout_seconds": 20,
+    "network_wall_seconds_max": 100,
+    "total_network_phase_wall_seconds_max": 300,
+    "selftest_calls_max": 3,
+    "selftest_cases_max": 10,
+    "selftest_fixture_bytes_max": 65536,
+    "retained_output_bytes_max": 67108864,
+    "rendered_pages_max": 8,
+    "pages_text_review_max": 24,
+    "document_downloads_max": 2,
+    "new_worktrees": 0,
+    "scholarly_searches": 0,
+    "human_raw_waveform_or_marker_reads": 0,
+    "participant_spreadsheet_member_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0
+  },
+  "constraints": [
+    "Reuse frozen range/ETag/size validation; no full ZIP request or directory rescan. Exactly2candidate local headers/name metadata may be read and checked against prior SHA/CRC/size/method before contents.",
+    "Identify format before choosing content reading. Permit only bounded published-document formats, not executable source or participant spreadsheets. No macro/script execution, embedded workbook data extraction or automatic outbound-link following.",
+    "Request only declared compressed payload range within its next known structure; cap decompression at1MiB and verify eof/no tail, decoded length and CRC32 before treating as a valid extracted member. Store under root-chosen path, never member filename.",
+    "Published paper/supplement figures may be read for measurement definitions, axes and protocol; no per-participant numerical transcription, digitization, derived new metrics or efficacy comparison. This is literature evidence, not a new human outcome experiment.",
+    "Queue decision-driven deep-read before any PDF retrieval; PDF skill unavailable so disclose installed poppler fallback. Checkpoint each document's evidence before retrieving next; rendered figures/tables needed for layout claims.",
+    "Unknown or irrelevant documents keep ChoiDEFER. If no actual export evidence, narrow unsent author questions; sending/held60/paid remain separately approved. Do not declare global absence of code or metadata utility."
+  ],
+  "ownership": {
+    "root": "sole writer/network executor/document reader/workspace writer",
+    "agents": "read-only scope/source review; no network or shared writes"
+  }
+}
