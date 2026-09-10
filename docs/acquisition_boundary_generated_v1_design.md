@@ -96,3 +96,20 @@ Frozen dataclass도 중첩 필드가 변형될 수 있어, `validate_run`/`valid
 Cost 함수의 `clock_id=None`은 시간차 계산 자체에는 허용하지만, metadata와의 통합 join에서는
 알 수 있는 동일 clock/rate를 필수로 요구한다. RunKey만 같은 wrong-grid join을 허용하지 않는다.
 이 보완은 frozen 범위의 clock/pairing 검사를 구현하는 것이며, 사람자료 사용권한/과학 threshold는 바뀌지 않는다.
+
+Root 통합 파일 `analysis/acquisition_context_support.py`는 cost를 같은 schedule에서 다시 계산하고,
+선택 ID의 정확한 일치 및 각 feature의 run/clock/rate/onset을 검사한다. 이 단계의
+`attained`는 **목표 k개의 예시가 모였음**이지, 목표 분류 정확도에 도달했다는 뜻이 아니다.
+
+최종 통합 검토는 첫 context가 collection start보다 앞설 때 비용 누락도 찾았다.
+필요한 선행시간 `max(0, collection_start - earliest_context_dependency)/sfreq`를 receipt에 남기고,
+알려진 extra baseline이 이보다 작으면 거부한다. Unknown baseline은 total unknown으로 유지한다.
+이는 처음 계약의 실제 비용/중복 없는 extra baseline 조건을 구현한 보완이다.
+
+## 실행 중 발견한 예산 이탈 (사후 상한 수정 없음)
+
+Root 회귀검사 call2/call3에 포함한 기존 `test_prepare_choi2019.py` fixture는 `39×10000=390000`
+원소 배열을 만든다. 사전 config의 scenario 배열상한200000을 넘긴 것을 실행 후 source inspection에서
+확인했다. 새 context fixture는≤6000원소이고 사람 데이터 읽기는 없지만, 전체 예산 준수를 PASS라고
+쓸 수 없다. 원 상한/로그를 보존하며 그 legacy 검사를 더 실행하지 않는다.
+나머지 코드 수리는 동일 시간·비용 불변조건과 남은 호출/시간/출력 예산 안에서 작은 새 fixture로만 검증한다.
