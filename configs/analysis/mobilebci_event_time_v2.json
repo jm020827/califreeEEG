@@ -1,0 +1,15 @@
+{
+  "schema":"cfeg.mobilebci-event-time-recovery.v2",
+  "date":"2026-09-11",
+  "plan_commit":"aaa65df",
+  "reader_commit":"9173bac",
+  "reader_sha256":"6a521d33eb2bc88239bd90e5c62917b668f91bbb39a99fa379b9a07dfe395caa",
+  "basis":"Separate conditional recovery after15/18generated tests in2calls and independent static PASS. V1 stop preserved; no new efficacy candidate.",
+  "files":[
+    {"path":"/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat","bytes":10489800,"sha256":"8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456","raw_samples":73652,"raw_fs":128.0},
+    {"path":"/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat","bytes":32937882,"sha256":"b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7","raw_samples":287705,"raw_fs":500.0}
+  ],
+  "variables":["event","t"],
+  "limits":{"runs":1,"decode_calls_per_file":1,"checksum_passes_per_file":1,"seconds_per_file":30,"address_space_bytes":805306368,"visited_units":8192,"string_bytes":8192,"nesting_depth":5,"output_bytes":65536,"waveform_decodes":0,"fits":0,"outcomes":0,"held60":0,"network_requests":0},
+  "stop":"First inspection/guard error ends recovery; preserve failure and do not retry. No waveform/other participant or source39/held60 access. Saved small metadata may be analyzed without rereading files; conversion agreement is not evidence of exact units/origin."
+}
