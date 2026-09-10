@@ -1,0 +1,127 @@
+{
+  "schema": "cfeg.choi-supplement-document-observation.v1",
+  "mode": "identity",
+  "status": "IDENTITIES_VERIFIED_CONTENT_UNOPENED",
+  "requests": [
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/article-minimal/5641733",
+      "requested_content_range": null,
+      "body_bytes_read": 217863,
+      "status": 200,
+      "headers": {
+        "content-length": "217863",
+        "etag": "\"e40b66de1524beffadec5436befdb8e5\"",
+        "content-type": "text/html",
+        "accept-ranges": "bytes"
+      },
+      "body_sha256": "c19ace355a2ecff333f95371d255c0542c3073c6660acc8a6adb7844f0380e1c"
+    },
+    {
+      "method": "HEAD",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": null,
+      "body_bytes_read": 0,
+      "status": 200,
+      "headers": {
+        "content-length": "10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip",
+        "accept-ranges": "bytes"
+      }
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 1638324-1638353/10814732",
+      "body_bytes_read": 30,
+      "status": 206,
+      "headers": {
+        "content-length": "30",
+        "content-range": "bytes 1638324-1638353/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "e6f0dcab4bd8a0ad7b87ffa5dd0b6c274a5f70c26d3c0ef1d3a1955367292c56"
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 1638354-1638384/10814732",
+      "body_bytes_read": 31,
+      "status": 206,
+      "headers": {
+        "content-length": "31",
+        "content-range": "bytes 1638354-1638384/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805"
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 10164864-10164893/10814732",
+      "body_bytes_read": 30,
+      "status": 206,
+      "headers": {
+        "content-length": "30",
+        "content-range": "bytes 10164864-10164893/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "fa75f51e6a57c0296f4313e8e7d5cba6d720e5eed072d0cd9587c44d24a6663f"
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 10164894-10164919/10814732",
+      "body_bytes_read": 26,
+      "status": 206,
+      "headers": {
+        "content-length": "26",
+        "content-range": "bytes 10164894-10164919/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "24fe2cd55aff4a7adfeb8bd721118ee4d9f2b4e75d58b5ced2b18e62171f1ee2"
+    }
+  ],
+  "candidates": [
+    {
+      "name_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805",
+      "category": "document_candidate",
+      "compressed_bytes": 757350,
+      "uncompressed_bytes_declared": 817595,
+      "compression_method": 8,
+      "local_header_offset_declared": 1638324,
+      "crc32_declared": "3e9b93ec",
+      "next_structure_offset": 2395735,
+      "flags": 2,
+      "name_bytes": 31,
+      "extra_bytes": 0,
+      "data_start": 1638385,
+      "member_name": "responses to the reviewers.docx",
+      "suffix": ".docx",
+      "document_format_allowed": true
+    },
+    {
+      "name_sha256": "24fe2cd55aff4a7adfeb8bd721118ee4d9f2b4e75d58b5ced2b18e62171f1ee2",
+      "category": "document_candidate",
+      "compressed_bytes": 645869,
+      "uncompressed_bytes_declared": 729188,
+      "compression_method": 8,
+      "local_header_offset_declared": 10164864,
+      "crc32_declared": "0c37ad49",
+      "next_structure_offset": 10810789,
+      "flags": 2,
+      "name_bytes": 26,
+      "extra_bytes": 0,
+      "data_start": 10164920,
+      "member_name": "Supplementary Figures.docx",
+      "suffix": ".docx",
+      "document_format_allowed": true
+    }
+  ],
+  "elapsed_seconds": 2.836
+}

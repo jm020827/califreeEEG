@@ -85,6 +85,31 @@ def decode_member(compressed, candidate, limit):
     return decoded
 
 
+def validate_identity(candidate, frozen, limits):
+    require(all(candidate[k] == v for k, v in frozen.items()), "identity_config_mismatch")
+    flags = candidate["flags"]
+    require(type(flags) is int and 0 <= flags <= 65535 and not flags & 0x2041, "identity_flags")
+    name = candidate["member_name"]
+    raw = name.encode("utf-8" if flags & 0x800 else "cp437")
+    require(hashlib.sha256(raw).hexdigest() == frozen["name_sha256"], "identity_name_hash")
+    require(len(raw) == candidate["name_bytes"] and 0 < len(raw) <= 512, "identity_name_length")
+    extra = candidate["extra_bytes"]
+    require(
+        type(extra) is int and 0 <= extra and len(raw) + extra <= limits["name_extra_bytes_max"],
+        "identity_extra_length",
+    )
+    require(
+        candidate["data_start"] == frozen["local_header_offset_declared"] + 30 + len(raw) + extra,
+        "identity_data_start",
+    )
+    require(
+        candidate["suffix"] == Path(name).suffix.lower()
+        and candidate["suffix"] in DOCUMENT_EXTENSIONS,
+        "identity_suffix",
+    )
+    require(candidate["document_format_allowed"] is True, "identity_format")
+
+
 def run(config, mode, identity=None, index=None, public_url=None, output_dir=None):
     result = {
         "schema": "cfeg.choi-supplement-document-observation.v1",
@@ -134,10 +159,8 @@ def run(config, mode, identity=None, index=None, public_url=None, output_dir=Non
                 "identity_required",
             )
             candidate = identity["candidates"][index]
-            require(
-                all(candidate[k] == v for k, v in config["candidates"][index].items()),
-                "identity_config_mismatch",
-            )
+            validate_identity(candidate, config["candidates"][index], limits)
+            require(urlsplit(public_url).path == source["zip_path"], "document_url_not_zip")
             require(
                 candidate["suffix"] in DOCUMENT_EXTENSIONS and candidate["document_format_allowed"],
                 "not_document_format",
@@ -216,6 +239,7 @@ def selftest():
     )
     header = local_header(raw, c, 4096)
     assert identify(b"manual.pdf", header, c)["suffix"] == ".pdf"
+    identity = identify(b"manual.pdf", header, c)
     assert decode_member(compressed, c, 1024) == decoded
     cases = ["matched_identity", "bounded_deflate_crc"]
     for name, operation in [
@@ -223,6 +247,18 @@ def selftest():
         ("wrong_crc", lambda: decode_member(compressed, {**c, "crc32_declared": "00000000"}, 1024)),
         ("decoded_cap", lambda: decode_member(compressed, c, 1)),
         ("overlap", lambda: local_header(raw, {**c, "next_structure_offset": 1}, 4096)),
+        (
+            "forged_identity_start",
+            lambda: validate_identity(
+                {**identity, "data_start": 50}, c, {"name_extra_bytes_max": 4096}
+            ),
+        ),
+        (
+            "forged_identity_suffix",
+            lambda: validate_identity(
+                {**identity, "suffix": ".xlsx"}, c, {"name_extra_bytes_max": 4096}
+            ),
+        ),
     ]:
         try:
             operation()
