@@ -1,0 +1,14 @@
+{
+  "schema": "cfeg.choi-aux-context-feasibility.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "9cc8facca817ec56c1888f089b849e09bc71c067",
+  "authority": "User continue after finite-loop closeout; bounded follow-up documentation/schema feasibility review, not a new human efficacy experiment or reopened goal.",
+  "question": "Do Choi2019 auxiliary channel labels correspond to documented actual acquisition sensors usable strictly before prediction/support learning, beyond shared EEG Q?",
+  "candidate_measurements": ["Gyro", "Temperature"],
+  "comparison_boundary": "Respiration/EMG/ECG may be physiology rather than acquisition metadata; no silent topic change or within-query artifact-denoising treatment.",
+  "budget": {"structured_queries_max": 2, "official_page_targets_max": 6, "targeted_followups_max": 4, "exact_local_hdf5_headers_max": 2, "new_output_bytes_max": 33554432, "human_waveform_reads": 0, "human_fits": 0, "outcome_evaluations": 0, "dataset_downloads": 0, "new_worktrees": 0, "packages_installed": 0},
+  "evidence_gates": ["actual_sensor_connection_not_label_only", "physical_quantity_unit_axis", "clock_and_alignment", "strict_prequery_availability", "participant_session_pairing", "variation_not_a_placeholder", "distinct_acquisition_mechanism_beyond_Q", "lawful_reuse_and_new_execution_scope"],
+  "decisions": {"qualify": "Direct consistent evidence for required measurement semantics permits only a separately scoped design, not efficacy claims or automatic execution.", "defer": "Missing decision-critical evidence; preserve unknown and specify the smallest bounded next verification.", "reject": "Primary evidence contradicts required sensor or timing; retire this proposed measurement mechanism without searching outcomes for rescue."},
+  "excluded": ["held60", "source39_numeric_arrays", "raw_EEG_or_aux_waveform_values", "new_model_training", "old_candidate_reruns", "external_request_sending", "paid_resources", "cleanup"],
+  "ownership": "Root sole main/DB writer; local-schema and official-source scouts read-only, disjoint lenses. No separate worktrees because no concurrent implementation."
+}
