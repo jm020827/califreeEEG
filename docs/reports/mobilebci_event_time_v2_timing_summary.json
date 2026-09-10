@@ -1,0 +1,102 @@
+{
+  "schema": "cfeg.mobilebci-event-time-calculations.v1",
+  "input": "docs/reports/mobilebci_event_time_v2_observation.json",
+  "scope": "Arithmetic on saved metadata only; milliseconds and origin1 are candidate interpretations, not source-confirmed raw index convention. Prefix counts descriptive, not efficacy or full calibration-time claims.",
+  "paired_events": 60,
+  "class_names": [
+    "5.45",
+    "8.57",
+    "12"
+  ],
+  "label_sequences_identical": true,
+  "onehot_identical": true,
+  "class_counts": [
+    20,
+    20,
+    20
+  ],
+  "t_identical": true,
+  "t_first": 10,
+  "t_last": 4000,
+  "t_uniform_step": true,
+  "raw_duration_s": [
+    575.40625,
+    575.41
+  ],
+  "each": [
+    {
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "events_strictly_increasing": true,
+      "first": 4001,
+      "last": 567407.25,
+      "max_abs_grid_residual_assuming_ms_origin1": 0,
+      "inter_event_range": [
+        8695.3125,
+        27835.9375
+      ]
+    },
+    {
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "events_strictly_increasing": true,
+      "first": 4001,
+      "last": 567409,
+      "max_abs_grid_residual_assuming_ms_origin1": 2.9103830456733704e-11,
+      "inter_event_range": [
+        8698,
+        27836
+      ]
+    }
+  ],
+  "imu_minus_eeg_assuming_ms": {
+    "min": -9.3125,
+    "max": 5.3125,
+    "mean": -2.0989583333344246,
+    "median": -1.84375,
+    "abs_max": 9.3125,
+    "abs_median": 2.15625,
+    "first": 0,
+    "last": -1.75
+  },
+  "prefixes": [
+    {
+      "k": 1,
+      "trial_count": 6,
+      "counts": [
+        3,
+        2,
+        1
+      ],
+      "observed_last_event_value": 47829
+    },
+    {
+      "k": 2,
+      "trial_count": 8,
+      "counts": [
+        4,
+        2,
+        2
+      ],
+      "observed_last_event_value": 65297.00000000001
+    },
+    {
+      "k": 3,
+      "trial_count": 11,
+      "counts": [
+        5,
+        3,
+        3
+      ],
+      "observed_last_event_value": 100315
+    },
+    {
+      "k": 5,
+      "trial_count": 22,
+      "counts": [
+        8,
+        5,
+        9
+      ],
+      "observed_last_event_value": 206249
+    }
+  ]
+}

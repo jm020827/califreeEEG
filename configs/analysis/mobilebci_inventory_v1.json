@@ -1,0 +1,9 @@
+{
+  "schema":"cfeg.mobilebci-public-inventory.v1",
+  "date":"2026-09-11",
+  "basis":"Event-time v2 recovery completed; old API projection retains only s01/0.0 pair, not cohort inventory. Need exact public availability for subject-disjoint learning.",
+  "url":"https://api.figshare.com/v2/articles/13604078/versions/1",
+  "limits":{"requests":1,"retries":0,"redirects":0,"response_bytes":1048576,"seconds":20,"raw_downloads":0,"pdfs":0,"fits":0,"outcomes":0,"held60":0,"outreach":0,"paid_resources":0},
+  "selection":"Retain full SSVEP file metadata; enumerate exact sNN_{scalp,IMU}_SSVEP_{0.0,0.8,1.6}.mat tuples. Subject eligible for next acquisition proposal iff one of each of6tuples exists. Report duplicate/missing tuples. Do not assume18subjects or fetch bodies.",
+  "stop":"Single public metadataGET only; no retry if failure, no whole dataset or extra participant downloads. Inventory is not scientific eligibility."
+}
