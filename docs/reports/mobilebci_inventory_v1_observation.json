@@ -1,0 +1,1636 @@
+{
+  "schema": "cfeg.mobilebci-public-inventory-observation.v1",
+  "url": "https://api.figshare.com/v2/articles/13604078/versions/1",
+  "requests": 1,
+  "status": "COMPLETE_PUBLIC_INVENTORY_ONLY",
+  "response_bytes": 140033,
+  "response_sha256": "a1364f10efd28e538042f5e3af3406ae139001e68295206c962d5f0930ecdd08",
+  "article_id": 13604078,
+  "version": 1,
+  "license": {
+    "value": 1,
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "description": "<div>We present a mobile dataset of electroencephalography (EEG) from scalp and ear and locomotion sensors collected from 18 subjects moving at different speeds while performing brain-computer interface (BCI) tasks. The experiments were performed under 16 different conditions (2 types of EEG devices x 4 speeds of movements x 2 types of BCI paradigms). The data were collected from 32-channel scalp-EEG, 14-channel ear-EEG, 4-channel electrooculography, and 3 inertial measurement units at the forehead, left ankle, and right ankle simultaneously. The conditions of recording were standing, slow walking, fast walking, and slight running at speeds of 0, 0.8, 1.6, and 2.0 m/sec, respectively. At each speed, two different BCI paradigms, event-related potential (ERP) and steady-state visual evoked potential (SSVEP), were recorded. To evaluate the signal quality, scalp- and ear-EEG data were qualitatively and quantitatively validated at each speed. We expect that the dataset will facilitate BCIs in diverse mobile environments to analyze brain activities and to evaluate the performance quantitatively, so as to broaden the use of practical BCIs.</div>",
+  "total_files": 445,
+  "total_bytes": 8953349317,
+  "ssvep_files": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "size": 10489800,
+      "computed_md5": "520d733439a30cb4d7a83e3e2d2fbeb6",
+      "download_url": "https://ndownloader.figshare.com/files/26094953"
+    },
+    {
+      "id": 26094956,
+      "name": "s01_IMU_SSVEP_0.8.mat",
+      "size": 15180517,
+      "computed_md5": "b356c53fe344adfb2adbe397ab2e691b",
+      "download_url": "https://ndownloader.figshare.com/files/26094956"
+    },
+    {
+      "id": 26094959,
+      "name": "s01_IMU_SSVEP_1.6.mat",
+      "size": 16264311,
+      "computed_md5": "1bf942979b5a81a03ceff78c3e805861",
+      "download_url": "https://ndownloader.figshare.com/files/26094959"
+    },
+    {
+      "id": 26094962,
+      "name": "s01_IMU_SSVEP_2.0.mat",
+      "size": 16496908,
+      "computed_md5": "265039b11811b38b682fe095d1e9de31",
+      "download_url": "https://ndownloader.figshare.com/files/26094962"
+    },
+    {
+      "id": 26096471,
+      "name": "s01_ear_SSVEP_0.0.mat",
+      "size": 7367937,
+      "computed_md5": "618f124057f5e46e22c18162b835775a",
+      "download_url": "https://ndownloader.figshare.com/files/26096471"
+    },
+    {
+      "id": 26096474,
+      "name": "s01_ear_SSVEP_0.8.mat",
+      "size": 7624420,
+      "computed_md5": "7aad4b1f45b1ca740cb5733e2356c95b",
+      "download_url": "https://ndownloader.figshare.com/files/26096474"
+    },
+    {
+      "id": 26096477,
+      "name": "s01_ear_SSVEP_1.6.mat",
+      "size": 7967736,
+      "computed_md5": "e3d3d980b5b3d8f876d4b6506f918200",
+      "download_url": "https://ndownloader.figshare.com/files/26096477"
+    },
+    {
+      "id": 26096480,
+      "name": "s01_ear_SSVEP_2.0.mat",
+      "size": 8215809,
+      "computed_md5": "c44e8f8f628c528b6a7811f60485c834",
+      "download_url": "https://ndownloader.figshare.com/files/26096480"
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "size": 32937882,
+      "computed_md5": "cff48844f263bbb8682bae7a93af50c5",
+      "download_url": "https://ndownloader.figshare.com/files/26094980"
+    },
+    {
+      "id": 26094983,
+      "name": "s01_scalp_SSVEP_0.8.mat",
+      "size": 33492144,
+      "computed_md5": "54a720ba6579ae86aeaf724cdc87b450",
+      "download_url": "https://ndownloader.figshare.com/files/26094983"
+    },
+    {
+      "id": 26094986,
+      "name": "s01_scalp_SSVEP_1.6.mat",
+      "size": 35138077,
+      "computed_md5": "bab9bbe70db0d605818b0cdb101308a8",
+      "download_url": "https://ndownloader.figshare.com/files/26094986"
+    },
+    {
+      "id": 26094989,
+      "name": "s01_scalp_SSVEP_2.0.mat",
+      "size": 35557380,
+      "computed_md5": "3b601874e802db693d7b8f4c6f7194b3",
+      "download_url": "https://ndownloader.figshare.com/files/26094989"
+    },
+    {
+      "id": 26095034,
+      "name": "s02_IMU_SSVEP_0.0.mat",
+      "size": 12255239,
+      "computed_md5": "2e6adbbf01d4d1140877c0349b82c00f",
+      "download_url": "https://ndownloader.figshare.com/files/26095034"
+    },
+    {
+      "id": 26095037,
+      "name": "s02_IMU_SSVEP_1.6.mat",
+      "size": 15174730,
+      "computed_md5": "9d200d28810d813a1dc3a2284e6392d2",
+      "download_url": "https://ndownloader.figshare.com/files/26095037"
+    },
+    {
+      "id": 26095040,
+      "name": "s02_IMU_SSVEP_2.0.mat",
+      "size": 19363489,
+      "computed_md5": "46db9426c45657fe86f4b3fa2d41dd6c",
+      "download_url": "https://ndownloader.figshare.com/files/26095040"
+    },
+    {
+      "id": 26095007,
+      "name": "s02_ear_SSVEP_0.0.mat",
+      "size": 6712936,
+      "computed_md5": "d79056604ba3fb12adf4ce7308c520ac",
+      "download_url": "https://ndownloader.figshare.com/files/26095007"
+    },
+    {
+      "id": 26095010,
+      "name": "s02_ear_SSVEP_0.8.mat",
+      "size": 6770444,
+      "computed_md5": "bc2cdf87b7898f57a25fd84cbfb76bc2",
+      "download_url": "https://ndownloader.figshare.com/files/26095010"
+    },
+    {
+      "id": 26095013,
+      "name": "s02_ear_SSVEP_1.6.mat",
+      "size": 7087212,
+      "computed_md5": "b956de023ea600415e9447cb3b2c651e",
+      "download_url": "https://ndownloader.figshare.com/files/26095013"
+    },
+    {
+      "id": 26095016,
+      "name": "s02_ear_SSVEP_2.0.mat",
+      "size": 10527198,
+      "computed_md5": "d2e7de1923128085ab569423ecc4e527",
+      "download_url": "https://ndownloader.figshare.com/files/26095016"
+    },
+    {
+      "id": 26095058,
+      "name": "s02_scalp_SSVEP_0.0.mat",
+      "size": 30815084,
+      "computed_md5": "ee06983c42f6547d5c16811ff9b28a90",
+      "download_url": "https://ndownloader.figshare.com/files/26095058"
+    },
+    {
+      "id": 26095061,
+      "name": "s02_scalp_SSVEP_0.8.mat",
+      "size": 31073053,
+      "computed_md5": "b51d58d6d6d913a182712b052c06105f",
+      "download_url": "https://ndownloader.figshare.com/files/26095061"
+    },
+    {
+      "id": 26095070,
+      "name": "s02_scalp_SSVEP_1.6.mat",
+      "size": 31479876,
+      "computed_md5": "0b9c604653e0dae6358983990083f74a",
+      "download_url": "https://ndownloader.figshare.com/files/26095070"
+    },
+    {
+      "id": 26095073,
+      "name": "s02_scalp_SSVEP_2.0.mat",
+      "size": 47528546,
+      "computed_md5": "753689d14ecef14cd8d2b6bd2faaea30",
+      "download_url": "https://ndownloader.figshare.com/files/26095073"
+    },
+    {
+      "id": 26095121,
+      "name": "s03_IMU_SSVEP_0.0.mat",
+      "size": 9517263,
+      "computed_md5": "556ddb22c5ec1d02f821c701e1da4032",
+      "download_url": "https://ndownloader.figshare.com/files/26095121"
+    },
+    {
+      "id": 26095124,
+      "name": "s03_IMU_SSVEP_0.8.mat",
+      "size": 15087773,
+      "computed_md5": "01ff6f3b3f759b8ddc889a6a7040b185",
+      "download_url": "https://ndownloader.figshare.com/files/26095124"
+    },
+    {
+      "id": 26095127,
+      "name": "s03_IMU_SSVEP_1.6.mat",
+      "size": 15059980,
+      "computed_md5": "0e298cf85d9da9df55e9df3f74522626",
+      "download_url": "https://ndownloader.figshare.com/files/26095127"
+    },
+    {
+      "id": 26095130,
+      "name": "s03_IMU_SSVEP_2.0.mat",
+      "size": 15853961,
+      "computed_md5": "56f0544230a071a0897a4f8215b47a37",
+      "download_url": "https://ndownloader.figshare.com/files/26095130"
+    },
+    {
+      "id": 26095091,
+      "name": "s03_ear_SSVEP_0.0.mat",
+      "size": 6895990,
+      "computed_md5": "60677edab35c6188e77f6ec8cdbc2006",
+      "download_url": "https://ndownloader.figshare.com/files/26095091"
+    },
+    {
+      "id": 26095094,
+      "name": "s03_ear_SSVEP_0.8.mat",
+      "size": 7116181,
+      "computed_md5": "7453bcc239254e850309e6a0b3a7bc1a",
+      "download_url": "https://ndownloader.figshare.com/files/26095094"
+    },
+    {
+      "id": 26095097,
+      "name": "s03_ear_SSVEP_1.6.mat",
+      "size": 7243747,
+      "computed_md5": "556f415d291a6c89baba71146c155c22",
+      "download_url": "https://ndownloader.figshare.com/files/26095097"
+    },
+    {
+      "id": 26095100,
+      "name": "s03_ear_SSVEP_2.0.mat",
+      "size": 7736635,
+      "computed_md5": "2ba6b275d1860fdf556397fc559966fc",
+      "download_url": "https://ndownloader.figshare.com/files/26095100"
+    },
+    {
+      "id": 26095148,
+      "name": "s03_scalp_SSVEP_0.0.mat",
+      "size": 33494850,
+      "computed_md5": "892b698e0ffd2770516db06266c9932e",
+      "download_url": "https://ndownloader.figshare.com/files/26095148"
+    },
+    {
+      "id": 26095151,
+      "name": "s03_scalp_SSVEP_0.8.mat",
+      "size": 32819652,
+      "computed_md5": "214159a09dd592add836a5fadaa339dd",
+      "download_url": "https://ndownloader.figshare.com/files/26095151"
+    },
+    {
+      "id": 26095154,
+      "name": "s03_scalp_SSVEP_1.6.mat",
+      "size": 32233129,
+      "computed_md5": "4c56356d3cf9c58051d1fcfbfdcee166",
+      "download_url": "https://ndownloader.figshare.com/files/26095154"
+    },
+    {
+      "id": 26095157,
+      "name": "s03_scalp_SSVEP_2.0.mat",
+      "size": 32790402,
+      "computed_md5": "2585c17b67eae34081672f79fa416073",
+      "download_url": "https://ndownloader.figshare.com/files/26095157"
+    },
+    {
+      "id": 26095202,
+      "name": "s04_IMU_SSVEP_0.0.mat",
+      "size": 11773547,
+      "computed_md5": "17cd53b1bf4be425c939ec511646e3a5",
+      "download_url": "https://ndownloader.figshare.com/files/26095202"
+    },
+    {
+      "id": 26095205,
+      "name": "s04_IMU_SSVEP_0.8.mat",
+      "size": 15848699,
+      "computed_md5": "a95326953ace07effab78c6387436536",
+      "download_url": "https://ndownloader.figshare.com/files/26095205"
+    },
+    {
+      "id": 26095208,
+      "name": "s04_IMU_SSVEP_1.6.mat",
+      "size": 15119746,
+      "computed_md5": "916613bc5b49d4f0dde66c1b93a7dc9a",
+      "download_url": "https://ndownloader.figshare.com/files/26095208"
+    },
+    {
+      "id": 26095211,
+      "name": "s04_IMU_SSVEP_2.0.mat",
+      "size": 15215565,
+      "computed_md5": "d9cbf9d1997ad6f77018a7d8ac99b36d",
+      "download_url": "https://ndownloader.figshare.com/files/26095211"
+    },
+    {
+      "id": 26095175,
+      "name": "s04_ear_SSVEP_0.0.mat",
+      "size": 6717489,
+      "computed_md5": "a278ab031f1437307b0e7ea2d4526e11",
+      "download_url": "https://ndownloader.figshare.com/files/26095175"
+    },
+    {
+      "id": 26095178,
+      "name": "s04_ear_SSVEP_0.8.mat",
+      "size": 7583760,
+      "computed_md5": "48664258b84d37fd49a98367ce79439c",
+      "download_url": "https://ndownloader.figshare.com/files/26095178"
+    },
+    {
+      "id": 26095181,
+      "name": "s04_ear_SSVEP_1.6.mat",
+      "size": 7055596,
+      "computed_md5": "de367e49ae5cdce1ce12a7fb7e986e13",
+      "download_url": "https://ndownloader.figshare.com/files/26095181"
+    },
+    {
+      "id": 26095184,
+      "name": "s04_ear_SSVEP_2.0.mat",
+      "size": 7063181,
+      "computed_md5": "5e37ab356f1397d8074e584d2574a14a",
+      "download_url": "https://ndownloader.figshare.com/files/26095184"
+    },
+    {
+      "id": 26095229,
+      "name": "s04_scalp_SSVEP_0.0.mat",
+      "size": 31246658,
+      "computed_md5": "1fe0558412c2ef3099c04331d641fbb1",
+      "download_url": "https://ndownloader.figshare.com/files/26095229"
+    },
+    {
+      "id": 26095232,
+      "name": "s04_scalp_SSVEP_0.8.mat",
+      "size": 34335169,
+      "computed_md5": "b2937dbe3404b649f11809f6c21a74a2",
+      "download_url": "https://ndownloader.figshare.com/files/26095232"
+    },
+    {
+      "id": 26095235,
+      "name": "s04_scalp_SSVEP_1.6.mat",
+      "size": 31259720,
+      "computed_md5": "d70f082ca4985db87b533446aaf2ad9e",
+      "download_url": "https://ndownloader.figshare.com/files/26095235"
+    },
+    {
+      "id": 26095238,
+      "name": "s04_scalp_SSVEP_2.0.mat",
+      "size": 31121229,
+      "computed_md5": "17dc1fc70e541af098d75cb966eccba1",
+      "download_url": "https://ndownloader.figshare.com/files/26095238"
+    },
+    {
+      "id": 26095283,
+      "name": "s05_IMU_SSVEP_0.0.mat",
+      "size": 11445342,
+      "computed_md5": "ece4405f945d6fe468372213a0f39deb",
+      "download_url": "https://ndownloader.figshare.com/files/26095283"
+    },
+    {
+      "id": 26095286,
+      "name": "s05_IMU_SSVEP_0.8.mat",
+      "size": 14748805,
+      "computed_md5": "c5b57d452092ef9ca7c3632d4d060481",
+      "download_url": "https://ndownloader.figshare.com/files/26095286"
+    },
+    {
+      "id": 26095289,
+      "name": "s05_IMU_SSVEP_1.6.mat",
+      "size": 14998917,
+      "computed_md5": "3bc50c07ba23193896890eb8440d9d1f",
+      "download_url": "https://ndownloader.figshare.com/files/26095289"
+    },
+    {
+      "id": 26095292,
+      "name": "s05_IMU_SSVEP_2.0.mat",
+      "size": 13132141,
+      "computed_md5": "ef7deb6177be737d82f21bb55aeabb56",
+      "download_url": "https://ndownloader.figshare.com/files/26095292"
+    },
+    {
+      "id": 26095256,
+      "name": "s05_ear_SSVEP_0.0.mat",
+      "size": 6792335,
+      "computed_md5": "9c7d2431411ae0b4783f9de9f03440a1",
+      "download_url": "https://ndownloader.figshare.com/files/26095256"
+    },
+    {
+      "id": 26095259,
+      "name": "s05_ear_SSVEP_0.8.mat",
+      "size": 6972322,
+      "computed_md5": "2b0f637e6dff9d3a2de146b057a95fed",
+      "download_url": "https://ndownloader.figshare.com/files/26095259"
+    },
+    {
+      "id": 26095262,
+      "name": "s05_ear_SSVEP_1.6.mat",
+      "size": 7000446,
+      "computed_md5": "ebbd1d923261f59cdbf56632ecfc2fff",
+      "download_url": "https://ndownloader.figshare.com/files/26095262"
+    },
+    {
+      "id": 26095265,
+      "name": "s05_ear_SSVEP_2.0.mat",
+      "size": 6706293,
+      "computed_md5": "aef225431307e21349878391928d0424",
+      "download_url": "https://ndownloader.figshare.com/files/26095265"
+    },
+    {
+      "id": 26095313,
+      "name": "s05_scalp_SSVEP_0.0.mat",
+      "size": 30500987,
+      "computed_md5": "b480af5dec5786fe5f95569391635426",
+      "download_url": "https://ndownloader.figshare.com/files/26095313"
+    },
+    {
+      "id": 26095316,
+      "name": "s05_scalp_SSVEP_0.8.mat",
+      "size": 31084066,
+      "computed_md5": "6821e8b09c1acbe8798306288b0e8902",
+      "download_url": "https://ndownloader.figshare.com/files/26095316"
+    },
+    {
+      "id": 26095319,
+      "name": "s05_scalp_SSVEP_1.6.mat",
+      "size": 30943107,
+      "computed_md5": "98ff21dbb227ec27972ad1f6f46c7981",
+      "download_url": "https://ndownloader.figshare.com/files/26095319"
+    },
+    {
+      "id": 26095322,
+      "name": "s05_scalp_SSVEP_2.0.mat",
+      "size": 27652635,
+      "computed_md5": "4fbaa4a5f579e674aafe52b0eaa1fd75",
+      "download_url": "https://ndownloader.figshare.com/files/26095322"
+    },
+    {
+      "id": 26095367,
+      "name": "s06_IMU_SSVEP_0.0.mat",
+      "size": 10636809,
+      "computed_md5": "181212dbf68843ea5be0e137325739ab",
+      "download_url": "https://ndownloader.figshare.com/files/26095367"
+    },
+    {
+      "id": 26095370,
+      "name": "s06_IMU_SSVEP_0.8.mat",
+      "size": 14742546,
+      "computed_md5": "37ad51c57b8f36eeb675efacfdaa5d1f",
+      "download_url": "https://ndownloader.figshare.com/files/26095370"
+    },
+    {
+      "id": 26095376,
+      "name": "s06_IMU_SSVEP_1.6.mat",
+      "size": 15008408,
+      "computed_md5": "c69bd0eb26b7c47323535c2fae4de038",
+      "download_url": "https://ndownloader.figshare.com/files/26095376"
+    },
+    {
+      "id": 26095379,
+      "name": "s06_IMU_SSVEP_2.0.mat",
+      "size": 16059081,
+      "computed_md5": "cfa42ab307daf647a61aad963f481984",
+      "download_url": "https://ndownloader.figshare.com/files/26095379"
+    },
+    {
+      "id": 26095340,
+      "name": "s06_ear_SSVEP_0.0.mat",
+      "size": 6349962,
+      "computed_md5": "b038b7474553330150844f3318885665",
+      "download_url": "https://ndownloader.figshare.com/files/26095340"
+    },
+    {
+      "id": 26095343,
+      "name": "s06_ear_SSVEP_0.8.mat",
+      "size": 6672653,
+      "computed_md5": "e810076fb3ac7143e3f5c4b6a1823372",
+      "download_url": "https://ndownloader.figshare.com/files/26095343"
+    },
+    {
+      "id": 26095346,
+      "name": "s06_ear_SSVEP_1.6.mat",
+      "size": 7050422,
+      "computed_md5": "321518162424ac7bbd4ddb67815a597e",
+      "download_url": "https://ndownloader.figshare.com/files/26095346"
+    },
+    {
+      "id": 26095349,
+      "name": "s06_ear_SSVEP_2.0.mat",
+      "size": 8193360,
+      "computed_md5": "0b5a98c5a0141cff5931e4dc758c7e27",
+      "download_url": "https://ndownloader.figshare.com/files/26095349"
+    },
+    {
+      "id": 26095397,
+      "name": "s06_scalp_SSVEP_0.0.mat",
+      "size": 30573930,
+      "computed_md5": "7afbfbd921a0e4f3a1a21e73cedd58a6",
+      "download_url": "https://ndownloader.figshare.com/files/26095397"
+    },
+    {
+      "id": 26095400,
+      "name": "s06_scalp_SSVEP_0.8.mat",
+      "size": 31991153,
+      "computed_md5": "e756c1ca8d61ed59f1eee54011bbe2cb",
+      "download_url": "https://ndownloader.figshare.com/files/26095400"
+    },
+    {
+      "id": 26095403,
+      "name": "s06_scalp_SSVEP_1.6.mat",
+      "size": 32024247,
+      "computed_md5": "cb5f122fafb00d521ed4f3b0550ac992",
+      "download_url": "https://ndownloader.figshare.com/files/26095403"
+    },
+    {
+      "id": 26095406,
+      "name": "s06_scalp_SSVEP_2.0.mat",
+      "size": 35794430,
+      "computed_md5": "e7d32528d508cd777f27852ff4866132",
+      "download_url": "https://ndownloader.figshare.com/files/26095406"
+    },
+    {
+      "id": 26095451,
+      "name": "s07_IMU_SSVEP_0.0.mat",
+      "size": 12712674,
+      "computed_md5": "164fc2c67816ef897b3c854192e33468",
+      "download_url": "https://ndownloader.figshare.com/files/26095451"
+    },
+    {
+      "id": 26095454,
+      "name": "s07_IMU_SSVEP_0.8.mat",
+      "size": 16034930,
+      "computed_md5": "5125df70e95536f75c682b8d419f0eb4",
+      "download_url": "https://ndownloader.figshare.com/files/26095454"
+    },
+    {
+      "id": 26095457,
+      "name": "s07_IMU_SSVEP_1.6.mat",
+      "size": 15495846,
+      "computed_md5": "d354dff670c4f24db921ed8d0e37a119",
+      "download_url": "https://ndownloader.figshare.com/files/26095457"
+    },
+    {
+      "id": 26095460,
+      "name": "s07_IMU_SSVEP_2.0.mat",
+      "size": 18320734,
+      "computed_md5": "7baf72a511dd90ada61fe476402741cc",
+      "download_url": "https://ndownloader.figshare.com/files/26095460"
+    },
+    {
+      "id": 26095424,
+      "name": "s07_ear_SSVEP_0.0.mat",
+      "size": 7136545,
+      "computed_md5": "3af6f3584840f2dd978400fab27fb2fa",
+      "download_url": "https://ndownloader.figshare.com/files/26095424"
+    },
+    {
+      "id": 26095427,
+      "name": "s07_ear_SSVEP_0.8.mat",
+      "size": 7227706,
+      "computed_md5": "97d3ce8cf91ab82e80ebfc9c65e97ec3",
+      "download_url": "https://ndownloader.figshare.com/files/26095427"
+    },
+    {
+      "id": 26095430,
+      "name": "s07_ear_SSVEP_1.6.mat",
+      "size": 7083647,
+      "computed_md5": "e90cda10b159aa036d26ed6e1e7476c3",
+      "download_url": "https://ndownloader.figshare.com/files/26095430"
+    },
+    {
+      "id": 26095433,
+      "name": "s07_ear_SSVEP_2.0.mat",
+      "size": 9177904,
+      "computed_md5": "f70b73cf03d075eaace444350c9d89e5",
+      "download_url": "https://ndownloader.figshare.com/files/26095433"
+    },
+    {
+      "id": 26095478,
+      "name": "s07_scalp_SSVEP_0.0.mat",
+      "size": 35188574,
+      "computed_md5": "e468972709d27fdad106c560ae76114b",
+      "download_url": "https://ndownloader.figshare.com/files/26095478"
+    },
+    {
+      "id": 26095481,
+      "name": "s07_scalp_SSVEP_0.8.mat",
+      "size": 34588482,
+      "computed_md5": "5f582d345f3a2405dc050e703b120d36",
+      "download_url": "https://ndownloader.figshare.com/files/26095481"
+    },
+    {
+      "id": 26095484,
+      "name": "s07_scalp_SSVEP_1.6.mat",
+      "size": 32336647,
+      "computed_md5": "0b697de12551f7d1ed111755c4a799a8",
+      "download_url": "https://ndownloader.figshare.com/files/26095484"
+    },
+    {
+      "id": 26095487,
+      "name": "s07_scalp_SSVEP_2.0.mat",
+      "size": 40659143,
+      "computed_md5": "2c0fbcefac5f8b1e89d09606604e5abb",
+      "download_url": "https://ndownloader.figshare.com/files/26095487"
+    },
+    {
+      "id": 26095532,
+      "name": "s08_IMU_SSVEP_0.0.mat",
+      "size": 10936807,
+      "computed_md5": "528029126c370cf206f93d2864252987",
+      "download_url": "https://ndownloader.figshare.com/files/26095532"
+    },
+    {
+      "id": 26095535,
+      "name": "s08_IMU_SSVEP_0.8.mat",
+      "size": 14707665,
+      "computed_md5": "18bea5b49e80fb2bd281da3f64ee42c2",
+      "download_url": "https://ndownloader.figshare.com/files/26095535"
+    },
+    {
+      "id": 26095541,
+      "name": "s08_IMU_SSVEP_1.6.mat",
+      "size": 15019483,
+      "computed_md5": "bfb9bcc6c79934021b4ca8ef35ddd481",
+      "download_url": "https://ndownloader.figshare.com/files/26095541"
+    },
+    {
+      "id": 26095544,
+      "name": "s08_IMU_SSVEP_2.0.mat",
+      "size": 15364276,
+      "computed_md5": "c93467c9835aeb013eac2f851bc726f9",
+      "download_url": "https://ndownloader.figshare.com/files/26095544"
+    },
+    {
+      "id": 26095505,
+      "name": "s08_ear_SSVEP_0.0.mat",
+      "size": 6697221,
+      "computed_md5": "014e1497651db7c7ce680b6ea62b7c45",
+      "download_url": "https://ndownloader.figshare.com/files/26095505"
+    },
+    {
+      "id": 26095508,
+      "name": "s08_ear_SSVEP_0.8.mat",
+      "size": 6721510,
+      "computed_md5": "3a7a90824bd44f815acf0a163cde7a71",
+      "download_url": "https://ndownloader.figshare.com/files/26095508"
+    },
+    {
+      "id": 26095511,
+      "name": "s08_ear_SSVEP_1.6.mat",
+      "size": 7111766,
+      "computed_md5": "f71c06ceb6b4e33b12ce7a09c5b9b623",
+      "download_url": "https://ndownloader.figshare.com/files/26095511"
+    },
+    {
+      "id": 26095514,
+      "name": "s08_ear_SSVEP_2.0.mat",
+      "size": 7216782,
+      "computed_md5": "09a402b3e5a429e6308a488bfcc71728",
+      "download_url": "https://ndownloader.figshare.com/files/26095514"
+    },
+    {
+      "id": 26095565,
+      "name": "s08_scalp_SSVEP_0.0.mat",
+      "size": 30707759,
+      "computed_md5": "731f49ed0c1fa97f1304e59b8ceda87c",
+      "download_url": "https://ndownloader.figshare.com/files/26095565"
+    },
+    {
+      "id": 26095568,
+      "name": "s08_scalp_SSVEP_0.8.mat",
+      "size": 30678624,
+      "computed_md5": "57497fa44ae86b60986665a77633ca20",
+      "download_url": "https://ndownloader.figshare.com/files/26095568"
+    },
+    {
+      "id": 26095574,
+      "name": "s08_scalp_SSVEP_1.6.mat",
+      "size": 31054983,
+      "computed_md5": "f17fcf75f81f850f5d3d38b7d7e5d16f",
+      "download_url": "https://ndownloader.figshare.com/files/26095574"
+    },
+    {
+      "id": 26095577,
+      "name": "s08_scalp_SSVEP_2.0.mat",
+      "size": 30588412,
+      "computed_md5": "a47dfe94369b50e317c9e2fe2e1a5ccb",
+      "download_url": "https://ndownloader.figshare.com/files/26095577"
+    },
+    {
+      "id": 26095622,
+      "name": "s09_IMU_SSVEP_0.0.mat",
+      "size": 11951886,
+      "computed_md5": "8b055d6fee7f3447534031cab6754bf0",
+      "download_url": "https://ndownloader.figshare.com/files/26095622"
+    },
+    {
+      "id": 26095625,
+      "name": "s09_IMU_SSVEP_0.8.mat",
+      "size": 14724431,
+      "computed_md5": "abd5cd54f4af38875e3a0c8aeee6c699",
+      "download_url": "https://ndownloader.figshare.com/files/26095625"
+    },
+    {
+      "id": 26095628,
+      "name": "s09_IMU_SSVEP_1.6.mat",
+      "size": 15108496,
+      "computed_md5": "da82721bd356a6e0b109475618e41ea6",
+      "download_url": "https://ndownloader.figshare.com/files/26095628"
+    },
+    {
+      "id": 26095631,
+      "name": "s09_IMU_SSVEP_2.0.mat",
+      "size": 15385061,
+      "computed_md5": "7a12742352e560fe3ce8eecb1487e02b",
+      "download_url": "https://ndownloader.figshare.com/files/26095631"
+    },
+    {
+      "id": 26095595,
+      "name": "s09_ear_SSVEP_0.0.mat",
+      "size": 6598433,
+      "computed_md5": "205a2c79e4d54365f97dcb8bfd011c6f",
+      "download_url": "https://ndownloader.figshare.com/files/26095595"
+    },
+    {
+      "id": 26095598,
+      "name": "s09_ear_SSVEP_0.8.mat",
+      "size": 6761129,
+      "computed_md5": "4b36b10bc0c8b057989e301f756cf88b",
+      "download_url": "https://ndownloader.figshare.com/files/26095598"
+    },
+    {
+      "id": 26095601,
+      "name": "s09_ear_SSVEP_1.6.mat",
+      "size": 6869451,
+      "computed_md5": "2cb0c2532facc17b1ee8f10ae57e568a",
+      "download_url": "https://ndownloader.figshare.com/files/26095601"
+    },
+    {
+      "id": 26095604,
+      "name": "s09_ear_SSVEP_2.0.mat",
+      "size": 7395393,
+      "computed_md5": "e8e616d05b6c0464bc90591cf5180302",
+      "download_url": "https://ndownloader.figshare.com/files/26095604"
+    },
+    {
+      "id": 26095649,
+      "name": "s09_scalp_SSVEP_0.0.mat",
+      "size": 32171057,
+      "computed_md5": "19c75fe7e6dbe10cb6ab02094d796fa5",
+      "download_url": "https://ndownloader.figshare.com/files/26095649"
+    },
+    {
+      "id": 26095652,
+      "name": "s09_scalp_SSVEP_0.8.mat",
+      "size": 32782341,
+      "computed_md5": "9cbcd4ea05d7b645d7aa10dd1561a213",
+      "download_url": "https://ndownloader.figshare.com/files/26095652"
+    },
+    {
+      "id": 26095655,
+      "name": "s09_scalp_SSVEP_1.6.mat",
+      "size": 32934765,
+      "computed_md5": "fc106a93faf316a9910c438f63f77ce3",
+      "download_url": "https://ndownloader.figshare.com/files/26095655"
+    },
+    {
+      "id": 26095658,
+      "name": "s09_scalp_SSVEP_2.0.mat",
+      "size": 33075540,
+      "computed_md5": "f914bfb7020884846cbcc68dea812464",
+      "download_url": "https://ndownloader.figshare.com/files/26095658"
+    },
+    {
+      "id": 26095703,
+      "name": "s10_IMU_SSVEP_0.0.mat",
+      "size": 10134810,
+      "computed_md5": "51d4871dcfe21bdb2960e323dc763746",
+      "download_url": "https://ndownloader.figshare.com/files/26095703"
+    },
+    {
+      "id": 26095706,
+      "name": "s10_IMU_SSVEP_0.8.mat",
+      "size": 14464496,
+      "computed_md5": "0014e54819679b1dae52367e73278b52",
+      "download_url": "https://ndownloader.figshare.com/files/26095706"
+    },
+    {
+      "id": 26095709,
+      "name": "s10_IMU_SSVEP_1.6.mat",
+      "size": 14999145,
+      "computed_md5": "11979c4855410e6cc8abea62c7494456",
+      "download_url": "https://ndownloader.figshare.com/files/26095709"
+    },
+    {
+      "id": 26095712,
+      "name": "s10_IMU_SSVEP_2.0.mat",
+      "size": 15394632,
+      "computed_md5": "abf07fd8e2b716cee005805f3c42c8de",
+      "download_url": "https://ndownloader.figshare.com/files/26095712"
+    },
+    {
+      "id": 26095676,
+      "name": "s10_ear_SSVEP_0.0.mat",
+      "size": 6797630,
+      "computed_md5": "dc68d8a4bc81d03dbbc10ce72a6afcb3",
+      "download_url": "https://ndownloader.figshare.com/files/26095676"
+    },
+    {
+      "id": 26095679,
+      "name": "s10_ear_SSVEP_0.8.mat",
+      "size": 6666450,
+      "computed_md5": "79e633491547f0f0db4a60104fb26c1b",
+      "download_url": "https://ndownloader.figshare.com/files/26095679"
+    },
+    {
+      "id": 26095682,
+      "name": "s10_ear_SSVEP_1.6.mat",
+      "size": 6801093,
+      "computed_md5": "e3768c26ed885d0249f6fff97ae81410",
+      "download_url": "https://ndownloader.figshare.com/files/26095682"
+    },
+    {
+      "id": 26095685,
+      "name": "s10_ear_SSVEP_2.0.mat",
+      "size": 5011045,
+      "computed_md5": "88085bdc9f9f52b981b75beeef3d0ef0",
+      "download_url": "https://ndownloader.figshare.com/files/26095685"
+    },
+    {
+      "id": 26095733,
+      "name": "s10_scalp_SSVEP_0.0.mat",
+      "size": 32101602,
+      "computed_md5": "d8f76407da6f874c15d441ae3241af28",
+      "download_url": "https://ndownloader.figshare.com/files/26095733"
+    },
+    {
+      "id": 26095736,
+      "name": "s10_scalp_SSVEP_0.8.mat",
+      "size": 31397364,
+      "computed_md5": "e97f0171b2de33b3be9cb3a90481b7b1",
+      "download_url": "https://ndownloader.figshare.com/files/26095736"
+    },
+    {
+      "id": 26095745,
+      "name": "s10_scalp_SSVEP_1.6.mat",
+      "size": 32064358,
+      "computed_md5": "59638991ef15eafa79c0e75b640a106b",
+      "download_url": "https://ndownloader.figshare.com/files/26095745"
+    },
+    {
+      "id": 26095748,
+      "name": "s10_scalp_SSVEP_2.0.mat",
+      "size": 32026892,
+      "computed_md5": "b26791aef0323662c9a80d145c618807",
+      "download_url": "https://ndownloader.figshare.com/files/26095748"
+    },
+    {
+      "id": 26095796,
+      "name": "s11_IMU_SSVEP_0.0.mat",
+      "size": 9894076,
+      "computed_md5": "d531afbb779310871bb885d94c7a8c0b",
+      "download_url": "https://ndownloader.figshare.com/files/26095796"
+    },
+    {
+      "id": 26095799,
+      "name": "s11_IMU_SSVEP_0.8.mat",
+      "size": 14527341,
+      "computed_md5": "b76fd7b8e5eea217b0eb9cf879fea8d3",
+      "download_url": "https://ndownloader.figshare.com/files/26095799"
+    },
+    {
+      "id": 26095802,
+      "name": "s11_IMU_SSVEP_1.6.mat",
+      "size": 14996095,
+      "computed_md5": "b44095e577b0adc40b00717e2fe97c53",
+      "download_url": "https://ndownloader.figshare.com/files/26095802"
+    },
+    {
+      "id": 26095808,
+      "name": "s11_IMU_SSVEP_2.0.mat",
+      "size": 15281659,
+      "computed_md5": "b473ffbe7e09571d02f416a04f0ce41c",
+      "download_url": "https://ndownloader.figshare.com/files/26095808"
+    },
+    {
+      "id": 26095766,
+      "name": "s11_ear_SSVEP_0.0.mat",
+      "size": 6637343,
+      "computed_md5": "558b713d75c5ef33c09d61c129fd9ad9",
+      "download_url": "https://ndownloader.figshare.com/files/26095766"
+    },
+    {
+      "id": 26095769,
+      "name": "s11_ear_SSVEP_0.8.mat",
+      "size": 6752257,
+      "computed_md5": "57a6c7bee4163d36d404d7782806538f",
+      "download_url": "https://ndownloader.figshare.com/files/26095769"
+    },
+    {
+      "id": 26095772,
+      "name": "s11_ear_SSVEP_1.6.mat",
+      "size": 7031324,
+      "computed_md5": "5a8fe615ec2fa40137fbb3843d15fb9d",
+      "download_url": "https://ndownloader.figshare.com/files/26095772"
+    },
+    {
+      "id": 26095775,
+      "name": "s11_ear_SSVEP_2.0.mat",
+      "size": 7471736,
+      "computed_md5": "bebe67000b16fbcaa12a0f3d81701acf",
+      "download_url": "https://ndownloader.figshare.com/files/26095775"
+    },
+    {
+      "id": 26095826,
+      "name": "s11_scalp_SSVEP_0.0.mat",
+      "size": 31273749,
+      "computed_md5": "159c6f176d6c33b77d698672d6f5f044",
+      "download_url": "https://ndownloader.figshare.com/files/26095826"
+    },
+    {
+      "id": 26095832,
+      "name": "s11_scalp_SSVEP_0.8.mat",
+      "size": 31652390,
+      "computed_md5": "add372472e03800209e8d76aec9ab328",
+      "download_url": "https://ndownloader.figshare.com/files/26095832"
+    },
+    {
+      "id": 26095835,
+      "name": "s11_scalp_SSVEP_1.6.mat",
+      "size": 30006046,
+      "computed_md5": "f68adf1dd10913e9f7903c449193b1f5",
+      "download_url": "https://ndownloader.figshare.com/files/26095835"
+    },
+    {
+      "id": 26095838,
+      "name": "s11_scalp_SSVEP_2.0.mat",
+      "size": 30739328,
+      "computed_md5": "fb0f471ecca4639ed2f60a2938f02b9f",
+      "download_url": "https://ndownloader.figshare.com/files/26095838"
+    },
+    {
+      "id": 26095883,
+      "name": "s12_IMU_SSVEP_0.0.mat",
+      "size": 10890699,
+      "computed_md5": "15b5b27139e5be4af184b2e487793464",
+      "download_url": "https://ndownloader.figshare.com/files/26095883"
+    },
+    {
+      "id": 26095886,
+      "name": "s12_IMU_SSVEP_0.8.mat",
+      "size": 14827173,
+      "computed_md5": "37b1e558359e7a5d1d5482fef5c782a6",
+      "download_url": "https://ndownloader.figshare.com/files/26095886"
+    },
+    {
+      "id": 26095889,
+      "name": "s12_IMU_SSVEP_1.6.mat",
+      "size": 15055980,
+      "computed_md5": "3ab7426d621fabc04c1084908ba5b5e1",
+      "download_url": "https://ndownloader.figshare.com/files/26095889"
+    },
+    {
+      "id": 26095892,
+      "name": "s12_IMU_SSVEP_2.0.mat",
+      "size": 15300098,
+      "computed_md5": "30bfc0f1212218c13ef7c8c9eafc867c",
+      "download_url": "https://ndownloader.figshare.com/files/26095892"
+    },
+    {
+      "id": 26095856,
+      "name": "s12_ear_SSVEP_0.0.mat",
+      "size": 6499574,
+      "computed_md5": "4c12d630da0c8efefb3ffcf519c88683",
+      "download_url": "https://ndownloader.figshare.com/files/26095856"
+    },
+    {
+      "id": 26095859,
+      "name": "s12_ear_SSVEP_0.8.mat",
+      "size": 6859286,
+      "computed_md5": "c182f258c38631f22da75322a3a78a1b",
+      "download_url": "https://ndownloader.figshare.com/files/26095859"
+    },
+    {
+      "id": 26095862,
+      "name": "s12_ear_SSVEP_1.6.mat",
+      "size": 7275558,
+      "computed_md5": "e215e7ce5433fe2b7f9c3f92ab1d9c37",
+      "download_url": "https://ndownloader.figshare.com/files/26095862"
+    },
+    {
+      "id": 26095865,
+      "name": "s12_ear_SSVEP_2.0.mat",
+      "size": 7377957,
+      "computed_md5": "640d30fe258928aec4da6e51f90ea36e",
+      "download_url": "https://ndownloader.figshare.com/files/26095865"
+    },
+    {
+      "id": 26095919,
+      "name": "s12_scalp_SSVEP_0.0.mat",
+      "size": 31048426,
+      "computed_md5": "805dc043c0afdcb91c9748126ea57af5",
+      "download_url": "https://ndownloader.figshare.com/files/26095919"
+    },
+    {
+      "id": 26095922,
+      "name": "s12_scalp_SSVEP_0.8.mat",
+      "size": 32699975,
+      "computed_md5": "a9d60ab7a3a75ebe30bbef9ebe49f295",
+      "download_url": "https://ndownloader.figshare.com/files/26095922"
+    },
+    {
+      "id": 26095925,
+      "name": "s12_scalp_SSVEP_1.6.mat",
+      "size": 32299024,
+      "computed_md5": "e128bb21e9c364e249d335c1ee61cce0",
+      "download_url": "https://ndownloader.figshare.com/files/26095925"
+    },
+    {
+      "id": 26095928,
+      "name": "s12_scalp_SSVEP_2.0.mat",
+      "size": 31379292,
+      "computed_md5": "e7c0283dd6e6652cbed5c1c797b2e98b",
+      "download_url": "https://ndownloader.figshare.com/files/26095928"
+    },
+    {
+      "id": 26095973,
+      "name": "s13_IMU_SSVEP_0.0.mat",
+      "size": 10686434,
+      "computed_md5": "2fa6645b732878714e6ff075a2f43bcd",
+      "download_url": "https://ndownloader.figshare.com/files/26095973"
+    },
+    {
+      "id": 26095976,
+      "name": "s13_IMU_SSVEP_0.8.mat",
+      "size": 14596453,
+      "computed_md5": "6f7ec834ff74b026b151528b0f46bb62",
+      "download_url": "https://ndownloader.figshare.com/files/26095976"
+    },
+    {
+      "id": 26095979,
+      "name": "s13_IMU_SSVEP_1.6.mat",
+      "size": 14978349,
+      "computed_md5": "419d96a7531743f3056371449728d571",
+      "download_url": "https://ndownloader.figshare.com/files/26095979"
+    },
+    {
+      "id": 26095949,
+      "name": "s13_ear_SSVEP_0.0.mat",
+      "size": 6666907,
+      "computed_md5": "a82baa3819c0e35043697c4b08279ade",
+      "download_url": "https://ndownloader.figshare.com/files/26095949"
+    },
+    {
+      "id": 26095952,
+      "name": "s13_ear_SSVEP_0.8.mat",
+      "size": 6832375,
+      "computed_md5": "a6d4371058208e716393505090d6426f",
+      "download_url": "https://ndownloader.figshare.com/files/26095952"
+    },
+    {
+      "id": 26095955,
+      "name": "s13_ear_SSVEP_1.6.mat",
+      "size": 6850023,
+      "computed_md5": "e4d111207801d66451f9995be0ce3e88",
+      "download_url": "https://ndownloader.figshare.com/files/26095955"
+    },
+    {
+      "id": 26095997,
+      "name": "s13_scalp_SSVEP_0.0.mat",
+      "size": 31676420,
+      "computed_md5": "d5612b5c880f05b224296dbfc2218646",
+      "download_url": "https://ndownloader.figshare.com/files/26095997"
+    },
+    {
+      "id": 26096000,
+      "name": "s13_scalp_SSVEP_0.8.mat",
+      "size": 32131245,
+      "computed_md5": "7c7d3b7d620f7e1c6940815947dddc11",
+      "download_url": "https://ndownloader.figshare.com/files/26096000"
+    },
+    {
+      "id": 26096003,
+      "name": "s13_scalp_SSVEP_1.6.mat",
+      "size": 32475112,
+      "computed_md5": "73546659dc7cbba31f16b7c68607244c",
+      "download_url": "https://ndownloader.figshare.com/files/26096003"
+    },
+    {
+      "id": 26096042,
+      "name": "s14_IMU_SSVEP_0.0.mat",
+      "size": 10440825,
+      "computed_md5": "54bbdc0be9e05039b1f09df6c1068961",
+      "download_url": "https://ndownloader.figshare.com/files/26096042"
+    },
+    {
+      "id": 26096045,
+      "name": "s14_IMU_SSVEP_0.8.mat",
+      "size": 14910335,
+      "computed_md5": "c9de9a88e0790b1f764a4c3419063c85",
+      "download_url": "https://ndownloader.figshare.com/files/26096045"
+    },
+    {
+      "id": 26096048,
+      "name": "s14_IMU_SSVEP_1.6.mat",
+      "size": 15141710,
+      "computed_md5": "6f2addc1cab34e845866a67fa28cb0ba",
+      "download_url": "https://ndownloader.figshare.com/files/26096048"
+    },
+    {
+      "id": 26096054,
+      "name": "s14_IMU_SSVEP_2.0.mat",
+      "size": 15853961,
+      "computed_md5": "96068bbec3603419f97e5508931a492f",
+      "download_url": "https://ndownloader.figshare.com/files/26096054"
+    },
+    {
+      "id": 26096018,
+      "name": "s14_ear_SSVEP_0.0.mat",
+      "size": 6877273,
+      "computed_md5": "26bc444c925c7fe0cd9d4f60b07527dc",
+      "download_url": "https://ndownloader.figshare.com/files/26096018"
+    },
+    {
+      "id": 26096021,
+      "name": "s14_ear_SSVEP_0.8.mat",
+      "size": 6909251,
+      "computed_md5": "8e98aac016e37538040009eb4c4367aa",
+      "download_url": "https://ndownloader.figshare.com/files/26096021"
+    },
+    {
+      "id": 26096024,
+      "name": "s14_ear_SSVEP_1.6.mat",
+      "size": 7118799,
+      "computed_md5": "bf0284c25f6c9e884d40c9f89fe92046",
+      "download_url": "https://ndownloader.figshare.com/files/26096024"
+    },
+    {
+      "id": 26096027,
+      "name": "s14_ear_SSVEP_2.0.mat",
+      "size": 7736635,
+      "computed_md5": "db416272fbd85f4c7493eb197709c6e7",
+      "download_url": "https://ndownloader.figshare.com/files/26096027"
+    },
+    {
+      "id": 26096069,
+      "name": "s14_scalp_SSVEP_0.0.mat",
+      "size": 31641980,
+      "computed_md5": "54c75250392f6d47c08fabd493229fa0",
+      "download_url": "https://ndownloader.figshare.com/files/26096069"
+    },
+    {
+      "id": 26096072,
+      "name": "s14_scalp_SSVEP_0.8.mat",
+      "size": 30807743,
+      "computed_md5": "8b9745955309b7910b7ea10f275a158d",
+      "download_url": "https://ndownloader.figshare.com/files/26096072"
+    },
+    {
+      "id": 26096075,
+      "name": "s14_scalp_SSVEP_1.6.mat",
+      "size": 30848922,
+      "computed_md5": "38ae895d6cbdea0115550a284ceecd06",
+      "download_url": "https://ndownloader.figshare.com/files/26096075"
+    },
+    {
+      "id": 26096078,
+      "name": "s14_scalp_SSVEP_2.0.mat",
+      "size": 32790402,
+      "computed_md5": "5ce759e3bea9bbe1f4787d695f611d9d",
+      "download_url": "https://ndownloader.figshare.com/files/26096078"
+    },
+    {
+      "id": 26096111,
+      "name": "s15_IMU_SSVEP_0.0.mat",
+      "size": 8893178,
+      "computed_md5": "1f1301ec65637e5c11f2631dc1dc5916",
+      "download_url": "https://ndownloader.figshare.com/files/26096111"
+    },
+    {
+      "id": 26096117,
+      "name": "s15_IMU_SSVEP_0.8.mat",
+      "size": 14785725,
+      "computed_md5": "fbaab34e6347720c8f7b1a8d2fb9c6d6",
+      "download_url": "https://ndownloader.figshare.com/files/26096117"
+    },
+    {
+      "id": 26096120,
+      "name": "s15_IMU_SSVEP_1.6.mat",
+      "size": 15075133,
+      "computed_md5": "ba77a76303acf5e350b1efff660b8b28",
+      "download_url": "https://ndownloader.figshare.com/files/26096120"
+    },
+    {
+      "id": 26096093,
+      "name": "s15_ear_SSVEP_0.0.mat",
+      "size": 6593887,
+      "computed_md5": "eefcc5a4e10861db314ad5b23633beca",
+      "download_url": "https://ndownloader.figshare.com/files/26096093"
+    },
+    {
+      "id": 26096096,
+      "name": "s15_ear_SSVEP_0.8.mat",
+      "size": 6914254,
+      "computed_md5": "2dfc31b5b22208905b3f429cf00af881",
+      "download_url": "https://ndownloader.figshare.com/files/26096096"
+    },
+    {
+      "id": 26096099,
+      "name": "s15_ear_SSVEP_1.6.mat",
+      "size": 7200707,
+      "computed_md5": "fe17e874ed5f40f93657c0ebd8ad1711",
+      "download_url": "https://ndownloader.figshare.com/files/26096099"
+    },
+    {
+      "id": 26096135,
+      "name": "s15_scalp_SSVEP_0.0.mat",
+      "size": 30749722,
+      "computed_md5": "e0f729fa1daf244134de717d59d05ee0",
+      "download_url": "https://ndownloader.figshare.com/files/26096135"
+    },
+    {
+      "id": 26096138,
+      "name": "s15_scalp_SSVEP_0.8.mat",
+      "size": 31370269,
+      "computed_md5": "9960a7585b27e3c2bddfce342864f111",
+      "download_url": "https://ndownloader.figshare.com/files/26096138"
+    },
+    {
+      "id": 26096147,
+      "name": "s15_scalp_SSVEP_1.6.mat",
+      "size": 31586389,
+      "computed_md5": "aec5750840ac69eeba20dfab0c477d58",
+      "download_url": "https://ndownloader.figshare.com/files/26096147"
+    },
+    {
+      "id": 26096210,
+      "name": "s16_IMU_SSVEP_0.0.mat",
+      "size": 11104542,
+      "computed_md5": "a4b37004e97437a44438c80413e1462e",
+      "download_url": "https://ndownloader.figshare.com/files/26096210"
+    },
+    {
+      "id": 26096216,
+      "name": "s16_IMU_SSVEP_0.8.mat",
+      "size": 16116457,
+      "computed_md5": "d88f60c8daea9cf96c33e9c2aa2a4d0b",
+      "download_url": "https://ndownloader.figshare.com/files/26096216"
+    },
+    {
+      "id": 26096222,
+      "name": "s16_IMU_SSVEP_1.6.mat",
+      "size": 17369387,
+      "computed_md5": "ab1f2ac4fc8d4431991e8b7ff3b1d879",
+      "download_url": "https://ndownloader.figshare.com/files/26096222"
+    },
+    {
+      "id": 26096174,
+      "name": "s16_ear_SSVEP_0.0.mat",
+      "size": 6699578,
+      "computed_md5": "708ac4e351a35c175dc1abc548e53b20",
+      "download_url": "https://ndownloader.figshare.com/files/26096174"
+    },
+    {
+      "id": 26096177,
+      "name": "s16_ear_SSVEP_0.8.mat",
+      "size": 7256722,
+      "computed_md5": "940b3e6d109af967e39fcb0e9ee692bf",
+      "download_url": "https://ndownloader.figshare.com/files/26096177"
+    },
+    {
+      "id": 26096183,
+      "name": "s16_ear_SSVEP_1.6.mat",
+      "size": 7994594,
+      "computed_md5": "83cc041b7ec6e3cd039f52bce31cd3fd",
+      "download_url": "https://ndownloader.figshare.com/files/26096183"
+    },
+    {
+      "id": 26096273,
+      "name": "s16_scalp_SSVEP_0.0.mat",
+      "size": 33005664,
+      "computed_md5": "6ae055a9226c94a5640ffd2ebe4108ca",
+      "download_url": "https://ndownloader.figshare.com/files/26096273"
+    },
+    {
+      "id": 26096276,
+      "name": "s16_scalp_SSVEP_0.8.mat",
+      "size": 34950695,
+      "computed_md5": "f37007ad038ea73db93e9b3461216726",
+      "download_url": "https://ndownloader.figshare.com/files/26096276"
+    },
+    {
+      "id": 26096279,
+      "name": "s16_scalp_SSVEP_1.6.mat",
+      "size": 36943435,
+      "computed_md5": "cb0e833f1b36d975bd122c14add6c230",
+      "download_url": "https://ndownloader.figshare.com/files/26096279"
+    },
+    {
+      "id": 26096324,
+      "name": "s17_IMU_SSVEP_0.0.mat",
+      "size": 10101049,
+      "computed_md5": "28ed4f40ffed5063350d0220bcf49099",
+      "download_url": "https://ndownloader.figshare.com/files/26096324"
+    },
+    {
+      "id": 26096327,
+      "name": "s17_IMU_SSVEP_0.8.mat",
+      "size": 14645513,
+      "computed_md5": "cd280dab95f31d4128bb24af3ebaa72a",
+      "download_url": "https://ndownloader.figshare.com/files/26096327"
+    },
+    {
+      "id": 26096330,
+      "name": "s17_IMU_SSVEP_1.6.mat",
+      "size": 15113808,
+      "computed_md5": "4c61fc5c0519c6a87369f4110afb66b3",
+      "download_url": "https://ndownloader.figshare.com/files/26096330"
+    },
+    {
+      "id": 26096303,
+      "name": "s17_ear_SSVEP_0.0.mat",
+      "size": 6889174,
+      "computed_md5": "7565d206d106a128eaf1a2f21d0aee4c",
+      "download_url": "https://ndownloader.figshare.com/files/26096303"
+    },
+    {
+      "id": 26096306,
+      "name": "s17_ear_SSVEP_0.8.mat",
+      "size": 6582568,
+      "computed_md5": "c40d0f524d637cc45c6301588159acc9",
+      "download_url": "https://ndownloader.figshare.com/files/26096306"
+    },
+    {
+      "id": 26096309,
+      "name": "s17_ear_SSVEP_1.6.mat",
+      "size": 6989755,
+      "computed_md5": "2e990ff66152bc2a9b05ec8b58add1f7",
+      "download_url": "https://ndownloader.figshare.com/files/26096309"
+    },
+    {
+      "id": 26096399,
+      "name": "s17_scalp_SSVEP_0.0.mat",
+      "size": 33820457,
+      "computed_md5": "28a0d1529025ced3bc29ca35ea50d266",
+      "download_url": "https://ndownloader.figshare.com/files/26096399"
+    },
+    {
+      "id": 26096414,
+      "name": "s17_scalp_SSVEP_0.8.mat",
+      "size": 32346135,
+      "computed_md5": "a407214f8b5a0bf58d3c4dd724368c44",
+      "download_url": "https://ndownloader.figshare.com/files/26096414"
+    },
+    {
+      "id": 26096417,
+      "name": "s17_scalp_SSVEP_1.6.mat",
+      "size": 32666882,
+      "computed_md5": "23b3c2c64d000ccef2e095b76d6b8640",
+      "download_url": "https://ndownloader.figshare.com/files/26096417"
+    }
+  ],
+  "subject_bundles": [
+    {
+      "subject": "s01",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26094953,
+        26094980,
+        26094956,
+        26094983,
+        26094959,
+        26094986
+      ],
+      "bytes": 143502731
+    },
+    {
+      "subject": "s02",
+      "complete": false,
+      "missing": [
+        "s02_IMU_SSVEP_0.8.mat"
+      ],
+      "duplicates": [],
+      "file_ids": [
+        26095034,
+        26095058,
+        26095061,
+        26095037,
+        26095070
+      ],
+      "bytes": 120797982
+    },
+    {
+      "subject": "s03",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095121,
+        26095148,
+        26095124,
+        26095151,
+        26095127,
+        26095154
+      ],
+      "bytes": 138212647
+    },
+    {
+      "subject": "s04",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095202,
+        26095229,
+        26095205,
+        26095232,
+        26095208,
+        26095235
+      ],
+      "bytes": 139583539
+    },
+    {
+      "subject": "s05",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095283,
+        26095313,
+        26095286,
+        26095316,
+        26095289,
+        26095319
+      ],
+      "bytes": 133721224
+    },
+    {
+      "subject": "s06",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095367,
+        26095397,
+        26095370,
+        26095400,
+        26095376,
+        26095403
+      ],
+      "bytes": 134977093
+    },
+    {
+      "subject": "s07",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095451,
+        26095478,
+        26095454,
+        26095481,
+        26095457,
+        26095484
+      ],
+      "bytes": 146357153
+    },
+    {
+      "subject": "s08",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095532,
+        26095565,
+        26095535,
+        26095568,
+        26095541,
+        26095574
+      ],
+      "bytes": 133105321
+    },
+    {
+      "subject": "s09",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095622,
+        26095649,
+        26095625,
+        26095652,
+        26095628,
+        26095655
+      ],
+      "bytes": 139672976
+    },
+    {
+      "subject": "s10",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095703,
+        26095733,
+        26095706,
+        26095736,
+        26095709,
+        26095745
+      ],
+      "bytes": 135161775
+    },
+    {
+      "subject": "s11",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095796,
+        26095826,
+        26095799,
+        26095832,
+        26095802,
+        26095835
+      ],
+      "bytes": 132349697
+    },
+    {
+      "subject": "s12",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095883,
+        26095919,
+        26095886,
+        26095922,
+        26095889,
+        26095925
+      ],
+      "bytes": 136821277
+    },
+    {
+      "subject": "s13",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26095973,
+        26095997,
+        26095976,
+        26096000,
+        26095979,
+        26096003
+      ],
+      "bytes": 136544013
+    },
+    {
+      "subject": "s14",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26096042,
+        26096069,
+        26096045,
+        26096072,
+        26096048,
+        26096075
+      ],
+      "bytes": 133791515
+    },
+    {
+      "subject": "s15",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26096111,
+        26096135,
+        26096117,
+        26096138,
+        26096120,
+        26096147
+      ],
+      "bytes": 132460416
+    },
+    {
+      "subject": "s16",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26096210,
+        26096273,
+        26096216,
+        26096276,
+        26096222,
+        26096279
+      ],
+      "bytes": 149490180
+    },
+    {
+      "subject": "s17",
+      "complete": true,
+      "missing": [],
+      "duplicates": [],
+      "file_ids": [
+        26096324,
+        26096399,
+        26096327,
+        26096414,
+        26096330,
+        26096417
+      ],
+      "bytes": 138693844
+    }
+  ],
+  "complete_subjects": [
+    "s01",
+    "s03",
+    "s04",
+    "s05",
+    "s06",
+    "s07",
+    "s08",
+    "s09",
+    "s10",
+    "s11",
+    "s12",
+    "s13",
+    "s14",
+    "s15",
+    "s16",
+    "s17"
+  ],
+  "complete_cohort_bytes": 2204445401,
+  "raw_downloads": 0,
+  "seconds": 2.11305
+}
