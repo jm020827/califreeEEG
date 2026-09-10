@@ -30,6 +30,9 @@ not every possible use of metadata.
   Butterworth 4–40 Hz bandpass (SciPy SOS, zero state reset per trial), retain [0.5s,1.5s),
   then time-center each channel. The first second is filter warm-up. No resampling,
   full-run preprocessing, query-derived normalization, rejection, or artifact tuning.
+  This prohibits query-based updates of learned transformations/standardizers. The
+  descriptive CCA baseline may compute label-free covariance/scale within its single
+  current query; no cross-query adaptation is allowed.
   Here `butter(4, bandpass)` means a fourth-order prototype, eighth-order bandpass
   transfer function (four SOS sections), not a four-pole bandpass.
 - M uses only HgyroX/Y/Z at 128 Hz during each selected support [0.5s,1.5s).
@@ -75,7 +78,9 @@ not every possible use of metadata.
 
 Sort the eligible IDs, assign outer fold by position modulo 3. Within each outer
 source list, sorted position modulo 2 defines inner validation folds. Speeds always
-travel with their subject. No test features determine standardization, tuning or donors.
+travel with their subject. No test features determine standardization or tuning.
+No test data fit the donor pool or distance rule; applying that fixed matcher may use
+the recipient's paid-support prefix/ready common metadata, never test M or query labels.
 
 For each training split, k and λ in {0.01,0.1,1}, train Q once. Q is a zero-initialized
 linear map from standardized Q54+common5 to nine prior logits. Prior diagonal is
@@ -97,6 +102,9 @@ weight_decay=.01, gradient norm clip=1. Loss is CE(10×projection scores), balan
 within run by true query class, then equally across runs (three per source participant).
 Training query labels are allowed supervised source data. Validation/test query labels
 are evaluation only. No early stopping, restart, extra seeds or epoch extension.
+For a source-only M-use diagnostic, freeze trained QM and replace only its two M inputs
+with the already specified source-donor values, keeping Q/common fixed; record prior
+and class-score changes. This is not another fit or an outer-test selection rule.
 
 SHAM: for each recipient run use a nonself donor from the current source-training
 participants with the same speed and k. Minimize |prefix difference| +
@@ -105,6 +113,8 @@ Validation/test donors also come only from that training source pool. Train and 
 SHAM on its assigned donor M, not on a post-hoc swapped trained QM. Standardize the
 actually consumed source-training SHAM features. Log donor, distance, and actual M
 change. A zero-change SHAM invalidates the measured-metadata contrast, not an efficacy win.
+This nearest-donor control is not a one-to-one or distribution-preserving permutation;
+report donor concentration and do not interpret it as a conditional significance test.
 
 Inner fits: 3 outer × 2 inner × 3 λ × 4 k × 4 arms = 288. For each outer/k select λ
 by source inner-OOF Q balanced accuracy only; ties prefer larger λ. Refit all four arms
@@ -139,7 +149,11 @@ Retain for independent validation only if all hold:
 4. k3/5 mean QM−Q ≥−1 pp; at most three of 16 participants lose >5 pp at low k.
 5. Actual consumed SHAM M changes and learned residual actuation are nonzero. If
    zero-calibration CCA is already as accurate as the QM chosen policy, do not claim
-   this workload needs metadata-assisted calibration; retain at most a mechanistic signal.
+  this workload needs metadata-assisted calibration; retain at most a mechanistic signal.
+
+The direct policy savings comparator is learned Q. If identity-R is at least as accurate
+at the same k, do not generalize a Q-policy gain to a benefit over metadata-free methods
+in general; show that baseline alongside the conditional contrast.
 
 If accuracy improves without policy savings, record that distinction and close the
 calibration-reduction claim for this candidate. No favorable subgroup/offset/λ rescue.

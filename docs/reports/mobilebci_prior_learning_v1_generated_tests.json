@@ -1,0 +1,16 @@
+{
+  "schema": "cfeg.mobilebci-prior-learning-generated-tests.v1",
+  "calls_used": 2,
+  "calls_budget": 3,
+  "calls": [
+    {"tests": 9, "failures": 0, "errors": 0, "body_seconds": 0.331},
+    {"tests": 11, "failures": 0, "errors": 0, "body_seconds": 0.644}
+  ],
+  "human_fits": 0,
+  "human_outcomes": 0,
+  "coverage": ["batched scores equal verified per-trial primitive", "batched gradient check", "class-balanced CE", "frozen Q", "source-only scaler", "nonself same-condition source donors", "label-free CCA scale invariance", "unequal inner fold OOF weighting", "ridge tie rule", "unattained source policy", "SHAM input independent of target M/query labels", "four-arm generated 100-step pipeline", "M-only source intervention logging", "policy cost accounting", "same-budget identity comparator", "summary JSON serialization"],
+  "driver_sha256": "460bd85aa1f29a6e6104d508d1eb82311b3c2ef16dcf052c8db9d90e0cf99477",
+  "learner_module_sha256": "f09a24e6e87bf39e793a247968f3c7bebed5584f869e2db8e80e24048c15c08d",
+  "test_sha256": "552b39222dc92b9b515df03acde00a58ff2dfd49276db692448f9bf12bd5617e",
+  "interpretation": "Generated implementation verification and independent static split/math reviews, not a human metadata benefit result."
+}

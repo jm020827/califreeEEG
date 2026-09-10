@@ -1,0 +1,18 @@
+{
+  "schema": "cfeg.mobilebci-prior-efficacy-config.v1",
+  "contract": "docs/mobilebci_head_motion_efficacy_v1_contract.md",
+  "cache_path": "/home/whwovy/eeg-data/mobilebci-features-v1-xm26hN/features.npz",
+  "cache_sha256": "6e93b4b1a16d69c64938cee283e79cfbbc3f8683ec35ec732d71fb2e14b99dfb",
+  "extraction_report_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_feature_extraction_v1_observation.json",
+  "extraction_report_sha256": "f72f96ace63a1b006f1e9640fa9eeaf037782c577033d9961b74e5b4d84b1341",
+  "driver_sha256": "460bd85aa1f29a6e6104d508d1eb82311b3c2ef16dcf052c8db9d90e0cf99477",
+  "learner_module_sha256": "f09a24e6e87bf39e793a247968f3c7bebed5584f869e2db8e80e24048c15c08d",
+  "report_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_prior_efficacy_v1_observation.json",
+  "journal_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_prior_efficacy_v1_fits.jsonl",
+  "choices_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_prior_efficacy_v1_source_choices.json",
+  "models_path": "/home/whwovy/eeg-data/mobilebci-features-v1-xm26hN/trained_heads.json",
+  "maximum_fits": 336,
+  "maximum_optimizer_steps": 33600,
+  "maximum_compute_seconds": 3600,
+  "no_human_retry": true
+}
