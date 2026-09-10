@@ -1,0 +1,39 @@
+{
+  "schema": "cfeg.mobilebci-selected-metadata.v1",
+  "date": "2026-09-10",
+  "basis": "Both exact files passed normal GET,size/MD5 verification and top-level schema inspection before this follow-up was selected.",
+  "authority": "Continue same public pair eligibility check; exact observed small metadata variables only, no raw/preprocess waveform or event values.",
+  "files": [
+    {
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat",
+      "bytes": 10489800,
+      "sha256": "8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456"
+    },
+    {
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat",
+      "bytes": 32937882,
+      "sha256": "b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7"
+    }
+  ],
+  "variables": [
+    "raw_fs",
+    "raw_clab",
+    "preprocess_fs",
+    "preprocess_clab"
+  ],
+  "limits": {
+    "loadmat_calls": 2,
+    "reads_per_file": 1,
+    "labels_per_variable": 64,
+    "label_utf8_bytes": 128,
+    "total_label_bytes": 8192,
+    "total_seconds": 30,
+    "waveform_numeric_decodes": 0,
+    "event_value_decodes": 0,
+    "network_requests": 0,
+    "fits": 0,
+    "outcomes": 0,
+    "held60": 0
+  },
+  "stop": "Do not infer temporal alignment or unobserved units from labels/rate. Do not read event/t/large arrays or use interpolation/artifact selections. Save exact result and choose concrete next scope only if needed."
+}
