@@ -1,0 +1,12 @@
+{
+  "schema": "cfeg.choi-export-evidence-followup.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "b4adf0b",
+  "authority": "Active goal 계속 연구: bounded read-only public acquisition/export evidence followup. No human waveform experiment or external outreach.",
+  "question": "Do official dataset records, linked author code or instrument documentation resolve the exact Gyro/Temperature mapping, marker phase or 1000-to-200-Hz export dependency?",
+  "budget": {"targeted_web_queries_max": 3, "document_get_targets_max": 10, "failed_target_followups_max": 4, "per_curl_response_bytes_max": 2097152, "new_output_bytes_max": 33554432, "new_scholarly_searches": 0, "pdf_downloads": 0, "human_waveform_or_marker_reads": 0, "human_fits": 0, "outcome_reveals": 0, "dataset_downloads": 0, "new_worktrees": 0, "external_requests_sent": 0, "paid_resources": 0},
+  "allocation": {"root": "two targeted web queries, six official document/code/inventory targets, two failed-target followups; sole repo/DB writer", "sensor_scout": "one vendor-specific web query, four official article/vendor targets, two failed-target followups; read-only", "scope_reviewer": "local read-only check of original prequery objective versus optional stricter presupport mechanism; no network/data"},
+  "counting": "Targets are explicit logical URLs selected by root/scout, not internal search-engine HTTP requests or redirects. Followups must stay on same failed target/equivalent official source. Metadata listings are allowed; archive/MAT/CSV participant values are not.",
+  "decision_rules": ["Promote only source-matched facts, not similar hardware specifications", "Absence of a file in a scoped listing does not prove no code exists anywhere", "Unknown timing remains unknown; do not infer a zero-lag export from nominal synchronization", "Distinguish original research requirement from stronger optional mechanism assumptions", "At budget/coverage stop, preserve evidence and state exact remaining questions; no automatic efficacy run or outreach"],
+  "preserve": ["all failed/negative prior studies", "prior array-size budget deviation", "old finite-loop closeout", "current broad goal active", "Choi DEFER unless direct evidence changes it", "held60 and V2 terminal deny"]
+}
