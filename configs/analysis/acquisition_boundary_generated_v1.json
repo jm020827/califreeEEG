@@ -1,0 +1,13 @@
+{
+  "schema": "cfeg.acquisition-boundary-generated.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "915cc509fe52449489037276d0daf4d86de398b5",
+  "authority": "Active user goal: 계속 연구. Implement the prior report's generated-only temporal/pairing/collection-cost next step; not a new Choi human execution scope.",
+  "question": "Can the proposed pre-support context path reject unknown timing and unauthorized dependencies, remain invariant to future/forbidden samples, and account for actual collection burden rather than selected labels?",
+  "candidate_scope": "One engineering contract, not an efficacy candidate. Human motion-learning feasibility remains deferred.",
+  "budget": {"new_worktrees_max": 1, "checkout_reserve_mib": 64, "test_output_reserve_mib": 256, "total_new_output_reserve_mib": 384, "test_invocations_max": 10, "aggregate_test_wall_seconds_max": 1800, "per_test_invocation_seconds_max": 180, "generated_scenarios_max": 32, "max_array_elements_per_scenario": 200000, "human_waveform_reads": 0, "human_fits": 0, "outcome_reveals": 0, "new_searches": 0, "external_requests": 0, "paid_resources": 0, "gpu": 0},
+  "success": ["Exact half-open integer time and run pairing checks", "Unknown export or marker semantics fail before data fetch", "Declared upstream context and causal FIR dependency wholly authorized and before cutoff", "Future and forbidden-gap perturbations do not change allowed features", "Deliberately leaky reference fails perturbation check", "Cross-run/invalid/insufficient baseline inputs rejected", "Balanced selected labels distinguished from chronological collected labels/trials/time", "Missing setup time remains unknown and unattained budgets remain missing", "Independent read-only review and integrated tests"],
+  "stop": "Stop if test-call/time/output budget is reached; preserve failed tests and report unfinished work. Repairs within these fixed engineering invariants allowed; no human efficacy or sensor-gate promotion on generated PASS.",
+  "ownership": {"root": ["shared RunKey/SampleSpan contract", "temporal module/tests", "integration tests and report", "main and research DB"], "cost_writer": ["isolated worktree cost module and its tests only"], "reviewer": "shared repository read-only"},
+  "preserve": ["Choi feasibility DEFER", "old finite-loop closeout", "all old negative and failure evidence", "held60", "V2 terminal deny", "existing 40 worktrees and 8 untracked outputs"]
+}
