@@ -1,6 +1,8 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 2026-09-11 **공개 paired 코호트16명·48run·96파일(2.20GB) 확보 완료**: [검증 결과·다음 실행](docs/mobilebci_cohort_acquisition_v1_results.md). 신규94개를한번씩받아크기/MD5/SHA를확인했고기존2개를재사용했다. 샘플시간파서수리성공, one-shot학습기기본연산9인공testsPASS. 다음은전체run의metadata확인·raw support추출·Q/QM/Q2/SHAM학습연결이다. 실제효능·보정량감소는아직미평가이며아래는시점별이력이다.
+> 2026-09-11 **실제 336회 metadata 학습·평가 완료, 현재 후보 종료**: [결과와 후속 판단](docs/mobilebci_prior_efficacy_v1_results.md). 16명에서 Q 66.52% / QM 66.56%, Q2·SHAM 미우위, 보정 trial 절감 0%. M 자체가 prior/점수를 바꾸는 경로는 확인했지만 실용 이득은 없었다. 독립 검산 PASS, 336/336 예산 종료. 기존 부정 결과·Choi 보류·held60 보호는 유지하며 아래는 시점별 이력이다.
+
+> 2026-09-11 공개 paired 코호트16명·48run·96파일(2.20GB) 확보 완료: [당시 검증 결과](docs/mobilebci_cohort_acquisition_v1_results.md). 아래 기록의 미평가·다음 단계는 해당 시점의 상태다.
 
 > 2026-09-11 **공개 MobileBCI EEG–IMU 한 쌍 확보 성공, 시간 파서 수리 필요**: [실제 관측·다음 실행](docs/mobilebci_public_pair_results.md). 두 파일43.4MB의 크기/MD5·머리 gyro 채널을 확인했다. 이어진 event/t 검사는 첫 파일의 미지원 내부 형식에서 중단됐으며 자동 재시도0이다. 시간 불일치나 가설 실패로 해석하지 않는다. 최종 논문과 MAT 배포본의 구간 차이도 발견했다. 다음은 합성 MAT로 파서 수리 후 유한 시간 대응 검증, 새 파형 분석·효능 평가는0이다. 아래는 시점별 이력이다.
 

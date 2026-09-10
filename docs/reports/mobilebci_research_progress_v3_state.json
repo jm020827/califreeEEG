@@ -1,0 +1,23 @@
+{
+  "schema": "cfeg.mobilebci-research-progress.v3",
+  "status": "CLOSED_NEGATIVE_BOUNDED_CANDIDATE_BUDGET_EXHAUSTED",
+  "original_low_calibration_ssvep_objective_preserved": true,
+  "broad_metadata_question": "OPEN_NOT_UNIVERSALLY_REFUTED",
+  "candidate": "Measured support head-gyro summaries to frozen-Q bounded diagonal residual prior",
+  "candidate_budget": {"fits_used": 336, "fits_allowed": 336, "optimizer_steps": 33600, "compute_seconds": 58.407936},
+  "metadata_pass": {"files": 96, "eligible_subjects": 16, "pairs": 48, "seconds": 1.505847},
+  "raw_feature_pass": {"decode_calls": 96, "decoded_numeric_elements": 572718060, "decoded_numeric_bytes": 4581744480, "seconds": 12.348237, "cache_bytes": 2136312},
+  "generated_suite_calls": {"metadata": {"used": 1, "allowed": 3}, "features": {"used": 2, "allowed": 3}, "trainer": {"used": 2, "allowed": 3}},
+  "result_sha256": "1ce1783ea87e01d4529f9c5e563335347b34a3a56ce39d4f5c52d4c40a7e9309",
+  "cache_sha256": "6e93b4b1a16d69c64938cee283e79cfbbc3f8683ec35ec732d71fb2e14b99dfb",
+  "trained_heads_sha256": "634105664ee902cf7a4a8967e88981e7f5bf29524028e08b79521727abb1497d",
+  "low_k_qm_minus_q_pp": 0.046296296296296016,
+  "low_k_qm_minus_q_ci95_pp": [-0.3675491898148158, 0.434027777777778],
+  "calibration_trial_cost_reduction_fraction": 0.0,
+  "m_only_intervention_nonzero_qm_fits": 84,
+  "decision": "TERMINATE_THIS_CANDIDATE_NO_AUTOMATIC_RESCUE_OR_REFIT",
+  "next": "Report and preserve this negative. Require a distinct evidence-backed mechanism and new finite budget before another candidate; use unseen data only for separately planned confirmation of a promising candidate.",
+  "protected": {"held60_opened": false, "external_outreach": false, "paid_resources": false, "choi": "PARKED_BY_USER", "source39": "CLOSED_UNCHANGED"},
+  "full_repository_test_suite_run": false,
+  "scope_note": "Targeted generated tests, actual end-to-end extraction/training, and independent saved-artifact audit passed. This does not mean the scientific metadata-benefit hypothesis succeeded."
+}

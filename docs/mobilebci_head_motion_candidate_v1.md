@@ -1,8 +1,8 @@
 # 새 후보: 머리 움직임으로 one-shot SSVEP 보정 학습 보조
 
-> 최신: [16명 paired 코호트 실제 확보·구현 진척](mobilebci_cohort_acquisition_v1_results.md).
-> 시간파서수리를완료했고96파일2.20GB를확보했다. One-shot기본연산의인공검증도마쳤으며
-> 전체run적격검사·실제metadata prior학습·효능평가는아직이다. 아래기록은각시점의제안/상태다.
+> 최신: [336회 실제 학습·평가 종료 결과](mobilebci_prior_efficacy_v1_results.md).
+> 전체 16명 적격 확인·raw 특징 추출·Q/Q2/QM/SHAM 비교를 완료했다. M은 계산을 바꿨지만
+> 실용 이득·보정량 절감은 없어 현재 후보를 종료했다. 아래는 후보 선정 당시의 제안/상태다.
 
 > 2026-09-11 후속 상태: [공개 pair 확보·시간 검사 결과](mobilebci_public_pair_results.md).
 > 두 파일43.4MB와 채널/rate 검증은 성공했다. Event/t reader는 첫 파일 내부 dtype에서 중단해
