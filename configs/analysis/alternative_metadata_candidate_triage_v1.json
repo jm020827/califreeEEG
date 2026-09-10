@@ -1,0 +1,38 @@
+{
+  "schema": "cfeg.alternative-metadata-candidate-triage.v1",
+  "date": "2026-09-10",
+  "base_commit": "63adad5",
+  "authority": "User: 공개안돼있어서 구하기 힘들면 그냥 놔두고 다른 후보. Retire Choi dependency from critical path; investigate a new public candidate under original low-calibration external-metadata objective. No author outreach.",
+  "max_candidates": 3,
+  "budget": {
+    "search_queries_max": 8,
+    "root_queries_max": 4,
+    "scout_queries_max": 4,
+    "official_document_targets_max": 12,
+    "root_document_targets_max": 7,
+    "scout_document_targets_max": 5,
+    "pdf_downloads": 0,
+    "human_raw_downloads": 0,
+    "human_value_reads": 0,
+    "fits": 0,
+    "outcome_reveals": 0,
+    "new_worktrees": 0,
+    "retained_bytes_max": 33554432,
+    "external_outreach": 0,
+    "paid_resources": 0,
+    "held60": 0
+  },
+  "candidate_axes": [
+    "Public commanded acquisition state, e.g. documented walking speed, known before each run",
+    "Other public physical acquisition metadata with repeated within-person/class variation",
+    "Current-data new mechanism only if non-duplicate and prior negatives are preserved"
+  ],
+  "selection": [
+    "Available public source and clear condition-to-run mapping without private author dependency",
+    "External acquisition M, not labels/EEG quality rebranded, and not confounded one-to-one with class or participant",
+    "Prospective pre-query availability and plausible mechanism beyond matched Q/common information",
+    "Distinct testable candidate acting at k1, with Q/Q2/SHAM and actual calibration-cost follow-up",
+    "Reject private access dead end after one targeted check; do not reopen exhausted experiments"
+  ],
+  "output": "One selected candidate design with explicit unresolved eligibility items, or documented finite shortlist rejection; no efficacy claim from triage."
+}
