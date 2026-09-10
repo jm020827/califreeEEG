@@ -1,0 +1,150 @@
+{
+  "schema": "cfeg.choi-supplement-directory-state.v1",
+  "date_kst": "2026-09-10",
+  "retrieved_at": "2026-09-10T04:57:17Z",
+  "stage_status": "COMPLETE_DIRECTORY_INSPECTION_TWO_DOCUMENT_CANDIDATES",
+  "current_goal": {
+    "objective": "계속 연구",
+    "status": "active",
+    "previous_turn": "PROGRESS: official evidence and prequery scope correction",
+    "this_turn": "PROGRESS: actual publisher directory observation narrows next read to2document-format candidates"
+  },
+  "scientific_efficacy": "NOT_EVALUATED",
+  "retained_output_snapshot": {"full_file_bytes_before_final_note": 8430129, "limit_bytes": 16777216, "scope": "Conservative full sizes including all edited/new named repo/workspace files, whole existing DB and11rendered views; not process-peak or network-packet measurement."},
+  "choi_presupport_candidate": "DEFER_UNCHANGED",
+  "original_finite_loop": "COMPLETE_UNCHANGED",
+  "base_commit": "79317d3200042c3353112e02224f6a5c5c233476",
+  "freeze_commit": "4ac7c48",
+  "reader_commit": "fae610845c22f38885a5a349f1d332bbcb38d17d",
+  "artifacts": [
+    {
+      "path": "configs/analysis/choi_supplement_directory_v1.json",
+      "sha256": "4cad8df83250c4c73ae3d7775f278cae519d54a1044aef070c599d4bed7f1dd4"
+    },
+    {
+      "path": "scripts/analysis/inspect_choi_supplement_directory_v1.py",
+      "sha256": "adea608f620420e283990c77defcd197414e72fd14deb1ca01b16cf5fd7226b4"
+    },
+    {
+      "path": "docs/reports/choi_supplement_directory_v1_observation.json",
+      "sha256": "c707e3cc799881666c93fd952adc8b14bedbc06089a91c132ef58625893e46c7"
+    },
+    {
+      "path": "docs/reports/choi_supplement_directory_v1_selftest.json",
+      "sha256": "6b93016b588ec8ce91858d6975b69c9c04462041da55a324dc2da30f72462b21"
+    },
+    {
+      "path": "docs/reports/choi_aux_context_feasibility_v1_state.json",
+      "sha256": "e66f8dd8c650468d98b1981ce77eb9f109bba1ce706d55474c598e145163680b"
+    },
+    {
+      "path": "docs/reports/metadata_research_loop_closeout_20260910.json",
+      "sha256": "d8a437f852abd66af0450346cd19c2c90a4c3331ed4b0fe54bbfe750f1687a8f"
+    },
+    {
+      "path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+      "sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
+    }
+  ],
+  "observation": {
+    "status": "DIRECTORY_VERIFIED_CONTENT_UNOPENED",
+    "entries": 38,
+    "categories": {
+      "xlsx": 36,
+      "document_or_configuration_candidate": 2
+    },
+    "recognized_code_entries": 0,
+    "archive_metadata_application_bytes": 3943,
+    "total_application_body_bytes": 221806,
+    "elapsed_seconds": 1.344,
+    "archive_etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+    "archive_total_bytes": 10814732
+  },
+  "candidate_identifiers": [
+    {
+      "name_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805",
+      "category": "document_candidate",
+      "compressed_bytes": 757350,
+      "uncompressed_bytes_declared": 817595,
+      "compression_method": 8,
+      "local_header_offset_declared": 1638324,
+      "crc32_declared": "3e9b93ec"
+    },
+    {
+      "name_sha256": "24fe2cd55aff4a7adfeb8bd721118ee4d9f2b4e75d58b5ced2b18e62171f1ee2",
+      "category": "document_candidate",
+      "compressed_bytes": 645869,
+      "uncompressed_bytes_declared": 729188,
+      "compression_method": 8,
+      "local_header_offset_declared": 10164864,
+      "crc32_declared": "0c37ad49"
+    }
+  ],
+  "usage": {
+    "http_requests": 4,
+    "http_max": 4,
+    "retries": 0,
+    "redirects": 0,
+    "network_attempts": 1,
+    "selftest_calls": 3,
+    "final_selftest_cases": 8,
+    "largest_fixture_bytes": 271,
+    "member_content_reads": 0,
+    "local_header_reads": 0,
+    "decompressions": 0,
+    "pdf_downloads": 0,
+    "scholarly_searches": 0,
+    "human_waveform_or_marker_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "new_worktrees": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0,
+    "gpu_runs": 0
+  },
+  "limitations": [
+    "No member content/CRC/full ZIP checksum validation or exact candidate format/filename retained.",
+    "Directory names were hashed; raw directory/comments/extra fields not retained. Byte counts are completed application body reads, not network packet totals.",
+    "Known source-code extensions were absent; no claim that code is absent globally or that no explanatory document exists.",
+    "No sensor/export time support, Q-incremental prediction, actual calibration savings or new scientific outcome verified.",
+    "Self-tests and read-only code review do not prove complete HTTP/ZIP security; this was a narrow successful public metadata request."
+  ],
+  "verification": {
+    "selftest": "3calls x same8cases PASS; do not sum as24independent experiments",
+    "ruff": "PASS",
+    "independent_review": "Read-only agent verified no member reads, range/ETag handling and final timer/projection fixes; no independent network rerun",
+    "whole_repo_pytest": "NOT_RUN"
+  },
+  "preserved": {
+    "worktrees": 41,
+    "preexisting_untracked_directories": 8,
+    "old_negative_results": true,
+    "old_fixture_array_cap_deviation": true,
+    "choi_defer": true,
+    "held60_protection": true,
+    "v2_terminal_deny": true
+  },
+  "scholarly_workspace": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design",
+    "sole_writer": "root",
+    "claim": "claim:57a71e00f90eb95b",
+    "status": "qualified",
+    "new_evidence": 3,
+    "open_gap": "gap:b654467d1d604de0",
+    "render": "complete",
+    "sqlite_quick_check": "ok",
+    "counts": {
+      "papers": 1081,
+      "search_runs": 85,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 60,
+      "evidence": 154,
+      "gaps": 39,
+      "analogies": 5,
+      "deep_reads": 36
+    }
+  },
+  "next_action": "Separate bounded resolution of only the two document candidate identities/formats, then source-grounded acquisition/export reading if relevant. Do not open36XLSX members, blindly execute source, infer format from byte size, rerun source39 or send author requests without approval. Current public route is not exhausted."
+}

@@ -1,0 +1,429 @@
+{
+  "schema": "cfeg.choi-supplement-directory-observation.v1",
+  "requests": [
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/article-minimal/5641733",
+      "requested_content_range": null,
+      "body_bytes_read": 217863,
+      "status": 200,
+      "headers": {
+        "content-length": "217863",
+        "etag": "\"e40b66de1524beffadec5436befdb8e5\"",
+        "content-type": "text/html",
+        "accept-ranges": "bytes"
+      },
+      "body_sha256": "c19ace355a2ecff333f95371d255c0542c3073c6660acc8a6adb7844f0380e1c"
+    },
+    {
+      "method": "HEAD",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": null,
+      "body_bytes_read": 0,
+      "status": 200,
+      "headers": {
+        "content-length": "10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip",
+        "accept-ranges": "bytes"
+      }
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 10814710-10814731/10814732",
+      "body_bytes_read": 22,
+      "status": 206,
+      "headers": {
+        "content-length": "22",
+        "content-range": "bytes 10814710-10814731/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "895c1c7f3dc59b3f679b77ffe150d36bd18864f6b4a97f94a3b6d6639cab837e"
+    },
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 10810789-10814709/10814732",
+      "body_bytes_read": 3921,
+      "status": 206,
+      "headers": {
+        "content-length": "3921",
+        "content-range": "bytes 10810789-10814709/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "9fc3039217b342064a1fa9a0648f1c700213bdedbb38e80c14450499727b1d7f"
+    }
+  ],
+  "status": "DIRECTORY_VERIFIED_CONTENT_UNOPENED",
+  "member_content_reads": 0,
+  "human_fits": 0,
+  "outcome_reveals": 0,
+  "footer_base64": "UEsFBgAAAAAmACYAUQ8AAKX1pAAAAA==",
+  "footer": {
+    "entries": 38,
+    "offset": 10810789,
+    "bytes": 3921
+  },
+  "inventory": {
+    "entry_count": 38,
+    "categories": {
+      ".xlsx": 36,
+      "document_candidate": 2
+    },
+    "entries": [
+      {
+        "name_sha256": "6924bafd7b3c80c47ace425e89124e1b7d92cf28df0903f30cb2d4012fa9fc54",
+        "category": ".xlsx",
+        "compressed_bytes": 12084,
+        "uncompressed_bytes_declared": 14843,
+        "compression_method": 8,
+        "local_header_offset_declared": 0,
+        "crc32_declared": "977f0032"
+      },
+      {
+        "name_sha256": "c049ec87be751b6f49dec4650c564630cddea92f085c12eb7b52ff56984477ad",
+        "category": ".xlsx",
+        "compressed_bytes": 12019,
+        "uncompressed_bytes_declared": 14762,
+        "compression_method": 8,
+        "local_header_offset_declared": 12127,
+        "crc32_declared": "09932afe"
+      },
+      {
+        "name_sha256": "41038638215a1a5355e8d0a3e04fdd7952655c2dff07006259e22f56ca8fd88a",
+        "category": ".xlsx",
+        "compressed_bytes": 259310,
+        "uncompressed_bytes_declared": 270869,
+        "compression_method": 8,
+        "local_header_offset_declared": 24189,
+        "crc32_declared": "72b94c95"
+      },
+      {
+        "name_sha256": "81687b6c9178ffb3e48c490f2cbf011e721fabcb43c00797bf567e2b760fbcfa",
+        "category": ".xlsx",
+        "compressed_bytes": 259556,
+        "uncompressed_bytes_declared": 271079,
+        "compression_method": 8,
+        "local_header_offset_declared": 283543,
+        "crc32_declared": "038f69a1"
+      },
+      {
+        "name_sha256": "a05dc184b217e65d7bea7d7c29876cdff14eb2163549f4b484691b3361e3cc92",
+        "category": ".xlsx",
+        "compressed_bytes": 261201,
+        "uncompressed_bytes_declared": 272692,
+        "compression_method": 8,
+        "local_header_offset_declared": 543143,
+        "crc32_declared": "eb25985f"
+      },
+      {
+        "name_sha256": "c35e8f104b5ab034e02601ff6000726c9806db376ebcf054e9acdc55d568487e",
+        "category": ".xlsx",
+        "compressed_bytes": 259401,
+        "uncompressed_bytes_declared": 271129,
+        "compression_method": 8,
+        "local_header_offset_declared": 804388,
+        "crc32_declared": "726f6cb6"
+      },
+      {
+        "name_sha256": "23d51e2146a74f4e723d9aafeca60215f0e8c0c488656593c087fa2a82760a9c",
+        "category": ".xlsx",
+        "compressed_bytes": 267130,
+        "uncompressed_bytes_declared": 278911,
+        "compression_method": 8,
+        "local_header_offset_declared": 1063833,
+        "crc32_declared": "ee31b5e9"
+      },
+      {
+        "name_sha256": "25800e11199e326f5b4a7188657332204e9bed16fab392d7143524735b41cfe3",
+        "category": ".xlsx",
+        "compressed_bytes": 268114,
+        "uncompressed_bytes_declared": 279838,
+        "compression_method": 8,
+        "local_header_offset_declared": 1331015,
+        "crc32_declared": "9d14d71d"
+      },
+      {
+        "name_sha256": "a01b8ed1502766aed6bfe71f9bbd13db7481c358f01d23d344d2a78e53b0d344",
+        "category": ".xlsx",
+        "compressed_bytes": 13900,
+        "uncompressed_bytes_declared": 16658,
+        "compression_method": 8,
+        "local_header_offset_declared": 1599181,
+        "crc32_declared": "1e07c88e"
+      },
+      {
+        "name_sha256": "d655572dc8f906131aa3a48137198bf8c80057dfe68cc2881eb8dce06e61993f",
+        "category": ".xlsx",
+        "compressed_bytes": 13088,
+        "uncompressed_bytes_declared": 16069,
+        "compression_method": 8,
+        "local_header_offset_declared": 1613138,
+        "crc32_declared": "8adc9cd3"
+      },
+      {
+        "name_sha256": "689d87b598143e67c3cd2f4febd704bd145fe1ec9cf2099560a0ea4fa7e3f9b7",
+        "category": ".xlsx",
+        "compressed_bytes": 11996,
+        "uncompressed_bytes_declared": 14754,
+        "compression_method": 8,
+        "local_header_offset_declared": 1626277,
+        "crc32_declared": "76862643"
+      },
+      {
+        "name_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805",
+        "category": "document_candidate",
+        "compressed_bytes": 757350,
+        "uncompressed_bytes_declared": 817595,
+        "compression_method": 8,
+        "local_header_offset_declared": 1638324,
+        "crc32_declared": "3e9b93ec"
+      },
+      {
+        "name_sha256": "7f267799362154b3f0a1ed4477515a3894b6382e68b0b991aca4d8648bc5534b",
+        "category": ".xlsx",
+        "compressed_bytes": 13103,
+        "uncompressed_bytes_declared": 15800,
+        "compression_method": 8,
+        "local_header_offset_declared": 2395735,
+        "crc32_declared": "8735602b"
+      },
+      {
+        "name_sha256": "7312d5efb098ae205400b698eeb6f7f834bb6bb360d819ccde15fb6cd0e1a1d9",
+        "category": ".xlsx",
+        "compressed_bytes": 322766,
+        "uncompressed_bytes_declared": 328528,
+        "compression_method": 8,
+        "local_header_offset_declared": 2408893,
+        "crc32_declared": "b1518409"
+      },
+      {
+        "name_sha256": "21ccbd45314b1a3f611aac5a8d39ee936838194c5be4578ef6083441373cc6bb",
+        "category": ".xlsx",
+        "compressed_bytes": 323111,
+        "uncompressed_bytes_declared": 329018,
+        "compression_method": 8,
+        "local_header_offset_declared": 2731712,
+        "crc32_declared": "3ec81441"
+      },
+      {
+        "name_sha256": "6fa48280ac25cb7f6e349c4e5edbbfea6656976075194d522e8201eae0748b0c",
+        "category": ".xlsx",
+        "compressed_bytes": 323043,
+        "uncompressed_bytes_declared": 328792,
+        "compression_method": 8,
+        "local_header_offset_declared": 3054874,
+        "crc32_declared": "0f5e4c04"
+      },
+      {
+        "name_sha256": "1fb2c2c14f795efe529802a751eddb2de3d728acd77ae2c6168cb3ce5b98650a",
+        "category": ".xlsx",
+        "compressed_bytes": 323112,
+        "uncompressed_bytes_declared": 328925,
+        "compression_method": 8,
+        "local_header_offset_declared": 3377970,
+        "crc32_declared": "8705cb94"
+      },
+      {
+        "name_sha256": "3d679c237a577c3cc545a93b99184418dd124476b372587697b343d5123dabf9",
+        "category": ".xlsx",
+        "compressed_bytes": 322918,
+        "uncompressed_bytes_declared": 328465,
+        "compression_method": 8,
+        "local_header_offset_declared": 3701133,
+        "crc32_declared": "2491b474"
+      },
+      {
+        "name_sha256": "d77ce59e195b39faebfbe86805e9ab214e9945b5d26a889985f1ff13c16af771",
+        "category": ".xlsx",
+        "compressed_bytes": 322575,
+        "uncompressed_bytes_declared": 328704,
+        "compression_method": 8,
+        "local_header_offset_declared": 4024104,
+        "crc32_declared": "091dad68"
+      },
+      {
+        "name_sha256": "f5e724acb092b6d58ab9961c57493cc990829dff0d7aa728a96cb29227f99d33",
+        "category": ".xlsx",
+        "compressed_bytes": 323041,
+        "uncompressed_bytes_declared": 328724,
+        "compression_method": 8,
+        "local_header_offset_declared": 4346730,
+        "crc32_declared": "f5561e92"
+      },
+      {
+        "name_sha256": "5f65b1d1a6ddd953b076feae5edf5a3f4b39f6c2b0aa1aa6a8e7acf87ef0873a",
+        "category": ".xlsx",
+        "compressed_bytes": 322824,
+        "uncompressed_bytes_declared": 328416,
+        "compression_method": 8,
+        "local_header_offset_declared": 4669824,
+        "crc32_declared": "46826ac2"
+      },
+      {
+        "name_sha256": "0e6a7f7a98fd71bf6c81f2785327c76a8005eb5a6a924f09c161deebfd0553bc",
+        "category": ".xlsx",
+        "compressed_bytes": 322655,
+        "uncompressed_bytes_declared": 328566,
+        "compression_method": 8,
+        "local_header_offset_declared": 4992699,
+        "crc32_declared": "a8e3753d"
+      },
+      {
+        "name_sha256": "7becced8124097a8d21b4f9d6e8f268b858d7c398295298913bea959b9615d68",
+        "category": ".xlsx",
+        "compressed_bytes": 322438,
+        "uncompressed_bytes_declared": 328344,
+        "compression_method": 8,
+        "local_header_offset_declared": 5315405,
+        "crc32_declared": "2e9cfff0"
+      },
+      {
+        "name_sha256": "d14996a096d6d7cc6d5528c4172c3e67a54cf65140950304ba0dc2807f0f5e14",
+        "category": ".xlsx",
+        "compressed_bytes": 322808,
+        "uncompressed_bytes_declared": 328710,
+        "compression_method": 8,
+        "local_header_offset_declared": 5637892,
+        "crc32_declared": "448fc69f"
+      },
+      {
+        "name_sha256": "86fe75f3bff223facdaa32398deee8aaaba5b1eb548bec4f92f2625afdcad5cc",
+        "category": ".xlsx",
+        "compressed_bytes": 322687,
+        "uncompressed_bytes_declared": 328691,
+        "compression_method": 8,
+        "local_header_offset_declared": 5960751,
+        "crc32_declared": "122a2c91"
+      },
+      {
+        "name_sha256": "13a67ed446ace4f2e1c95aebc6376b2bcdfaa9d9e4b65a589214dcd950d87569",
+        "category": ".xlsx",
+        "compressed_bytes": 323039,
+        "uncompressed_bytes_declared": 328648,
+        "compression_method": 8,
+        "local_header_offset_declared": 6283487,
+        "crc32_declared": "d8613e2b"
+      },
+      {
+        "name_sha256": "9e99c830df5e988c6380d5e3ffb46c9444de4cda07887b5362c0c0e87b4bbd6a",
+        "category": ".xlsx",
+        "compressed_bytes": 322709,
+        "uncompressed_bytes_declared": 328298,
+        "compression_method": 8,
+        "local_header_offset_declared": 6606577,
+        "crc32_declared": "02ce1255"
+      },
+      {
+        "name_sha256": "fd133504a01d3553e7be1688d9f8a791740d47574db987eea444cf94a84c8272",
+        "category": ".xlsx",
+        "compressed_bytes": 322683,
+        "uncompressed_bytes_declared": 328651,
+        "compression_method": 8,
+        "local_header_offset_declared": 6929335,
+        "crc32_declared": "2334018f"
+      },
+      {
+        "name_sha256": "b5dbb471e1ada9e9ed9deaf4fc85032d05d7898db2c905838e521903278622f0",
+        "category": ".xlsx",
+        "compressed_bytes": 323740,
+        "uncompressed_bytes_declared": 329317,
+        "compression_method": 8,
+        "local_header_offset_declared": 7252069,
+        "crc32_declared": "bdef4a31"
+      },
+      {
+        "name_sha256": "c82e2e301be45edc07840315c6ec14e850bd9e6a3e49434b9d91dc0cdb71d801",
+        "category": ".xlsx",
+        "compressed_bytes": 323345,
+        "uncompressed_bytes_declared": 329079,
+        "compression_method": 8,
+        "local_header_offset_declared": 7575858,
+        "crc32_declared": "96a766b0"
+      },
+      {
+        "name_sha256": "15c329017706ad1ceaf7f7b527f4d09065314e4d85bed09c7e9bb87997d4fb5c",
+        "category": ".xlsx",
+        "compressed_bytes": 323702,
+        "uncompressed_bytes_declared": 329421,
+        "compression_method": 8,
+        "local_header_offset_declared": 7899258,
+        "crc32_declared": "6cee28ef"
+      },
+      {
+        "name_sha256": "42fa7666080273c35758a04d66b6ab06bd01b0290f7b2bbe19177db0a0d42f0e",
+        "category": ".xlsx",
+        "compressed_bytes": 323915,
+        "uncompressed_bytes_declared": 329880,
+        "compression_method": 8,
+        "local_header_offset_declared": 8223013,
+        "crc32_declared": "6360c21c"
+      },
+      {
+        "name_sha256": "8aa4cde63f12202d420a546889e220a914b5063f2e4e5fe2536574e3596f68c9",
+        "category": ".xlsx",
+        "compressed_bytes": 323155,
+        "uncompressed_bytes_declared": 329380,
+        "compression_method": 8,
+        "local_header_offset_declared": 8546983,
+        "crc32_declared": "fdb92a99"
+      },
+      {
+        "name_sha256": "be424b12d5b545425eb0c0f3fd51ab52543fae325ba6aa9b14dbad55d65dabe6",
+        "category": ".xlsx",
+        "compressed_bytes": 323313,
+        "uncompressed_bytes_declared": 328889,
+        "compression_method": 8,
+        "local_header_offset_declared": 8870191,
+        "crc32_declared": "30c22a05"
+      },
+      {
+        "name_sha256": "9406158bf7565330d23e27364954bff4fcf74f6ddc4c78d785cbdfdd4449aec3",
+        "category": ".xlsx",
+        "compressed_bytes": 323630,
+        "uncompressed_bytes_declared": 329254,
+        "compression_method": 8,
+        "local_header_offset_declared": 9193559,
+        "crc32_declared": "6bd67783"
+      },
+      {
+        "name_sha256": "f16bb591770163a8ac1f90542b57eec52302768be6f39d26eb3122769158103b",
+        "category": ".xlsx",
+        "compressed_bytes": 323641,
+        "uncompressed_bytes_declared": 329410,
+        "compression_method": 8,
+        "local_header_offset_declared": 9517242,
+        "crc32_declared": "318e4700"
+      },
+      {
+        "name_sha256": "e76a6acd04ee2516ac7a1018af4115ab226e314be56a7ce170846b05e4df4550",
+        "category": ".xlsx",
+        "compressed_bytes": 323873,
+        "uncompressed_bytes_declared": 329413,
+        "compression_method": 8,
+        "local_header_offset_declared": 9840938,
+        "crc32_declared": "0c27db05"
+      },
+      {
+        "name_sha256": "24fe2cd55aff4a7adfeb8bd721118ee4d9f2b4e75d58b5ced2b18e62171f1ee2",
+        "category": "document_candidate",
+        "compressed_bytes": 645869,
+        "uncompressed_bytes_declared": 729188,
+        "compression_method": 8,
+        "local_header_offset_declared": 10164864,
+        "crc32_declared": "0c37ad49"
+      }
+    ],
+    "candidate_count": 2
+  },
+  "elapsed_seconds": 1.344,
+  "archive_metadata_body_bytes_read": 3943,
+  "limitations": "Only named requested ranges; no full ZIP hash, member content, decompression, CRC verification or sensor/timing qualification. Transport buffering may exceed application body reads on rejected responses.",
+  "retrieved_at": "2026-09-10 04:54:31 UTC",
+  "config_path": "configs/analysis/choi_supplement_directory_v1.json",
+  "reader_revision": "fae6108",
+  "analysis_note": "Document candidate is extension/name based, not verified documentation content. Exact candidate filename and suffix were not retained. Do not infer their identity from size. No candidate contents opened."
+}
