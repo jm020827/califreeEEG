@@ -18,6 +18,7 @@ Query Z=W'Xq; score its energy projected onto the centered reference rowspace:
 Zero projected-output energy<=1e-12 maps to0. Reject singular reference Gram instead
 of inventing a data-dependent rank. Solve only, no eigenvectors/output whitening.
 Reference pair phase rotations leave score invariant. Global Wscale must cancel;
+this scale statement requires both energies to remain above the fixed zero-energy floor.
 anisotropic spatial changes need not cancel. This corrects the originally considered
 unnormalized-reference Frobenius score's finite-window Gram weighting/1/H ceiling.
 
@@ -39,3 +40,13 @@ Qfeatures, SHAM retraining and subject-split evaluation remain separate work.
 Root owns module/tests; reviewer is read-only. Existing failures and completed v1/v2
 metadata budgets remain unchanged. Acquisition process owns only its new directory,
 journal and one final observation path; no overlapping writers or new worktree.
+
+## Executed generated result
+
+One targeted invocation completed9testsPASS,CPUfloat64,0.274s test body (import/startup
+excluded). It confirms k1solve, unit scaling, anisotropic relative-margin change,
+scalar auxiliary-input gradient with Q frozen, finite-difference gradcheck, phase
+invariance, trace/SPD bound, zero-energy score and invalid inputs. Independent static
+math/code review found no blocker. No float32 precision validation, measured-M learning,
+SHAM retraining, human accuracy or calibration-savings claim follows from this result.
+Remaining2test-call capacity was not consumed just to repeat unchanged tests.
