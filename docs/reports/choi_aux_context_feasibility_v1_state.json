@@ -1,0 +1,173 @@
+{
+  "schema": "cfeg.choi-aux-context-feasibility-state.v1",
+  "date_kst": "2026-09-10",
+  "status": "COMPLETE_REVIEW_CANDIDATE_DEFERRED",
+  "decision": "DEFER_FOR_MISSING_MEASUREMENT_EVIDENCE",
+  "scientific_efficacy": "NOT_EVALUATED",
+  "original_finite_goal": "COMPLETE_UNCHANGED",
+  "original_scientific_hypothesis": "UNESTABLISHED_UNCHANGED",
+  "scope": "Outcome-free follow-up to user continue; documentation, official sources and two distinct local cnt headers. No new human execution contract.",
+  "freeze": {
+    "commit": "eed75afb1ad3837b16da329a2f6b2bc91cae6fed",
+    "config": "configs/analysis/choi_aux_context_feasibility_v1.json",
+    "sha256": "77db5c4954e0a16d7935262cdc26cd9c4a77f1fd2310f23c1ae5b5a8f347f71f"
+  },
+  "gates": {
+    "actual_sensor_connection_not_label_only": "AUTHOR_REPORTED_IMU; exact local Gyro mapping still unresolved",
+    "physical_quantity_unit_axis": "UNRESOLVED: figure g vs generic export uV; no axis/calibration mapping",
+    "clock_and_alignment": "AUTHOR_REPORTED_SYNCHRONIZED_1000HZ; export200Hz filter/marker timing unresolved",
+    "strict_prequery_availability": "NOT_QUALIFIED_CURRENT_PIPELINE; full-run bidirectional filtering plus unknown upstream temporal support",
+    "participant_session_pairing": "TWO_HEADER_SCHEMA_ONLY; trial/all-participant pairing not inspected",
+    "variation_not_a_placeholder": "NOT_INSPECTED_NO_WAVEFORM_READ",
+    "distinct_acquisition_mechanism_beyond_Q": "HYPOTHESIS_ONLY; pre-support motion persistence and conditional utility unknown",
+    "lawful_reuse_and_new_execution_scope": "CC0_LISTED; no new outcome authority; V2 deny unchanged"
+  },
+  "candidate_dispositions": {
+    "Gyro": "Defer this prereview-gated candidate; actual head-motion sensor reported, raw mapping/temporal boundary unresolved. Not a rejection of all unit-agnostic motion learning.",
+    "Temperature": "Defer: named in README/DataCite/schema but sensor connection/site/unit/time not established by reviewed article.",
+    "ECG_EMG_respiration": "Not silently added as acquisition metadata; different physiology mechanisms require separate justification."
+  },
+  "usage": {
+    "structured_queries": 2,
+    "official_page_targets_ceiling": 6,
+    "targeted_followups_ceiling": 4,
+    "page_accounting": "Target/followup scope, not total HTTP or adapter retry count; no exact request-count assertion",
+    "distinct_hdf5_files": 2,
+    "hdf5_open_count": 4,
+    "human_waveform_value_reads": 0,
+    "marker_value_reads": 0,
+    "human_fits": 0,
+    "outcome_evaluations": 0,
+    "dataset_downloads": 0,
+    "publisher_figures_downloaded": 1,
+    "new_pdf_reads": 0,
+    "new_worktrees": 0,
+    "packages_installed": 0,
+    "external_requests_sent": 0,
+    "paid_resource_uses": 0,
+    "held60_access": 0,
+    "source39_numeric_array_access": 0,
+    "pytest_runs": 0,
+    "output_bytes_ceiling": 33554432,
+    "output_budget_charge_bytes": 16777216,
+    "output_budget_charge_basis": "Conservative reservation above 12332KiB full workspace DB/views/cards/searches plus 692KiB source/docs snapshot and remaining journal/state/git bookkeeping; not measured new-byte growth or a whole-workspace inventory",
+    "conservative_workspace_accounting_kib": 12332,
+    "workspace_accounting_scope": "Full DB/WAL, all old+new paper cards/searches, generated root views and writing directory; additional small source/docs/payload files accounted separately at final check, not exact newly written bytes"
+  },
+  "sources": [
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi_aux_headers_20260910.json",
+      "sha256": "dd28576979d53e0f6b32a3e0cfa39dc902601545852842702c810f80fc6d80fb",
+      "scope": "Header values/shapes; not waveform validation"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi_aux_selected_html_evidence_20260910.json",
+      "sha256": "7a6c807dd6954ec63c1fda1c4a8ee8839f47b9fae27dba1e2ca16148e2e6fdda",
+      "scope": "Agent paraphrases/provenance from selected official HTML; full HTML not retained"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi_aux_datacite_20260910.json",
+      "sha256": "c0e2cef396127aace20682f6fe151320005e96fbb2ae5949762dcf012a6b562c",
+      "scope": "Selected exact official API fields"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi_fig8_20260910.jpeg",
+      "sha256": "f096d233f3d5c55581ede5048156a449f78ad7aabe180e3e2eab488e53499482",
+      "scope": "Rendered inspected figure; no new outcome measurement"
+    },
+    {
+      "path": "/home/whwovy/eeg-data/raw/choi2019_gigadb/readme_100660.txt",
+      "sha256": "29c25b539ab191a77341356249ef2702852244dcefb64cd182951791b17092ab",
+      "scope": "Existing official dataset README"
+    }
+  ],
+  "preserved_artifacts": [
+    {
+      "path": "src/cfeg/data/preprocess.py",
+      "sha256": "fd2d915f5fb160eb00fd7a03a14f474bf5d41c8b69fef56f86d63e329596abd3"
+    },
+    {
+      "path": "src/cfeg/data/prepare_choi2019.py",
+      "sha256": "74c30b5d165522c8782593330d7f86966baa4aeb5dacbb15178805462462247e"
+    },
+    {
+      "path": "src/cfeg/data/choi2019_partition.py",
+      "sha256": "546923e5957ee4b35c653ca43c2e88701f9b29c5d77a3be22eb0bcbc9ed4ef46"
+    },
+    {
+      "path": "configs/data/choi2019.yaml",
+      "sha256": "1c809fbfc017ac62a437576ad7009fec74faab942ee82f3c067e53144ccd56a0"
+    },
+    {
+      "path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+      "sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
+    },
+    {
+      "path": "docs/reports/metadata_research_loop_closeout_20260910.json",
+      "sha256": "d8a437f852abd66af0450346cd19c2c90a4c3331ed4b0fe54bbfe750f1687a8f"
+    }
+  ],
+  "research_space": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design",
+    "cutoff": "2026-09-04",
+    "retrieval_date": "2026-09-10",
+    "new_abstract_cards": 2,
+    "new_selected_html_reviews": 1,
+    "new_claim": "claim:4baf6f4df7e40484",
+    "claim_status": "qualified",
+    "new_evidence": 5,
+    "new_gap": "gap:b654467d1d604de0",
+    "gap_status": "open",
+    "counts": {
+      "papers": 1081,
+      "search_runs": 85,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 57,
+      "evidence": 141,
+      "gaps": 39,
+      "deep_reads": 36,
+      "analogies": 5
+    },
+    "render": "COMPLETE",
+    "sqlite_quick_check": "ok",
+    "failures": [
+      "Semantic Scholar 429 on exact-title structured query",
+      "GigaDB SPA no useful body",
+      "web API/CDN opens blocked or failed; ordinary public curl succeeded",
+      "PubMed direct open reCAPTCHA; author abstract obtained in prior official search result; no bypass"
+    ],
+    "saturation": "Actual sensor lead found, unit/temperature/timing contradictions recorded. More broad searches are less decision-useful than exact acquisition/export documentation. No completeness or general novelty claim."
+  },
+  "next": {
+    "status": "PROPOSAL_ONLY_NOT_EXECUTED",
+    "human_candidate": "Pre-support motion-conditioned within-class example weights; M does not modify shared source model or query signal",
+    "k1_boundary": "Q/QM equal class weight sums and identical common source state imply no k1 weight-only actuation",
+    "split_proposal": "Day1 session01 support -> session02 fixed40 queries per band; subject-level outer separation; verify chronology; Day2 untouched",
+    "primary_measurements": [
+      "matched k accuracy beyond Q/Q2/SHAM",
+      "actual collected trials/labels/time and unknown setup cost",
+      "participant uncertainty and harm"
+    ],
+    "prerequisites": [
+      "exported channel identity and usable variability",
+      "marker/downsampling temporal support",
+      "separate causal and paired reader/cost engineering on generated data",
+      "new preregistered candidate and bounded human execution scope"
+    ],
+    "unsent_request": "docs/choi_aux_context_clarification_draft.md",
+    "external_send_authorized": false,
+    "held60_authorized": false,
+    "paid_authorized": false
+  },
+  "review": {
+    "root_sole_writer": true,
+    "read_only_reviewers": [
+      "channel_runtime_review",
+      "task_shape_reader"
+    ],
+    "source_review": "PASS",
+    "design_review": "NO_BLOCKER; two wording/contract clarifications incorporated",
+    "tests": "No pytest or human experiment. JSON/scope/local-link validation PASS; 12 artifact SHA checks PASS; 7 preserved config/code/deny/closeout files equal frozen commit; git diff --check PASS."
+  }
+}
