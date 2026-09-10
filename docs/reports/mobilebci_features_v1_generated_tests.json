@@ -1,0 +1,14 @@
+{
+  "schema": "cfeg.mobilebci-features-generated-tests.v1",
+  "calls_used": 2,
+  "calls_budget": 3,
+  "calls": [
+    {"tests": 7, "failures": 0, "errors": 0, "body_seconds": 0.024},
+    {"tests": 8, "failures": 0, "errors": 0, "body_seconds": 0.020}
+  ],
+  "human_inputs": 0,
+  "coverage": ["direct covariance/cross algebra", "feature dimensions", "trial permutation", "M changes isolated from EEG features", "degenerate floors", "bad support rejection", "causal selected EEG window", "unused future/channel sentinel independence", "selected gyro only", "immediate nonfinite/overflow stop"],
+  "feature_module_sha256": "756164ba6b5728eaeec578e2d2848b32f007d4a13edd47a07b98645cd281ff01",
+  "reader_sha256": "ce5a9825d9936fce3cb3faee39dc27ae0c4431c4187ad674026bb6484c92da28",
+  "interpretation": "Generated math/window checks plus independent static reader review; no human performance or end-to-end raw-reader claim."
+}

@@ -30,6 +30,8 @@ not every possible use of metadata.
   Butterworth 4–40 Hz bandpass (SciPy SOS, zero state reset per trial), retain [0.5s,1.5s),
   then time-center each channel. The first second is filter warm-up. No resampling,
   full-run preprocessing, query-derived normalization, rejection, or artifact tuning.
+  Here `butter(4, bandpass)` means a fourth-order prototype, eighth-order bandpass
+  transfer function (four SOS sections), not a four-pole bandpass.
 - M uses only HgyroX/Y/Z at 128 Hz during each selected support [0.5s,1.5s).
   No query IMU features or full-run motion summary. MAT storage requires whole raw_x
   decompression; distinguish physical numeric decoding from permitted feature use.
@@ -48,6 +50,8 @@ not every possible use of metadata.
 - Common5 for every arm: speed, condition ordinal 0/1/2, k, full prefix trial count,
   marker-relative support-ready seconds. Ordinal is a condition/order proxy, not a
   verified independent session clock. Subject/file/session IDs are never features.
+  The metadata audit found 44/48 runs share a class sequence: query index/sequence ID
+  must also never be features. Ready seconds include the roughly four-second preroll.
 - Store role-limited support covariance/cross-products, Q/M/Q2/common, query covariance
   and reference cross-products, query labels and provenance. Raw waveforms are not
   copied into the cache. k-specific features/statistics use only that k's support.

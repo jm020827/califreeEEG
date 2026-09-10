@@ -1,0 +1,18 @@
+{
+  "schema": "cfeg.mobilebci-feature-extraction-config.v1",
+  "metadata_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_cohort_metadata_v1_observation.json",
+  "metadata_sha256": "d2292aa61886d51bfcd05251371f710a818f9f66cfc306a4ebc4d23a54cc485b",
+  "manifest_path": "/home/whwovy/califreeEEG/configs/analysis/mobilebci_cohort_metadata_v1.json",
+  "manifest_sha256": "7dd9d34decd58b92012d9997034847c44e9db921156eef313c5f8416d9b9f713",
+  "reader_sha256": "ce5a9825d9936fce3cb3faee39dc27ae0c4431c4187ad674026bb6484c92da28",
+  "feature_module_sha256": "756164ba6b5728eaeec578e2d2848b32f007d4a13edd47a07b98645cd281ff01",
+  "cache_path": "/home/whwovy/eeg-data/mobilebci-features-v1-xm26hN/features.npz",
+  "report_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_feature_extraction_v1_observation.json",
+  "journal_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_feature_extraction_v1_records.jsonl",
+  "limits": {
+    "batch_seconds": 600,
+    "file_seconds": 30,
+    "address_space_bytes": 1073741824,
+    "cache_bytes": 134217728
+  }
+}
