@@ -1,0 +1,417 @@
+{
+  "schema": "cfeg.metadata-research-loop.closeout.v1",
+  "date_kst": "2026-09-10",
+  "reviewed_base_commit": "e4b296d2d352587b18fd573edfd0b53d86e86267",
+  "status": "COMPLETE_BOUNDED_RESEARCH_LOOP_NO_PROMISING_CANDIDATE",
+  "thread_goal_complete": true,
+  "scientific_hypothesis": "UNESTABLISHED",
+  "metadata_benefit_demonstrated": false,
+  "calibration_reduction_demonstrated": false,
+  "completion_basis": "Original frozen eligible-candidate closure and separately approved single-attempt extensions are terminal; a valid completed N1-R human Q/Q2/QM/SHAM accuracy and observed-label-cost comparison now exists, followed by generated-capacity and source-only-margin diagnostics. Complete means the finite requested research loop, not a positive result, global metadata falsification, external confirmation or expenditure of every time/compute ceiling.",
+  "original_goal_preserved": true,
+  "retrospective_rule_change": false,
+  "literal_compute_budget_exhaustion_claimed": false,
+  "requirements": [
+    {
+      "id": "R01",
+      "requirement": "Maintain low-calibration SSVEP with external acquisition metadata as a means",
+      "status": "SATISFIED",
+      "evidence": [
+        "configs/analysis/metadata_learning_program_v1.json",
+        "configs/analysis/task_trca_n1_source39_v1.json"
+      ]
+    },
+    {
+      "id": "R02",
+      "requirement": "Freeze mechanism candidates, resources and stop rules prospectively",
+      "status": "SATISFIED",
+      "evidence": [
+        "4a28e81",
+        "6f5e587",
+        "ac9ff1d",
+        "f23e79a",
+        "7d0af63",
+        "1f1f363",
+        "ab3f0e4"
+      ]
+    },
+    {
+      "id": "R03",
+      "requirement": "Implement, verify and run eligible candidates, respecting failed prerequisite stops",
+      "status": "SATISFIED_WITH_PRESERVED_NOT_EVALUATED_SLOTS",
+      "evidence": [
+        "c1_failure",
+        "c2_result",
+        "c2_audit",
+        "numerical_result",
+        "integration_result",
+        "n1_recovery_result"
+      ]
+    },
+    {
+      "id": "R04",
+      "requirement": "Evaluate incremental performance beyond Q and common information with fair controls",
+      "status": "SATISFIED_NEGATIVE_RESULT",
+      "evidence": [
+        "n1_recovery_result",
+        "n1_recovery_audit"
+      ],
+      "note": "Q/Q2/QM/SHAM plus native/unlearned/A0 controls; not universal comparator exhaustiveness or formal conditional independence."
+    },
+    {
+      "id": "R05",
+      "requirement": "Evaluate actual labeled calibration reduction under the prespecified cost definition",
+      "status": "SATISFIED_NEGATIVE_RESULT",
+      "evidence": [
+        "n1_recovery_result",
+        "n1_recovery_audit"
+      ],
+      "note": "Observed 0/36/60-label grid,312 cells all costs equal; savings0. Not adaptive stopping or electrode/setup-time cost."
+    },
+    {
+      "id": "R06",
+      "requirement": "Maintain/revise/retire from evidence and record next mechanism before execution",
+      "status": "SATISFIED",
+      "evidence": [
+        "docs/numerical_stability_v1_results.md",
+        "docs/task_trca_n1_transport_recovery_r1_results.md",
+        "docs/n1_metadata_generated_efficacy_v1_design.md",
+        "docs/source39_channel_margin_probe_v1_design.md",
+        "margin_result"
+      ]
+    },
+    {
+      "id": "R07",
+      "requirement": "Independent terminal audit and final integration verification",
+      "status": "SATISFIED_WITH_DISCLOSED_SCOPE",
+      "evidence": [
+        "c2_audit",
+        "n1_original_audit",
+        "n1_recovery_audit",
+        "generated_capacity_audit",
+        "margin_audit"
+      ],
+      "note": "C1 failure provenance only, no complete efficacy audit possible; shared Q/preprocessing/optimizer limitations retained. No new test suite this closeout."
+    },
+    {
+      "id": "R08",
+      "requirement": "Preserve previous failures/negatives and distinguish development from confirmation",
+      "status": "SATISFIED",
+      "evidence": [
+        "c1_failure",
+        "c2_result",
+        "n1_original_failure",
+        "n1_recovery_result",
+        "margin_result"
+      ],
+      "note": "Same39 repeatedly exposed; nested CV/audit do not create independent confirmation."
+    },
+    {
+      "id": "R09",
+      "requirement": "Stop at eligible-slot closure/registered attempts consumed; no unbounded rescue",
+      "status": "SATISFIED",
+      "evidence": [
+        "configs/analysis/metadata_learning_program_v1.json",
+        "configs/analysis/task_trca_n1_transport_recovery_r1.json",
+        "docs/source39_channel_margin_probe_v1_execution.md",
+        "margin_completion"
+      ],
+      "note": "Unused wall-clock/update ceilings do not authorize another candidate."
+    },
+    {
+      "id": "R10",
+      "requirement": "Keep held60/outreach/paid resources separately authorized",
+      "status": "SATISFIED_AT_RECORDED_WORKFLOW_SCOPE",
+      "evidence": [
+        "docs/reports/metadata_learning_program_v1_results.json",
+        "docs/reports/task_trca_n1_transport_recovery_r1_results.json",
+        "docs/reports/n1_metadata_generated_efficacy_v1_state.json",
+        "docs/reports/source39_channel_margin_probe_v1_execution_state.json"
+      ],
+      "note": "No OS-wide historical non-access certification."
+    },
+    {
+      "id": "R11",
+      "requirement": "Report all outcomes, limits and follow-up validation plan",
+      "status": "SATISFIED",
+      "evidence": [
+        "docs/metadata_research_loop_closeout_20260910.md",
+        "docs/research_log.md"
+      ],
+      "note": "Positive scientific evidence remains absent; next research is a proposal, not an activated execution stage."
+    },
+    {
+      "id": "R12",
+      "requirement": "Verify current authoritative state before completion rather than stale intent",
+      "status": "SATISFIED",
+      "evidence": [
+        "n1_recovery_result",
+        "n1_recovery_audit",
+        "n1_recovery_completion",
+        "generated_capacity_result",
+        "generated_capacity_audit",
+        "generated_capacity_completion",
+        "margin_result",
+        "margin_audit",
+        "margin_completion",
+        "c1_failure",
+        "c2_result",
+        "c2_audit",
+        "n1_original_failure",
+        "n1_original_audit",
+        "numerical_result",
+        "numerical_audit",
+        "integration_result",
+        "integration_audit",
+        "resource_result",
+        "human_size_generated_result",
+        "human_size_generated_audit"
+      ],
+      "note": "21 original JSON hashes checked2026-09-10; three read-only reviewers; recent9 exact process IDs absent. Historical incomplete labels are not changed retroactively."
+    }
+  ],
+  "stages": [
+    {
+      "id": "C1",
+      "kind": "original_metadata_candidate",
+      "status": "CLOSED_VALIDITY_FAILURE",
+      "efficacy": "NOT_EVALUATED",
+      "human_updates": 24000,
+      "human_attempts": 1,
+      "model_set_reveals": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "C2",
+      "kind": "original_metadata_candidate",
+      "status": "CLOSED_GENERATED_PREREQUISITE_FAILURE",
+      "efficacy": "NOT_EVALUATED",
+      "human_updates": 0,
+      "human_attempts": 0,
+      "model_set_reveals": 0,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "numerical-stability-v1",
+      "kind": "engineering",
+      "status": "CLOSED_PASS_N1_SELECTED",
+      "registered_runs": 1,
+      "audits": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "n1-integration-v1",
+      "kind": "engineering",
+      "status": "CLOSED_GENERATED_PASS",
+      "generated_updates": 24000,
+      "audits": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "n1-source39-preflight",
+      "kind": "engineering",
+      "status": "CLOSED_RESOURCE_AND_GENERATED_PASS",
+      "resource_updates": 800,
+      "generated_updates": 24000,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "n1-original-human",
+      "kind": "new_metadata_candidate_attempt",
+      "status": "CLOSED_BROKEN_PIPE_FAILURE",
+      "efficacy": "NOT_EVALUATED",
+      "human_updates": 8800,
+      "human_attempts": 1,
+      "model_set_reveals": 0,
+      "audits": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "n1-recovery-r1",
+      "kind": "same_science_authorized_recovery",
+      "status": "CLOSED_VALID_DEVELOPMENT_NEGATIVE",
+      "human_updates": 24000,
+      "human_attempts": 1,
+      "model_set_reveals": 1,
+      "audits": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "generated-m-capacity",
+      "kind": "mechanism_diagnostic",
+      "status": "CLOSED_GENERATED_M_CAPACITY_PASS",
+      "generated_updates": 1600,
+      "primary_attempts": 1,
+      "audits": 1,
+      "remaining_required_actions": []
+    },
+    {
+      "id": "source39-channel-margin",
+      "kind": "human_source_only_diagnostic",
+      "status": "CLOSED_VALID_DEVELOPMENT_NEGATIVE",
+      "primary_attempts": 1,
+      "primary_ridge_fits": 120,
+      "audit_ridge_reconstructions": 120,
+      "model_set_query_reveals": 0,
+      "audits": 1,
+      "remaining_required_actions": []
+    }
+  ],
+  "usage_scope": "Only original program and separately approved extensions after goal initiation; not all earlier project experiments. Per-stage caps remain separate; no budget transfer.",
+  "human_adam_updates_across_these_attempts": 56800,
+  "additional_source_probe_ridge_fits": 120,
+  "additional_source_probe_audit_ridge_reconstructions": 120,
+  "human_classification_model_set_reveals_including_failed_partial": 2,
+  "new_runs_this_closeout": 0,
+  "new_numeric_array_reads_this_closeout": 0,
+  "new_audits_replayed_this_closeout": 0,
+  "exact_lifetime_engineering_compute": null,
+  "exact_lifetime_peak_gpu_memory": null,
+  "resource_accounting_limit": "Historical cumulative engineering/GPU accounting is incomplete; do not certify precise lifetime resource use or count old tests as rerun.",
+  "artifact_verification": {
+    "checked_at_utc": "2026-09-10T00:33:21Z",
+    "count": 21,
+    "all_match": true,
+    "scope": "Original JSON only; no NPZ/MAT/model/prediction array hashes or numerical re-evaluation",
+    "artifacts": [
+      {
+        "id": "n1_recovery_result",
+        "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/task-trca-n1-source39-primary1/result.json",
+        "sha256": "4eae8d40f99fe3c8dda083d02c4717f497d74ad0853f1da9e3e7edbc67adba1a",
+        "hash_matches": true
+      },
+      {
+        "id": "n1_recovery_audit",
+        "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/task-trca-n1-source39-primary1/cold_audit.json",
+        "sha256": "5df15979142d358c47f009ef9b195ea4edf168db25cf2979ed54c22ea014148f",
+        "hash_matches": true
+      },
+      {
+        "id": "n1_recovery_completion",
+        "path": "/home/whwovy/task-trca-n1-source39-recovery-r1-1i9cau/supervisor/completion.json",
+        "sha256": "3f702ea159595e892a2b5b12f2a3d1d529e824233580a74e51b8b747043f9359",
+        "hash_matches": true
+      },
+      {
+        "id": "generated_capacity_result",
+        "path": "/home/whwovy/n1-generated-efficacy-v1-gyVfMl/data/result.json",
+        "sha256": "f29ad47f3b8ac9b924972a8c2bda315bd0f68c5a3acd456e88f8cc66fc29828f",
+        "hash_matches": true
+      },
+      {
+        "id": "generated_capacity_audit",
+        "path": "/home/whwovy/n1-generated-efficacy-v1-gyVfMl/data/audit.json",
+        "sha256": "5c256230f1377aa5b6b05377e4de1f9b7d741b91ee585e155cb44fe740b71d1a",
+        "hash_matches": true
+      },
+      {
+        "id": "generated_capacity_completion",
+        "path": "/home/whwovy/n1-generated-efficacy-v1-gyVfMl/completion.json",
+        "sha256": "cab749a45599b4716d9d3b5a5eed70291890db7ff0182109a49eaf673b8d111f",
+        "hash_matches": true
+      },
+      {
+        "id": "margin_result",
+        "path": "/home/whwovy/channel-margin-probe-v1-FNBdZf/data/result.json",
+        "sha256": "93e4db18d87011db112727eff2e3bf6e2d37aa76b4d695f4ab3af382f44f0db7",
+        "hash_matches": true
+      },
+      {
+        "id": "margin_audit",
+        "path": "/home/whwovy/channel-margin-probe-v1-FNBdZf/data/audit.json",
+        "sha256": "6a6c2005484228e1c6637fb1bb36bfb8e00ace4ae0a91539f624f755cbc4a5a5",
+        "hash_matches": true
+      },
+      {
+        "id": "margin_completion",
+        "path": "/home/whwovy/channel-margin-probe-v1-FNBdZf/completion.json",
+        "sha256": "e9f0169168ab89b5858c2c9e1e98bc069128f92ad94a66d5fa9c619fa43fc60c",
+        "hash_matches": true
+      },
+      {
+        "id": "c1_failure",
+        "path": "/home/whwovy/task-trca-temporal-source39-v1-primary1-20260909/failure.json",
+        "sha256": "4b57bc9bad8cd53eda24f49cbee063e32eba3729ce72d10b5d3b94de2f167c7e",
+        "hash_matches": true
+      },
+      {
+        "id": "c2_result",
+        "path": "/home/whwovy/task-trca-pair-s-conditioning-Vqli4o/primary1/result.json",
+        "sha256": "98ea5607b72d47174c2f0e3c1569bf9a872bca7230c160f29554b8b9cd841ee2",
+        "hash_matches": true
+      },
+      {
+        "id": "c2_audit",
+        "path": "/home/whwovy/task-trca-pair-s-conditioning-Vqli4o/terminal_audit.json",
+        "sha256": "2c48e84e91bbf11c94a69d0d5e978a8cb581cb71d5c2fb3621e5dafb797fbb8a",
+        "hash_matches": true
+      },
+      {
+        "id": "n1_original_failure",
+        "path": "/home/whwovy/task-trca-n1-source39-K1qYuE/task-trca-n1-source39-primary1/failure.json",
+        "sha256": "e4ebf797526580fd3a163038832e2f0d09dd3fd639140929ee8144bf96f2a107",
+        "hash_matches": true
+      },
+      {
+        "id": "n1_original_audit",
+        "path": "/home/whwovy/task-trca-n1-source39-K1qYuE/task-trca-n1-source39-primary1/terminal_audit.json",
+        "sha256": "3e92cd6b2328c5f20cdba27507e860ee683644a73e8f50b8a0e088c6c76a92a9",
+        "hash_matches": true
+      },
+      {
+        "id": "numerical_result",
+        "path": "/home/whwovy/numerical-stability-v1-REcwR9/primary1/result.json",
+        "sha256": "9774e590d225464cd28471d674e50095e62081a6511a73805df1b7987388777f",
+        "hash_matches": true
+      },
+      {
+        "id": "numerical_audit",
+        "path": "/home/whwovy/numerical-stability-v1-REcwR9/audit.json",
+        "sha256": "5299bc3412996b2a900597b6434202bd3a0c0d7354127b67faecb8dc213116b7",
+        "hash_matches": true
+      },
+      {
+        "id": "integration_result",
+        "path": "/home/whwovy/task-trca-n1-integration-ZeJC9H/task-trca-n1-integration-primary1/result.json",
+        "sha256": "6f6a55e234afb3d549433d533e35e6f0d683dbfff4be1eae3d37f4623bcb862d",
+        "hash_matches": true
+      },
+      {
+        "id": "integration_audit",
+        "path": "/home/whwovy/task-trca-n1-integration-ZeJC9H/task-trca-n1-integration-primary1/cold_audit.json",
+        "sha256": "25107e8586c94e393db61a7f87f617025cda04c7fa9d029913ca97def7440ee9",
+        "hash_matches": true
+      },
+      {
+        "id": "resource_result",
+        "path": "/home/whwovy/task-trca-n1-source39-Nyp4o0/resource1/resource.json",
+        "sha256": "526ef01b8b5b3422b0dfbe3d7bbfec0f04d4625193703648111ce2088c6320e8",
+        "hash_matches": true
+      },
+      {
+        "id": "human_size_generated_result",
+        "path": "/home/whwovy/task-trca-n1-source39-Pborkn/task-trca-n1-source39-generated1/result.json",
+        "sha256": "9b17470e6b08e09c6246d97e977fba52c89b0960e328c3070e344801595bae35",
+        "hash_matches": true
+      },
+      {
+        "id": "human_size_generated_audit",
+        "path": "/home/whwovy/task-trca-n1-source39-Pborkn/task-trca-n1-source39-generated1/cold_audit.json",
+        "sha256": "25c62abe79166ff33779a2ac805846779b8dae60875b96901bad6f37f682cad1",
+        "hash_matches": true
+      }
+    ]
+  },
+  "held60_access_this_loop": false,
+  "external_outreach_this_loop": false,
+  "paid_resources_this_loop": false,
+  "current_required_actions": [],
+  "new_experiments_authorized_by_closeout": false,
+  "research_gaps_open": [
+    "Actual metadata benefit beyond Q across independent acquisition settings",
+    "Prospective adaptive stopping and full setup cost",
+    "Measurement semantics/pre-query availability of potential auxiliary context",
+    "Distinct mechanism rationale beyond retuning current M summaries"
+  ],
+  "report": "docs/metadata_research_loop_closeout_20260910.md"
+}
