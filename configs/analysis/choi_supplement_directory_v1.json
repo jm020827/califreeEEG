@@ -1,0 +1,57 @@
+{
+  "schema": "cfeg.choi-supplement-directory.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "79317d3200042c3353112e02224f6a5c5c233476",
+  "authority": "Active user goal 계속 연구: inspect a public publisher supplement directory to resolve export provenance; no human experiment, external outreach or member-content opening.",
+  "question": "Does the actual publisher ZIP directory contain documentation or source-code candidates that could resolve the Choi exported Gyro/Temperature or timing gap?",
+  "sources": {
+    "publisher_html": "https://oup.silverchair-cdn.com/article-minimal/5641733",
+    "zip_path": "/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+    "expected_archive_bytes": 10814732,
+    "expected_etag": "\"7f22da8c6004697471d66ec42f173a2a\""
+  },
+  "budget": {
+    "http_requests_max": 4,
+    "redirects": 0,
+    "retries": 0,
+    "html_bytes_max": 524288,
+    "footer_bytes": 22,
+    "directory_bytes_max": 131072,
+    "entries_max": 256,
+    "network_body_bytes_max": 655382,
+    "request_timeout_seconds": 20,
+    "network_execution_attempts": 1,
+    "network_wall_seconds_max": 100,
+    "selftest_calls_max": 4,
+    "selftest_cases_max_per_call": 12,
+    "selftest_bytes_max_per_fixture": 131072,
+    "new_retained_outputs_bytes_max": 16777216,
+    "new_worktrees": 0,
+    "member_contents_read": 0,
+    "pdf_downloads": 0,
+    "human_waveform_or_marker_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0
+  },
+  "constraints": [
+    "Only exact known CDN host/path; no redirects/link expansion or code execution.",
+    "Validate fresh HEAD size and strong ETag against previous metadata; each Range must return206, exact Content-Range/Length, same strong ETag and identity encoding before body read.",
+    "Read only22-byte EOCD for comment-free standard single-disk ZIP and its bounded central directory; unsupported comment/ZIP64/extra payload or malformed layout is a stop, not permission for a larger tail/full download.",
+    "No member/local-header reads or decompression. Names are metadata; save counts/hashed name IDs, expose only conservative documentation/code candidate basenames. Never use member names as filesystem destinations.",
+    "Reject traversal/absolute/NUL/backslash/control/duplicate/case-normalization collision/symlink paths and encrypted or ZIP64 entries. Do not infer that extension identifies content.",
+    "Record actual archive metadata bytes separately from zero member-content reads; no full ZIP checksum claim.",
+    "At listing completion or first source/format failure, stop this stage, preserve failure, update evidence and choose the next information-changing action without re-running exhausted efficacy candidates."
+  ],
+  "ownership": {
+    "root": "sole main/config/script/report/DB writer and sole network executor",
+    "reviewer": "read-only source/scope review, no network or writes"
+  },
+  "expected_decisions": {
+    "code_or_readme_candidate": "freeze exact member metadata for a separately scoped content review; do not open automatically",
+    "only_data_or_figures": "this ZIP does not expose an obvious documentation/source entry; narrow public evidence gap and unsent clarification questions",
+    "failure": "contents remain unverified; preserve failure and do not claim absence"
+  }
+}
