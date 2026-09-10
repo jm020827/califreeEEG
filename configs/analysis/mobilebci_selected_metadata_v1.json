@@ -23,7 +23,8 @@
   ],
   "limits": {
     "loadmat_calls": 2,
-    "reads_per_file": 1,
+    "metadata_decode_calls_per_file": 1,
+    "sha256_byte_passes_per_file": 1,
     "labels_per_variable": 64,
     "label_utf8_bytes": 128,
     "total_label_bytes": 8192,
