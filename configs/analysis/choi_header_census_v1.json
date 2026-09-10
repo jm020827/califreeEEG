@@ -1,0 +1,48 @@
+{
+  "schema": "cfeg.choi-header-census.v1",
+  "date_kst": "2026-09-10",
+  "base_commit": "14fbbe3b4cbee04369c6128f25379602d2a65ef9",
+  "authority": "Active goal 계속 연구: metadata-only census of one already-inspected cnt file; no signal/marker/attribute values or new experiment.",
+  "question": "Are dedicated export history, sensor mapping or time-processing fields visible among complete immediate keys and attribute names at root/cnt?",
+  "input_path": "/home/whwovy/eeg-data/raw/choi2019_gigadb/extracted/S1/Day1/cnt_LOW(1).mat",
+  "expected_file_bytes": 30552599,
+  "groups_to_enumerate": [
+    "/",
+    "/cnt"
+  ],
+  "budget": {
+    "human_file_opens": 1,
+    "execution_attempts": 1,
+    "keys_per_group_max": 128,
+    "attribute_names_per_object_max": 64,
+    "object_names_bytes_max": 256,
+    "output_bytes_max": 65536,
+    "run_wall_seconds_max": 30,
+    "selftest_calls_max": 2,
+    "selftest_fixture_elements_max": 128,
+    "new_retained_outputs_bytes_max": 16777216,
+    "new_worktrees": 0,
+    "network_requests": 0,
+    "pdf_downloads": 0,
+    "dataset_value_reads": 0,
+    "attribute_value_reads": 0,
+    "reference_dereferences": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0
+  },
+  "constraints": [
+    "Open exact regular input in read-only HDF5 mode after path/stat checks; record before/after stat identity. No full-file checksum this stage.",
+    "Enumerate only root and cnt immediate keys and attribute names; hard-linked direct objects may be opened for type/shape/dtype/attribute-name metadata only. Never follow soft/external links or dereference dataset references; do not recurse into #refs# or other child groups.",
+    "Never call Dataset.__getitem__/read_direct or AttributeManager.__getitem__/items/values on real input. No signal/fs/T/label/scalar/attribute values, even if previously inspected.",
+    "If dedicated provenance field/group names exist, stop and select exact metadata fields for later inspection; no auto-read of their contents.",
+    "No visible provenance key only means absent from this enumerated namespace; not proof of absence anywhere in file/all participants/all public code. Do not keep blind-scanning raw values for hidden history.",
+    "If no concrete provenance path remains, maintain unknown/DEFER and request direction for the two-topic unsent clarification. Do not auto-send, tune another learner or rerun closed candidates."
+  ],
+  "ownership": {
+    "root": "sole config/script/census/report/workspace writer",
+    "agents": "read-only source/scope review, no data file opens"
+  }
+}
