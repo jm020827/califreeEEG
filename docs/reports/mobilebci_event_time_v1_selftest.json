@@ -1,1 +1,1 @@
-{"status":"PASS","calls":1,"cases":8,"human_reads":0,"fixture_numeric_elements":10,"scope":"projector guards and selective MAT in-memory fixture; not whole CLI integration or human efficacy"}
+{"status":"PASS","calls":2,"cases_by_call":[8,10],"human_reads":0,"fixture_numeric_elements":10,"scope":"projector guards, selective MAT in-memory fixture and compact serialization failure; not whole CLI integration or human efficacy"}

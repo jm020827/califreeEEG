@@ -94,9 +94,25 @@ def inspect(config, loader=loadmat):
     result["limitations"] = (
         "Event/t metadata access only; numerical agreement alone is not a verified raw clock/export definition or zero drift."
     )
-    rendered = json.dumps(result, indent=2, allow_nan=False)
-    require(len(rendered.encode()) <= limits["output_bytes"], "output_limit")
+    rendered = render_bounded(result, limits["output_bytes"])
     return rendered, result["status"] == "COMPLETE_EVENT_TIME_METADATA_ONLY"
+
+
+def render_bounded(result, output_limit):
+    try:
+        rendered = json.dumps(result, indent=2, allow_nan=False)
+        require(len(rendered.encode()) <= output_limit, "output_limit")
+        return rendered
+    except (ValueError, TypeError, MemoryError):
+        result["status"] = "STOPPED"
+        result["error"] = "metadata_serialization_or_output_limit"
+        result["values_omitted"] = True
+        result["records"] = [
+            {"path": row["path"], "sha256": row["sha256"]} for row in result["records"]
+        ]
+        rendered = json.dumps(result, allow_nan=False)
+        require(len(rendered.encode()) <= output_limit, "compact_output_limit")
+        return rendered
 
 
 def selftest():
@@ -132,8 +148,17 @@ def selftest():
     values = loadmat(buffer, variable_names=FIELDS, simplify_cells=True)
     assert "raw_x" not in values and values["event"]["type"].tolist() == [11, 12]
     assert len(project(values["t"], limits, [0])["values"]) == 2
+    for value in ["x" * 2000, b"unserializable"]:
+        report = {
+            "status": "COMPLETE_EVENT_TIME_METADATA_ONLY",
+            "records": [{"path": "fixture", "sha256": "0" * 64, "metadata": value}],
+        }
+        bounded = json.loads(render_bounded(report, 512))
+        assert bounded["status"] == "STOPPED" and bounded["values_omitted"]
     print(
-        json.dumps({"status": "PASS", "cases": 8, "human_reads": 0, "fixture_numeric_elements": 10})
+        json.dumps(
+            {"status": "PASS", "cases": 10, "human_reads": 0, "fixture_numeric_elements": 10}
+        )
     )
 
 
