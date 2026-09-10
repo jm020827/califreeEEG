@@ -39,3 +39,16 @@ class SampleSpan:
 
     def contains(self, other: "SampleSpan") -> bool:
         return self.start <= other.start and other.stop <= self.stop
+
+
+def validate_run(run: RunKey) -> None:
+    """Recheck even a frozen instance; frozen does not guarantee field integrity."""
+    if type(run) is not RunKey:
+        raise ValueError("exact RunKey required")
+    RunKey.__post_init__(run)
+
+
+def validate_span(span: SampleSpan) -> None:
+    if type(span) is not SampleSpan:
+        raise ValueError("exact SampleSpan required")
+    SampleSpan.__post_init__(span)

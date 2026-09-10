@@ -86,3 +86,13 @@ k=0은 selected/collected0, elapsed0; setup/추가 baseline은 여전히 별도 
 
 다음 사람 연구 전에 실제 export/marker 근거, 값의 유효변동, 별도 입력 권한·참가자 분할·기작·대조군·
 효과/비용 기준 및 유한 fit/reveal 예산이 필요하다. 기존 문서 질문은 계속 미발송이다.
+
+## 사전 공학 검토에서 보완한 binding (동일 invariants, 새 효능 설정 아님)
+
+2026-09-10, 첫 root unit9PASS 뒤 독립 코드 검토에서 두 누락을 찾았다.
+Frozen dataclass도 중첩 필드가 변형될 수 있어, `validate_run`/`validate_span`으로 fetch 전에
+필드 자체를 다시 검사한다. 또한 특징 receipt에 `clock_id/sfreq/cutoff_sample`을 보존하고
+비용 receipt에도 `clock_id/sfreq/collection_start_sample`을 남긴다.
+Cost 함수의 `clock_id=None`은 시간차 계산 자체에는 허용하지만, metadata와의 통합 join에서는
+알 수 있는 동일 clock/rate를 필수로 요구한다. RunKey만 같은 wrong-grid join을 허용하지 않는다.
+이 보완은 frozen 범위의 clock/pairing 검사를 구현하는 것이며, 사람자료 사용권한/과학 threshold는 바뀌지 않는다.
