@@ -1,8 +1,9 @@
 # Choi export 최소 확인 질문 — 조건부 미발송 초안
 
 2026-09-10. **발송하지 않았다. 외부 문의는 별도 승인이다.**
-아직 기존 cnt 한 파일의 전체 키/attribute 이름 census가 남아 있으므로, 이 문의가 유일한 다음
-행동이라고 보지 않는다. 공개/로컬 처리 이력으로 답을 얻으면 질문을 더 줄인다.
+기존 cnt 한 파일의 root/cnt 전체 키와 attribute 이름 [점검](choi_header_census_v1_results.md)을
+마쳤지만 명시적인 sensor/export 이력 이름은 없었다. 조사한 이름 공간에 한정된 결과이며,
+모든 파일/코드에 정보가 없다는 뜻은 아니다. 다음 정보 획득 행동으로 이 문의를 제안한다.
 [이전 초안](choi_aux_context_clarification_draft.md)은 역사 기록으로 보존한다.
 
 수신 후보는 published supplementary document의 교신저자 Han-Jeong Hwang,
@@ -19,7 +20,8 @@ held-out prediction. We have read the dataset paper, its reviewer response and s
 
 Could you point us to existing documentation or code for two aspects of the public export?
 
-1. Does `cnt/Gyro` correspond to the head-mounted IMU shown in Figure 8 and Supplementary Figure 5?
+1. Does the channel labeled `Gyro` in `cnt.clab` (stored in the continuous `cnt.x` array)
+   correspond to the head-mounted IMU shown in Figure 8 and Supplementary Figure 5?
    Which sensor output/component does it contain, and how is it aligned with the EEG samples?
 2. What actual routine/settings produced the 1,000→200 Hz export and its markers, including any
    smoothing or delay adjustment? Which event does a marker represent, and is processing confined

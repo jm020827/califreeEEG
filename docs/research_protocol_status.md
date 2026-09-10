@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **Metadata-only census 완료**: [결과](choi_header_census_v1_results.md). 기존 cnt 한 파일을 1회 열어 root/cnt 전체 직접 키와 attribute 이름을 확인했다. 명시적 센서/export 이력 이름은 없었고 값·파형·marker·fit/outcome/held60 접근0이다. Choi DEFER 유지, 무단 확장 없이 이 점검 종료. 다음은 미발송 두 주제 문의의 방향/별도 발송 승인이다. 전체 goal은 active다.
+
 > 2026-09-10 **두 DOCX 표적 검토 완료**: [결과](choi_supplement_documents_v1_results.md). 저자 답변에서 온도 공개 결과의 제외 이유를 확인했고 보충 IMU 그림을 직접 봤다. 실제 Gyro/export/marker 사양은 미해결·기존 Choi DEFER 유지다. 이전 헤더는 전체 schema census가 아니므로 다음에 기존 한 파일의 키/attribute 이름만 확인한다. 8/8요청·문서2개, XLSX/파형/fit/outcome/held60/발송0, 전체 연구 goal은 active다.
 
 > 2026-09-10 **Publisher ZIP directory 단계 종료**: [결과](choi_supplement_directory_v1_results.md). 4/4요청·1.344초, 실제 ZIP metadata3,943bytes로38항목을 확인했다. 문서·설정 형식 후보2개를 다음 확인 대상으로 좁혔으며 XLSX36개/member본문/사람 fit·outcome은 열지 않았다. 센서/export의 과학적 적격성은 미확정·Choi DEFER 유지, 넓은 연구 goal은 active다.

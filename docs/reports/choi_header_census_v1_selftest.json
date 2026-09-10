@@ -1,0 +1,32 @@
+{
+  "schema": "cfeg.choi-header-census-selftest.v1",
+  "calls": [
+    {
+      "call": 1,
+      "status": "PASS",
+      "stage": "Before final output-size/null-shape patch",
+      "cases": [
+        "metadata_without_value_getters",
+        "soft_link_not_followed",
+        "external_link_not_followed",
+        "attribute_names_not_values"
+      ],
+      "fixture_elements": 6
+    },
+    {
+      "call": 2,
+      "status": "PASS",
+      "stage": "Final reader before real execution",
+      "cases": [
+        "metadata_without_value_getters",
+        "soft_link_not_followed",
+        "external_link_not_followed",
+        "attribute_names_not_values"
+      ],
+      "fixture_elements": 6
+    }
+  ],
+  "human_file_opens": 0,
+  "persisted_fixture_files": 0,
+  "note": "Same four cases in each call, not eight independent scientific experiments. Calls do not directly test the serialization budget or null dataspace."
+}

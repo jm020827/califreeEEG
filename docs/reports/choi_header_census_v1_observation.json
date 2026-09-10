@@ -1,0 +1,121 @@
+{
+  "schema": "cfeg.choi-header-census-observation.v1",
+  "status": "COMPLETE_NAMES_ONLY_CENSUS",
+  "hdf5_opens": 1,
+  "dataset_value_reads": 0,
+  "attribute_value_reads": 0,
+  "reference_dereferences": 0,
+  "path": "/home/whwovy/eeg-data/raw/choi2019_gigadb/extracted/S1/Day1/cnt_LOW(1).mat",
+  "stat_before": {
+    "bytes": 30552599,
+    "device": 66306,
+    "inode": 119688587,
+    "mtime_ns": 1597017970000000000
+  },
+  "groups": {
+    "/": {
+      "type": "group",
+      "attribute_names": [],
+      "children": {
+        "#refs#": {
+          "link": "hard",
+          "type": "group",
+          "attribute_names": []
+        },
+        "cnt": {
+          "link": "hard",
+          "type": "group",
+          "attribute_names": [
+            "MATLAB_class",
+            "MATLAB_fields"
+          ]
+        }
+      },
+      "immediate_keys_complete": true
+    },
+    "/cnt": {
+      "type": "group",
+      "attribute_names": [
+        "MATLAB_class",
+        "MATLAB_fields"
+      ],
+      "children": {
+        "T": {
+          "link": "hard",
+          "type": "dataset",
+          "attribute_names": [
+            "H5PATH",
+            "MATLAB_class"
+          ],
+          "shape": [
+            1,
+            1
+          ],
+          "dtype": "float64"
+        },
+        "clab": {
+          "link": "hard",
+          "type": "dataset",
+          "attribute_names": [
+            "H5PATH",
+            "MATLAB_class"
+          ],
+          "shape": [
+            39,
+            1
+          ],
+          "dtype": "object"
+        },
+        "fs": {
+          "link": "hard",
+          "type": "dataset",
+          "attribute_names": [
+            "H5PATH",
+            "MATLAB_class"
+          ],
+          "shape": [
+            1,
+            1
+          ],
+          "dtype": "float64"
+        },
+        "x": {
+          "link": "hard",
+          "type": "dataset",
+          "attribute_names": [
+            "H5PATH",
+            "MATLAB_class"
+          ],
+          "shape": [
+            39,
+            113608
+          ],
+          "dtype": "float64"
+        },
+        "yUnit": {
+          "link": "hard",
+          "type": "dataset",
+          "attribute_names": [
+            "H5PATH",
+            "MATLAB_class",
+            "MATLAB_int_decode"
+          ],
+          "shape": [
+            2,
+            1
+          ],
+          "dtype": "uint16"
+        }
+      },
+      "immediate_keys_complete": true
+    }
+  },
+  "stat_after": {
+    "bytes": 30552599,
+    "device": 66306,
+    "inode": 119688587,
+    "mtime_ns": 1597017970000000000
+  },
+  "elapsed_seconds": 0.001854,
+  "limitations": "Only root/cnt immediate keys and direct-child metadata; no recursion/reference dereference/attribute values/user block/full-file checksum. Value-read zeros describe this reviewed code path, not HDF5 internal physical IO instrumentation."
+}

@@ -1,0 +1,134 @@
+{
+  "schema": "cfeg.choi-header-census-state.v1",
+  "date_kst": "2026-09-10",
+  "stage_status": "COMPLETE_BOUNDED_NAMES_ONLY_CENSUS",
+  "current_goal": {
+    "objective": "계속 연구",
+    "status": "active",
+    "this_turn": "PROGRESS: completed previously non-exhaustive local namespace inspection; exact scoped absence recorded, next source-matched clarification proposed",
+    "goal_complete": false
+  },
+  "scientific_efficacy": "NOT_EVALUATED",
+  "retained_output_snapshot": {
+    "named_files": 26,
+    "full_file_bytes_before_this_note": 8436504,
+    "limit_bytes": 16777216,
+    "scope": "Conservative full sizes of stage config/script/reports/edited docs/signature/claim/gap payloads and whole existing research DB plus 11 rendered views; not incremental DB pages or peak memory."
+  },
+  "choi_candidate": "DEFER_UNCHANGED",
+  "original_finite_loop": "COMPLETE_UNCHANGED",
+  "base_commit": "14fbbe3b4cbee04369c6128f25379602d2a65ef9",
+  "freeze_commit": "5a92853",
+  "reader_commit": "0fcb9d06505c8d85040c17edc2ce102d08d0fc99",
+  "artifacts": [
+    {
+      "path": "configs/analysis/choi_header_census_v1.json",
+      "sha256": "8bbbd048ce02aba01681274e35d87919da2bc00c8d59adf61878274b7d191bb4"
+    },
+    {
+      "path": "scripts/analysis/census_choi_header_v1.py",
+      "sha256": "d150f460ba4fb829ff4afe7e9a5a97739b2f360221b42867b0f087d4689959d0"
+    },
+    {
+      "path": "docs/reports/choi_header_census_v1_observation.json",
+      "sha256": "6ee5ceb92c73828cded6000bb00aa677cd3d5e6b69a66e748f2687489d2cb590"
+    }
+  ],
+  "observation": {
+    "status": "COMPLETE_NAMES_ONLY_CENSUS",
+    "groups": [
+      "/",
+      "/cnt"
+    ],
+    "max_actual_keys_per_group": 5,
+    "max_actual_attribute_names_per_object": 3,
+    "explicit_provenance_names": "NOT_IDENTIFIED_IN_ENUMERATED_NAMESPACES",
+    "input_stat_before_after_match": true,
+    "full_mat_checksum_read": false,
+    "dataset_attribute_values_read": false,
+    "refs_group_descendants_read": false
+  },
+  "usage": {
+    "human_hdf5_opens": 1,
+    "execution_attempts": 1,
+    "elapsed_seconds": 0.001854,
+    "stdout_bytes": 2858,
+    "selftest_calls": 2,
+    "selftest_cases_per_call": [
+      4,
+      4
+    ],
+    "selftest_fixture_elements": 6,
+    "persisted_fixture_files": 0,
+    "network_requests": 0,
+    "pdf_downloads": 0,
+    "dataset_value_reads": 0,
+    "attribute_value_reads": 0,
+    "reference_dereferences": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0,
+    "gpu_accesses": 0,
+    "new_worktrees": 0,
+    "installs": 0,
+    "deletions": 0,
+    "pushes": 0
+  },
+  "checks": {
+    "ruff_format": "PASS",
+    "ruff_check": "PASS",
+    "git_diff_check": "PASS",
+    "full_repository_pytest": "NOT_RUN",
+    "read_only_runtime_review": "No execution blocker; optional boundary/type-reporting limits recorded",
+    "read_only_scope_review": "No material issue; scoped absence, Gyro channel correction and original goal retained",
+    "sqlite_quick_check": "ok",
+    "protected_prior_artifacts": "4 SHA values unchanged and generated-boundary state unchanged vs base"
+  },
+  "limitations": [
+    "Names-only evidence, not file-wide or public-code-wide absence. No future safe-input claim or efficacy claim.",
+    "Reported zero value reads describe inspected Python code paths, not instrumented HDF5 internal physical IO.",
+    "Selftests patch Dataset/AttributeManager __getitem__, not every possible HDF5 API or OS access.",
+    "names iterator checks count after fetching a name; general overflow can retrieve one extra name before stopping. Actual counts below limits.",
+    "Other HDF5 object kinds would be labeled dataset by the small reader; actual enumerated objects are Group/Dataset, so no actual mislabel found.",
+    "Stat identity is not cryptographic content identity. No full human-file hashing.",
+    "Preserve prior generated-engineering array-budget violation; this stage does not erase or reclassify it."
+  ],
+  "scholarly": {
+    "claim_id": "claim:7af0b31857f1c3b9",
+    "claim_status": "qualified",
+    "evidence_ids": [
+      "evidence:c632494f539ab971",
+      "evidence:3e6ddbbe3ab07227"
+    ],
+    "gap_id": "gap:b654467d1d604de0",
+    "gap_status": "open",
+    "counts": {
+      "papers": 1081,
+      "search_runs": 85,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 63,
+      "evidence": 160,
+      "gaps": 39,
+      "analogies": 5,
+      "deep_reads": 36
+    },
+    "cutoff": "2026-09-04",
+    "retrieval_date": "2026-09-10",
+    "new_scholarly_searches": 0,
+    "render": "complete"
+  },
+  "next_action": {
+    "status": "DIRECTION_AND_SEPARATE_SENDING_APPROVAL_REQUESTED",
+    "draft": "docs/choi_export_minimal_clarification_20260910.md",
+    "topics": [
+      "Gyro channel to actual IMU and EEG sample alignment",
+      "Actual 1000-to200Hz export and marker/run-boundary processing"
+    ],
+    "outreach_sent": false,
+    "confirmed_mail_sending_tool": false,
+    "resume_condition": "Source-matched provenance permits identity/timing review, followed by a distinct bounded candidate contract; no blind raw scan or closed-candidate rerun."
+  }
+}

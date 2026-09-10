@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **Choi 한 파일 구조 점검 종료**: [결과·재개 조건](docs/choi_header_census_v1_results.md). Root/cnt의 전체 직접 키·attribute 이름에 명시적인 sensor/export 처리 이력은 없었다. 조사 범위에 한정된 결과이며 파일 전체의 부재 증명은 아니다. 움직임 후보 DEFER·기존 부정 결과 유지, 새 효능 실험0. 다음은 센서–EEG 대응과 실제 export/marker 처리의 두 주제에 대한 저자 확인을 제안하며 외부 발송은 별도 승인이다. 아래는 시점별 이력이다.
+
 > 2026-09-10 **Choi 보충문서에서 온도 제외 이유 확인**: [정독 결과·다음 행동](docs/choi_supplement_documents_v1_results.md). 저자는 온도 단위/스케일 심사 지적 뒤 온도 관련 공개 결과를 제외했다고 설명했다. 센서 미연결이나 raw 채널 삭제로 단정하지 않는다. IMU 보충그림의 g 표시는 확인했지만 실제 Gyro 대응·export 시간 처리는 미확정이다. 다음은 기존 cnt의 처리 이력 이름만 확인하는 작은 metadata census이며 새 사람 실험은 없다.
 
 > 2026-09-10 **Choi 보충 ZIP 목록 확인**: [결과·다음 두 후보](docs/choi_supplement_directory_v1_results.md). 실제 부분 GET으로 38항목(XLSX36/문서·설정 형식 후보2)을 확인했다. Member 내용은 열지 않았고 문서의 정체·내용은 아직 미확정이다. 다음은 이 두 후보의 취득/export 설명 확인이며 새 효능 실험은 없다. 기존 부정 결과·Choi DEFER·held60 보호를 유지하고 전체 연구는 계속한다.
