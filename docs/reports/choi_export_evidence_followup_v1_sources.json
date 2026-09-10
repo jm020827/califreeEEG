@@ -1,0 +1,152 @@
+{
+  "schema": "cfeg.choi-export-evidence-projection.v1",
+  "retrieval_date_kst": "2026-09-10",
+  "representation": "Agent-selected field projection and paraphrases of official HTML/API/tool responses; not byte-for-byte raw responses or a full-paper/PDF review. No archive body or participant values retained.",
+  "config": "configs/analysis/choi_export_evidence_followup_v1.json",
+  "root_targets": [
+    {
+      "id": "dataset_record",
+      "url": "https://gigadb.org/gigadb/api/dataset/get_dataset/?dataset_id=100660",
+      "coverage": "Selected dataset metadata and additional_details",
+      "observed": {
+        "dataset_id": "100660",
+        "doi": "10.5524/100660",
+        "publication_date": "October 16, 2019",
+        "github_links": [],
+        "related_datasets": [],
+        "linked_paper_doi": "10.1093/gigascience/giz133"
+      },
+      "limitations": "Empty registered GitHub field is not evidence of no code elsewhere; public submitter contact not contacted."
+    },
+    {
+      "id": "dataset_files",
+      "url": "https://gigadb.org/gigadb/api/dataset/list_dataset_files/?dataset_id=100660&per_page=1000&start=1",
+      "coverage": "Entire listing page, three file metadata records, no member bodies",
+      "pagination": {
+        "total": 3,
+        "page": 1,
+        "count": 3,
+        "per_page": 1000
+      },
+      "files": [
+        {
+          "name": "mrk-and-cnt_datasets.tar.gz",
+          "catalog_bytes": 11067348725,
+          "release_date": "August 11, 2020",
+          "catalog_md5": ""
+        },
+        {
+          "name": "readme_100660.txt",
+          "catalog_bytes": 3187,
+          "release_date": "October 16, 2019",
+          "catalog_md5": ""
+        },
+        {
+          "name": "questionnaires_answers.csv",
+          "catalog_bytes": 2147,
+          "release_date": "October 09, 2019",
+          "catalog_md5": ""
+        }
+      ],
+      "limitations": "Catalog sizes/dates are reported metadata, not locally verified archive checksums or scientific revision evidence. No CSV or TAR body read."
+    },
+    {
+      "id": "publisher_html",
+      "url": "https://oup.silverchair-cdn.com/article-minimal/5641733",
+      "canonical_url": "https://academic.oup.com/gigascience/article/8/11/giz133/5641733",
+      "transient_raw_bytes": 217863,
+      "transient_raw_sha256": "c19ace355a2ecff333f95371d255c0542c3073c6660acc8a6adb7844f0380e1c",
+      "raw_retained": false,
+      "coverage": "Selected data-format, physiological-recording and supplementary-description paragraphs; Table1/Table2 text and link metadata. Same logical URL read again for tables.",
+      "reported_findings": [
+        "Authors report MATLAB R2013b analysis and 200Hz conversion of the continuous physiological export; cnt_Low(1) denotes the first low-band session.",
+        "Table1 lists frequency-band/file families; no transfer function or timestamp definition is supplied there.",
+        "Physiological supplements are described as five figures and ten files. Head-motion summaries are linked in descriptions for files9/10; their literal names are HeadMovement_Day1.xlxs and HeadMovement_Day2.xlsx.",
+        "A publisher supplement ZIP link is present."
+      ],
+      "limitations": "No Choi-specific resampling function/options/phase, exact marker event or sensor-to-Gyro mapping identified in reviewed sections. Literal xlxs spelling is author text, not a verified ZIP member. No supplementary spreadsheet values or figures newly opened."
+    },
+    {
+      "id": "readme",
+      "url": "https://s3.ap-northeast-1.wasabisys.com/gigadb-datasets/live/pub/10.5524/100001_101000/100660/readme_100660.txt",
+      "coverage": "Public README visible text",
+      "reported_findings": [
+        "Lists three dataset files, body temperature and head-motion accelerator; no exact export or calibration instructions found."
+      ],
+      "limitations": "No remote exact-byte hash retained. Do not equate catalog byte count with decoded visible text length."
+    },
+    {
+      "id": "publisher_supplement_head",
+      "url": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "method": "HEAD on public publisher link; transient URL query omitted here",
+      "observed_headers": {
+        "http_status": 200,
+        "content_type": "application/zip",
+        "content_length": 10814732,
+        "accept_ranges": "bytes",
+        "last_modified": "Sun, 17 Nov 2024 13:59:57 GMT",
+        "etag": "7f22da8c6004697471d66ec42f173a2a"
+      },
+      "curl_exit_code": 63,
+      "archive_body_bytes_read": 0,
+      "limitations": "Curl --max-filesize2097152 rejected advertised size despite HEAD. Headers are available, not a successful archive fetch. Range behavior and archive contents remain untested; host mtime is not a scientific revision date."
+    }
+  ],
+  "scout_targets": [
+    {
+      "url": "https://www.brainproducts.com/solutions/brainamp/",
+      "coverage": "Expandability/amplifier options; multiple BrainAmp configurations",
+      "limitations": "Amplifier family does not identify Choi sensor or settings."
+    },
+    {
+      "url": "https://www.brainproducts.com/support-resources/",
+      "coverage": "Navigation only"
+    },
+    {
+      "url": "https://www.brainproducts.com/solutions/sensors/",
+      "coverage": "3D Acceleration Sensor and technical specifications",
+      "reported_findings": [
+        "Current sensor has voltage output with a stated acceleration sensitivity."
+      ],
+      "limitations": "No model/version/circuit/export link to Choi. No current conversion coefficient adopted.",
+      "failure": "Initial web InternalError; same-target retry succeeded."
+    },
+    {
+      "url": "https://pressrelease.brainproducts.com/sensor-data-analysis/",
+      "coverage": "Introduction, 1D and 3D Acceleration Sensor section, visible dates",
+      "reported_findings": [
+        "Vendor distinguishes one channel for 1D from x/y/z channels for 3D. Guide follows the current Analyzer version; visible publication2020-08-24 and update2026-08-12."
+      ],
+      "limitations": "Not historical evidence for unspecified2019 Choi hardware."
+    }
+  ],
+  "agent_inferences": [
+    "Global uV export and a plotted g scale need not logically conflict, since voltage-output acceleration sensors exist; actual Choi conversion remains unknown.",
+    "Original prequery objective can also accommodate contemporaneous calibration-support M available before model freeze, subject to a new contract and all actual acquisition/filter dependencies being charged and permitted.",
+    "Current prospective presupport candidate remains deferred. Absolute physical units are not universally essential to every separately registered motion feature.",
+    "Publisher supplement inventory is an uninspected public evidence route; do not conclude external outreach is the only remaining route."
+  ],
+  "search_queries": [
+    "\"giz133\" (\"code\" OR \"github\" OR \"toolbox\")",
+    "\"100660\" (\"Gyro\" OR \"resample\" OR \"source code\")",
+    "site:brainproducts.com accelerometer movement sensor BrainAmp 2019"
+  ],
+  "search_result_limitations": "No source-matched Choi export repository identified in these three queries. Irrelevant DOI/number collisions and newer datasets citing Choi were not followed.",
+  "budget_accounting": {
+    "queries_used": 3,
+    "logical_targets_used": 9,
+    "root_targets": 5,
+    "scout_targets": 4,
+    "failed_target_followups_used": 1,
+    "root_verification_of_existing_scout_targets": true,
+    "exact_http_request_count": "not claimed; target accounting per frozen config",
+    "pdf_downloads": 0,
+    "dataset_downloads": 0,
+    "archive_body_bytes_read": 0,
+    "human_waveform_or_marker_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0
+  }
+}

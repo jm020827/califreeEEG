@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **공식 문서 후속 조사 종료 / 연구 계속**: [근거와 범위 정정](choi_export_evidence_followup_v1_results.md). Query 전 사용 가능성과 각 support 시작 전 측정은 다른 조건이다. Support-synchronous M은 별도 설계 가능성일 뿐 아직 사람 실행 계약이 아니다. Sensor/export/marker는 미확정·현재 Choi DEFER 유지. 공개 publisher 보충 ZIP을 찾았고 다음은 그 파일목록의 별도 제한 조사다. 이번 ZIP 본문·사람 파형·fit·outcome 0, 기존 실패/배열상한 이탈/V2 deny/held60 보호 불변이다.
+
 > 2026-09-10 **새 goal 연구 진행 중**: [인공 시간경계·collection-cost 구현 결과](acquisition_boundary_generated_v1_results.md), [상태](reports/acquisition_boundary_generated_v1_state.json). 최종 신규34tests·독립 검토 완료; 기존 회귀배열 상한 이탈1종은 보존한다. 센서 timing 미확정과 Choi DEFER를 바꾸지 않았으며 사람파형·fit·outcome0이다. 다음은 actual export/marker 공식 근거의 좁은 조사다. 이전 유한 goal 완료를 현재 `계속 연구` goal 전체 완료로 확장하지 않는다.
 
 > 2026-09-10 **후속 outcome-free 검토 완료**: [Choi auxiliary feasibility](choi_aux_context_feasibility_v1_results.md), [상태](reports/choi_aux_context_feasibility_v1_state.json). 실제 head-motion 센서의 저자 보고는 확인했으나 export 의미/시간·Temperature 연결은 미확정이라 후보 활성화를 보류했다. 사람 파형/학습/outcome0, 기존 유한 goal 완료와 V2 deny/held60 보호는 유지한다. 다음 pre-support motion 학습·인공 시간경계 검증은 제안이지 승인된 사람 실험이 아니다.

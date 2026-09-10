@@ -1,0 +1,125 @@
+{
+  "schema": "cfeg.choi-export-evidence-followup-state.v1",
+  "date_kst": "2026-09-10",
+  "stage_status": "COMPLETE_BOUNDED_OFFICIAL_EVIDENCE_REVIEW",
+  "scientific_efficacy": "NOT_EVALUATED",
+  "retained_output_snapshot": {
+    "bytes_before_final_audit_note": 8395169,
+    "limit_bytes": 33554432,
+    "scope": "Conservative full sizes of all named edited/new repo documents/config, workspace input/signature files, whole existing SQLite DB and all11rendered views; not a network-byte or process-peak measurement. Most bytes predate this stage."
+  },
+  "choi_presupport_candidate": "DEFER_UNCHANGED",
+  "current_goal": {
+    "objective": "계속 연구",
+    "status": "active",
+    "turn_classification": "PROGRESS: source inventory/supplement route identified and original prequery versus optional presupport scope clarified"
+  },
+  "original_finite_loop": "COMPLETE_UNCHANGED",
+  "base_commit": "b4adf0b",
+  "freeze_commit": "7b9118acc1e0e12bd27751a42ce07a0268c99c40",
+  "artifacts": [
+    {
+      "path": "configs/analysis/choi_export_evidence_followup_v1.json",
+      "sha256": "64ce5032edbc180b6a4c93deee7d06a98b7f6331061112adb2e8c5ac8246250a"
+    },
+    {
+      "path": "docs/reports/choi_export_evidence_followup_v1_sources.json",
+      "sha256": "9525c65871567f18b76e4f1657df28b69adde3ae198b28f1163535ef4629b3a9"
+    },
+    {
+      "path": "docs/metadata_calibration_efficiency_design.md",
+      "sha256": "9177af31d11a1e136a4546aff6aa016a68993361a93815cb2b59db2b322f7080"
+    },
+    {
+      "path": "docs/reports/choi_aux_context_feasibility_v1_state.json",
+      "sha256": "e66f8dd8c650468d98b1981ce77eb9f109bba1ce706d55474c598e145163680b"
+    },
+    {
+      "path": "docs/reports/metadata_research_loop_closeout_20260910.json",
+      "sha256": "d8a437f852abd66af0450346cd19c2c90a4c3331ed4b0fe54bbfe750f1687a8f"
+    },
+    {
+      "path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+      "sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
+    }
+  ],
+  "outcomes": {
+    "official_inventory": "Three listed files; GitHub field empty. Does not prove no code elsewhere.",
+    "new_public_route": "Publisher supplement ZIP. HEAD headers only; archive listing/body uninspected.",
+    "source_matched_sensor_model": "UNKNOWN",
+    "gyro_channel_mapping_axes_conversion": "UNKNOWN",
+    "temperature_connection_site": "UNKNOWN",
+    "marker_event_and_export_temporal_dependencies": "UNKNOWN",
+    "within_band_session_ordinal": "AUTHOR_REPORTED; not complete global chronology/timestamp verification",
+    "goal_scope_correction": "Prequery context does not universally require presupport measurement. Contemporaneous support M is a separate unactivated proposal.",
+    "unit_scope": "Unit-agnostic variants need not require absolute g, but still require valid channel identity/timing/variation.",
+    "new_promising_human_candidate": false
+  },
+  "usage": {
+    "targeted_web_queries": 3,
+    "logical_document_targets": 9,
+    "root_targets": 5,
+    "scout_targets": 4,
+    "failed_target_followups": 1,
+    "counting": "Logical target URLs; root rechecks of existing scout targets do not add new targets. Not a claim of nine total HTTP calls.",
+    "scholarly_cli_searches": 0,
+    "pdf_downloads": 0,
+    "archive_body_bytes_read": 0,
+    "dataset_downloads": 0,
+    "human_waveform_or_marker_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "pytest_calls": 0,
+    "new_worktrees": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0,
+    "gpu_runs": 0
+  },
+  "source_failures": [
+    "Vendor sensors first web open InternalError; one same-target retry succeeded.",
+    "Publisher ZIP HEAD HTTP200 headers available but curl63 on2MiB advertised-size guard; no body fetched. No archive retry.",
+    "Several scoped web results were irrelevant number/DOI collisions or newer datasets citing Choi; not treated as source-matched export code."
+  ],
+  "evidence_limits": [
+    "Retained source artifact is explicitly a selected-field/paraphrase projection, not full raw HTML/API or a PDF.",
+    "Publisher raw HTML hash computed transiently; no full raw source retained.",
+    "Public vendor guidance is current, not historical proof of2019 hardware.",
+    "No actual Range operation, ZIP directory, participant supplementary values or archive checksum verified.",
+    "No completeness/novelty frontier claim; workspace cutoff2026-09-04 unchanged."
+  ],
+  "independent_review": {
+    "reviewer": "channel_runtime_review",
+    "scope": "Read-only results/source-projection consistency and vendor facts",
+    "result": "NO_BLOCKER",
+    "not_independently_rechecked": "GigaDB and publisher HEAD observations"
+  },
+  "scholarly_workspace": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design",
+    "sole_writer": "root",
+    "claim": "claim:eb3a685143b50510",
+    "claim_status": "qualified",
+    "new_evidence": 5,
+    "open_gap": "gap:b654467d1d604de0",
+    "render": "complete",
+    "sqlite_quick_check": "ok",
+    "counts": {
+      "papers": 1081,
+      "search_runs": 85,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 59,
+      "evidence": 151,
+      "gaps": 39,
+      "analogies": 5,
+      "deep_reads": 36
+    }
+  },
+  "preserve": [
+    "All previous failed/negative results",
+    "Prior generated legacy-fixture array-cap deviation",
+    "Existing41worktrees/8untracked outputs",
+    "Original goal/design and Choi/V2/held60 boundaries"
+  ],
+  "next_action": "Separate frozen directory-only publisher supplement review. Initially support no-comment, non-ZIP64 bounded directory metadata only; validate actual Range responses/identity. Do not auto-open README/code bodies or participant spreadsheets. If evidence remains missing, preserve unknown and narrow unsent author questions; external sending needs approval."
+}

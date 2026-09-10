@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **Choi 공식 export 후속 조사**: [결과·설계 범위 정정](docs/choi_export_evidence_followup_v1_results.md). 원 목표는 pre-query이며, 보정 EEG와 동시 측정한 M을 첫 query 전 학습에 쓰는 별도 설계도 가능하다. 최근 pre-support 후보의 DEFER는 유지한다. 공식 목록·vendor 안내로 실제 센서/시간 처리를 확정하지 못했지만 publisher 보충 ZIP 경로를 찾았다. 다음은 별도 유한 파일목록 조사이며 ZIP 본문·사람 실험은 이번에 0이다. 현재 넓은 연구 goal은 active, 아래 기록은 시점별 이력이다.
+
 > 2026-09-10 **후속 시간경계·실제 수집비용 구현**: [결과와 한계](docs/acquisition_boundary_generated_v1_results.md). 별도 generated-only 경로의 최종34tests와 독립 검토를 마쳤다. 금지된 미래/다른 clock·trial의 혼입과 수집 전 baseline 비용 누락을 검사한다. 기존 회귀 fixture의 배열상한 이탈은 기록했으므로 전체 예산 준수 PASS는 아니다. 사람 학습·효능 평가0, Choi 후보 DEFER 유지. 현재 새 `계속 연구` goal은 active이며 아래의 완료는 이전 유한 루프의 상태다.
 
 > 2026-09-10 **후속 Choi 보조센서 검토 완료 — 새 실험은 보류**: [근거·쉬운 설명·다음 설계](docs/choi_aux_context_feasibility_v1_results.md). 논문은 실제 머리 IMU 기록을 보고하지만 `Gyro`의 물리량/변환·사전 시간경계는 미확정이다. 온도도 연결·부위가 확인되지 않았다. 기존 전체-run 양방향 전처리와 선택 label 수를 실제 수집 비용으로 보는 해석을 새 설계에서 분리한다. 아래 유한 루프 완료/부정 결과는 유지하며 새 학습·outcome·held60 접근0이다. 확인 질문은 미발송 초안이다.
