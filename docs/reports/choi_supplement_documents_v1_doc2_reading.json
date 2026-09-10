@@ -1,0 +1,47 @@
+{
+  "schema": "cfeg.choi-document-reading.v1",
+  "document": "Supplementary Figures.docx",
+  "local_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-2.docx",
+  "sha256": "2439ed8a8ad9a571be774002427a70a894d9064f3ebecf0ba09c85984c2836e4",
+  "source_url": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+  "archive_etag": "7f22da8c6004697471d66ec42f173a2a",
+  "extraction": "Static ZIP/ElementTree of app.xml, word/document.xml and image relationship metadata; exact embedded Figure5 PNG extracted and viewed at original resolution. No office/macro/link execution or spreadsheet values.",
+  "coverage": {
+    "paragraphs_reviewed": "All nonempty plain-text paragraphs P1-P32",
+    "app_reported_pages": 6,
+    "app_page_count_not_rendered_pagination": true,
+    "images_reviewed": [
+      "SupplementaryFigure5, P31 rId15 -> word/media/image5.png; captionP32"
+    ],
+    "unreviewed_images": [
+      "SupplementaryFigures1-4"
+    ],
+    "pdf_downloads": 0
+  },
+  "reported_findings": [
+    {
+      "locator": "P12, P24/P26/P28/P30/P32",
+      "finding": "Document lists five supplementary figures covering respiration, ECG, two EMG channels and IMU; no temperature figure is included."
+    },
+    {
+      "locator": "P32 and Figure5",
+      "finding": "Authors describe mean trial IMU values by participant/day. The image has two day panels and g units, with a signed vertical axis."
+    },
+    {
+      "locator": "P18-P22",
+      "finding": "A corresponding-author institutional email is published; no message was sent."
+    }
+  ],
+  "agent_inferences": [
+    "This corroborates author-reported removal of temperature supplements, but does not establish that cnt/Temperature was erased or disconnected.",
+    "The IMU summary is a published per-trial summary, not evidence of a pre-support measurement window or an export-to-Gyro conversion.",
+    "Signed g plots do not identify a particular axis, centered magnitude or physical calibration pipeline.",
+    "Exact export/downsampling/marker specifications are absent from reviewed text and the relevant figure; the remaining uncertainty cannot be filled by a stronger learner."
+  ],
+  "image_artifact": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/supplementary-figure-5.png",
+    "sha256": "59233257f12a3033f0cd0cab5e83e69d362f7081bd963933ded7a439081ba303",
+    "bytes": 139234
+  },
+  "limits": "No participant-specific numerical transcription, digitization, new selection/thresholds or metrics. Not a new EEG outcome. Entire manuscript/PDF reading is not claimed."
+}

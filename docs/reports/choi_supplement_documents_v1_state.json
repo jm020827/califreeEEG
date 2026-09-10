@@ -1,0 +1,192 @@
+{
+  "schema": "cfeg.choi-supplement-documents-state.v1",
+  "date_kst": "2026-09-10",
+  "stage_status": "COMPLETE_TWO_DOCX_TARGETED_REVIEW",
+  "current_goal": {
+    "objective": "계속 연구",
+    "status": "active",
+    "previous_turn": "PROGRESS:actual directory narrowed read to2candidates",
+    "this_turn": "PROGRESS:author response explains temperature removal; IMU figure checked; local header census identified as next unexhausted evidence route"
+  },
+  "scientific_efficacy": "NOT_EVALUATED",
+  "retained_output_snapshot": {"full_file_bytes_before_final_note": 10178371, "limit_bytes": 67108864, "scope": "Conservative full sizes of named edited/new files, source DOCX/PNG, whole existing DB/11rendered views and preservation witnesses; not peak memory or actual paginated-page verification."},
+  "choi_presupport_candidate": "DEFER_UNCHANGED",
+  "original_finite_loop": "COMPLETE_UNCHANGED",
+  "base_commit": "a6c650f42b63acab55b6e756da716688d652a717",
+  "freeze_commit": "07ac8a5",
+  "identity_reader_commit": "8cef350",
+  "content_reader_commit": "2fe981a",
+  "artifacts": [
+    {
+      "path": "configs/analysis/choi_supplement_documents_v1.json",
+      "sha256": "c4fc42b8cd79b3c99451064e0a75c576f1a4d9a45ea50024a3a625e0107f2787"
+    },
+    {
+      "path": "scripts/analysis/inspect_choi_supplement_directory_v1.py",
+      "sha256": "adea608f620420e283990c77defcd197414e72fd14deb1ca01b16cf5fd7226b4"
+    },
+    {
+      "path": "scripts/analysis/read_choi_supplement_documents_v1.py",
+      "sha256": "260b53a1251c06c07d1100a335e4c04b2c7de9ecacbe1c700f4d1547710b092b"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_identity.json",
+      "sha256": "88341de86305f2be245fd9258db5f73827b8d3125fc4e94802dafee3d8762702"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_doc1_observation.json",
+      "sha256": "6033e09d820cdbc3748a751833390b24fc992dc794d524442c30e730239edbb1"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_doc1_reading.json",
+      "sha256": "4cc645aaef3d0a9582c4f368cbde9bc8592b27169a0b8ad3b67577747fafa9cf"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_doc2_observation.json",
+      "sha256": "22131c699c576c065d81e02fa8c24ee0d919aa50f76639fdd9382cafecececc9"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_doc2_reading.json",
+      "sha256": "675a5e2d5a37e4f1d0465f96661008256576f2768816b3f91146755ff87a6ab7"
+    },
+    {
+      "path": "docs/reports/choi_supplement_documents_v1_selftest.json",
+      "sha256": "3b5bbefe408888e3cde0e96dc7e8fa09cb766c6bcd42874ab4978e9149a6c2a3"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-1.docx",
+      "sha256": "5b39e62abd3fa85fbbfa8481e593f3908761acd61f4b699a2b7e92881384e91f"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-2.docx",
+      "sha256": "2439ed8a8ad9a571be774002427a70a894d9064f3ebecf0ba09c85984c2836e4"
+    },
+    {
+      "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/supplementary-figure-5.png",
+      "sha256": "59233257f12a3033f0cd0cab5e83e69d362f7081bd963933ded7a439081ba303"
+    },
+    {
+      "path": "docs/reports/choi_aux_context_feasibility_v1_state.json",
+      "sha256": "e66f8dd8c650468d98b1981ce77eb9f109bba1ce706d55474c598e145163680b"
+    },
+    {
+      "path": "docs/reports/metadata_research_loop_closeout_20260910.json",
+      "sha256": "d8a437f852abd66af0450346cd19c2c90a4c3331ed4b0fe54bbfe750f1687a8f"
+    },
+    {
+      "path": "configs/governance/metadata_calibration_v2_terminal_deny_overlay.json",
+      "sha256": "dd4541765b6b021f4dc4c83fa8fc0b7c2eb76b997a093a0cff479f4fa9b3f7d0"
+    }
+  ],
+  "evidence_changes": {
+    "temperature_omission": "AUTHOR_EXPLAINED: arbitrary-unit/scaling reviewer concern followed by removal from paper/temperature figure/supplemental worksheets.",
+    "temperature_hardware_connection_site_or_cnt_removal": "STILL_UNKNOWN; not inferred from publication removal.",
+    "imu_figure": "DIRECT_VISUAL_CHECK:mean-trial IMU summary,2day panels,g units,signed axis. No per-participant values transcribed.",
+    "exported_gyro_mapping_and_resampling_marker_provenance": "STILL_UNKNOWN in reviewed two documents.",
+    "local_schema_exhaustiveness": "Existing saved header projection is not a complete census; processing-history absence/presence remains unestablished."
+  },
+  "documents": [
+    {
+      "member_name": "responses to the reviewers.docx",
+      "local_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-1.docx",
+      "bytes": 817595,
+      "sha256": "5b39e62abd3fa85fbbfa8481e593f3908761acd61f4b699a2b7e92881384e91f",
+      "crc32_verified": "3e9b93ec",
+      "format_requires_parser_verification": true
+    },
+    {
+      "member_name": "Supplementary Figures.docx",
+      "local_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-2.docx",
+      "bytes": 729188,
+      "sha256": "2439ed8a8ad9a571be774002427a70a894d9064f3ebecf0ba09c85984c2836e4",
+      "crc32_verified": "0c37ad49",
+      "format_requires_parser_verification": true
+    }
+  ],
+  "usage": {
+    "http_requests": 8,
+    "retries": 0,
+    "redirects": 0,
+    "identity_attempts": 1,
+    "document_member_attempts": 2,
+    "application_body_bytes": 1621199,
+    "archive_application_body_bytes": 1403336,
+    "decoded_document_bytes": 1546783,
+    "network_phase_elapsed_seconds": [
+      2.836,
+      1.619,
+      0.134
+    ],
+    "network_phase_elapsed_total_seconds": 4.589,
+    "selftest_calls": 3,
+    "selftest_cases_per_call": [
+      6,
+      6,
+      8
+    ],
+    "largest_selftest_fixture_bytes": 30,
+    "app_reported_docx_pages": [
+      4,
+      6
+    ],
+    "actual_pagination_measured": false,
+    "embedded_figures_viewed": 1,
+    "pdf_downloads": 0,
+    "scholarly_searches": 0,
+    "participant_spreadsheet_member_reads": 0,
+    "human_raw_waveform_or_marker_reads": 0,
+    "human_fits": 0,
+    "outcome_reveals": 0,
+    "held60_accesses": 0,
+    "new_worktrees": 0,
+    "external_requests_sent": 0,
+    "paid_resources": 0,
+    "gpu_runs": 0
+  },
+  "limits": [
+    "Static DOCX plain text only except directly viewed embedded Figure5; no full paper/PDF reading claim.",
+    "App-reported page counts are document metadata, not a rendered pagination measurement; exact locators are XMLparagraphs/figure.",
+    "Published review comments and figures are literature evidence, not new model outcomes; no numerical digitization or selection thresholds.",
+    "No raw cnt/marker read this turn. Existing header projection lacks an exhaustive schema declaration.",
+    "No office execution/macros/outbound relationships or embedded workbook extraction; two document member CRCs verified, whole ZIP checksum not verified."
+  ],
+  "independent_review": {
+    "final_interpretation_review": "PASS; reviewer statically rechecked author-responseP29-P33 and found no overclaim about cnt deletion/disconnection; no network/writes/experiment.",
+    "guard_review": "Final2fe981a guards PASS; payloadderivedidentity and exactZIPURL before read",
+    "scope_review": "Essential mapping/timing vs conditional absoluteunit/baseline; existing header record not exhaustive",
+    "new_network_by_reviewers": 0
+  },
+  "preserved": {
+    "worktrees": 41,
+    "preexisting_untracked_directories": 8,
+    "all_prior_negatives": true,
+    "old_array_cap_deviation": true,
+    "original_choi_defer_and_v2_deny": true,
+    "held60_protection": true
+  },
+  "scholarly_workspace": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design",
+    "sole_writer": "root",
+    "claims": [
+      "claim:7b04977809ffbbc3",
+      "claim:a79fab4ee6fccf66"
+    ],
+    "claim_status": "qualified",
+    "new_evidence": 4,
+    "open_gap": "gap:b654467d1d604de0",
+    "render": "complete",
+    "sqlite_quick_check": "ok",
+    "counts": {
+      "papers": 1081,
+      "search_runs": 85,
+      "paper_cards": 45,
+      "techniques": 17,
+      "claims": 62,
+      "evidence": 158,
+      "gaps": 39,
+      "analogies": 5,
+      "deep_reads": 36
+    }
+  },
+  "next_action": "Separate small metadata-only census of top-level/cnt keys and attribute names in one previously inspected localcnt; do not read waveforms/markers or follow external HDF5 links. If history exists, select exact non-waveform settings. If no provenance, use unsent minimal2-topic clarification with separate external-send approval. Do not call outreach the only remaining route yet."
+}

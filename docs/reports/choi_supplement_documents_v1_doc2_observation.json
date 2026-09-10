@@ -1,0 +1,30 @@
+{
+  "schema": "cfeg.choi-supplement-document-observation.v1",
+  "mode": "document",
+  "status": "EXACT_MEMBER_EXTRACTED_READING_PENDING",
+  "requests": [
+    {
+      "method": "GET",
+      "url_without_query": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+      "requested_content_range": "bytes 10164920-10810788/10814732",
+      "body_bytes_read": 645869,
+      "status": 206,
+      "headers": {
+        "content-length": "645869",
+        "content-range": "bytes 10164920-10810788/10814732",
+        "etag": "\"7f22da8c6004697471d66ec42f173a2a\"",
+        "content-type": "application/zip"
+      },
+      "body_sha256": "bc52ac1365c92e620af54ffd7ed8af28ed181a73d311babe2dc82bb59a6a9699"
+    }
+  ],
+  "document": {
+    "member_name": "Supplementary Figures.docx",
+    "local_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-2.docx",
+    "bytes": 729188,
+    "sha256": "2439ed8a8ad9a571be774002427a70a894d9064f3ebecf0ba09c85984c2836e4",
+    "crc32_verified": "0c37ad49",
+    "format_requires_parser_verification": true
+  },
+  "elapsed_seconds": 0.134
+}

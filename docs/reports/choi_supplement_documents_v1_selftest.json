@@ -1,0 +1,20 @@
+{
+  "calls": 3,
+  "early_calls_cases": 6,
+  "final": {
+    "status": "PASS",
+    "cases": [
+      "matched_identity",
+      "bounded_deflate_crc",
+      "wrong_name",
+      "wrong_crc",
+      "decoded_cap",
+      "overlap",
+      "forged_identity_start",
+      "forged_identity_suffix"
+    ],
+    "largest_fixture_bytes": 30,
+    "network_requests": 0
+  },
+  "scope": "Generated header/identity/decompression validation only, not EEG or whole-repo tests."
+}

@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-10 **두 DOCX 표적 검토 완료**: [결과](choi_supplement_documents_v1_results.md). 저자 답변에서 온도 공개 결과의 제외 이유를 확인했고 보충 IMU 그림을 직접 봤다. 실제 Gyro/export/marker 사양은 미해결·기존 Choi DEFER 유지다. 이전 헤더는 전체 schema census가 아니므로 다음에 기존 한 파일의 키/attribute 이름만 확인한다. 8/8요청·문서2개, XLSX/파형/fit/outcome/held60/발송0, 전체 연구 goal은 active다.
+
 > 2026-09-10 **Publisher ZIP directory 단계 종료**: [결과](choi_supplement_directory_v1_results.md). 4/4요청·1.344초, 실제 ZIP metadata3,943bytes로38항목을 확인했다. 문서·설정 형식 후보2개를 다음 확인 대상으로 좁혔으며 XLSX36개/member본문/사람 fit·outcome은 열지 않았다. 센서/export의 과학적 적격성은 미확정·Choi DEFER 유지, 넓은 연구 goal은 active다.
 
 > 2026-09-10 **공식 문서 후속 조사 종료 / 연구 계속**: [근거와 범위 정정](choi_export_evidence_followup_v1_results.md). Query 전 사용 가능성과 각 support 시작 전 측정은 다른 조건이다. Support-synchronous M은 별도 설계 가능성일 뿐 아직 사람 실행 계약이 아니다. Sensor/export/marker는 미확정·현재 Choi DEFER 유지. 공개 publisher 보충 ZIP을 찾았고 다음은 그 파일목록의 별도 제한 조사다. 이번 ZIP 본문·사람 파형·fit·outcome 0, 기존 실패/배열상한 이탈/V2 deny/held60 보호 불변이다.

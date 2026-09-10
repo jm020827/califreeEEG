@@ -1,0 +1,37 @@
+{
+  "schema": "cfeg.choi-document-reading.v1",
+  "document": "responses to the reviewers.docx",
+  "local_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/choi-supp-docs-mmcr8r/candidate-1.docx",
+  "sha256": "5b39e62abd3fa85fbbfa8481e593f3908761acd61f4b699a2b7e92881384e91f",
+  "source_url": "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/gigascience/8/11/10.1093_gigascience_giz133/4/gigascience_8_11_giz133_s18.zip",
+  "archive_etag": "7f22da8c6004697471d66ec42f173a2a",
+  "member_name_sha256": "b557165bd6209f09be95b8cc07267b9aaebcf399560f930b57e95f6dfb6ea805",
+  "source_kind": "author response to second-round reviewer comments, ref GIGA-D-19-00116R1",
+  "extraction": "Static ZIP/ElementTree of word/document.xml, plain text nodes in paragraph order; docProps/app.xml read. No office execution, outbound relationships, macros or embedded worksheet extraction.",
+  "coverage": {
+    "paragraphs_reviewed": "All nonempty plain-text paragraphs P1-P36, XML paragraph order includes empty p elements",
+    "app_reported_pages": 4,
+    "app_page_count_not_rendered_pagination": true,
+    "images_reviewed": [],
+    "unreviewed": "SNR equation OMML and embedded Figure4 TIFF were not interpreted; irrelevant to temperature/export question."
+  },
+  "reported_findings": [
+    {
+      "speaker": "reviewer",
+      "locator": "P29 and P32",
+      "finding": "Reviewer identifies arbitrary temperature units and questions undisclosed scaling/conversion; recommends physical-unit conversion or removal."
+    },
+    {
+      "speaker": "authors",
+      "locator": "P30 and P33",
+      "finding": "Authors state that temperature information was removed from the manuscript; they specifically remove the Figure8 temperature example, SupplementaryFigure6 and two temperature spreadsheet supplements."
+    }
+  ],
+  "agent_inferences": [
+    "This explains why public README/headers can mention Temperature while the final manuscript omits it.",
+    "The reply does not show disconnected or constant raw channels, deletion from cnt export, or a known sensor/body site.",
+    "Do not interpret the raw channel as calibrated temperature or transfer vendor conversion factors. Unit-agnostic learning is not logically impossible, but measurement identity/validity and time support remain unqualified.",
+    "This response contains no exact exported Gyro mapping, resampling filter/time support or marker conversion specification in the reviewed plain text."
+  ],
+  "limits": "No participant-specific numerical transcription or new metrics; reviewed literature is not a new human EEG outcome. No PDF downloaded and no PDF/full-manuscript completion claimed."
+}

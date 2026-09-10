@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-10 **Choi 보충문서에서 온도 제외 이유 확인**: [정독 결과·다음 행동](docs/choi_supplement_documents_v1_results.md). 저자는 온도 단위/스케일 심사 지적 뒤 온도 관련 공개 결과를 제외했다고 설명했다. 센서 미연결이나 raw 채널 삭제로 단정하지 않는다. IMU 보충그림의 g 표시는 확인했지만 실제 Gyro 대응·export 시간 처리는 미확정이다. 다음은 기존 cnt의 처리 이력 이름만 확인하는 작은 metadata census이며 새 사람 실험은 없다.
+
 > 2026-09-10 **Choi 보충 ZIP 목록 확인**: [결과·다음 두 후보](docs/choi_supplement_directory_v1_results.md). 실제 부분 GET으로 38항목(XLSX36/문서·설정 형식 후보2)을 확인했다. Member 내용은 열지 않았고 문서의 정체·내용은 아직 미확정이다. 다음은 이 두 후보의 취득/export 설명 확인이며 새 효능 실험은 없다. 기존 부정 결과·Choi DEFER·held60 보호를 유지하고 전체 연구는 계속한다.
 
 > 2026-09-10 **Choi 공식 export 후속 조사**: [결과·설계 범위 정정](docs/choi_export_evidence_followup_v1_results.md). 원 목표는 pre-query이며, 보정 EEG와 동시 측정한 M을 첫 query 전 학습에 쓰는 별도 설계도 가능하다. 최근 pre-support 후보의 DEFER는 유지한다. 공식 목록·vendor 안내로 실제 센서/시간 처리를 확정하지 못했지만 publisher 보충 ZIP 경로를 찾았다. 다음은 별도 유한 파일목록 조사이며 ZIP 본문·사람 실험은 이번에 0이다. 현재 넓은 연구 goal은 active, 아래 기록은 시점별 이력이다.
