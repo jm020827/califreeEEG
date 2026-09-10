@@ -1,0 +1,69 @@
+{
+  "schema":"cfeg.mobilebci-research-progress-state.v2",
+  "date":"2026-09-11",
+  "base_commit":"579172e",
+  "status":"PUBLIC_COHORT_ACQUIRED_CORE_PRIMITIVES_VERIFIED",
+  "goal_status":"active",
+  "previous_turn_classification":"PROGRESS: acquisition observations recorded, release mismatch found and parser failure identified",
+  "this_turn_classification":"PROGRESS: parser recovery, public cohort acquisition and k1 mathematical implementation",
+  "research_objective_changed":false,
+  "candidate":"mobilebci-head-motion-reference-ridge-v1",
+  "scientific_efficacy":"NOT_EVALUATED",
+  "calibration_savings":"NOT_EVALUATED",
+  "choi":"PARKED_BY_USER",
+  "event_recovery":{
+    "plan_commit":"aaa65df","reader_commit":"9173bac","run_manifest_commit":"2880bdf",
+    "status":"COMPLETE_EVENT_TIME_METADATA_ONLY","real_runs":1,"selective_decodes":2,
+    "generated_test_calls":2,"generated_case_counts":[15,18],
+    "matched_events":60,"class_counts":[20,20,20],
+    "maximum_absolute_event_difference_assuming_ms":9.3125,
+    "k1_2_3_5_actual_prefix_trials":[6,8,11,22],
+    "projector_visited_units":1418,"projected_string_bytes":20,
+    "exact_marker_onset_and_index_origin":"UNVERIFIED; operational per-device marker pairing supported",
+    "v1_failure_preserved":true
+  },
+  "inventory":{
+    "reader_commit":"d112a8e","http_metadata_gets":1,"response_bytes":140033,
+    "public_release":"Figshare13604078/v1","license":"CC BY4.0",
+    "description_subjects":18,"ssvep_filename_subjects":17,
+    "selected_complete_subjects":16,"excluded":"s02 missing IMU0.8"
+  },
+  "acquisition":{
+    "plan_commit":"370d650","manifest_wrapper_commit":"d998363",
+    "status":"COMPLETE_ACQUISITION_SCHEMA_ONLY","participants":16,"runs":48,"files":96,
+    "new_files":94,"reused_files":2,"new_verified_bytes":2161017719,"total_verified_bytes":2204445401,
+    "new_initial_gets":94,"redirects":94,"retry_count":0,"failures":0,"partial_bytes":0,
+    "seconds":525.936885,"longest_file_seconds":20.870984,
+    "byte_cap":2684354560,"time_cap_seconds":1800,
+    "output_dir":"/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM",
+    "generated_wrapper_test_calls":2,"generated_checks_by_call":[4,5],
+    "audit":"Root and independent reviewer matched96spec/stat records and94journal lines; no repeated fullrawhash"
+  },
+  "primitive_implementation":{
+    "plan_commit":"079435b","implementation_commit":"64d99a8",
+    "module":"src/cfeg/analysis/mobilebci_reference_ridge.py",
+    "test_calls":1,"tests_passed":9,"device":"CPU","dtype":"float64",
+    "relative_margin_actuation":true,"scalar_auxiliary_gradient":true,"q_frozen_gradient_boundary":true,
+    "actual_q_prior_trainer":false,"actual_qm_q2_sham_training":false,
+    "scope":"Generated math/engineering; no human efficacy or float32 validation"
+  },
+  "global_scope_this_turn":{"waveform_numeric_decodes":0,"human_fits":0,"human_outcomes":0,"held60":0,"outreach":0,"paid_resources":0,"gpu_compute":0,"new_worktrees":0,"pushes":0,"deletions":0},
+  "artifacts":[
+    {"path":"docs/reports/mobilebci_event_time_v2_observation.json","sha256":"d7ea453b65d42e5dc4a33db301c194907f9fcb20747b391440940ab001d45c62"},
+    {"path":"docs/reports/mobilebci_event_time_v2_timing_summary.json","sha256":"2b064b0191c617dcb014f00cb12d553bdd9565d6909db801bb5b044f1381f51e"},
+    {"path":"docs/reports/mobilebci_inventory_v1_observation.json","sha256":"ed750da93cc65a74a5e65c5a09ff3d5215541c8cf0ae5443720c86c4e22f4f18"},
+    {"path":"docs/reports/mobilebci_cohort_acquisition_v1_observation.json","sha256":"aaaf5968f163780871b1850cee11c53b2cf445c674348ac5fec21af3a85b7727"},
+    {"path":"configs/analysis/mobilebci_cohort_acquisition_v1.json","sha256":"79335da23dbf644777ff47bb7657f9fda401e78f2ed45a74bdb5bda11e50421d"},
+    {"path":"scripts/analysis/fetch_mobilebci_cohort_v1.py","sha256":"8d55d52143a7f01e0113ebbe80fd353092873a974bc1142f90d3f4041e4514c1"},
+    {"path":"src/cfeg/analysis/mobilebci_reference_ridge.py","sha256":"d5d79ed42066408c49718cd00f4956c6710c55c6dd3935e5a48df82703c80fba"},
+    {"path":"docs/reports/mobilebci_reference_ridge_primitives_v1_tests.json","sha256":"f9d4d86a38e148aa78a95675803a5eb33c59c9b4e555606bf18314d2edf9e74e"}
+  ],
+  "scholarly":{
+    "timing_claim":"claim:52ce2c60dd160e0b","inventory_claim":"claim:c1782f94a5c12218","acquisition_claim":"claim:adab806ecc20b164",
+    "claim_statuses":"qualified","gap":"gap:c365520c93cb5ad1",
+    "papers":1085,"search_runs":87,"claims":68,"evidence":171,"gaps":40,
+    "sqlite_quick_check":"ok","rendered_views":11
+  },
+  "verification":"Targeted tests/static reviews PASS; whole repository suite NOT_RUN; protected4hashes and original generated-boundary state unchanged",
+  "next":"One frozen whole-cohort smallmetadata validation; marker-relative raw support-only extraction; connect Q/QM/Q2/SHAM source learning to verified reference-ridge primitives. Fix actualprefix costs/participant splits/endpoints/budget before first human outcome. Do not redownload or restart access triage."
+}

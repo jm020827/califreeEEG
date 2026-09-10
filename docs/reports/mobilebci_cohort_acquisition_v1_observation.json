@@ -1,0 +1,8028 @@
+{
+  "schema": "cfeg.mobilebci-cohort-acquisition-observation.v1",
+  "status": "COMPLETE_ACQUISITION_SCHEMA_ONLY",
+  "output_dir": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM",
+  "reused": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "bytes": 10489800,
+      "md5": "520d733439a30cb4d7a83e3e2d2fbeb6",
+      "url": "https://ndownloader.figshare.com/files/26094953",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat",
+      "sha256": "8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456",
+      "status": "REUSED_CHECKSUM_VERIFIED"
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "bytes": 32937882,
+      "md5": "cff48844f263bbb8682bae7a93af50c5",
+      "url": "https://ndownloader.figshare.com/files/26094980",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat",
+      "sha256": "b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7",
+      "status": "REUSED_CHECKSUM_VERIFIED"
+    }
+  ],
+  "records": [
+    {
+      "id": 26094956,
+      "name": "s01_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15180517,
+      "md5": "b356c53fe344adfb2adbe397ab2e691b",
+      "sha256": "1e85d1cf214224c461766b0c2829dce269a1391b2cbc3d6a8ece0889754aa659",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            71935,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.583259,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26094959,
+      "name": "s01_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 16264311,
+      "md5": "1bf942979b5a81a03ceff78c3e805861",
+      "sha256": "858dbe2fefac4ed7bb781df79ff2adbfec37c16619b0c4a9b23acc846552453e",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            76419,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.744769,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26094983,
+      "name": "s01_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 33492144,
+      "md5": "54a720ba6579ae86aeaf724cdc87b450",
+      "sha256": "e514e813780565395787522471045ce9ec416e8c0e06b963585e5f56b5a4bb80",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            280996,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.9828,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26094986,
+      "name": "s01_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 35138077,
+      "md5": "bab9bbe70db0d605818b0cdb101308a8",
+      "sha256": "ee5f5a387ba3be9523e77b9a1b53518952c992eb5597c8983b9ebc53d8e98c5a",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s01_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            298512,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.342702,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095121,
+      "name": "s03_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 9517263,
+      "md5": "556ddb22c5ec1d02f821c701e1da4032",
+      "sha256": "53c51f3c63c4cacb351081dcace08e67e6e367cd971b2161445935528d446aa5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            76291,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.207598,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095124,
+      "name": "s03_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15087773,
+      "md5": "01ff6f3b3f759b8ddc889a6a7040b185",
+      "sha256": "3ea6a3418ceb408fee8ede0bf9b2fd5ef787fd4a8c3a37520d406bcf86549788",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            73375,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.467383,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095127,
+      "name": "s03_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15059980,
+      "md5": "0e298cf85d9da9df55e9df3f74522626",
+      "sha256": "c8719527990ee4a294a65ed5367d117c9cb5a1c7f398d506e1dc8942e8f95b3d",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69408,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.522586,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095148,
+      "name": "s03_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 33494850,
+      "md5": "892b698e0ffd2770516db06266c9932e",
+      "sha256": "c26c8115deec688d2835682cecb120f3b80fa6850ffc11ba89e81d584824304d",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            298011,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.955148,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095151,
+      "name": "s03_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32819652,
+      "md5": "214159a09dd592add836a5fadaa339dd",
+      "sha256": "a5ab3273c6cc148583d63686ee194468ce3c14c68d9488eb1ab97d14c17f8dff",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            286622,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.81314,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095154,
+      "name": "s03_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32233129,
+      "md5": "4c56356d3cf9c58051d1fcfbfdcee166",
+      "sha256": "a7545fadcbe028b2844623c07bc6bb3bd47e066020869ae88bf9ffcef07f4361",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s03_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            271124,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.860419,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095202,
+      "name": "s04_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 11773547,
+      "md5": "17cd53b1bf4be425c939ec511646e3a5",
+      "sha256": "a75f6c06a2eb3c7beea6f05ebffe15dc7e25b80594b36849a3f883929d0fbab1",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68777,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.239037,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095205,
+      "name": "s04_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15848699,
+      "md5": "a95326953ace07effab78c6387436536",
+      "sha256": "46c1a3b72f2ad8801f6debc735d095c03880d14f397c786740b50aaa3f9f5dc7",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            76184,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.502977,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095208,
+      "name": "s04_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15119746,
+      "md5": "916613bc5b49d4f0dde66c1b93a7dc9a",
+      "sha256": "f050e331a41f91b667def16f7267c751643ad400a6c3360adeda0ff426eb9a1b",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68780,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.581631,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095229,
+      "name": "s04_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31246658,
+      "md5": "1fe0558412c2ef3099c04331d641fbb1",
+      "sha256": "fb38232ed42320a1a753cee6d5fe8f9eca1b74ce2dd01d55f258fcf7f065c1c5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268660,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.016336,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095232,
+      "name": "s04_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 34335169,
+      "md5": "b2937dbe3404b649f11809f6c21a74a2",
+      "sha256": "3108f5379495eb27eb9e82c7fc1125d6e049dfb670c381345103d3ff28145fad",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            297592,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.065811,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095235,
+      "name": "s04_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31259720,
+      "md5": "d70f082ca4985db87b533446aaf2ad9e",
+      "sha256": "6588475ebbb7e1157f30dea65ecc854b554a71cd17d03bce9c883481b2785c10",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s04_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268670,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 20.870984,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095283,
+      "name": "s05_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 11445342,
+      "md5": "ece4405f945d6fe468372213a0f39deb",
+      "sha256": "4e7eef58c8966c9c35a82205de196f81a61726a10592bebafb6e8035633d8478",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69269,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.243933,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095286,
+      "name": "s05_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14748805,
+      "md5": "c5b57d452092ef9ca7c3632d4d060481",
+      "sha256": "c7cbc90d146a199f1d9b5852e197b56fc3eaca896522edf7ce0a3011bf8f7345",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68588,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 17.604137,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095289,
+      "name": "s05_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14998917,
+      "md5": "3bc50c07ba23193896890eb8440d9d1f",
+      "sha256": "293ea1d5cc5de30cad181ed474625ddd88f03e51c13b4ab0d800b0d40005d852",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68515,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.516267,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095313,
+      "name": "s05_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30500987,
+      "md5": "b480af5dec5786fe5f95569391635426",
+      "sha256": "664d0006fc53126daf27deab8e92861ac3959f7a03f34cd6d350dad7e1f07e27",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270581,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 20.578981,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095316,
+      "name": "s05_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31084066,
+      "md5": "6821e8b09c1acbe8798306288b0e8902",
+      "sha256": "d0df33b0103a096f2d065009e75b7bb297b418844a88d4e96edf8fd5a7dca00b",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            267922,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.757863,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095319,
+      "name": "s05_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30943107,
+      "md5": "98ff21dbb227ec27972ad1f6f46c7981",
+      "sha256": "e7712a0b43052aaabb0e70bef73abdc2ce7aaf5f3210dbd34ed6eabbf09b3bde",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s05_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            267636,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.839587,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095367,
+      "name": "s06_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10636809,
+      "md5": "181212dbf68843ea5be0e137325739ab",
+      "sha256": "be5f1a9233a96d33cb79bbd5e581361984140805722a66cecee6f6fb4a830b27",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68845,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.194963,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095370,
+      "name": "s06_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14742546,
+      "md5": "37ad51c57b8f36eeb675efacfdaa5d1f",
+      "sha256": "dcaa96a520171bae845adf4d2229e794c48dcee78458c7d8d461d4953e8ef122",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69768,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.609137,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095376,
+      "name": "s06_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15008408,
+      "md5": "c69bd0eb26b7c47323535c2fae4de038",
+      "sha256": "96d7855807d935a4ed2c3a9dba8f3de344d88c712f4958b9ebaeb301c402a037",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69053,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.547287,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095397,
+      "name": "s06_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30573930,
+      "md5": "7afbfbd921a0e4f3a1a21e73cedd58a6",
+      "sha256": "8836a2e7935d68a31b1765fdc579b5ecfd582709aabfac172a2d0116a8ff5554",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            6
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268925,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.581467,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095400,
+      "name": "s06_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31991153,
+      "md5": "e756c1ca8d61ed59f1eee54011bbe2cb",
+      "sha256": "474933ad05d38daad5588ddae884d54a1cc6443d7860c06730b3cc360a2d9b81",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            272533,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.916605,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095403,
+      "name": "s06_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32024247,
+      "md5": "cb5f122fafb00d521ed4f3b0550ac992",
+      "sha256": "795e58ccd7a35c16c90eddfe5155a236bf6c95810c45e4ef39bf0ab3962d2056",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s06_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269738,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.744273,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095451,
+      "name": "s07_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 12712674,
+      "md5": "164fc2c67816ef897b3c854192e33468",
+      "sha256": "f46c6c16bb38cf716764d0cc2d607c38a833c4c0ea58f802a0377313c3161ba2",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            83808,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.701158,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095454,
+      "name": "s07_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 16034930,
+      "md5": "5125df70e95536f75c682b8d419f0eb4",
+      "sha256": "000f01347ac9ec59b6318d9e9975ed4aae3d74c4498b1b69bff2cadc039cc3e0",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            79442,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.621202,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095457,
+      "name": "s07_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15495846,
+      "md5": "d354dff670c4f24db921ed8d0e37a119",
+      "sha256": "d847320ed79d915b3c5ae64b0881ae89c4899d1b2b333ee5b26a5841bf74ac1c",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            71851,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.599997,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095478,
+      "name": "s07_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 35188574,
+      "md5": "e468972709d27fdad106c560ae76114b",
+      "sha256": "ceab1716f43e871ac6254a2319d3883953fe6f60e1f3f2be0a1f499810265058",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            327375,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.923975,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095481,
+      "name": "s07_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 34588482,
+      "md5": "5f582d345f3a2405dc050e703b120d36",
+      "sha256": "78d4c94ff9624bcd88bfba56288832adbb8d72229d97c597dbbebc6bfc3e9fae",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            310320,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.873308,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095484,
+      "name": "s07_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32336647,
+      "md5": "0b697de12551f7d1ed111755c4a799a8",
+      "sha256": "e5617417f8b475d522787362d363c749d9d4dcad076735d4d64df531e6363a06",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s07_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            280667,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.636112,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095532,
+      "name": "s08_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10936807,
+      "md5": "528029126c370cf206f93d2864252987",
+      "sha256": "9a6cf1922396e7aab1270548145ec8d748418856920261e403a9a9f4d2bb4687",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68772,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.15243,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095535,
+      "name": "s08_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14707665,
+      "md5": "18bea5b49e80fb2bd281da3f64ee42c2",
+      "sha256": "2d2f97f427ca3b9503771c71006f595dfdfd4152bfff4623d9893a7e5586e756",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68775,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.499011,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095541,
+      "name": "s08_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15019483,
+      "md5": "bfb9bcc6c79934021b4ca8ef35ddd481",
+      "sha256": "63b1098bb0fc3415acccda1d82eca943cc8690c24cb6f1fd0f6d1275ef1ce665",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68156,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.549619,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095565,
+      "name": "s08_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30707759,
+      "md5": "731f49ed0c1fa97f1304e59b8ceda87c",
+      "sha256": "32ee9df9ba5e44e5ad25bd8ddedac20a8229852367f4693d838c98712b223034",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268639,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.708291,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095568,
+      "name": "s08_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30678624,
+      "md5": "57497fa44ae86b60986665a77633ca20",
+      "sha256": "bfacdb89de0dff6b2946deb492b5431f356f7adb2c647bac8befa927914ee12c",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268654,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.596977,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095574,
+      "name": "s08_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31054983,
+      "md5": "f17fcf75f81f850f5d3d38b7d7e5d16f",
+      "sha256": "753d0a7ef4187d3bd94e2931bbadad7c9c1a6c546ce6f96e713c863e4b4dd452",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s08_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            266236,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.581197,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095622,
+      "name": "s09_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 11951886,
+      "md5": "8b055d6fee7f3447534031cab6754bf0",
+      "sha256": "bda66996da9da580b472738032fddd4f1a02f2001d5220b1e410e81337d8cfcd",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68980,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.247085,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095625,
+      "name": "s09_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14724431,
+      "md5": "abd5cd54f4af38875e3a0c8aeee6c699",
+      "sha256": "17411be5a5b77f6bc00b1456b53b6c6ec3ccd8cf06b0932053466f639158f4bf",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68892,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.60628,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095628,
+      "name": "s09_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15108496,
+      "md5": "da82721bd356a6e0b109475618e41ea6",
+      "sha256": "2ebaa11f25a4553b9c2baa3c3b67b7180050ab8c7d5a96d46f08e4f607267cdf",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69196,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.542586,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095649,
+      "name": "s09_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32171057,
+      "md5": "19c75fe7e6dbe10cb6ab02094d796fa5",
+      "sha256": "e1cf51d00d36bede0452e3666b2c6084e26302eac2ed55bdc3f211a0c77435b5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269454,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.742774,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095652,
+      "name": "s09_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32782341,
+      "md5": "9cbcd4ea05d7b645d7aa10dd1561a213",
+      "sha256": "6801531aec07559fc78b5375404c348ba6d22e212b1d1f8f5a3258ea4c756aa5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269111,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.688591,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095655,
+      "name": "s09_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32934765,
+      "md5": "fc106a93faf316a9910c438f63f77ce3",
+      "sha256": "53743882f50db58b124a197aeeefefabc13a6dbcd51401a0d6c33490ae5d6a3d",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s09_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270297,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.763623,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095703,
+      "name": "s10_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10134810,
+      "md5": "51d4871dcfe21bdb2960e323dc763746",
+      "sha256": "7cd417221f8d5d485f034b6cf401e329a55b8ea922633d3a72d31a2d78130838",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69622,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.330342,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095706,
+      "name": "s10_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14464496,
+      "md5": "0014e54819679b1dae52367e73278b52",
+      "sha256": "a8cb8a5151ae74ed93e8653871552b04f3deb30c04ac3d782811ebe4394d977c",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68524,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.623852,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095709,
+      "name": "s10_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14999145,
+      "md5": "11979c4855410e6cc8abea62c7494456",
+      "sha256": "d838d73c1d8bc24053245faa85e380f8ff43a11fc076027619a884b5a82803ca",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68729,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.409666,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095733,
+      "name": "s10_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32101602,
+      "md5": "d8f76407da6f874c15d441ae3241af28",
+      "sha256": "0e6b9b0915d22101c450948ef2161f1c72bc8f125e75100e77b7a3c815c4cafe",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            271959,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.72446,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095736,
+      "name": "s10_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31397364,
+      "md5": "e97f0171b2de33b3be9cb3a90481b7b1",
+      "sha256": "662dade439f109db67a74cd955fa87cf2c204b17ff932b1f98eda643ac19d8a3",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            267672,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.634819,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095745,
+      "name": "s10_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32064358,
+      "md5": "59638991ef15eafa79c0e75b640a106b",
+      "sha256": "74854a321f7855fc06f2f7d72cf3e9fa1c3e94eb8c39bd6ebabad8b8b574ae49",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s10_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268472,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.730462,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095796,
+      "name": "s11_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 9894076,
+      "md5": "d531afbb779310871bb885d94c7a8c0b",
+      "sha256": "d44e63c449a92268e058287c8e8fea1a5dc71d7202727f856850522733fc9dd5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68848,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.072092,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095799,
+      "name": "s11_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14527341,
+      "md5": "b76fd7b8e5eea217b0eb9cf879fea8d3",
+      "sha256": "6c1f1bb3f85d39e21ef04180359b64d6d2bee0c848174d070296d77c4825a1f2",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69041,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.598085,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095802,
+      "name": "s11_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14996095,
+      "md5": "b44095e577b0adc40b00717e2fe97c53",
+      "sha256": "abd83169835ee9787b1923737b8c784a25275d251f3b52a50435c78c3f070371",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68668,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.590697,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095826,
+      "name": "s11_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31273749,
+      "md5": "159c6f176d6c33b77d698672d6f5f044",
+      "sha256": "23fdd34c4080e111ceaf8cbdfcf375119fb43cafb16d2d18e419e5e1e5b0d0f0",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268938,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.680499,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095832,
+      "name": "s11_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31652390,
+      "md5": "add372472e03800209e8d76aec9ab328",
+      "sha256": "887a22a5d6b29d37f99e59d4a8f753760c605069b5ad187eb5233e34b839606d",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            3
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269690,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.734453,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095835,
+      "name": "s11_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30006046,
+      "md5": "f68adf1dd10913e9f7903c449193b1f5",
+      "sha256": "dde8b26808cf979400a92c4e330a958db7039ec49665ea6e2fb161583273c1a9",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s11_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268236,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.702441,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095883,
+      "name": "s12_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10890699,
+      "md5": "15b5b27139e5be4af184b2e487793464",
+      "sha256": "8a05f14cf98ffb4b313f0cfd435569caeb245de2236dfd5f21f7d02021bc80fe",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            70492,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.295959,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095886,
+      "name": "s12_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14827173,
+      "md5": "37b1e558359e7a5d1d5482fef5c782a6",
+      "sha256": "0703cc13ee72c9bab9ac324dd23e7bdfd3521a7e56ff54154129d62d63a595ea",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69230,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.646853,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095889,
+      "name": "s12_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15055980,
+      "md5": "3ab7426d621fabc04c1084908ba5b5e1",
+      "sha256": "60698777130087bb5e75f692f1c866528cc420a36ed1d8c504b36361ca15e8e5",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68799,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.453341,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095919,
+      "name": "s12_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31048426,
+      "md5": "805dc043c0afdcb91c9748126ea57af5",
+      "sha256": "e84a4170420e7a07a0e96fa08c8bf71e5cbcb795ee6e1844236157db7ea1d7ff",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            3
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            275360,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.629548,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095922,
+      "name": "s12_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32699975,
+      "md5": "a9d60ab7a3a75ebe30bbef9ebe49f295",
+      "sha256": "80231bb6f6a761d5bd36a4d2fb9989c95f8e6a06e833d546cb22715498f447cc",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            5
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270431,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.99653,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095925,
+      "name": "s12_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32299024,
+      "md5": "e128bb21e9c364e249d335c1ee61cce0",
+      "sha256": "3f9cd71ddee70a5488ef712c8d50bb6b8542e6a8d4d3f396312d6a263118f5cc",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s12_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268745,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.757114,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095973,
+      "name": "s13_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10686434,
+      "md5": "2fa6645b732878714e6ff075a2f43bcd",
+      "sha256": "2fdf9a1a5e2264fe9ad62e64a076bfaeb7f11b5a395b809a3c69519ad6da4fdb",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69212,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.244144,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095976,
+      "name": "s13_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14596453,
+      "md5": "6f7ec834ff74b026b151528b0f46bb62",
+      "sha256": "33b3010440bb68c52f4e5f5709f059e3e90e73ba44356a5c2ff543c6a0e2404f",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69267,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.569488,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095979,
+      "name": "s13_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14978349,
+      "md5": "419d96a7531743f3056371449728d571",
+      "sha256": "1a8670ec4bafbca67c793b689f84980c8083f13ebf8becc1307a9b6d46885783",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68812,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.474291,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26095997,
+      "name": "s13_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31676420,
+      "md5": "d5612b5c880f05b224296dbfc2218646",
+      "sha256": "8007d307ba52b02ff8c1a3d73bafe7fbbce30991d2ba084022a5d452c0989644",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            6
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270359,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.665164,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096000,
+      "name": "s13_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32131245,
+      "md5": "7c7d3b7d620f7e1c6940815947dddc11",
+      "sha256": "c5448b6306dedebe454871591dd355d7a8f711855837eff1a8c92d8564e71760",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            6
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270574,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.762558,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096003,
+      "name": "s13_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32475112,
+      "md5": "73546659dc7cbba31f16b7c68607244c",
+      "sha256": "8d813fc4233d9907f35dfb556dcfb4d95ba446cb11f4c777ce81db6265cf3702",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s13_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268796,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.733258,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096042,
+      "name": "s14_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10440825,
+      "md5": "54bbdc0be9e05039b1f09df6c1068961",
+      "sha256": "604c9376b70843ca3b8a205d11364566d8938e15df080aff412cda6bfadce0c2",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            71980,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.216149,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096045,
+      "name": "s14_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14910335,
+      "md5": "c9de9a88e0790b1f764a4c3419063c85",
+      "sha256": "909726807f50b743358f89fb2fb5da096e595b3c81714efa9e07dc6db994b2f1",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69355,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.50829,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096048,
+      "name": "s14_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15141710,
+      "md5": "6f2addc1cab34e845866a67fa28cb0ba",
+      "sha256": "2c35b22149bbd78ca1305bfd6aa62ee9e257ac35334b4224cbea1c6c51c4d77c",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68970,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.640976,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096069,
+      "name": "s14_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31641980,
+      "md5": "54c75250392f6d47c08fabd493229fa0",
+      "sha256": "fc97c44b45c17c5d7ddc43f5bc50d0d2da2a41f49c4bc992ada6e3a6287dbdbe",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            281172,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.673948,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096072,
+      "name": "s14_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30807743,
+      "md5": "8b9745955309b7910b7ea10f275a158d",
+      "sha256": "3814864caad91e61112bbf88b3dd8afed019750fbd9c5a65013e767d0a45571e",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            2
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            270918,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.623902,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096075,
+      "name": "s14_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30848922,
+      "md5": "38ae895d6cbdea0115550a284ceecd06",
+      "sha256": "ea066eff6030b400bfefbc26862bd4ba3bacda6599968fb1816d2991df15b707",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s14_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269414,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.751635,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096111,
+      "name": "s15_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 8893178,
+      "md5": "1f1301ec65637e5c11f2631dc1dc5916",
+      "sha256": "f3bb679c4a941b1eeed1c7a16a4ec3a121a4df3705cb47f4d9e28bddba6ac502",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            70397,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 3.981103,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096117,
+      "name": "s15_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14785725,
+      "md5": "fbaab34e6347720c8f7b1a8d2fb9c6d6",
+      "sha256": "55e2d8e2b2babdab7525e50e004764d2a81d21e756c3ed658640a4298cf0b279",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69866,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.516624,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096120,
+      "name": "s15_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15075133,
+      "md5": "ba77a76303acf5e350b1efff660b8b28",
+      "sha256": "a9d1251902be694efccaf6aa4cc47aee821493673e128733f743b9ad4ac50c3b",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69386,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.498852,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096135,
+      "name": "s15_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 30749722,
+      "md5": "e0f729fa1daf244134de717d59d05ee0",
+      "sha256": "6321ba0a73a5112571d36b45347642a73de6a6cee7855ee522ef327e9f8e986a",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            274987,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.522877,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096138,
+      "name": "s15_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31370269,
+      "md5": "9960a7585b27e3c2bddfce342864f111",
+      "sha256": "fe2c809ffb2b75e4a1f5c06d5ba239326d1ecc69327774f51aafb5e9ba4371ba",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            7
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            272916,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.773843,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096147,
+      "name": "s15_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 31586389,
+      "md5": "aec5750840ac69eeba20dfab0c477d58",
+      "sha256": "659035c4898a0f7a6f53e4fc716eac49a7010d533d7c503fc6cbbe00fbea2f41",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s15_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            271038,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.801407,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096210,
+      "name": "s16_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 11104542,
+      "md5": "a4b37004e97437a44438c80413e1462e",
+      "sha256": "26d222236951720f4fc8c833f8c3f923393e7b46ee0f97642a9eee67107e2215",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            76074,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.283804,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096216,
+      "name": "s16_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 16116457,
+      "md5": "d88f60c8daea9cf96c33e9c2aa2a4d0b",
+      "sha256": "eab837bf734e5983d566cededd27cf6441c318c8fce0709300c87ea37d2db5ba",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            78088,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.522719,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096222,
+      "name": "s16_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 17369387,
+      "md5": "ab1f2ac4fc8d4431991e8b7ff3b1d879",
+      "sha256": "63c29fa069511672554364ba020fda682bdad42f67303c115ffaf9694b90b841",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            82656,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.623607,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096273,
+      "name": "s16_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 33005664,
+      "md5": "6ae055a9226c94a5640ffd2ebe4108ca",
+      "sha256": "bf010f863ef971d5e05d107c39de7e309e103a380b5e15e97e166ee773ad001f",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            297163,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.669972,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096276,
+      "name": "s16_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 34950695,
+      "md5": "f37007ad038ea73db93e9b3461216726",
+      "sha256": "a7d844f9c704e028113d25c4fc0e521cb833ee1eae7ec1fb9e1f59267f9aa794",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            5
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            305030,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.866166,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096279,
+      "name": "s16_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 36943435,
+      "md5": "cb0e833f1b36d975bd122c14add6c230",
+      "sha256": "3348db0f559cfb5a4297abc4e5f039f484a1321ef223c299257d38bac8a11045",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s16_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            4
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            322875,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.020894,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096324,
+      "name": "s17_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10101049,
+      "md5": "28ed4f40ffed5063350d0220bcf49099",
+      "sha256": "3256ad2bbc13ea1d89601275a08fdd69ccc5005fb6dc1de09ae2f6304777bc71",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            76081,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.328138,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096327,
+      "name": "s17_IMU_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 14645513,
+      "md5": "cd280dab95f31d4128bb24af3ebaa72a",
+      "sha256": "395669793ca59dc4f9cebcf235a3f2524d7add37f0b817eddb92a093602ce2c4",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            68742,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.560407,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096330,
+      "name": "s17_IMU_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 15113808,
+      "md5": "4c61fc5c0519c6a87369f4110afb66b3",
+      "sha256": "48ebc063d58aac8c316e246964d8eb099b041822bc476df6a28d49098da67343",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_IMU_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            69094,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.480604,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096399,
+      "name": "s17_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 33820457,
+      "md5": "28a0d1529025ced3bc29ca35ea50d266",
+      "sha256": "e415000b986ac1a2c36f63bf8f1af72204af9df000cc7414c1adb522221bf5dd",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            297190,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.661463,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096414,
+      "name": "s17_scalp_SSVEP_0.8.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32346135,
+      "md5": "a407214f8b5a0bf58d3c4dd724368c44",
+      "sha256": "bc0bbcb8ca54a5ae44fac5e29f60bd2aeb224cbda9e7b2d6dd161bcf85939ab8",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_0.8.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            3
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            268524,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 6.612584,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26096417,
+      "name": "s17_scalp_SSVEP_1.6.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32666882,
+      "md5": "23b3c2c64d000ccef2e095b76d6b8640",
+      "sha256": "9fc8ceca96e010786f8db007259cd1ebfbfc1b1695e8891e1b58aae47ce4cffe",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-cohort-v1-FYzkpM/s17_scalp_SSVEP_1.6.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            7
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            269898,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.721804,
+      "partial_bytes_retained": 0
+    }
+  ],
+  "new_initial_gets": 94,
+  "new_verified_files": 94,
+  "new_verified_bytes": 2161017719,
+  "seconds": 525.936885,
+  "waveform_numeric_decodes": 0,
+  "event_value_decodes": 0,
+  "fits": 0,
+  "outcomes": 0,
+  "held60": 0
+}

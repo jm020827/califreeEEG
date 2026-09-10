@@ -1,5 +1,9 @@
 # MobileBCI 공개 EEG–IMU 한 쌍: 확보와 시간 연결 검증
 
+> 후속 완료: [v2시간파서복구](mobilebci_event_time_v2_results.md),
+> [16명코호트96파일확보](mobilebci_cohort_acquisition_v1_results.md).
+> 아래v1중단은보존된이력이며현재parser미수리상태를뜻하지않는다.
+
 2026-09-11 기록. 9월10일 수행된 파일 확보/채널 검사와 이어진 시간 metadata 검사의 실제 출력을 보존한다.
 **확보는 성공했지만, metadata의 정확도 이득·보정량 감소는 아직 평가하지 않았다.**
 
