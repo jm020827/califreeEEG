@@ -1,0 +1,13 @@
+{
+  "schema": "cfeg.mobilebci-event-time.v1",
+  "date": "2026-09-11",
+  "basis": "Successfully verified public pair and observed top-level event struct/t400; prior four-field read completed. This is a new explicit metadata scope, not a rerun or efficacy experiment.",
+  "files": [
+    {"path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat", "bytes": 10489800, "sha256": "8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456", "raw_samples": 73652, "raw_fs": 128.0},
+    {"path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat", "bytes": 32937882, "sha256": "b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7", "raw_samples": 287705, "raw_fs": 500.0}
+  ],
+  "variables": ["event", "t"],
+  "limits": {"decode_calls_per_file": 1, "checksum_passes_per_file": 1, "seconds_per_file": 30, "address_space_bytes": 805306368, "postdecode_scalar_elements_total": 8192, "nesting_depth": 5, "output_bytes": 65536, "generated_test_calls": 2, "generated_fixture_elements": 8192, "waveform_decodes": 0, "fits": 0, "outcomes": 0, "held60": 0},
+  "interpretation": "Event and t values are now authorized for metadata timing/mapping only. Element/output caps apply after selective decoding, not a claim that scipy cannot allocate an oversized nested field; process memory/time caps bound that risk. Do not infer index origin, clock synchrony or units solely from agreement. Do not fit a learner from these events.",
+  "stop": "Stop first failed file/guard, retain partial metadata report, no automatic repeat on human files. No raw_x/preprocess_x/interp_clab, other participants, network acquisition, external outreach or paid resources."
+}

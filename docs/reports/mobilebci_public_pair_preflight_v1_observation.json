@@ -1,0 +1,182 @@
+{
+  "schema": "cfeg.mobilebci-public-pair-observation.v1",
+  "output_dir": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY",
+  "records": [
+    {
+      "id": 26094953,
+      "name": "s01_IMU_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 10489800,
+      "md5": "520d733439a30cb4d7a83e3e2d2fbeb6",
+      "sha256": "8235d2b725f84684be0cf5488102b64ffb197354d8ef5a03f4a332854bf38456",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_IMU_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            27,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            27
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            73652,
+            27
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 4.313426,
+      "partial_bytes_retained": 0
+    },
+    {
+      "id": 26094980,
+      "name": "s01_scalp_SSVEP_0.0.mat",
+      "attempts": 1,
+      "status": "DOWNLOADED_VERIFIED_TOP_LEVEL_SCHEMA",
+      "http_status": 200,
+      "bytes": 32937882,
+      "md5": "cff48844f263bbb8682bae7a93af50c5",
+      "sha256": "b4b9f02ffb9e90c5ba8591cfdca8f74f448f7f3f31a9a6e38ef8b69d663fb2e7",
+      "path": "/home/whwovy/eeg-data/raw/mobilebci-pair-preflight-o14ykY/s01_scalp_SSVEP_0.0.mat",
+      "top_level_schema": [
+        {
+          "name": "event",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "struct"
+        },
+        {
+          "name": "interp_clab",
+          "shape": [
+            1,
+            5
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_clab",
+          "shape": [
+            1,
+            32
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "preprocess_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "preprocess_x",
+          "shape": [
+            400,
+            32,
+            60
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_clab",
+          "shape": [
+            1,
+            36
+          ],
+          "matlab_type": "cell"
+        },
+        {
+          "name": "raw_fs",
+          "shape": [
+            1,
+            1
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "raw_x",
+          "shape": [
+            287705,
+            36
+          ],
+          "matlab_type": "double"
+        },
+        {
+          "name": "t",
+          "shape": [
+            1,
+            400
+          ],
+          "matlab_type": "double"
+        }
+      ],
+      "redirects": 1,
+      "elapsed_seconds": 5.729654,
+      "partial_bytes_retained": 0
+    }
+  ],
+  "waveform_numeric_decodes": 0,
+  "marker_value_decodes": 0,
+  "fits": 0,
+  "outcomes": 0,
+  "status": "PAIR_VERIFIED_SCHEMA_ONLY",
+  "limitations": "No exact sensor/time alignment or efficacy established by top-level schema. HTTP failure is specific to this single normal GET path, not proof the data are private. Signed redirect URLs and raw error body are not retained."
+}
