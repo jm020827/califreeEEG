@@ -1,0 +1,50 @@
+{
+  "schema": "cfeg.mobilebci-public-pair-state.v1",
+  "date": "2026-09-11",
+  "base_commit": "3355433",
+  "event_scope_freeze": "af1c553",
+  "event_reader_commit": "f565e8a",
+  "status": "PAIR_ACQUIRED_EVENT_READER_COMPATIBILITY_STOP",
+  "scientific_eligibility": "RAW_TIMING_UNRESOLVED_NOT_REJECTED",
+  "scientific_efficacy": "NOT_EVALUATED",
+  "goal_status": "active",
+  "research_objective_changed": false,
+  "candidate": "mobilebci-head-motion-reference-ridge-v1",
+  "choi": "DEFER_PARKED_BY_USER_NO_OUTREACH",
+  "acquisition": {"files":2,"bytes":43427682,"normal_get_attempts":2,"successful_gets":2,"md5_verified":true,"full_cohort_downloaded":false},
+  "selected_metadata": {"decode_calls":2,"variables":["raw_fs","raw_clab","preprocess_fs","preprocess_clab"],"total_label_bytes":468,"imu_fs":128,"eeg_fs":500,"head_gyro_labels_observed":true,"absolute_units_verified":false},
+  "event_probe": {
+    "status":"STOPPED",
+    "error":"unsupported_metadata_dtype",
+    "decode_calls":1,
+    "first_imu_event_t_decoded":true,
+    "second_eeg_event_t_decoded":false,
+    "records_completed":0,
+    "projector_visited_elements":3,
+    "total_metadata_elements_decoded":"UNMEASURED; visited_elements is not decoded count",
+    "actual_failing_path_dtype":"NOT_LOGGED; cell/object nesting is plausible, not confirmed",
+    "human_reruns":0,
+    "timing_failure_established":false
+  },
+  "usage_this_event_stage": {"generated_test_calls":2,"generated_cases_by_call":[8,10],"fixture_numeric_elements":10,"source_scout_official_calls":4,"source_scout_search_queries":2,"raw_downloads":0,"waveform_decodes":0,"fits":0,"outcomes":0,"held60":0,"external_outreach":0,"paid_resources":0,"new_worktrees":0,"pushes":0},
+  "scope_limits": {"decode_calls_per_file":1,"seconds_per_file":30,"process_address_space_bytes":805306368,"postdecode_scalar_limit":8192,"output_bytes":65536,"v1_closed_after_first_error":true},
+  "review": {
+    "pre_execution":"Read-only review found output-limit failure could escape without STOPPED report; repaired before actual read",
+    "post_execution":"Independent read-only reviewer confirmed parser limitation, unknown failed field/dtype and projector counter interpretation",
+    "ruff":"PASS after initial import sorting correction",
+    "full_repository_tests":"NOT_RUN",
+    "sqlite_quick_check":"ok",
+    "protected_original_hashes":"4 of4 unchanged; old generated-boundary state untouched"
+  },
+  "artifacts": [
+    {"path":"docs/reports/mobilebci_public_pair_preflight_v1_observation.json","sha256":"7f3601a7b9c1bee4165437f3a5700f65f9890dbd92d770d82e95aa12dbf123f0"},
+    {"path":"docs/reports/mobilebci_selected_metadata_v1_observation.json","sha256":"36fc729714f47d61cc75e288174aa1c1a4119384ef4e99df6d09af13837278ed"},
+    {"path":"docs/reports/mobilebci_event_time_v1_observation.json","sha256":"7773aac96ff58f10f67c6a6ef39b6bdfbd7a6d114099eedff725bc04beae34ef"},
+    {"path":"configs/analysis/mobilebci_event_time_v1.json","sha256":"d388a996723d4406c436e641deedf6f3624ef1209cd575d0b440df4b650e0d57"},
+    {"path":"scripts/analysis/read_mobilebci_event_time_v1.py","sha256":"0b1ad8ec9fc2bd8530bc90235d10c2b9e64838330e77dc3140540c6f8b966e04"},
+    {"path":"docs/reports/mobilebci_event_time_v1_selftest.json","sha256":"1761f450bc8ede548810141731f78907aa43c595ee97aecef75585944f632f2c"},
+    {"path":"docs/reports/mobilebci_time_sources_v1.json","sha256":"1eca6a8c7d4fb696bf2b19bc033813b3b4d406285b7b4f5179bd51d1d92f1cf5"}
+  ],
+  "scholarly": {"claims":65,"evidence":165,"gaps":40,"papers":1085,"search_runs":87,"cutoff":"2026-09-04 unchanged; source review retrieved2026-09-11","gap":"gap:c365520c93cb5ad1"},
+  "next":"Finite generated-only parser repair with nested cells and path/dtype/shape diagnostics; then separately frozen event/t recovery of the same pair. No v1 automatic repeat. If timing is supported, freeze raw support extraction and exact Q/Q2/QM/SHAM efficacy contract before outcomes."
+}

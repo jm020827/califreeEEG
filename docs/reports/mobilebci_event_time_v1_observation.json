@@ -1,0 +1,13 @@
+{
+  "schema": "cfeg.mobilebci-event-time-observation.v1",
+  "records": [],
+  "status": "STOPPED",
+  "error_type": "ValueError",
+  "error": "unsupported_metadata_dtype",
+  "decode_calls": 1,
+  "scalar_elements": 3,
+  "waveform_decodes": 0,
+  "fits": 0,
+  "outcomes": 0,
+  "limitations": "Event/t metadata access only; numerical agreement alone is not a verified raw clock/export definition or zero drift."
+}

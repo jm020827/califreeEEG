@@ -1,0 +1,26 @@
+{
+  "schema": "cfeg.mobilebci-time-source-review.v1",
+  "review_date": "2026-09-11",
+  "reviewer": "mobile_time_sources read-only agent",
+  "coverage": "Selected primary HTML methods/data records and author loader; not full-paper or PDF deep read. Source text not saved locally; no local source SHA256 claimed.",
+  "sources": [
+    {
+      "url": "https://arxiv.org/html/2112.04176",
+      "revision": "2112.04176v1, 2021-12-08",
+      "locators": ["Methods / Data Acquisition", "Methods / Experimental Paradigm and Preprocessing", "Abstract / dataset link", "Data Records / Data Format"],
+      "reported": ["Simultaneous triggers to the recorders; EEG500Hz and IMU128Hz", "Head and bilateral ankle accelerometer, gyroscope, magnetometer", "SSVEP flickering5s and processed epochs0-5s", "Final release described as BIDS/BrainVision and linked as Figshare16669072"],
+      "unresolved": ["No exact event/t definition for our MAT Figshare13604078v1", "No gyro export unit definition found in reviewed sections", "Simultaneous trigger does not establish zero drift"]
+    },
+    {
+      "url": "https://github.com/youngeun1209/MobileBCI_Data/blob/main/a_load_all_data.m",
+      "git_blob_oid": "8520abed281c55c2c01a3f710d87c41af7a0162f",
+      "locators": ["L12-13", "L39", "L45/L48"],
+      "reported": ["disp_ival0-5000; codes11/12/13 correspond to5.45/8.57/12Hz", "file_readBV Fs100 loads BrainVision, not the earlier MAT structure"],
+      "unresolved": ["No MAT raw-index conversion or event/t implementation in loader"]
+    }
+  ],
+  "agent_inference": "Our400samples@100Hz earlier MAT export cannot silently inherit the finalpaper5s interval or raw field definitions. Corresponding per-device markers are a candidate local alignment anchor, not yet validated.",
+  "usage": {"official_document_api_calls":4,"search_queries":2,"pdf_downloads":0,"raw_reads":0,"writes":0},
+  "errors": ["Initial API open tool URL-safety failure", "First direct API content decoding failed on base64 newlines; subsequent call succeeded"],
+  "guardrails": "No authentication/CAPTCHA bypass, external outreach or paid access. Known Nature/PMC blockers not retried."
+}

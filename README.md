@@ -1,6 +1,6 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
-> 2026-09-11 **공개 MobileBCI EEG–IMU 한 쌍 확보 성공**: [실제 관측·시간 연결 검증](docs/mobilebci_public_pair_results.md). 정상 GET으로 두 파일43.4MB를 받고 크기/MD5를 확인했다. 머리 gyro 채널과 EEG500Hz/IMU128Hz를 확인했으며 다음은 event 시간 연결이다. 새 파형 분석·metadata 효능 평가는 아직0이다. 아래 기록은 각 시점의 이력이다.
+> 2026-09-11 **공개 MobileBCI EEG–IMU 한 쌍 확보 성공, 시간 파서 수리 필요**: [실제 관측·다음 실행](docs/mobilebci_public_pair_results.md). 두 파일43.4MB의 크기/MD5·머리 gyro 채널을 확인했다. 이어진 event/t 검사는 첫 파일의 미지원 내부 형식에서 중단됐으며 자동 재시도0이다. 시간 불일치나 가설 실패로 해석하지 않는다. 최종 논문과 MAT 배포본의 구간 차이도 발견했다. 다음은 합성 MAT로 파서 수리 후 유한 시간 대응 검증, 새 파형 분석·효능 평가는0이다. 아래는 시점별 이력이다.
 
 > 2026-09-10 **사용자 지시에 따라 Choi 문의 경로를 보류하고 새 후보 선택**: [Lee2021 head-IMU one-shot 후보](docs/mobilebci_head_motion_candidate_v1.md). 속도·순서는 Q에도 주고 실제 머리 움직임의 추가 정보만 시험한다. Public Figshare 파일 목록은 확인했지만18명 버전/최종논문 차이와 HEAD403을 남겼으며 raw 확보·효능0이다. 다음은 작은 공개 파일 한 쌍의 접근/schema 검증이다. 또 사적 접근이 필요하면 기다리지 않고 제외한다.
 
