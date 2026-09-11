@@ -1,0 +1,335 @@
+{
+  "version": "6.9",
+  "hitCount": 1,
+  "request": {
+    "queryString": "DOI:10.3390/s26030766",
+    "resultType": "core",
+    "cursorMark": "*",
+    "pageSize": 25,
+    "sort": "",
+    "synonym": false
+  },
+  "resultList": {
+    "result": [
+      {
+        "id": "41682282",
+        "source": "MED",
+        "pmid": "41682282",
+        "pmcid": "PMC12899059",
+        "fullTextIdList": {
+          "fullTextId": [
+            "PMC12899059"
+          ]
+        },
+        "doi": "10.3390/s26030766",
+        "title": "Online Compensation of Systematic Effects in Stimuli Generation for XR-Based SSVEP BCIs.",
+        "authorString": "Angrisani L, De Benedetto E, D'Iorio M, Duraccio L, Lo Regio F, Tedesco A.",
+        "authorList": {
+          "author": [
+            {
+              "fullName": "Angrisani L",
+              "firstName": "Leopoldo",
+              "lastName": "Angrisani",
+              "initials": "L",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0000-0001-6932-6891"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy."
+                  }
+                ]
+              }
+            },
+            {
+              "fullName": "De Benedetto E",
+              "firstName": "Egidio",
+              "lastName": "De Benedetto",
+              "initials": "E",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0000-0002-2792-2131"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy."
+                  }
+                ]
+              }
+            },
+            {
+              "fullName": "D'Iorio M",
+              "firstName": "Matteo",
+              "lastName": "D'Iorio",
+              "initials": "M",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0009-0001-3748-899X"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy."
+                  }
+                ]
+              }
+            },
+            {
+              "fullName": "Duraccio L",
+              "firstName": "Luigi",
+              "lastName": "Duraccio",
+              "initials": "L",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0000-0002-1356-5559"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy."
+                  }
+                ]
+              }
+            },
+            {
+              "fullName": "Lo Regio F",
+              "firstName": "Fabrizio",
+              "lastName": "Lo Regio",
+              "initials": "F",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0009-0003-9307-8340"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy."
+                  }
+                ]
+              }
+            },
+            {
+              "fullName": "Tedesco A",
+              "firstName": "Annarita",
+              "lastName": "Tedesco",
+              "initials": "A",
+              "authorId": {
+                "type": "ORCID",
+                "value": "0000-0001-7242-701X"
+              },
+              "authorAffiliationDetailsList": {
+                "authorAffiliation": [
+                  {
+                    "affiliation": "Department of Public Health, University of Naples Federico II, Via Pansini, 80131 Naples, Italy."
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "authorIdList": {
+          "authorId": [
+            {
+              "type": "ORCID",
+              "value": "0000-0001-6932-6891"
+            },
+            {
+              "type": "ORCID",
+              "value": "0000-0001-7242-701X"
+            },
+            {
+              "type": "ORCID",
+              "value": "0000-0002-1356-5559"
+            },
+            {
+              "type": "ORCID",
+              "value": "0000-0002-2792-2131"
+            },
+            {
+              "type": "ORCID",
+              "value": "0009-0001-3748-899X"
+            },
+            {
+              "type": "ORCID",
+              "value": "0009-0003-9307-8340"
+            }
+          ]
+        },
+        "dataLinksTagsList": {
+          "dataLinkstag": [
+            "altmetrics",
+            "supporting_data"
+          ]
+        },
+        "journalInfo": {
+          "issue": "3",
+          "volume": "26",
+          "journalIssueId": 4120559,
+          "dateOfPublication": "2026 Jan",
+          "monthOfPublication": 1,
+          "yearOfPublication": 2026,
+          "printPublicationDate": "2026-01-01",
+          "journal": {
+            "title": "Sensors (Basel, Switzerland)",
+            "medlineAbbreviation": "Sensors (Basel)",
+            "essn": "1424-8220",
+            "issn": "1424-8220",
+            "isoabbreviation": "Sensors (Basel)",
+            "nlmid": "101204366"
+          }
+        },
+        "pubYear": "2026",
+        "pageInfo": "766",
+        "abstractText": "<b>Background</b>: Brain-Computer Interfaces (BCIs) based on Steady-State Visually Evoked Potentials (SSVEPs) and Extended Reality (XR) offer promising solutions for highly wearable applications, but their classification performance can be affected by systematic effects in stimulus presentation. <b>Novelty</b>: This study introduces a novel online compensation method to compensate for systematic effects in the Refresh Rate (RR) of XR displays, enhancing SSVEP classification without requiring additional training or invasive measurements. <b>Methods</b>: A non-invasive monitoring module was incorporated into the developed BCI pipeline to measure frame rate variations in the XR display, allowing deviations between nominal RR and measured values to be automatically detected and compensated for. Classification performance was evaluated using Filter Bank Canonical Correlation Analysis (FBCCA). Statistical significance was assessed using Student's <i>t</i>-test. <b>Materials</b>: Two datasets were used: a dataset based on Moverio BT-350, including 9 subjects, and a dataset based on HoloLens 2, including 30 subjects, all collected by the authors. <b>Results</b>: The proposed compensation method led to significant improvements in SSVEP classification accuracy, proportional to the magnitude of fps deviations. In some cases, classification accuracy increased by up to 300% relative to its original value. Statistical analyses confirmed the reliability of the results across subjects and datasets. <b>Conclusions</b>: These findings show that the proposed method effectively enhances SSVEP-based BCIs in XR environments and provides a robust foundation for practical applications requiring high reliability.",
+        "affiliation": "Department of Electrical Engineering and Information Technology (DIETI), University of Naples Federico II, Via Claudio n.21, 80125 Naples, Italy.",
+        "publicationStatus": "epublish",
+        "language": "eng",
+        "pubModel": "Electronic",
+        "pubTypeList": {
+          "pubType": [
+            "research-article",
+            "Journal Article"
+          ]
+        },
+        "grantsList": {
+          "grant": [
+            {
+              "grantId": "E63C22002040007",
+              "agency": "Ministero dell'università e della ricerca",
+              "orderIn": 0
+            },
+            {
+              "grantId": "E63C22002130007",
+              "agency": "Ministero dell'università e della ricerca",
+              "orderIn": 0
+            }
+          ]
+        },
+        "meshHeadingList": {
+          "meshHeading": [
+            {
+              "majorTopic_YN": "N",
+              "descriptorName": "Humans"
+            },
+            {
+              "majorTopic_YN": "N",
+              "descriptorName": "Electroencephalography",
+              "meshQualifierList": {
+                "meshQualifier": [
+                  {
+                    "abbreviation": "MT",
+                    "qualifierName": "methods",
+                    "majorTopic_YN": "N"
+                  }
+                ]
+              }
+            },
+            {
+              "majorTopic_YN": "Y",
+              "descriptorName": "Evoked Potentials, Visual",
+              "meshQualifierList": {
+                "meshQualifier": [
+                  {
+                    "abbreviation": "PH",
+                    "qualifierName": "physiology",
+                    "majorTopic_YN": "N"
+                  }
+                ]
+              }
+            },
+            {
+              "majorTopic_YN": "N",
+              "descriptorName": "Algorithms"
+            },
+            {
+              "majorTopic_YN": "N",
+              "descriptorName": "Signal Processing, Computer-Assisted"
+            },
+            {
+              "majorTopic_YN": "Y",
+              "descriptorName": "Brain-Computer Interfaces"
+            }
+          ]
+        },
+        "keywordList": {
+          "keyword": [
+            "Measurement",
+            "Systematic Effects",
+            "Brain–computer Interface (Bci)",
+            "Wearable Systems",
+            "Steady-state Visually Evoked Potential (Ssvep)",
+            "Extended Reality (Xr)",
+            "Online Compensation",
+            "Filter Bank Canonical Correlation Analysis (Fbcca)"
+          ]
+        },
+        "subsetList": {
+          "subset": [
+            {
+              "code": "IM",
+              "name": "Index Medicus"
+            }
+          ]
+        },
+        "fullTextUrlList": {
+          "fullTextUrl": [
+            {
+              "availability": "Subscription required",
+              "availabilityCode": "S",
+              "documentStyle": "doi",
+              "site": "DOI",
+              "url": "https://doi.org/10.3390/s26030766"
+            },
+            {
+              "availability": "Open access",
+              "availabilityCode": "OA",
+              "documentStyle": "html",
+              "site": "Europe_PMC",
+              "url": "https://europepmc.org/articles/PMC12899059"
+            },
+            {
+              "availability": "Open access",
+              "availabilityCode": "OA",
+              "documentStyle": "pdf",
+              "site": "Europe_PMC",
+              "url": "https://europepmc.org/articles/PMC12899059?pdf=render"
+            }
+          ]
+        },
+        "isOpenAccess": "Y",
+        "inEPMC": "Y",
+        "inPMC": "Y",
+        "hasPDF": "Y",
+        "hasBook": "N",
+        "hasSuppl": "N",
+        "citedByCount": 0,
+        "hasData": "Y",
+        "hasReferences": "Y",
+        "hasTextMinedTerms": "Y",
+        "hasDbCrossReferences": "N",
+        "hasLabsLinks": "Y",
+        "license": "cc by",
+        "hasEvaluations": "N",
+        "authMan": "N",
+        "epmcAuthMan": "N",
+        "nihAuthMan": "N",
+        "hasTMAccessionNumbers": "Y",
+        "tmAccessionTypeList": {
+          "accessionType": [
+            "doi"
+          ]
+        },
+        "dateOfCompletion": "2026-07-07",
+        "dateOfCreation": "2026-02-13",
+        "firstIndexDate": "2026-02-13",
+        "fullTextReceivedDate": "2026-02-14",
+        "dateOfRevision": "2026-07-07",
+        "electronicPublicationDate": "2026-01-23",
+        "firstPublicationDate": "2026-01-23"
+      }
+    ]
+  }
+}

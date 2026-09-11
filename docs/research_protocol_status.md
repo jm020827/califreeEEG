@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-12 **최신 조사 완료·새 학습 후보 미확정**. [Eye-BCI 접근 결과](post_gyro_candidate_feasibility_v1_results.md), [XR timing 기작·자료 검토](xr_timing_candidate_feasibility_v1_results.md), [XR 상태](reports/xr_timing_candidate_v1_state.json). Eye는 익명 파일403으로 보류하며 비공개/로그인 필수를 단정하지 않는다. XR은 software frame-time reference 보정이지 학습된 M/보정량 절감의 검증이 아니며, 공개 raw pairing과 현행 support-only 정보권한이 미충족이다. 두 경로의 유한 예산 종료·새 사람 EEG 확보/fit0. 원목표·gyro/source39 종료·held60/외부요청/유료 별도승인 유지. 새 후보가 성립할 때 deterministic correction도 공통 대조에 넣는 원칙을 남겼고, 다음 라운드 검색/모델 예산은 아직 실행 계약이 아니다. 아래 ‘현재/다음’은 과거 단계의 표기다.
+
 > 2026-09-11 **최신: SAFE 사람 후속 후보 종료**. [실제144fit 결과](block_scaled_router_human_v1_results.md), [상태v8](reports/mobilebci_research_progress_v8_state.json), [고정 계약](block_scaled_router_human_v1_contract.md). M-only gate/margin 작동은36/36개에서 확인했지만 QM 저보정68.608% < Q68.771% < Q2 68.973%, 모든 정책k5미달fallback·보정절감0%다. 이 gyro source-routing 기작의 추가 optimizer 구제는 종료하며 이전 부정 결과를 보존한다. 아래의 미실행/초안/최신 표기는 해당 시점의 이력이다.
 
 > 2026-09-11 **최신: block-scaled 생성통합 수치관문 통과·기록결함 한정**. [24fit 결과](block_scaled_router_integration_v1_results.md), [현재상태v7](reports/mobilebci_research_progress_v7_state.json). SAFE실효M작동/독립M음성조건을확인했지만원역할보고누락은사후재구성으로보완했다. 기존학습법보다우월하다는증거는없으며실제사람효능은추가측정하지않았다. 다음은수정된역할기록/정책잠금의새humanrunner mock검사와별도유한실행계약; [초안](block_scaled_router_human_v1_draft.md)은DRAFT_NOT_EXECUTABLE이다.

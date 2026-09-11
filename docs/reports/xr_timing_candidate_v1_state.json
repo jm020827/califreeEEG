@@ -1,0 +1,40 @@
+{
+  "schema": "cfeg.xr-timing-feasibility.v1",
+  "date_kst": "2026-09-12",
+  "status": "NOT_EXECUTABLE_WITH_CURRENT_PUBLIC_EVIDENCE",
+  "doi": "10.3390/s26030766",
+  "reading_depth": "targeted XML supplement; no PDF/card promotion",
+  "sections_reviewed": ["1", "2", "3", "4.1", "4.2", "4.3", "5", "notes4", "_adda93_", "reference31"],
+  "layout_visual_review": false,
+  "artifact": {
+    "path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/xr_timing_2026_fulltext.xml",
+    "retrieved_at": "2026-09-11T18:22:50.454597+00:00",
+    "response_bytes": 138829,
+    "response_sha256": "258d63bd51d603c5cb59d3b588a6c0cfadc00e760c9b5ad10940f495f8b8163a",
+    "saved_bytes": 138830,
+    "saved_sha256": "a474e818e8fde5eef93505629d0cfd596c19d1ba40c3c7e741fddd69d4d2e046",
+    "normalization": "One trailing newline added on retention"
+  },
+  "access_targets": [
+    {"owner":"root","url":"https://www.mdpi.com/1424-8220/26/3/766","outcome":"HTTP429; no retry"},
+    {"owner":"root","url":"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI%3A10.3390%2Fs26030766&format=json&resultType=core","outcome":"success; metadata retained"},
+    {"owner":"root","url":"https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12899059/fullTextXML","outcome":"success; XML retained"},
+    {"owner":"root","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC12899059/","outcome":"CAPTCHA; no bypass"},
+    {"owner":"source_transfer_scout","url":"https://api.openalex.org/works/W7125708137","outcome":"safe-open non-retryable failure"},
+    {"owner":"source_transfer_scout","url":"https://doi.org/10.1109/JSEN.2025.3605813","outcome":"safe-open non-retryable failure; 2026-09-11T18:27:02Z"}
+  ],
+  "budget": {"exact_target_limit":6,"exact_targets_used":6,"root_used":4,"scout_used":2,"new_broad_searches":0,"PDFs":0,"raw_EEG_files":0,"new_fits":0,"new_efficacy_outcomes":0},
+  "data_availability_statement": "Data are contained within the article.",
+  "public_paired_raw_link_verified": false,
+  "private_or_request_only_proven": false,
+  "information_rights_match_current_support_only_design": false,
+  "learned_metadata_increment_or_calibration_savings_demonstrated_by_paper": false,
+  "source_hyperparameter_selection_reported": true,
+  "independent_read_only_review": "mobile_features_review; mechanism and information-rights review; no numerical reproduction",
+  "equation3_caveat": "XML normalizes M-1 reciprocal intervals by M; author implementation unverified",
+  "research_objective_changed": false,
+  "previous_gyro_source39_negatives": "PRESERVED_CLOSED",
+  "Eye_BCI": "PARKED_ANONYMOUS_FILE_ACCESS_UNRESOLVED",
+  "held60_opened": false,"external_outreach":false,"account_or_DUA_action":false,"paid_resources":false,
+  "next": "New bounded feasibility portfolio for a different public paired acquisition measurement; no automatic extension of this exhausted round or reuse of closed gyro optimizer"
+}

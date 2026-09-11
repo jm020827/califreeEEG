@@ -3,6 +3,8 @@
 2026-09-11. 이전 gyro source-routing 후보는 종료 상태 그대로다.
 새 사람 학습·성능 평가·held60 개봉은 없었다.
 
+> 2026-09-12 후속: [XR timing의 targeted XML 검토](xr_timing_candidate_feasibility_v1_results.md)를 완료했으나 공개 paired raw 경로를 확인하지 못해 `NOT_EXECUTABLE_WITH_CURRENT_PUBLIC_EVIDENCE`로 마감했다. 아래의 ‘OpenAlex abstract만/다음 조사’는 2026-09-11 당시 기록이며 현재 미실행 작업을 뜻하지 않는다. Eye-BCI 접근 보류 판정은 그대로다.
+
 ## 이번에 확인한 것
 
 새 후보3종을 구분했다. 실제 stimulus timing, 실제 electrode/contact 변화,

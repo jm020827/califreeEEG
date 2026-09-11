@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-12 **최신: 다른 acquisition-M 후보의 공개자료 조사 종료, 새 사람 실험 없음**. [Eye-BCI](docs/post_gyro_candidate_feasibility_v1_results.md)는 정확한 EEG–Tobii 파일쌍 목록까지 확인했으나 익명 파일 GET403으로 보류했다. [XR timing 원문 검토](docs/xr_timing_candidate_feasibility_v1_results.md)는 reference 보정의 기작을 확인했지만 공개 paired raw 경로·support-only 조건을 확보하지 못해 실행 후보로 넘기지 않았다. 단순 보정과 학습된 M의 추가 이득을 분리한다. 아래 gyro 부정 결과·held60 보호 유지, 새로운 raw EEG/fit/외부 요청/유료0. 후속은 다른 공개 paired acquisition 측정의 새 유한 feasibility 계획이며 이번 소진 예산의 자동 연장은 없다. 아래는 시점별 이력이다.
+
 > 2026-09-11 **최신: SAFE 실제 EEG 144회 완료, gyro source-routing 후보 종료**. [결과·해석](docs/block_scaled_router_human_v1_results.md), [상태v8](docs/reports/mobilebci_research_progress_v8_state.json). M가 gate·예측에 실제로 작동했지만 저보정 Q68.77%/QM68.61%, Q2보다 미우위, 보정 trial 절감0%였다. 원 저보정 목표는 유지하되 같은16명에서 이 구조의 optimizer 재시도는 중단한다. held60·비공개 요청·유료 사용 없음. 아래는 각 시점의 이력이다.
 
 > 2026-09-11 **실제형상 생성통합24회 완료**: [결과·한계](docs/block_scaled_router_integration_v1_results.md). 유익한인공M에서SAFE Q4.17%→QM94.44%,독립M조건에서는이득없음으로수치관문을통과했다. 기존학습기의양성QM100%와SAFE의축소수락0회도보존하므로새학습법우월성은아니다. 원역할보고덮어쓰기결함은원본보존후96행사후재구성으로보완했다. 실제gyro효능·보정절감미확립,새사람fit0. [후속사람검증초안](docs/block_scaled_router_human_v1_draft.md)은실행전이다.

@@ -1712,3 +1712,73 @@
   6analogies/36deepreads, render11views/SQLitequick_checkok. 새claim4evidence에
   측정·계약·두감사를 연결했다. ReportSHA002f66e3…,numeric auditSHA0f74c33e…,
   protocol auditSHAa6cf7b5f…이며 원producer hash는 보고서/receipt에 전부 보존했다.
+
+## RESEARCH/FEASIBILITY-20260912-129 — Eye-BCI 공개 목록 확인 후 파일403 보류
+
+- 사용자 다음할일/계속에 따라 gyro 종료 뒤 실제 timing·session electrode/contact·
+  독립 eye-tracker 수집품질의3경로를 검토했다. Root sole writer,연구scout/검토자는
+  읽기전용으로41worktrees/8기존untracked출력을 보존했다. Academic-research와
+  coordinate-worktree-changes를 사용,기존 부정 결과·source39종료·held60 보호 유지.
+- 사전 계약f63639e의 search1/2,exact officialtarget8/8을 사용했다. Search
+  `27e61efa0f9e7d35`,query `SSVEP public dataset photodiode stimulus timing recording`,
+  OpenAlex/Crossref 결과15건14newunique를 보존했다. 단순 명목 channel위치는
+  이미 공통 정보이며 gyro/event marker를 photodiode로 재명명하지 않았다.
+- 공식 Eye-BCI DOI10.1038/s41597-025-04861-9/wiki/authorrepo/Synapse공개목록으로
+  Tobii validity 등의 문서상 가능성을 확인했다. RootAPI3성공은298/5122/9259bytes,
+  실패한Nature redirect와scout dataset/API접근도 보존했다. 로컬wrapper의
+  Request.method/session-store 오류2건은 HTTP전 실패로 별도 기록했다.
+- 별도 schema4회 계약 후 S01/Sess01의Neuroscan/Tobii SSVEP011.csv version1
+  (syn64072665/syn64086409)을 결정적으로 찾았다. 목록4HTTP200/4821bytes이며
+  실제 CSV열/clock/trial수/샘플은 검증하지 않았다. 대응은 논리적 pairing뿐이다.
+- 헤더-only reader의4case/1suite통과 후 strictCSV/cap/Validity양쪽검사 정적수리,
+  최종a6f9d92로단회실행했다. 변경후unit재실행은예산상하지않은한계를보존한다.
+  FileEntity387bytes성공 후 EEG versioned-fileGET403,2requests/0redirect/
+  1.703804초에서 즉시중단. Header0,Tobii파일시도0,numeric decode0,우회0.
+- 독립감사에서4listing hashes/논리pair/실행reader불변/접근상태를확인했다.
+  원387bytebody미보존으로그producerhash의독립검증은못한다.403상세원인을
+  조사하지않았으므로 private/loginmandatory/저자승인필수라는결론은내리지않는다.
+- [결과](post_gyro_candidate_feasibility_v1_results.md),[상태](reports/eye_bci_candidate_v1_state.json),
+  원관측·attempt·독립감사는1a67fc9에보존했다. Eye는접근변화없으면critical path에서
+  제외한다. Validity≠EEGquality,querygaze/출처불명Blinks제외,tracker준비비용을
+  남겼다. 새사람raw/fit/효능0,계정/DUA/외부발송/유료0. 사용자에접근요청하지않음.
+- 이번closeout에서 claim95c1e31803ee7f49 QUALIFIED/3evidence와
+  gapc192eb36618652be를기록했다. 이는접근공백이며metadata효능부정판정이아니다.
+
+## RESEARCH/LITERATURE-20260912-130 — XR timing 기작 검토, 실행 후보 승격 안 함
+
+- 다음좁은논문 DOI10.3390/s26030766을1a67fc9계약에서root4/scout2exacttarget,
+ 8MiBtext/PDF0/raw0/fit0으로먼저고정했다. 이전workspacecontext/signature와
+  deep-read질문을이용했으며broadsearch를추가하지않았다. Currentmain1a67fc9,
+  disk99%/시작32,876,092KiB,41trees보존;공유disk변화를우리사용량으로귀속하지않음.
+- MDPI429와PMC CAPTCHA는실패로남기고재시도/우회하지않았다. 별도공식OA
+  EuropePMC metadata/XML은성공했다. ScoutOpenAlex exact record와ref31
+  DOI10.1109/JSEN.2025.3605813는safe-open실패. Target6/6종료,공개paired raw
+  URL미확인이나비공개임을증명하지않았다. DataAvailability는article내포함문구이며
+  `hasData:Y`나인용제목Open을raw공개증거로사용하지않는다.
+- 원문§§1–3,4.1–4.3,5,DataAvailability/ref31을targetedXML로읽었다. 본문HTTP
+  138829bytes/SHA258d63bd…와말미newline추가저장138830bytes/SHAa474e818…를
+  구별했다. Claim에는실제저장hash사용. PDF0/figurevisual0/전체독해선언0이다.
+- 저자방법은currentstimulationwindow의softwaretimestamps로전체candidatefrequency를
+  보정하고sourceLOSO로FBCCA설정을선택한다. Mconditioner학습/target보정량검증이
+  아니다. Moverio23.3→45.0%,HoloLens71.2→71.1%저자보고를함께남겼으며±를
+  CI/SD로바꾸지않는다. 별도사람·장치간차이만으로인과효과크기를단정하지않는다.
+- 독립기작검토는photodiode와softwarefps구별,currentwindow/supportonly권한차이,
+  Eq3의Mframe/M−1interval정규화불일치와실제구현미확정,frameindex가정,EEG1.25초와
+  timing집계구간불명확을확인했다. 식을그대로구현하거나발표성능오류라고단정하지않음.
+- [검토 결과/설계 반영](xr_timing_candidate_feasibility_v1_results.md),[상태](reports/xr_timing_candidate_v1_state.json)를
+  작성했다. 후속학습후보에는deterministic timingcorrection을공정한기준선으로
+  먼저넣고그이상의M효용을평가한다. Timebase변화와상수phase회전을구별하며
+  지원단계측정으로미래변화를예측할수있다는가설은미검증이다. NeuralODE승격0.
+- 결정NOT_EXECUTABLE_WITH_CURRENT_PUBLIC_EVIDENCE. 이번예산은마감하며다른
+  공개paired acquisition측정에대한새유한feasibility가후속이다. 이번실패뒤동일
+  탐색예산자동연장/gyrooptimizer재개/held60개봉/외부발송/유료사용은없다.
+- Academicclaimda19386a1bbc7bc2 QUALIFIED/4evidence,gape50641790660395c를저장.
+  XR PDFqueue는XML로현재질문을판단해skipped사유를남겼으며PDF완료로위장하지
+  않았다. 최종1099papers/88searches/45cards/18techniques/77claims/202evidence/
+  44gaps/6analogies/37deepreads(26completed/10queued/1skipped),cutoff2026-09-04
+  불변. Render11views/SQLitequick_checkok;서지수는충분한정독의증거가아니다.
+- Root는XML두hash/statement/6target계수,원설계/closeout/deny/직전144fit결과와
+  metadata hash,claimlocalartifact hash를재확인했다. 독립protocol리뷰에서도
+  원문/상태/README일치를확인했고Eye문서의옛‘다음XR’표기는역사기록이라고수정.
+  새학습·human배열읽기·network감사·repo전체test없음. 문서/JSON/static검증만수행.
+  별도worktree/설치/삭제/push0,이전goal은이미완료상태여서새goal을만들지않았다.
