@@ -1,0 +1,18 @@
+{
+  "schema": "cfeg.source-borrowing-generated-config.v1",
+  "contract": "docs/mobilebci_source_borrowing_generated_v1.md",
+  "module_sha256": "3c080cafa2bb9c943aab32084a5ea502c42e0ebc819c9f1cb243528043c143bd",
+  "driver_sha256": "d5da4ce5561e84b65a7d5366d823c2091fe5efdf335d11e77800d38ed96b4e2e",
+  "test_sha256": "668d7146643f73e88102ed53c156e0e7a801bfab868fb2833921381e1b136cb8",
+  "unit_receipt_path": "docs/reports/mobilebci_source_borrowing_v1_unit_tests.json",
+  "unit_receipt_sha256": "485cf81431389322f9007c740eafe13873e24e9d24261447896ab58afbe758af",
+  "fixture_path": "/home/whwovy/eeg-data/mobilebci-borrowing-generated-v1-b2dAJH/fixture.npz",
+  "result_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_source_borrowing_generated_v1_observation.json",
+  "journal_path": "/home/whwovy/califreeEEG/docs/reports/mobilebci_source_borrowing_generated_v1_fits.jsonl",
+  "maximum_router_fits": 4,
+  "optimizer_steps_per_fit": 100,
+  "class_ridge_solves": 9,
+  "maximum_wall_seconds": 120,
+  "no_human_inputs": true,
+  "no_retry": true
+}

@@ -36,6 +36,9 @@ and minimum own-class compatibility. QM adds two absolute differences of target/
 external context; SHAM uses the same two fields with a deterministic balanced mismatch.
 Self-expert auxiliary differences are zero for Q2/QM/SHAM, matched across arms. All arms
 share exactly the same expert bank, target support, queries and label resources.
+Compatibility is the coherent pooled projection score, not the mean of separately
+normalized trial scores. Shared-linear routing must use pairwise M differences; simply
+copying target M into each expert row adds a common logit and cancels under softmax.
 
 This gate is not the final human Q feature contract. A human experiment would need the
 existing richer Q/common information plus valid cache-computable transferability features.
@@ -51,6 +54,8 @@ in the context-selected group and a cyclic wrong-class decoy in the other. M rev
 group in the positive condition; a balanced deterministic reassignment breaks its pairing
 for SHAM. This is deliberately constructed informative side information, not a claim that
 head gyro has this physiology or that real source motion predicts transferability.
+True context and SHAM context form a balanced 2×2 factorial in training and evaluation,
+not a recoverable deterministic sign flip. Half of the binary values remain unchanged.
 
 Eight source-training episodes and eight disjoint generated evaluation episodes, balanced
 contexts/classes; six queries/episode. Fit exactly four router heads Q/Q2/QM/SHAM, 100
@@ -64,9 +69,13 @@ Before declaring gate PASS require all:
 2. Frozen QM with true M beats the same head with mismatched M by at least10pp.
 3. Permuting source class assignments while keeping the fixed task references and true M
    degrades QM by at least10pp; otherwise transferred class information is unproven.
+   Permute the source W class axis before recomputing scores, not the final probability
+   columns (which would be trivial output mislabeling). Freeze the router; no refit.
 4. M-only change alters router weights and relative class margins by >1e−5 at k1.
 5. Source permutation equivariance and within-class reference-basis orthogonal rotation
    invariance within1e−9; these are representation checks, not all real latency shifts.
+   The transferred object is class-specific spatial metric W Wᵀ, not phase-template
+   content. Global W-scale invariance is checked only above the projection energy floor.
 6. Exact no-transfer return; invalid negative/nonfinite weights and self/held-out source
    inclusion rejected; routing consumes no query M or query labels.
 
@@ -80,3 +89,10 @@ not itself authorize or prove human metadata usefulness.
 
 Root sole writer, reviewers read-only. Closed336-fit result/old failures/ChoiPARKED/held60
 remain intact. No overall research-goal success is inferred from a generated positive.
+
+Pre-execution engineering review clarifications: the capacity result joins a SHA-pinned
+unit-test receipt for invalid-input/source-boundary/global-scale checks rather than
+claiming to repeat every unit check. Attempted/completed router fits and class ridge
+solves are separate; a per-update callback preserves counts on partial failure. The8MiB
+artifact bound applies to fixture+fit journal+result together. These are accounting and
+verification fixes before the single capacity execution, not changes to the DGP or gate.

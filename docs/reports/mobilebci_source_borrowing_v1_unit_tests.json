@@ -1,0 +1,18 @@
+{
+  "schema": "cfeg.source-borrowing-unit-tests.v1",
+  "suite_calls": 2,
+  "suite_call_budget": 3,
+  "tests": 9,
+  "failures": 0,
+  "errors": 0,
+  "body_seconds": 0.285,
+  "history": [
+    {"call": 1, "tests": 8, "failures": 0, "errors": 0, "body_seconds": 0.399, "module_sha256": "99c68ee92b3e4abe6ba0e5b80873f1357b272028720b29a1de527207fc4eb03b", "test_sha256": "8ef84a44a0457a886d1a73268d8f92f81c921683e2a590e7ebe5b408b50741fb"},
+    {"call": 2, "tests": 9, "failures": 0, "errors": 0, "body_seconds": 0.285, "change": "partial-update accounting test and explicit nonfinite mixture rejection"}
+  ],
+  "human_inputs": 0,
+  "constructive_capacity_experiment_run": false,
+  "module_sha256": "3c080cafa2bb9c943aab32084a5ea502c42e0ebc819c9f1cb243528043c143bd",
+  "test_sha256": "668d7146643f73e88102ed53c156e0e7a801bfab868fb2833921381e1b136cb8",
+  "checks": ["expert scores match verified primitive", "support-statistic scaling", "probability normalization and exact target-only return", "source permutation", "right-orthogonal and above-floor scale invariance", "self/held-out bank rejection", "pairwise metadata avoids common-logit cancellation", "source-only standardization", "no query-axis router", "zero energy and invalid input", "partial failure preserves completed-update count"]
+}
