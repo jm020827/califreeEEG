@@ -194,6 +194,30 @@ class HumanRunnerTests(unittest.TestCase):
         for p, original in zip(layer.parameters(), old):
             torch.testing.assert_close(p, original, rtol=0, atol=0)
 
+    def test_receipt_fail_closed(self):
+        root = Path(runner.__file__).parent
+        receipt = {
+            "schema": "cfeg.safe-human-mock-tests.v1",
+            "status": "PASS",
+            "runs": [{"errors": 0}],
+            "invocations_consumed": 3,
+            "verified_code_sha256": {
+                name: runner.sha(root / name)
+                for name in (
+                    "run_block_scaled_router_human_v1.py",
+                    "test_block_scaled_router_human_v1.py",
+                )
+            },
+        }
+        with tempfile.TemporaryDirectory(prefix="safe-receipt-") as directory:
+            path = Path(directory) / "pass.json"
+            runner.write_json(path, receipt)
+            runner.validate_test_receipt(path)
+            bad = Path(directory) / "bad.json"
+            runner.write_json(bad, receipt | {"status": "FAILED"})
+            with self.assertRaisesRegex(ValueError, "unit_receipt_not_passing"):
+                runner.validate_test_receipt(bad)
+
 
 if __name__ == "__main__":
     torch.set_num_threads(1)

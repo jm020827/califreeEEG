@@ -1,7 +1,7 @@
 {
   "schema": "cfeg.safe-human-mock-tests.v1",
   "budget_suite_invocations": 3,
-  "invocations_consumed": 1,
+  "invocations_consumed": 2,
   "human_numeric_access": 0,
   "runs": [
     {
@@ -18,6 +18,19 @@
       "ridge_solves": 0,
       "direct_nonoptimizer_candidate_checks": 8,
       "resolution": "Use sum of eligible source+evaluation people in each plan, assert exact1344. No learning/output parameter changed. Failure precedes all ridge/router numerical fitting."
+    },
+    {
+      "invocation": 2,
+      "revision": "fc31ece",
+      "tests": 6,
+      "passed": 6,
+      "errors": 0,
+      "seconds": 2.031,
+      "fits": 144,
+      "proposals": 288,
+      "ridge_solves": 576,
+      "direct_nonoptimizer_candidate_checks": 8,
+      "coverage": "Generated execute flow, not human run() cache/publication; 72contexts/1344roles, 96fit policy lock, 144frozenheads, 1200outerrows, source scalers, roundtrip, counters."
     }
   ]
 }

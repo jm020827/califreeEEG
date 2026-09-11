@@ -352,13 +352,35 @@ def validate_inputs(config):
     require(required <= set(config["pinned_files"]), "missing_required_pin")
     for name, digest in config["pinned_files"].items():
         require(sha(name) == digest, "pin_mismatch:" + name)
+    validate_test_receipt(config["unit_receipt_path"])
+
+
+def validate_test_receipt(path):
+    receipt = json.loads(Path(path).read_text())
+    require(
+        receipt["schema"] == "cfeg.safe-human-mock-tests.v1"
+        and receipt["status"] == "PASS"
+        and receipt["runs"][-1]["errors"] == 0
+        and 1 <= receipt["invocations_consumed"] <= 3,
+        "unit_receipt_not_passing",
+    )
+    root = Path(__file__).resolve().parents[2]
+    for name in ("run_block_scaled_router_human_v1.py", "test_block_scaled_router_human_v1.py"):
+        require(
+            sha(root / "scripts/analysis" / name) == receipt["verified_code_sha256"][name],
+            "unit_receipt_code_mismatch",
+        )
 
 
 def run(config):
     paths = {key: Path(config[key + "_path"]) for key in OUTPUTS}
     require(len(set(paths.values())) == len(paths), "output_path_collision")
     partial_journal = paths["journal"].with_suffix(".partial.jsonl")
-    require(all(not p.exists() for p in [*paths.values(), partial_journal]), "no_restart")
+    partial_arrays = paths["audit_arrays"].with_suffix(".partial.npz")
+    require(
+        all(not p.exists() for p in [*paths.values(), partial_journal, partial_arrays]),
+        "no_restart",
+    )
     write_json(
         paths["start"],
         {"schema": "cfeg.block-scaled-human-start.v1", "attempt": 1, "config": config},
@@ -416,7 +438,6 @@ def run(config):
             state[key] += 1
 
         dataset.fit_experts(solve)
-        partial_arrays = paths["audit_arrays"].with_suffix(".partial.npz")
         with partial_arrays.open("xb") as stream:
             np.savez_compressed(stream, **arrays, bank_weights=dataset.weights.numpy())
             stream.flush()
