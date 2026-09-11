@@ -1,7 +1,18 @@
 {
   "schema": "cfeg.safe-human-mock-tests.v1",
   "budget_suite_invocations": 3,
-  "invocations_consumed": 2,
+  "invocations_consumed": 3,
+  "status": "PASS",
+  "verified_code_sha256": {
+    "run_block_scaled_router_human_v1.py": "fa41a227ece26646901cb225091b241c9e8447cdff46820e9e4c0bd158f23b96",
+    "test_block_scaled_router_human_v1.py": "c710a4f84e94e09acb5fab8d9e46fc4c74a25bc2893464d95c8720ff744eae85"
+  },
+  "total_generated_fits": 288,
+  "total_generated_proposals": 576,
+  "total_generated_ridge_solves": 1152,
+  "total_training_candidate_checks_upper_bound_not_observed_count": 4608,
+  "total_direct_nonoptimizer_candidate_checks": 24,
+  "test_scope_limit": "No human run() IO/publication integration was executed; execute(), atomic publication helper, pins, receipt guard and balanced loss have targeted generated/nontraining coverage.",
   "human_numeric_access": 0,
   "runs": [
     {
@@ -31,6 +42,19 @@
       "ridge_solves": 576,
       "direct_nonoptimizer_candidate_checks": 8,
       "coverage": "Generated execute flow, not human run() cache/publication; 72contexts/1344roles, 96fit policy lock, 144frozenheads, 1200outerrows, source scalers, roundtrip, counters."
+    },
+    {
+      "invocation": 3,
+      "revision": "efdf638",
+      "tests": 7,
+      "passed": 7,
+      "errors": 0,
+      "seconds": 2.092,
+      "fits": 144,
+      "proposals": 288,
+      "ridge_solves": 576,
+      "direct_nonoptimizer_candidate_checks": 8,
+      "coverage": "Repeat full generated execute plus code-matched passing receipt and fail-closed failed receipt tests. Budget exhausted: do not rerun this suite."
     }
   ]
 }
