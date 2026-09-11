@@ -1,0 +1,20 @@
+{
+  "schema": "cfeg.mobilebci-research-progress.v4",
+  "status": "GENERATED_MECHANISM_PASS_HUMAN_CONTRACT_DRAFT",
+  "original_low_calibration_objective_preserved": true,
+  "previous_candidate": "CLOSED_NEGATIVE_336_FITS_NO_CALIBRATION_SAVINGS",
+  "new_candidate": "Support-external-context routing over supervised source spatial-metric experts",
+  "decision": "RETAIN_FOR_HUMAN_CONTRACT_ONLY_NOT_HUMAN_EFFICACY",
+  "generated_budget": {"experiments_used": 1, "experiments_allowed": 1, "router_fits": 4, "optimizer_steps": 400, "ridge_class_solves": 9, "compute_seconds": 0.479128, "unit_suite_calls_used": 2, "unit_suite_calls_allowed": 3, "fixture_numeric_elements": 101504, "fixture_numeric_bytes": 812032, "producer_artifact_bytes": 848959},
+  "accuracy": {"Q": 0.3333333333333333, "Q2": 0.3333333333333333, "QM": 1.0, "SHAM": 0.3333333333333333, "frozen_QM_wrong_M": 0.5, "frozen_QM_wrong_source_W_class": 0.6666666666666666},
+  "independent_saved_artifact_audit": "PASS_57_CHECKS_NO_REFIT",
+  "new_human_inputs": 0,
+  "new_human_fits": 0,
+  "human_metadata_benefit": "NOT_ESTABLISHED",
+  "human_calibration_savings": "NOT_MEASURED_FOR_NEW_CANDIDATE",
+  "next": "Finalize role-aware human implementation and generated integration checks against draft 144-fit/14400-update/576-ridge contract before any actual human execution; no repeats of generated capacity gate.",
+  "human_contract_state": "DRAFT_NOT_EXECUTABLE",
+  "protected": {"held60_opened": false, "external_outreach": false, "paid_resources": false, "choi": "PARKED_BY_USER", "source39": "CLOSED_UNCHANGED"},
+  "full_repository_test_suite_run": false,
+  "goal_note": "No new persistent goal created from an ordinary continuation; broad scientific objective not declared achieved."
+}
