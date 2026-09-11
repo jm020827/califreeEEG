@@ -41,10 +41,10 @@ class Redirects(urllib.request.HTTPRedirectHandler):
         self.in_request += 1
         if self.in_request > 2 or not allowed_url(newurl):
             raise ValueError("redirect_boundary")
+        if self.state["network_requests_attempted"] >= 8:
+            raise ValueError("request_budget")
         self.state["redirects"] += 1
         self.state["network_requests_attempted"] += 1
-        if self.state["network_requests_attempted"] > 8:
-            raise ValueError("request_budget")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
@@ -53,7 +53,7 @@ def parse_header(line, modality):
         raise ValueError("header_line_boundary")
     decoded = line.decode("utf-8-sig").strip("\r\n")
     delimiter = "\t" if decoded.count("\t") > decoded.count(",") else ","
-    fields = next(csv.reader(io.StringIO(decoded), delimiter=delimiter))
+    fields = next(csv.reader(io.StringIO(decoded), delimiter=delimiter, strict=True))
     fields = [f.strip() for f in fields]
     expected = (
         {"ValidityLeft", "ValidityRight"}
@@ -62,6 +62,8 @@ def parse_header(line, modality):
     )
     if not set(fields).intersection(expected):
         raise ValueError("expected_header_not_found_no_sample_values_retained")
+    if modality == "Tobii" and not expected <= set(fields):
+        raise ValueError("both_validity_headers_required")
     return fields
 
 
@@ -108,6 +110,8 @@ def probe():
                 if len(body) > 1048576:
                     raise ValueError("metadata_size_boundary")
                 metadata = json.loads(body)
+                if not isinstance(metadata, dict):
+                    raise TypeError("metadata_object_required")
                 record["metadata_bytes"] = len(body)
                 record["metadata_sha256"] = hashlib.sha256(body).hexdigest()
             if (
@@ -129,6 +133,8 @@ def probe():
             record["header_fields"] = parse_header(line, modality)
         state["status"] = "COMPLETE_HEADERS_ONLY"
     except (
+        csv.Error,
+        TypeError,
         urllib.error.HTTPError,
         urllib.error.URLError,
         TimeoutError,
