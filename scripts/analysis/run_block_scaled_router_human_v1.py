@@ -90,7 +90,8 @@ def role_manifest(dataset):
                     )
                 entries[f"{context_key(plan, k)}-{role}"] = rows
     require(len(entries) == 72, "role_context_count")
-    require(sum(map(len, entries.values())) == 9 * 4 * len(dataset.runs), "role_row_count")
+    expected_rows = 4 * sum(len(dataset.indices(p["source"] + p["evaluation"])) for p in plans)
+    require(sum(map(len, entries.values())) == expected_rows == 1344, "role_row_count")
     return {
         "schema": "cfeg.block-scaled-human-roles.v1",
         "entries": entries,

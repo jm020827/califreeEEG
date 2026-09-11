@@ -1,0 +1,23 @@
+{
+  "schema": "cfeg.safe-human-mock-tests.v1",
+  "budget_suite_invocations": 3,
+  "invocations_consumed": 1,
+  "human_numeric_access": 0,
+  "runs": [
+    {
+      "invocation": 1,
+      "revision": "76c84dd",
+      "command": "PYTHONPATH=src:scripts/analysis .venv/bin/python scripts/analysis/test_block_scaled_router_human_v1.py -v",
+      "tests": 6,
+      "passed": 5,
+      "errors": 1,
+      "seconds": 0.031,
+      "error": "role_row_count: incorrectly expected 1728 role rows instead of 1344; inner plans exclude their outer holdout subjects",
+      "fits": 0,
+      "proposals": 0,
+      "ridge_solves": 0,
+      "direct_nonoptimizer_candidate_checks": 8,
+      "resolution": "Use sum of eligible source+evaluation people in each plan, assert exact1344. No learning/output parameter changed. Failure precedes all ridge/router numerical fitting."
+    }
+  ]
+}

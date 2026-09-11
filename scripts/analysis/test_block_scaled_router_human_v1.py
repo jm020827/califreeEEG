@@ -25,7 +25,7 @@ class HumanRunnerTests(unittest.TestCase):
         d = Dataset(arrays, runs, samples)
         state = runner.fresh_state()
         manifest = runner.role_manifest(d)
-        self.assertEqual(sum(map(len, manifest["entries"].values())), 1728)
+        self.assertEqual(sum(map(len, manifest["entries"].values())), 1344)
         self.assertIsNone(d.weights)
         d.fit_experts()
         logs, trained, locked = [], [], []
