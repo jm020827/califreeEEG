@@ -1,0 +1,14 @@
+{
+  "attempt": 1,
+  "base": "da11bf3",
+  "old_pins": {
+    "src/cfeg/analysis/mobilebci_source_borrowing.py": "4c634ea313f6cb6df3ebe95f08a01937229e44a4b348443e9d6eb95f03083ca5",
+    "src/cfeg/analysis/source_expert_borrowing.py": "3c080cafa2bb9c943aab32084a5ea502c42e0ebc819c9f1cb243528043c143bd"
+  },
+  "runner_sha": "51108be9ab747712bf6fdadd803a3adbd32e181ac5faeca9f7db58787ebbb4d4",
+  "model_sha": "98c4574190c9724b925580084a64602c057fd83ee6dafa613519f7412b23f589",
+  "contract_sha": "3729eff150d213986dfe4201db196d8e37f9dca559751a3180906daecef96c4b",
+  "torch": "2.2.2+cu121",
+  "numpy": "1.26.4",
+  "utc": "2026-09-11T13:02:27Z"
+}
