@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-11 **Source-borrowing 실제144회 학습 종료**: [결과·포화 해석](docs/mobilebci_source_borrowing_human_v1_results.md). Q/Q2/QM/SHAM 저보정 정확도 모두67.85%, 보정trial절감0%였다. 모델은사실상self만선택했고M는내부logit을바꿨지만최종예측을바꾸지못했다.32/144fits의학습loss악화도보존하므로metadata정보자체가없다고결론내리지않는다. 이번후보예산종료·자동재시도0·held60보호, 아래는이전단계이력이다.
+
 > 2026-09-11 **새 source-borrowing 기작 합성 관문 통과**: [결과·문헌 재검토·다음 계획](docs/mobilebci_source_borrowing_generated_v1_results.md). 단회4fits/400updates와 독립57항목 검산을 완료했다. 인공적으로 유익하게 만든 M에서 Q33.33%→QM100%, 엇갈린 M50%였다. **실제 gyro 효능·보정량 감소 증거는 아니며 새 사람 학습0**이다. [144-fit 사람 검증 초안](docs/mobilebci_source_borrowing_human_v1_draft.md)은 아직 실행 전이다. 직전336-fit 부정 결과·Choi보류·held60보호를 유지한다.
 
 > 2026-09-11 **실제 336회 metadata 학습·평가 완료, 현재 후보 종료**: [결과와 후속 판단](docs/mobilebci_prior_efficacy_v1_results.md). 16명에서 Q 66.52% / QM 66.56%, Q2·SHAM 미우위, 보정 trial 절감 0%. M 자체가 prior/점수를 바꾸는 경로는 확인했지만 실용 이득은 없었다. 독립 검산 PASS, 336/336 예산 종료. 기존 부정 결과·Choi 보류·held60 보호는 유지하며 아래는 시점별 이력이다.

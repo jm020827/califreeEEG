@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-11 **최신 실제결과: source-borrowing v1 CLOSED_NEGATIVE**. [144fit 결과](mobilebci_source_borrowing_human_v1_results.md), [현재상태v5](reports/mobilebci_research_progress_v5_state.json). 실제14400updates/576ridge solves와source-only정책평가를완료했고QM추가이득0pp·보정trial절감0%다. Gate가self선택으로포화해M의최종효과가없었고32fits는NLL도악화했다. 이학습설정의부정결과이지metadata조건부정보의부재증명은아니다. 기존336-fit·source39/ChoiPARKED/held60보호유지, 자동재시도·새효능후보확장0. 아래초안/미실행표기는당시단계의이력이다.
+
 > 2026-09-11 **최신: 실제 prior 후보 부정 종료 → 새 차용 기작 합성 검증 완료**. [16명336-fit 결과](mobilebci_prior_efficacy_v1_results.md)는 추가 gyro 이득 미확립·보정trial절감0으로 종료됐다. [새 source-borrowing 합성 결과](mobilebci_source_borrowing_generated_v1_results.md)는 단회4fits/400updates와 독립57항목 검산PASS지만 실제 M 효과가 아니다. [144-fit 사람 실험 초안](mobilebci_source_borrowing_human_v1_draft.md)은 DRAFT_NOT_EXECUTABLE로, role-aware 구현·검증·실행manifest가 다음이다. 새 사람자료/cache수치/학습0, ChoiPARKED·held60보호·이전부정결과 유지. 아래는 당시 단계 이력이며 새 원 연구목표 달성을 뜻하지 않는다.
 
 > 2026-09-10 **Choi 대기 해제 방향 전환 / 새 후보는 preflight 전**: 사용자가 비공개 의존 경로를 내려놓고 다른 후보를 지시했다. [Lee2021 measured head-IMU 설계](mobilebci_head_motion_candidate_v1.md)를 선택했으며 speed-only 비교는 primary에서 제외한다. Triage만 완료, raw access/scientific eligibility/fit/outcome은 미완료다. 기존 blocked 기록은 Choi 의존 경로의 당시 상태이며 새 후보를 기각한 판정이 아니다.
