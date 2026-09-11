@@ -48,10 +48,13 @@ Independent saved-artifact audit는추가fit/raw/cacheload0,120초/보고2MiB상
 
 Generated adapter suite≤3calls,trainer/CLI integration suite≤3calls;각입력fixture
 ≤200000numeric elements/2MiB. CPU1,테스트총600초/출력8MiB상한,새의존성0.
-Tiny generated CLI smoke는9generatedpeople/3speeds/4k/4arms×2updates로
+Tiny generated CLI smoke는16generatedpeople/3speeds/4k/4arms×2updates로
 144mockfits/288updates 이하를사용하고실제효능실험횟수로세지않는다.
 Mock bank13·Q123/125·queryclassbalancedloss·globalpolicylock/JSON로그경로를그대로검사한다.
 실제cohort는16명이어야하며CLI에서mockbudget을선택할수없다.
+생성people수는최소innertrainingpool5명에서recipient를뺀4명을충족하도록
+실행전9→16으로정정했다. 실제human조건/예산변경은아니다. 감사용NPZ에는한번읽은
+role-limited 충분통계와576개W를보존할수있으며raw파형복사/추가원cacheload는없다.
 
 ## 유지 기준·진단
 

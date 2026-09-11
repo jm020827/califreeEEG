@@ -1,0 +1,21 @@
+{
+  "schema": "cfeg.mobilebci-source-borrowing-tests.v1",
+  "status": "PASS",
+  "adapter_suite_calls": {"used": 1, "allowed": 3, "cases": 7, "body_seconds": 0.058},
+  "runner_suite_calls": {"used": 2, "allowed": 3, "history": [{"call": 1, "cases": 2, "body_seconds": 1.886, "includes_generated_full_path": true}, {"call": 2, "cases": 3, "body_seconds": 0.022, "selected_tests": ["atomic publication failure", "CCA unique run anchor", "missing pins stop before cache read"], "includes_generated_full_path": false}]},
+  "failures": 0,
+  "errors": 0,
+  "generated_full_path_runs": 1,
+  "generated_router_fits": 144,
+  "generated_optimizer_updates": 288,
+  "fixture_numeric_elements": 165312,
+  "fixture_numeric_bytes": 1322496,
+  "human_inputs": 0,
+  "actual_capacity_gate_reruns": 0,
+  "full_repository_suite": false,
+  "adapter_sha256": "4c634ea313f6cb6df3ebe95f08a01937229e44a4b348443e9d6eb95f03083ca5",
+  "runner_sha256": "3d8fdbef49b79975a2f96957bde34457ae6c9a6d3fa48fa09b2e0b9cd354e3d4",
+  "adapter_tests_sha256": "7cba24f5d065e93ea94280ef7b6e30b51e5433df5582c5a6e5c79e3a958cebbe",
+  "runner_tests_sha256": "0beb2ad9260c256c67dab401ad34f400735200ec13923eb0b3f8dd031d6525d7",
+  "coverage_note": "Full execute path was exercised before atomic/pin/CCA identity hardening; those final boundary changes received three selected tests without another144-fit mock replay. Static mathematical/protocol reviews passed. Ruff import/style issues were repaired before affected test calls, not experiment retries."
+}
