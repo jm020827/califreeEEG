@@ -1,0 +1,31 @@
+{
+  "schema": "cfeg.eye-bci-header-probe.v1",
+  "status": "STOPPED_NO_RETRY",
+  "started_at": "2026-09-11T14:09:22.229166+00:00",
+  "logical_requests_attempted": 2,
+  "network_requests_attempted": 2,
+  "redirects": 0,
+  "records": [
+    {
+      "modality": "Neuroscan",
+      "entity": "syn64072665",
+      "version": 1,
+      "parent": "syn64072621",
+      "metadata_bytes": 387,
+      "metadata_sha256": "037199f6ac9e188863ce644f573f2b264b9387c745ced65c5cf6944330aff5c0",
+      "entity_metadata": {
+        "id": "syn64072665",
+        "name": "SSVEP011.csv",
+        "parentId": "syn64072621",
+        "versionNumber": 1,
+        "etag": "fed0db53-c491-4b1e-94b3-58e18eb940a8",
+        "dataFileHandleId": "149810668"
+      }
+    }
+  ],
+  "numeric_samples_decoded": 0,
+  "error_type": "HTTPError",
+  "http_status": 403,
+  "error_reason": "HTTPError",
+  "seconds": 1.7038038759492338
+}

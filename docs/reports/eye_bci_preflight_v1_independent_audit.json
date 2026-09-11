@@ -1,0 +1,29 @@
+{
+  "schema": "cfeg.eye-bci-preflight-audit.v1",
+  "status": "PASS_LIMITED_METADATA_AND_ACCESS_RESULT",
+  "reviewer": "read-only mobile_protocol_review; root transcribed receipt",
+  "inventory_audit_seconds": 0.000234,
+  "header_closeout_audit_seconds": 0.002508,
+  "new_network_calls": 0,"new_fits":0,"raw_access":0,"writes":0,
+  "verified": {"logical_paired_session":"S01/Sess01", "pair_name":"SSVEP011.csv",
+    "EEG_id":"syn64072665","Tobii_id":"syn64086409",
+    "root_subject_folders":31,"root_total_entries":32,
+    "four_listing_page_lengths":[1,5,5,5],"listing_payload_bytes":4821,
+    "pagination_tokens":false,"header_probe_requests":2,"redirects":0,
+    "EEG_file_GET_status":403,"CSV_headers":0,"Tobii_attempted":false,
+    "numeric_samples_decoded":0,"reader_unchanged_from_execution_revision":true},
+  "sha256": {
+    "request1":"c6313d1a3529aadfd2e776140382c88a04b0a4eeb1937ce9b982082348c7c3fa",
+    "request2":"eaaf6f755ac2236ea846f69359bc1d8f9d4d2d73cdb6b1de4dc1095ef0036de0",
+    "request3":"6e2193ff43eb7eef2a04d1277c611171a0b06d42761bd5a870fffaf298c46546",
+    "request4":"8dbed8084bc16918c369e47a030b77c175971c26dffb0ad2d857a5494045cb3d",
+    "observation":"5a2b854e2a11bc3c29c3d92d6cb30d0a93c4f36bedd94e143b5c2061e9c8f243",
+    "attempt":"b11a17b20b13d57dadf9d1872b0aa8702f52ff8a6dde4704cdf7f07e49736849",
+    "reader":"6aa37dc8c0a8a7e67cd0c0e59326dc2e99b2ff20e08ea98be4054e265d117dd5"
+  },
+  "decision":"PARK_ANONYMOUS_FILE_ACCESS_UNRESOLVED",
+  "limitations":["Publiclisting/logicalpair doesnotproveactualcolumns/clocks/trialcount/anonymousfileaccess.",
+    "HTTP403 doesnotproveprivate/loginmandatory; reasonnotinvestigated.",
+    "Metadata response387bytes notretainedasrawbody; hashisproducerreported notindependentrecomputed.",
+    "Finalcap/strictCSV changes staticreviewed but unitbudgetnotrerun."]
+}

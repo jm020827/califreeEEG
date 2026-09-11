@@ -1,0 +1,19 @@
+{
+  "schema": "cfeg.eye-bci-candidate-state.v1",
+  "status": "PARKED_ANONYMOUS_FILE_ACCESS_UNRESOLVED",
+  "research_objective_changed": false,
+  "candidate": "Pre-query support-only independent eye-tracker acquisition validity",
+  "metadata_public_verified": true,
+  "logical_EEG_Tobii_pair_found": true,
+  "actual_CSV_headers_verified": false,
+  "raw_dataset_acquired": false,
+  "eligibility_for_human_training": false,
+  "header_attempt": {"revision":"a6f9d92","attempts":1,"requests":2,
+    "redirects":0,"seconds":1.7038038759492338,"EEG_file_status":403,
+    "Tobii_attempted":false,"CSV_headers":0,"numeric_samples_decoded":0},
+  "private_or_login_required_proven": false,
+  "next": "Targeted Methods/DataAvailability read of XR frame-rate compensation DOI10.3390/s26030766; no paper efficacy or public data claim from abstract. Eye-BCI not on critical path without lawful access change.",
+  "new_fits":0,"new_efficacy_outcomes":0,"held60_opened":false,
+  "external_outreach":false,"account_or_DUA_action":false,"paid_resources":false,
+  "previous_gyro_source39_negatives":"PRESERVED_CLOSED"
+}
