@@ -83,6 +83,8 @@ def probe():
     def get(url):
         if not allowed_url(url):
             raise ValueError("url_boundary")
+        if state["logical_requests_attempted"] >= 4 or state["network_requests_attempted"] >= 8:
+            raise ValueError("request_budget")
         state["logical_requests_attempted"] += 1
         state["network_requests_attempted"] += 1
         redirects.in_request = 0

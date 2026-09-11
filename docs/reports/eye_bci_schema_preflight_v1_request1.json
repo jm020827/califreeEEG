@@ -1,0 +1,38 @@
+{
+  "url": "https://repo-prod.prod.sagebase.org/repo/v1/entity/children",
+  "request_json": {
+    "parentId": "syn64071512",
+    "includeTypes": [
+      "folder",
+      "file",
+      "table",
+      "link"
+    ],
+    "sortBy": "NAME",
+    "sortDirection": "ASC"
+  },
+  "anonymous": true,
+  "retrieved_at": "2026-09-11T14:03:15.332266+00:00",
+  "method": "POST",
+  "semantic_operation": "READ_ONLY_METADATA",
+  "byte_limit": 1048576,
+  "status": 200,
+  "bytes": 302,
+  "json": {
+    "page": [
+      {
+        "name": "Sess01",
+        "id": "syn64071513",
+        "type": "org.sagebionetworks.repo.model.Folder",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:07:02.065Z",
+        "modifiedOn": "2024-11-14T18:07:02.065Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      }
+    ]
+  }
+}

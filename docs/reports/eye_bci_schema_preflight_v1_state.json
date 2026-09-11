@@ -1,0 +1,18 @@
+{
+  "schema": "cfeg.eye-bci-schema-preflight.v1",
+  "status": "COMPLETE_LOGICAL_PAIR_FOUND_ACTUAL_HEADERS_UNVERIFIED",
+  "contract_revision": "e141278",
+  "requests_used": 4, "requests_max": 4, "all_HTTP200": true,
+  "API_response_bytes_total": 4821,
+  "page_lengths": [1,5,5,5], "pagination_tokens_present": false,
+  "pair": {
+    "subject": "S01", "session": "Sess01", "basename": "SSVEP011.csv", "version": 1,
+    "EEG": {"parent": "syn64072621", "entity": "syn64072665"},
+    "Tobii": {"parent": "syn64086404", "entity": "syn64086409"}
+  },
+  "actual_CSV_headers_verified": false,
+  "samples_or_timestamps_decoded": 0,
+  "fits": 0,
+  "caution": "API bytes are not CSV size. Paired filenames are not time alignment,40trials or usable M verification.",
+  "next": "Separate exact2file header-only probe; stops firstanonymousauth/error, no private request."
+}

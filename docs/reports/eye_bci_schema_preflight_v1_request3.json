@@ -1,0 +1,90 @@
+{
+  "url": "https://repo-prod.prod.sagebase.org/repo/v1/entity/children",
+  "request_json": {
+    "parentId": "syn64072621",
+    "includeTypes": [
+      "folder",
+      "file",
+      "table",
+      "link"
+    ],
+    "sortBy": "NAME",
+    "sortDirection": "ASC"
+  },
+  "anonymous": true,
+  "retrieved_at": "2026-09-11T14:03:49.755976+00:00",
+  "method": "POST",
+  "semantic_operation": "READ_ONLY_METADATA",
+  "byte_limit": 1048576,
+  "status": 200,
+  "bytes": 1516,
+  "json": {
+    "page": [
+      {
+        "name": "ME011.csv",
+        "id": "syn64072632",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:57:07.404Z",
+        "modifiedOn": "2024-11-14T18:57:07.404Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "MI011.csv",
+        "id": "syn64072638",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:57:42.108Z",
+        "modifiedOn": "2024-11-14T18:57:42.108Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "P3004L011.csv",
+        "id": "syn64072640",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:57:51.763Z",
+        "modifiedOn": "2024-11-14T18:57:51.763Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "P3005L011.csv",
+        "id": "syn64072643",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:58:32.208Z",
+        "modifiedOn": "2024-11-14T18:58:32.208Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "SSVEP011.csv",
+        "id": "syn64072665",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T19:01:54.734Z",
+        "modifiedOn": "2024-11-14T19:01:54.734Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      }
+    ]
+  }
+}

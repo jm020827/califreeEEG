@@ -1,0 +1,90 @@
+{
+  "url": "https://repo-prod.prod.sagebase.org/repo/v1/entity/children",
+  "request_json": {
+    "parentId": "syn64071513",
+    "includeTypes": [
+      "folder",
+      "file",
+      "table",
+      "link"
+    ],
+    "sortBy": "NAME",
+    "sortDirection": "ASC"
+  },
+  "anonymous": true,
+  "retrieved_at": "2026-09-11T14:03:29.531625+00:00",
+  "method": "POST",
+  "semantic_operation": "READ_ONLY_METADATA",
+  "byte_limit": 1048576,
+  "status": 200,
+  "bytes": 1487,
+  "json": {
+    "page": [
+      {
+        "name": "E-Prime",
+        "id": "syn64071514",
+        "type": "org.sagebionetworks.repo.model.Folder",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:07:02.597Z",
+        "modifiedOn": "2024-11-14T18:07:02.597Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "Neuroscan",
+        "id": "syn64072621",
+        "type": "org.sagebionetworks.repo.model.Folder",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-14T18:56:59.314Z",
+        "modifiedOn": "2024-11-14T18:56:59.314Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "Phantom",
+        "id": "syn64086387",
+        "type": "org.sagebionetworks.repo.model.Folder",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-15T04:17:49.811Z",
+        "modifiedOn": "2024-11-15T04:17:49.811Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "S01_Sess01.xlsx",
+        "id": "syn64086410",
+        "type": "org.sagebionetworks.repo.model.FileEntity",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-15T04:25:08.705Z",
+        "modifiedOn": "2024-11-15T04:25:08.705Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      },
+      {
+        "name": "Tobii",
+        "id": "syn64086404",
+        "type": "org.sagebionetworks.repo.model.Folder",
+        "versionNumber": 1,
+        "versionLabel": "1",
+        "isLatestVersion": true,
+        "benefactorId": 64005218,
+        "createdOn": "2024-11-15T04:23:36.148Z",
+        "modifiedOn": "2024-11-15T04:23:36.148Z",
+        "createdBy": "3518021",
+        "modifiedBy": "3518021"
+      }
+    ]
+  }
+}

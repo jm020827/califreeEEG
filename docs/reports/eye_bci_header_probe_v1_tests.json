@@ -1,0 +1,15 @@
+{
+  "schema": "cfeg.eye-header-tests.v1",
+  "suite_invocations": 1,
+  "suite_invocations_max": 1,
+  "tested_revision": "54b5769",
+  "cases": 4,
+  "passed": 4,
+  "failed": 0,
+  "seconds": 0.001,
+  "network_calls": 0,
+  "human_values_decoded": 0,
+  "coverage": "CSV/tab expectedheaders, numeric-line rejection, empty/oversize/unterminated line, HTTPS-host/credential guard",
+  "post_test_static_change": "Add logical4/network8 cap before initial GET as well as redirect handler. No test rerun; static-reviewed narrow guard before actual attempt.",
+  "not_covered": "Actual Synapse/download redirects and network failure publication have not been integration tested with generated responses."
+}
