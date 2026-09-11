@@ -1,0 +1,21 @@
+{
+  "url": "https://repo-prod.prod.sagebase.org/repo/v1/entity/syn64005218",
+  "method": "GET",
+  "anonymous": true,
+  "retrieved_at": "2026-09-11T13:59:44.480794+00:00",
+  "byte_limit": 1048576,
+  "status": 200,
+  "final_url": "https://repo-prod.prod.sagebase.org/repo/v1/entity/syn64005218",
+  "bytes": 298,
+  "json": {
+    "name": "Eye-BCI_multi_dataset",
+    "id": "syn64005218",
+    "etag": "6d101ff1-426a-4a03-8004-476f6b26d819",
+    "createdOn": "2024-11-08T01:35:17.207Z",
+    "modifiedOn": "2024-11-15T08:19:52.900Z",
+    "createdBy": "3518021",
+    "modifiedBy": "3518021",
+    "parentId": "syn4489",
+    "concreteType": "org.sagebionetworks.repo.model.Project"
+  }
+}

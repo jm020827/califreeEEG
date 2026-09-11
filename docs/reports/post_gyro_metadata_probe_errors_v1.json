@@ -1,0 +1,17 @@
+{
+  "schema": "cfeg.public-metadata-probe-errors.v1",
+  "errors": [
+    {
+      "phase": "local wiki/children request wrapper before any urlopen",
+      "error": "AttributeError: Request object has no attribute method",
+      "remote_requests_started": 0,
+      "resolution": "Use Request.get_method(); no remote failure or human access occurred."
+    },
+    {
+      "phase": "tool-result persistence after process had exited",
+      "error": "attempted store(undefined session_id) could not serialize",
+      "remote_requests_started": 0,
+      "resolution": "Only store a session_id when present; preserve wrapper failure instead of treating as API failure."
+    }
+  ]
+}

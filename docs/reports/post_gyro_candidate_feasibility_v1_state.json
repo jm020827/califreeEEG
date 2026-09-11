@@ -1,0 +1,26 @@
+{
+  "schema": "cfeg.post-gyro-feasibility.v1",
+  "status": "FEASIBILITY_COMPLETE_CONDITIONAL_EYE_SCHEMA_PROBE_SELECTED",
+  "base_revision": "96d1397",
+  "budget_revision": "f63639e",
+  "routes": {
+    "measured_display_timing": "NOT_SELECTED_ACTUAL_RELEASED_TIMING_FIELDS_UNVERIFIED",
+    "electrode_geometry_reference": "NOT_SELECTED_NO_SESSION_MEASUREMENT_CONFIRMED_AND_COORDINATES_ARE_COMMON_INFO",
+    "eye_acquisition_quality": "SELECTED_FOR_SCHEMA_ONLY_NOT_EFFICACY"
+  },
+  "public_access": {"project_GET": 200,"wiki_GET": 200,"children_listing_POST": 200,
+    "subject_folder_names": "S01..S31", "raw_download_verified": false,
+    "actual_file_columns_verified": false, "license": "CC0_REPORTED_BY_OFFICIAL_WIKI"},
+  "usage": {"structured_queries": 1,"query_budget": 2,"root_official_targets": 4,
+    "scout_official_targets": 4,"total_official_target_budget": 8,
+    "root_API_success_response_bytes": 14679,"wrapper_failures_before_network": 1,
+    "tool_persistence_error_after_local_failure": 1,"PDF_downloads": 0,
+    "human_waveform_downloads": 0,"human_values_decoded": 0,"fits": 0},
+  "source_failures": ["Root Nature redirect fetch failed; no retry/bypass",
+    "Scout paper dataset-reference and Synapse web API fetch failed; preserved separately from successful anonymous official API transport"],
+  "search": {"id": "search:27e61efa0f9e7d35","papers_ingested": 15,"new_unique_papers": 14,
+    "cutoff": "2026-09-04","quality": "Mixed relevance incl irrelevant peer-reviews/components; no verified new public timing corpus"},
+  "next": "Separate frozen4request S01 earliest-session EEG/Tobii schema inventory; no raw or efficacy access.",
+  "protected": {"held60": "SEALED","source39": "CLOSED","gyro_source_routing": "CLOSED",
+    "Choi_private": "PARKED_BY_USER","external_outreach": 0,"paid": 0}
+}
