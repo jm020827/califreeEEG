@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-11 **최신 후속: outcome-free 수치진단 완료, 원목표 유지**. [12fit 결과](router_saturation_numerical_v1_results.md), [phase/metadata 설계검토](ssvep_phase_metadata_design_review_20260911.md), [상태v6](reports/mobilebci_research_progress_v6_state.json). 인공 중복특징의self포화와블록스케일대조를검증했고7/12수렴·독립8741checksPASS다. 실제144/336-fit부정결과를뒤집지않으며새사람fit0이다. 공통자극정보/Q/외부M를분리하고측정모형·작은적응경로를우선; Neural ODE·새STFT추출은보류한다. 다음은별도유한generated통합검증이며자동사람재학습은아니다.
+
 > 2026-09-11 **최신 실제결과: source-borrowing v1 CLOSED_NEGATIVE**. [144fit 결과](mobilebci_source_borrowing_human_v1_results.md), [현재상태v5](reports/mobilebci_research_progress_v5_state.json). 실제14400updates/576ridge solves와source-only정책평가를완료했고QM추가이득0pp·보정trial절감0%다. Gate가self선택으로포화해M의최종효과가없었고32fits는NLL도악화했다. 이학습설정의부정결과이지metadata조건부정보의부재증명은아니다. 기존336-fit·source39/ChoiPARKED/held60보호유지, 자동재시도·새효능후보확장0. 아래초안/미실행표기는당시단계의이력이다.
 
 > 2026-09-11 **최신: 실제 prior 후보 부정 종료 → 새 차용 기작 합성 검증 완료**. [16명336-fit 결과](mobilebci_prior_efficacy_v1_results.md)는 추가 gyro 이득 미확립·보정trial절감0으로 종료됐다. [새 source-borrowing 합성 결과](mobilebci_source_borrowing_generated_v1_results.md)는 단회4fits/400updates와 독립57항목 검산PASS지만 실제 M 효과가 아니다. [144-fit 사람 실험 초안](mobilebci_source_borrowing_human_v1_draft.md)은 DRAFT_NOT_EXECUTABLE로, role-aware 구현·검증·실행manifest가 다음이다. 새 사람자료/cache수치/학습0, ChoiPARKED·held60보호·이전부정결과 유지. 아래는 당시 단계 이력이며 새 원 연구목표 달성을 뜻하지 않는다.

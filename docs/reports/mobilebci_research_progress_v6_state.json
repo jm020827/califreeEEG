@@ -1,0 +1,25 @@
+{
+  "schema": "cfeg.mobilebci-research-progress.v6",
+  "status": "BOUNDED_NUMERICAL_DIAGNOSIS_COMPLETE_HUMAN_EFFICACY_UNESTABLISHED",
+  "original_low_calibration_objective_preserved": true,
+  "parent_human_candidate": "CLOSED_NEGATIVE_NO_REOPEN",
+  "numerical_diagnostic": {
+    "attempts": 1, "fits": 12, "updates": 1200, "recorded_states": 1212,
+    "seconds_before_report": 1.1266117058694363,
+    "engineering_converged": 7, "engineering_nonconverged": 5,
+    "result_sha256": "4a8e0178ab789246794e9f84bfe12193d5b720ff327e8808483456c66467fd06",
+    "independent_audit_checks": 8741, "audit_failures": 0, "audit_seconds": 0.1385556171,
+    "interpretation": "Possible optimizer/feature-coordinate saturation failure established on deliberately duplicated synthetic features, not human causal attribution."
+  },
+  "new_human_fits": 0,
+  "new_human_numeric_reads": 0,
+  "human_metadata_gain_demonstrated": false,
+  "design_decision": "Retain stimulus-relative complex representation and acquisition-conditioned observation/adaptation as hypotheses; postpone Neural ODE.",
+  "next": "Freeze a bounded generated integration test of a small block-scaled router with controls before considering a new human candidate. Timing/phase candidate requires actually measured external timing and a score pathway not canceled by phase-subspace invariance.",
+  "actual_timing_metadata_acquired": false,
+  "new_stft_extraction": false,
+  "neural_ode_implemented": false,
+  "literature": {"review": "targeted primary HTML and official math references", "broad_search": false, "pdf_reads": 0, "whole_landscape_cutoff": "2026-09-04"},
+  "protected": {"held60_opened": false, "external_outreach": false, "paid_resources": false, "choi": "PARKED_BY_USER", "source39": "CLOSED_UNCHANGED", "prior_336_and_144_fit_negatives": "PRESERVED"},
+  "full_repository_suite_run": false
+}

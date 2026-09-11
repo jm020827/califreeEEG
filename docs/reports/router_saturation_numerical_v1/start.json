@@ -1,0 +1,12 @@
+{
+  "schema": "cfeg.router-saturation-numerical.v1",
+  "attempt": 1,
+  "contract_sha256": "d89cf3b320f13f8b2d1ff8e7433b834e0842ff623023100a9b0e16875dee0a17",
+  "script_sha256": "69052a68da418efec6b568996ece03cb653ae67ab02453f8878b721aae13dbb4",
+  "router_sha256": "3c080cafa2bb9c943aab32084a5ea502c42e0ebc819c9f1cb243528043c143bd",
+  "torch": "2.2.2+cu121",
+  "human_data_access": false,
+  "budget_fits": 12,
+  "budget_updates": 1200,
+  "started_utc": "2026-09-11T12:37:17Z"
+}

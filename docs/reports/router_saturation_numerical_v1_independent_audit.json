@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "reviewer": "/root/mobile_features_review",
+  "checks": 8741,
+  "failed_checks": 0,
+  "counts": {"fits": 12, "updates": 1200, "states": 1212},
+  "hashes": {
+    "start.json": "47d7d1014e4ee8e6b40ce2d60040e155e98e420b7af856616af03ce5ef71562f",
+    "result.json": "4a8e0178ab789246794e9f84bfe12193d5b720ff327e8808483456c66467fd06",
+    "trajectory.jsonl": "31e3048a51472d49928fb2e75a41859dbfaa7b864664171e3a9410fa149a8c49"
+  },
+  "trajectory_hash_matches_report": true,
+  "engineering_converged": 7,
+  "nonconverged": {
+    "INTERIOR_Q_SUM59": {"self": 1.0, "NLL_gap": 0.3199513330},
+    "BOUNDARY_Q_ONE": {"self": 0.9923615619, "NLL_gap": 0.0045190311},
+    "BOUNDARY_Q_MEAN59": {"self": 0.9923615430, "NLL_gap": 0.0045190423},
+    "CONTEXT_Q_SUM59": {"self": 1.0, "NLL_gap": 0.1515931295},
+    "CONTEXT_QM_SUM59": {"self": 1.0, "NLL_gap": 0.1761102968}
+  },
+  "QM_frozen_M_flip": {
+    "ONE": {"gate_delta": 0.4652510460, "margin_delta": 0.5583012552, "actuation": true},
+    "MEAN59": {"gate_delta": 0.4652510028, "margin_delta": 0.5583012033, "actuation": true},
+    "SUM59": {"gate_delta": 8.0276871956e-28, "margin_delta": 0.0, "actuation": false}
+  },
+  "max_absolute_errors": {
+    "analytic_oracle_NLL": 0.0,
+    "trajectory_NLL_from_SELF": 1.1102230246e-15,
+    "SELF_from_gap": 3.4416913763e-15,
+    "source_mass_from_gap": 4.4408920985e-16,
+    "final_model_gap": 4.2632564146e-14,
+    "M_flip_gate": 6.1062266354e-16,
+    "M_flip_margin": 2.2204460493e-16
+  },
+  "numeric_seconds": 0.1385556171,
+  "numeric_budget_seconds": 15,
+  "audit_parse_errors_before_compute": 1,
+  "new_fits": 0,
+  "optimizer_replays": 0,
+  "production_imports": 0,
+  "human_reads": 0,
+  "reviewer_file_writes": 0,
+  "limitations": [
+    "Root transcribed reviewer receipt; reviewer only read three new generated result files.",
+    "Code/contract hashes are not independently rechecked in this numeric audit.",
+    "Updates checked through saved state sequence and counters; no optimizer replay.",
+    "Averaging is not universally superior; two boundary controls failed strict NLL tolerance.",
+    "No human causal attribution, donor-selection validation, or acquisition metadata efficacy."
+  ]
+}
