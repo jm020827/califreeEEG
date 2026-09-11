@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "suite": "scripts/analysis/test_block_scaled_router_v1.py",
+  "suite_calls": 2,
+  "suite_call_budget": 2,
+  "unique_cases": 6,
+  "passed_each_call": [6, 6],
+  "reported_unittest_seconds": [0.003, 0.004],
+  "optimizer_updates": 0,
+  "human_reads": 0,
+  "covered": ["post-scaler block sizes and state roundtrip", "full accept", "shrink accept", "reject restores exact parameter", "nonfinite proposal restores", "shape and missing-class guards"],
+  "static_reviews": {"math": "PASS after attempted/completed and candidate/loss counter separation", "protocol": "PASS after h/m and evaluation pair checks plus full role records and pre-publication size check"},
+  "full_repository_suite": false,
+  "notes": "Initial runner Ruff loop-binding/items warnings were corrected before numerical execution; no fixture or optimizer outcome was inspected. Nonfinite finite-parameter logits are handled as rejected proposals."
+}
