@@ -1,0 +1,69 @@
+{
+  "status": "NUMERIC_PASS_WITH_ROLE_REPORT_LIMITATION",
+  "reviewer": "/root/mobile_features_review",
+  "hashes": {
+    "start.json": "fe0968125649dc25589eec324d6c15e892d44f13cfd87898c47eef5e3ab7ce4a",
+    "result.json": "fa3ed60ce3973917709b3c3dae3df007b48783d99dd7ae4077f4904bb17c2b39",
+    "trajectory.jsonl": "7f4b157e5c5e57600b1ce2a5f1bdd8a9fb98ca9f6c8167590bdfa96c8a5417a3",
+    "audit_arrays.npz": "b7e6c1661235457a8b5eb3682e5239968b0a8a5fd7a56eca31824d5ddc8a8e6b"
+  },
+  "verified": {
+    "final_models": 24,
+    "predictions": 3456,
+    "proposals_attempted_completed": 2400,
+    "ridge_attempted_completed_recorded": 720,
+    "training_loss_evaluations": 5600,
+    "moment_steps_per_parameter": 100,
+    "SAFE_steps": 800,
+    "all_five_gates": true
+  },
+  "SAFE": {
+    "full_factor_acceptances": 800,
+    "rejections": 0,
+    "max_training_NLL_increase": -0.00043513242010084774,
+    "max_centered_logit_change": 0.5588848540125066,
+    "max_probability_difference_from_SCALE": 4.440892098500626e-16
+  },
+  "SAFE_QM": {
+    "POSITIVE": {
+      "NLL": 0.37988049894799963,
+      "BAcc": 0.9444444444444443,
+      "M_intervention_gate_delta": 0.5755113093721188,
+      "M_intervention_margin_delta": 1.0953834522616281
+    },
+    "NULL": {
+      "NLL": 1.068659238396338,
+      "BAcc": 0.03472222222222222,
+      "M_intervention_gate_delta": 0.0009657889303130718,
+      "M_intervention_margin_delta": 0.0020519612457484127
+    }
+  },
+  "max_reconstruction_errors": {
+    "source_scaler_std": 2.3092638912203256e-14,
+    "training_NLL": 3.3306690738754696e-16,
+    "evaluation_NLL": 4.440892098500626e-16,
+    "BAcc": 1.1102230246251565e-16,
+    "M_margin": 2.220446049250313e-16
+  },
+  "parameter_identity_caveat": {
+    "nonidentical_SAFE_SCALE_bias_pairs": 7,
+    "max_shared_bias_difference": 4.491898256835957e-9,
+    "additional_gauge_checks_passed": 80,
+    "max_centered_logit_difference": 5.329070518200751e-15
+  },
+  "numeric_seconds_total": 0.1524225515,
+  "numeric_budget_seconds": 30,
+  "new_fits": 0,
+  "optimizer_replays": 0,
+  "production_imports": 0,
+  "human_reads": 0,
+  "reviewer_file_writes": 0,
+  "complete_role_audit": false,
+  "limitations": [
+    "Root persisted reviewer receipt",
+    "Initial raw-bias equality assumption failed 7 pairs; softmax gauge verified separately",
+    "No intermediate optimizer replay",
+    "No biological/calibration-saving claim",
+    "Original roles qualified by separate protocol audit"
+  ]
+}

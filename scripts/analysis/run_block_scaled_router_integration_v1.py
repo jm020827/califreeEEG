@@ -335,12 +335,12 @@ def main():
                     )
                 # Feature access boundaries checked without any further fit.
                 ix = evaluation[0]
-                before, _, roles = dataset.features(ix, POOL, 0)
+                before, _, single_role = dataset.features(ix, POOL, 0)
                 reverse, _, _ = dataset.features(ix, list(reversed(POOL)), 0)
                 require(
                     all(
                         s.startswith("b")
-                        for s in [dataset.subjects[i] for i in roles["source_runs"]]
+                        for s in [dataset.subjects[i] for i in single_role["source_runs"]]
                     ),
                     "bank_role",
                 )

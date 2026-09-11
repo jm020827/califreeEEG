@@ -1,0 +1,29 @@
+{
+  "status": "NUMERIC_GATE_PASS_WITH_RECONSTRUCTED_ROLE_PROVENANCE",
+  "reviewer": "/root/mobile_protocol_review",
+  "source_revision": "785ad62",
+  "original_role_report_complete": false,
+  "original_remaining_role": "v00/run36/speed0.0",
+  "reconstructed_roles": 96,
+  "reconstruction": "block_scaled_router_v1_roles_reconstructed.json",
+  "reconstruction_is_contemporaneous_ledger": false,
+  "verified": [
+    "source runner matches start SHA",
+    "24 fit_complete, 2400 proposals, 2 world freezes",
+    "12 heads complete per world before freeze",
+    "source/eval Q h/m invariance",
+    "NULL source/eval probabilities identical across m",
+    "self/common/M/Q2/SHAM match deterministic role rule",
+    "balanced 3-class labels",
+    "five stored numerical gates true"
+  ],
+  "numeric_seconds": 0.116279,
+  "new_fits": 0,
+  "human_reads": 0,
+  "reviewer_writes": 0,
+  "limitations": [
+    "Root persisted reviewer receipt and expanded deterministic manifest",
+    "Final model reconstruction covered by separate mathematical audit",
+    "Original role-storage contract failure preserved, not retrofitted as complete ledger"
+  ]
+}

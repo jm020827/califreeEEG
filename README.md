@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-11 **실제형상 생성통합24회 완료**: [결과·한계](docs/block_scaled_router_integration_v1_results.md). 유익한인공M에서SAFE Q4.17%→QM94.44%,독립M조건에서는이득없음으로수치관문을통과했다. 기존학습기의양성QM100%와SAFE의축소수락0회도보존하므로새학습법우월성은아니다. 원역할보고덮어쓰기결함은원본보존후96행사후재구성으로보완했다. 실제gyro효능·보정절감미확립,새사람fit0. [후속사람검증초안](docs/block_scaled_router_human_v1_draft.md)은실행전이다.
+
 > 2026-09-11 **수치 진단12회 완료·위상/metadata 설계 재검토**: [수치 결과](docs/router_saturation_numerical_v1_results.md), [개념 설명·후보 우선순위](docs/ssvep_phase_metadata_design_review_20260911.md). 인공적으로 섞기가 최선인 문제에서59열 합산은self100%로 포화됐고블록평균은알려진최적값근처로수렴했다. 실제gyro효능이나사람실험원인의확정은아니다. 원저보정목표·기존부정결과유지,새사람fit0. 측정조건을반영하는작은적응경로를우선하고Neural ODE는보류한다. 아래는시점별이력이다.
 
 > 2026-09-11 **Source-borrowing 실제144회 학습 종료**: [결과·포화 해석](docs/mobilebci_source_borrowing_human_v1_results.md). Q/Q2/QM/SHAM 저보정 정확도 모두67.85%, 보정trial절감0%였다. 모델은사실상self만선택했고M는내부logit을바꿨지만최종예측을바꾸지못했다.32/144fits의학습loss악화도보존하므로metadata정보자체가없다고결론내리지않는다. 이번후보예산종료·자동재시도0·held60보호, 아래는이전단계이력이다.
