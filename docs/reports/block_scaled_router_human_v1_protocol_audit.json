@@ -1,0 +1,48 @@
+{
+  "schema": "cfeg.safe-human-protocol-audit.v1",
+  "status": "PASS",
+  "reviewer": "read-only mobile_protocol_review; root transcribed returned receipt",
+  "execution_revision": "eb6c272708a2d8838e2e4c650626736c27c6ca42",
+  "seconds": 0.131811,
+  "new_fits": 0,
+  "new_forwards": 0,
+  "original_cache_or_raw_access": 0,
+  "npz_or_saved_model_reads": 0,
+  "verified": {
+    "fits": 144, "proposals": 14400, "ridge_solves": 576,
+    "accepted": 14347, "rejected": 53, "candidate_checks": 15414,
+    "role_contexts_independently_reconstructed": 72,
+    "role_records_independently_reconstructed": 1344,
+    "role_mismatches": 0,
+    "inner_predictions": 1536,
+    "outer_predictions_including_anchors": 1200,
+    "four_head_freeze_events_before_evaluation": 36,
+    "global_policy_lock_zero_based_journal_index": 312,
+    "first_outer_event_zero_based_journal_index": 313,
+    "fits_at_policy_lock": 96,
+    "proposals_at_policy_lock": 9600,
+    "policies_recomputed": 12,
+    "all_policies": "k5_SOURCE_TARGET_UNMET",
+    "source_QM_actuated": 36,
+    "prefix_cost_reduction": 0.0,
+    "input_pins_unchanged": 19
+  },
+  "failed_scientific_criteria": [
+    "low_k_qm_minus_q_at_least_2pp", "low_k_qm_beats_q2",
+    "policy_qm_accuracy_at_least_80pct", "policy_cost_reduction_at_least_10pct"
+  ],
+  "decision": "CLOSE_GYRO_SOURCE_ROUTING_NO_MORE_OPTIMIZER_RESCUE",
+  "sha256": {
+    "report": "002f66e320a01c89b7d3bfe478880acae74e0feeb2c11a0383639c63e4348803",
+    "journal": "63af261a3222ffb55863f085a556e0b45166b9d2c639cce37da157aae6c60561",
+    "roles": "f320a96debb0b96fbed691d2b442ccfdaa1f3a646436287b25eef33a8d799bb5",
+    "choices": "cae3c9c6af99de1bc0a50404688f6645c39c5f852b8632a7919b2926d149ca03",
+    "start": "c4f7c0dd429736d6c6fd5be041280ee8a08bb80e5dfd9198235eb40082ec0737"
+  },
+  "protected_previous_results_unchanged": {
+    "original144": "0969453217a9ca5186222b634c8bd9593e32372040cd64161bba17825c06fe32",
+    "original336": "1ce1783ea87e01d4529f9c5e563335347b34a3a56ce39d4f5c52d4c40a7e9309",
+    "generated24_original_reporting_defect_preserved": "fa3ed60ce3973917709b3c3dae3df007b48783d99dd7ae4077f4904bb17c2b39"
+  },
+  "limitation": "Protocol audit does not independently verify NPZ/model hashes or numerical forward math; assigned to separate one-pass numerical audit."
+}

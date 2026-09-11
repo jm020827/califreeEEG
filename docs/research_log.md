@@ -1656,3 +1656,59 @@
 - [결과](block_scaled_router_integration_v1_results.md)/[상태v7](reports/mobilebci_research_progress_v7_state.json)/README/protocol을갱신했다. [후속사람초안](block_scaled_router_human_v1_draft.md)은DRAFT_NOT_EXECUTABLE로별도runner/atomicrole schema/정책잠금generatedmock와새144-fit계약이먼저다. 후보가또실제추가이득을못보이면같은gyro차용의optimizerrescue를계속하지않는다. 이번24-fit예산종료;새사람fit/raw/cache/model배열·GPU·held60·외부발송·유료0이다.
 - Academicclaim5238bd32f7ec01a5 QUALIFIED/4evidence,기존gap38267f46d1f6e6e7를후속runner/roleledger공백으로갱신했다. 1085papers/87searches/45cards/18techniques/74claims/191evidence/42gaps/6analogies/36deepreads,render11/SQLitequick_checkok. 원설계/Choi/closeout/V2deny/144fitresult-journal의SHA불변이다. ResultSHAfa3ed60ce3973917709b3c3dae3df007b48783d99dd7ae4077f4904bb17c2b39,수치감사3fbd7e151b9256576e9449400fb74d9004471f71b23813b1b6aa0cd991ffb7c4.
 - Coordination:root sole main/SQLitewriter,두agent읽기전용. 결합된adapter/learner와disk99%때문에writinglane분리안함;기존41trees/8untracked출력보존,새tree/삭제/설치/push0. 가용시작35997556KiB→중간35988428KiB,공유filesystem변화를본작업용량으로귀속하지않는다. 새persistentgoal생성0이며전체metadata효능이입증됐다고선언하지않는다.
+
+## RESEARCH/HUMAN-20260911-128 — SAFE 후속 완료, gyro source-routing 기작 종료
+
+- 사용자 “계속”에 따라 원 저보정 SSVEP 목표를 유지한 후속144-fit을 수행했다.
+  학습 경로의 작동과 metadata 추가 효능을 분리하며, held60·유료·외부 요청·
+  비공개 Choi·기존 source39/144/336 부정 결과의 경계를 유지했다. 새 goal 생성0.
+- `academic-research` 본문/필수refs/context와 새 signature를 사용했다. 이번
+  불확실성은 직접 유한 실험으로 판단하므로 새 검색/PDF0, cutoff2026-09-04 유지.
+  수치 통합의 양성 결과를 실제 EEG 효능으로 대신하지 않도록 근거 관리에 반영.
+  `coordinate-worktree-changes`에 따라 root 단독 main/DB 작성, 두agent 읽기전용.
+  시작 main7902d40,41worktrees/8untracked 보존, disk99%/가용34,572,232KiB에서
+  새 tree·설치·삭제·push0. 실행 중 전체 disk 변화는 본 작업 사용량으로 귀속하지 않음.
+- 새 전용 runner와 생성예산을76c84dd로 먼저 고정했다. 기존 Dataset/helper는
+  수정하지 않았으며 SAFE의 `logits()`로 M 진단을 계산한다. Role manifest를
+  query score 전에 저장하고 실제 batch와 정확 대조, 중복/누락 outcome 검사,
+  전체 정책 hash 잠금, partial/atomic no-overwrite 결과를 구현했다.
+- 생성 호출1은 역할 건수를1,728로 잘못 예상해 fit/ridge0에서 실패했다.
+  Inner 계획에 outer people이 제외되는 실제 합1,344로 고쳤으며 실패를 보존했다.
+  호출2는6/6PASS(2.031s), receipt 성공·codehash gate를 추가한 호출3은7/7PASS
+  (2.092s)다. 합계288generated fits/576proposals/1152ridge, 호출3/3예산 종료.
+  비학습 reject시험24checks 별도. Human `run()` 전체 I/O를 합성 end-to-end로
+  검증한 것은 아니며 `execute()` 흐름과 원자적 helper/guard를 검증했다.
+- 전체 옛 retention AND 조건, 같은16명/cache/Q-controls/지원k/query/bank를
+  계약efdf638에 기록하고 설정·통과receipt를eb6c272로 동결 후 사람 cache를 읽었다.
+  하나의 bytes로 checksum/load하여 교체위험을 없앴다. 실험1회144fits/14400proposals,
+  576ridge,26.084498284초(report 전), candidate check/loss15,414씩/ordinary28,800.
+  Fullaccept14,038/shrunk309/rejected53, sourceNLL step증가0/centeredstep최대.490787.
+  모든144fit 최종 sourceNLL이 초기보다 낮다. producer총15,347,140B, 재시도0.
+- **과학적 기준 실패, 기작 종료.** LowkQ68.771%,Q2 68.973%,QM68.608%,SHAM68.461%.
+  QM−Q−.16245pp/95%CI[−.58532,+.30382]pp,QM−Q2−.36500pp. 정책QM70.782%이며
+  모든12정책은 source80%미달k5fallback. 평균 실제 획득prefix21.85417trials,
+  절감0%. 저보정2pp·Q2우위·정책80%·절감10%의4조건 실패. 기존부정결과 그대로.
+- 다만 이번에는36/36QM source에서 M-only gate/margin 작동을 확인했다.
+  Fit별 maxgate .000511–.831816/maxmargin .000260–.462072, 평균source mass
+  .003032–.594247이다. 이전 최종효과0 포화와 구별되지만 모든M 정보부재 증명이나
+  최적학습/모든trial효능은 아니다. Q만 차용해도 자기모델보다 개선됐으므로 이득을
+  metadata 고유 기여라고 귀속하지 않는다. 같은gyro 구조의 optimizer 구제는 종료.
+- Read-only protocol audit .131811초:72contexts/1344roles 전부 독립재구성,
+  inner1536/outer1200coverage,96fit/9600proposal lock(index312),36freeze 선행,
+  12policy/19pins/보호된원본 일치. 수치 감사는 별도 savedNPZ1회만 로드해
+  132savedheadforward/116699checks/실패0,1.034966초; 원cache·학습·ridge 재풀이0.
+  독립감사 스크립트 오류/재시도0. Root도 report/journal계수·주요수치·19pins와
+  원설계/Choi/closeout/deny SHA를 재확인했다. 합성 첫 실패는 숨기지 않는다.
+- Producer원본ba39fdc에 보존. [결과](block_scaled_router_human_v1_results.md),
+  [상태v8](reports/mobilebci_research_progress_v8_state.json),README/protocol 갱신.
+  사람cachechecksum 이름은 legacy 선증가attempt 계수여서 실패에서pass로읽지
+  말아야 하나 이번성공의 실제 hash/load일치는 검증했다. 표적Ruff/diffPASS,
+  전체repo suite미실행; 종료뒤 테스트/학습 예산 확대0.
+- Academicclaim3ce915a9a80b6144 QUALIFIED, gap38267f46d1f6e6e7 CLOSED. 문헌·
+  실험학습수리와 실제M효능을 분리한 채 부정증거를 보존했다. 다음은 새사람fit의
+  자동연장이 아니라, 다른 공개 acquisition 측정과 작동기작이 확인되는 경우의
+  별도 후보·예산 계약이다. 이번 범위는 마감하며 전체metadata효능 목표 달성은 아니다.
+  최종1085papers/87searches/45cards/18techniques/75claims/195evidence/42gaps/
+  6analogies/36deepreads, render11views/SQLitequick_checkok. 새claim4evidence에
+  측정·계약·두감사를 연결했다. ReportSHA002f66e3…,numeric auditSHA0f74c33e…,
+  protocol auditSHAa6cf7b5f…이며 원producer hash는 보고서/receipt에 전부 보존했다.

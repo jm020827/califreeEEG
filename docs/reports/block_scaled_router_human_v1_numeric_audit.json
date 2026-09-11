@@ -1,0 +1,57 @@
+{
+  "schema": "cfeg.safe-human-numeric-audit.v1",
+  "reviewer": "read-only mobile_features_review; independent NumPy; root stored returned receipt",
+  "execution_revision": "eb6c272708a2d8838e2e4c650626736c27c6ca42",
+  "status": "PASS",
+  "checks": 116699,
+  "failed_checks": 0,
+  "audit_script_errors": 0,
+  "audit_npz_loads": 1,
+  "saved_head_forwards": 132,
+  "forward_breakdown": {"outer_models": 48, "outer_QM_to_SHAM": 12, "source_QM_and_SHAM": 72},
+  "numeric_seconds": 1.0349658308550715,
+  "limits": {"seconds": 300, "saved_head_forwards": 144, "NPZ_loads": 1},
+  "verified": {"source_scalers": 144, "role_contexts": 72, "role_rows": 1344,
+    "outer_trial_predictions": 15360, "trajectory_proposals": 14400,
+    "source_QM_interventions": 36, "outer_QM_interventions": 12},
+  "trajectory": {
+    "accepted": 14347, "rejected_with_exact_recorded_rollback": 53,
+    "candidate_checks": 15414, "candidate_loss_evaluations": 15414,
+    "full_factor_acceptances": 14038, "reduced_factor_acceptances": 309,
+    "maximum_recorded_NLL_increase": 0.0,
+    "maximum_accepted_centered_logit_change": 0.49078689642050044,
+    "all_144_final_training_losses_below_initial": true
+  },
+  "max_reconstruction_errors": {
+    "source_scaler_mean": 1.4210854715202004e-13,
+    "source_scaler_std": 1.1368683772161603e-13,
+    "outer_gate": 3.4416913763379853e-15,
+    "outer_probability": 3.219646771412954e-15,
+    "outer_BAcc": 0.0,
+    "source_QM_final_NLL": 3.3306690738754696e-16,
+    "source_M_margin": 7.771561172376096e-16
+  },
+  "stored_W_normal_equation_relative_residual_max": 9.624389910012304e-17,
+  "expert_energy_floor_count": 0,
+  "all_source_policies_k5": true,
+  "policy_cost_reduction": 0.0,
+  "artifact_bytes_total": 15347140,
+  "input_hashes": {
+    "report": "002f66e320a01c89b7d3bfe478880acae74e0feeb2c11a0383639c63e4348803",
+    "journal": "63af261a3222ffb55863f085a556e0b45166b9d2c639cce37da157aae6c60561",
+    "roles": "f320a96debb0b96fbed691d2b442ccfdaa1f3a646436287b25eef33a8d799bb5",
+    "choices": "cae3c9c6af99de1bc0a50404688f6645c39c5f852b8632a7919b2926d149ca03",
+    "start": "c4f7c0dd429736d6c6fd5be041280ee8a08bb80e5dfd9198235eb40082ec0737",
+    "models": "b3354cb65c809045e90bcc165b80598a2be0aa947f3e64effc464222be9d5aec",
+    "audit_arrays": "256c56693bf1bde160067bca5c58c7b64d7396d7e26c8dbf53f2446926d6a9f7"
+  },
+  "new_fits": 0, "ridge_resolves": 0, "producer_helper_imports": 0,
+  "original_cache_reads": 0, "raw_reads": 0, "writes": 0,
+  "audit_process_closed": true,
+  "limitations": [
+    "Intermediate optimizer state not replayed: trajectory invariants and recorded rollback checked, not optimizer-state reproduction.",
+    "Inner accuracies checked from saved predictions, without additional96headforwards.",
+    "Production code/contract pins checked by protocol audit and root, not this numerical audit.",
+    "Actuation does not establish usefulness or brain mechanism, and failed efficacy does not prove zero conditional information in M."
+  ]
+}
