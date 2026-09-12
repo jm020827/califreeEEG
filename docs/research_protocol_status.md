@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-13 **현재: MAMEM I 실제 파일 확보·국소 DIN schema 관문 완료**. [결과](mamem_i_acquisition_v1_results.md), [상태](reports/mamem_i_acquisition_v1_state.json). v1의압축본2개6.59GB checksum검산·48MAT/11파일명ID목록확인을완료했고 S001a만개발용으로추출검산·첫72이벤트를점검했다. timestamp와250Hz선언의sample-clock은국소적으로양립하지만 jitter/metadata효능은검증하지않았다. S001전체개발용·257행채널과S011/S013대응미확정·EEG값/새fit/held60/외부요청/유료0. [다음초안](mamem_i_timing_identifiability_v1_draft.md)은기록오차/공통보정/잔여정보식별이며자동추가개봉계약이아니다. 원목표와기존부정결과유지. 아래는당시이력이다.
+
 > 2026-09-12 **현재: MMV registry·단일 자극 optical DIN 문헌 근거 확인**. [결과](public_provenance_resolution_v1_results.md), [상태](reports/public_provenance_resolution_v1_state.json). 이전 tool-only 실패에 명시적 단회 일반GET 진단을 적용해 MMV V3/CC BY4.0/배포 URL 선언을 확인했다. ScienceDB 페이지는 로컬 출력 capture 실패라 실제 file inventory는 미확인이다. MAMEM 단일 상자 실험은 저자 원문에 광센서/StimTracker DIN이 기술돼 있으나 exact release/II/.flash·잔여 학습정보는 미확인이다. 다음은 정확한 공개 DIN–EEG schema 연결이며 새 raw/fit/held60/발송/계정·DUA/유료0. 원목표·이전 부정/실패·query 누출 방지 유지. 아래의 미확인 표기는 당시 범위의 이력이다.
 
 > 2026-09-12 **현재: MMV·MAMEM 병렬 metadata/기작 검토 종료**. [결과](paired_metadata_parallel_preflight_v1_results.md), [상태](reports/paired_metadata_parallel_preflight_v1_state.json), [학습 관문](paired_metadata_learning_gate_v1.md). 각6targets+1locator와 독립 local 기작 검토를 완료했다. 두 경로 모두 PARK_ACCESS_UNRESOLVED이며 새 학습 후보0이다. MMV의 generic stream-gap과 실제 validity, MAMEM의 DIN 소비와 생성 출처를 구분한다. One-shot 연산 취소·고정 순서 누출·전체 획득/장치 보정비용을 반영했고 원목표·기존 부정 결과·held60 경계는 불변이다. 이번 새 raw/fit/발송/계정·DUA/유료0, 다음은 새 공개 provenance가 생긴 경우에만 재판단이다. 아래는 당시 이력이다.

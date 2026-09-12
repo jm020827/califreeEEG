@@ -1910,3 +1910,47 @@
   코드·learner를바꾸지않아전체pytest는미실행이다. Root가최종JSON/링크/두sourcewrapper/
   registrybody/세claimartifact와보호문서4개의hash불변·시간경계를검산했다. 전체HTML과
   capture실패본문의사후hash재검산은미완료로남겼다. 기존goal새생성0.
+
+### 134. 2026-09-13 — MAMEM I 공개 원자료 전체 확보와 첫 개발용 DIN 점검
+
+- 사용자 ‘계속/필요하다면 파일을 다 다운받아라’에 따라 base16df18e/main에서
+  [별도 계획](mamem_i_acquisition_v1_plan.md)을97ca67f로 고정했다. Academic-research의
+  기존 landscape/signature/직접근거 관리, coordinate-worktree-changes의 root단독쓰기와
+  읽기 전용 병렬 검토를 사용했다. 새 worktree0,기존41worktrees/8untracked pytest
+  directories 보존. Agent는 provenance/누수·코드검토/raw-byte hash를 분담했고
+  root만repo/data/SQLite를 썼다. 설치/삭제/push/새goal0.
+- Paper arXiv1602.00904v2 ref44가 정확한Figshare2068677.v1을 가리킴을 확인했다.
+  Latest API Node fetch실패(TypeError,HTTPstatus/원인미상)는 보존했고 별도 exactv1
+  official GET200으로 CC BY4.0/파일목록을 얻었다. Rootcatalogue2/3,scout1/3,
+  locator0/1,root성공source보존1/1. 새scholarly discovery/PDF0. 선택wrapper만
+  보존하므로 전체HTTPbody hash의 사후독립검산 한계는 유지한다.
+- 카탈로그에 standaloneMAT가 없어 사용자 다운로드 허용과 목록 근거로
+  AmendmentA를b421c22에 기록한 뒤 raw를 받았다. 정확히2RAR,총6,585,019,498bytes,
+ 7GiB/파일4GiB상한·8GiBreserve+남은전체bytes+512MiB추출여유·45분/전체60분경계.
+  Sequential각1GET HTTP200,전송+검산292.541/317.521초,각MD5일치·partial0.
+  독립agent가둘의size/MD5/SHA256을재계산해PASS. Raw는Git밖
+  `/home/whwovy/data/mamem_i_v1_20260913`에보존한다. 전체해제는하지않았다.
+- Probe fbb89b4와capture수리d60bf18을실제MAT값전에고정했다. 독립review의
+  deadline기준/outer영수증/sample의EEG길이상한/pipe출력한도지적을반영했다.
+  생성37tests PASS;boundedstdout/stderr·고정첫member·CRC/hash·2GiBAS/90CPU초/
+ 120wall초·전체deadline을검사한다. 전체repo suite는미실행이며학습기변경0.
+- Rehash뒤7z목록은48MAT/파일명11ID였다.17:51:54.612UTC에첫경로S001a를고정하고
+  S001모든기록을개발용으로지정했다.1MAT137,357,437bytes만추출해CRC/SHA검산했다.
+  Header는DINcell4×1966/eegdouble257×117917였다. 개인특성/samplingRate의이름·
+  shape·class만확인하고값은미열람.250Hz는저자loader선언이다.
+- DIN변수전체decode는고지했다(보수적메모리추정1,085,542bytes). 수치검사는첫묶음
+ 72이벤트만,경계timestamp1개추가·경계sample/이후값제외다.71간격61–88ms,
+  std5.929895ms, max|Δt−4Δsample|3ms.17:53:04.994UTC종료로전체경계내다.
+  Clock/schema국소일관성만관측했고physicaljitter/neuraldelay/독립M효능/보정절감은
+  미검증이다. EEGarray/분류/queryDIN예측/새fit/held60/외부발송/계정·DUA/유료0.
+- 새병목은실제S011vs저자loaderS013,257행vs설명256electrodes,clock/polarity/
+  residual정보다. 자동alias/drop금지. Part2flat경로는archive+basename을보존한다.
+  [결과](mamem_i_acquisition_v1_results.md)/[상태](reports/mamem_i_acquisition_v1_state.json)/
+  [후속식별관문초안](mamem_i_timing_identifiability_v1_draft.md)을작성했다. 격자·실제광학변동·
+  timestamp기록오차생성대조와공통보정후잔여정보가다음이며새학습실행계약은아니다.
+  기존실패/부정결과·전체획득prefix/setupcost·Q/Q2/QM/SHAM경계유지.
+- Academicclaim37e3271e093cb18b QUALIFIED/5evidence,기존gap3f973164c88eabce갱신.
+  누적1133papers/90searches/45cards/18techniques/81claims/217evidence/45gaps/
+ 6analogies/37deepreads(26completed/10queued/1skipped),cutoff2026-09-04불변.
+  Render11views/SQLitequick_checkok. 보호문서4개hash불변. 독립후속검토는기록과
+  좁은해석을확인했으며,실제파일전체의생물학적타당성이나효능PASS로확대하지않는다.
