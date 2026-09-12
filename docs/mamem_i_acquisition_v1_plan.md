@@ -86,3 +86,30 @@ safe structure and uncompressed size<=512MiB permit it. Otherwise retain verifie
 archives and report extraction as unexecuted. No installation or silent memory
 bound relaxation. The DIN probe's subject/first-prefix/no-EEG-interpretation
 rules remain unchanged. Use a memory-limited subprocess for any MAT probe.
+
+## Probe implementation clarification — frozen before any MAT values
+
+Author Session.m uses `cell2mat(dins(2,:))` and `cell2mat(dins(4,:))` in
+`split`, with `SAMPLING_RATE=250`. Therefore expect a cell array, not a numeric
+matrix inferred from a plot. Timestamp/sample cells must contain numeric scalars.
+Use a2GiB process address-space cap,90CPU-seconds and120wall-seconds; the parent
+records missing-report/timeout failures without replay. DIN allocation accounting
+is conservatively capped at512MiB. SciPy decodes the entire DIN variable before
+the prefix-only calculation; it does not materialize the EEG variable. Header
+scanning can process compressed bytes, so this is not a no-byte-decompression claim.
+
+Select first MAT from the combined verified archive listings; save the selection
+and entire-subject development role before extraction/header/DIN interpretation.
+Extract exactly that literal member to stdout using installed unar, not archive
+paths on disk. Cap its single output to the declared member size and verify CRC32/
+SHA256 before publication. No fallback to another record on failure. Generated ZIP
+test validates stdout/single-member semantics; it does not prove RAR extraction.
+
+The first boundary event contributes only its timestamp to detect gap>2000ms;
+its sample and all later values are uninspected. No boundary within200events (or
+end of record without a boundary) means censored, not complete. Each selected
+sample must be one-based integer, increasing and <=the2-D EEG header's time length.
+Report delta-t minus4*delta-sample; abs residual>4.001ms marks clock mapping
+unresolved, never automatic unit conversion. A residual within that conservative
+one-sample tolerance, even exactly0, does not validate physical jitter or an
+independent metadata learning mechanism. No frequency/label inference is emitted.
