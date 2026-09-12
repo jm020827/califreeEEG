@@ -1,5 +1,11 @@
 # MMV exact-release metadata preflight — DRAFT, not executed
 
+> Historical draft. 2026-09-12: executed under the separate frozen
+> [parallel plan](paired_metadata_parallel_preflight_v1_plan.md), not by changing
+> this draft retroactively. [Result](paired_metadata_parallel_preflight_v1_results.md):
+> PARK_ACCESS_UNRESOLVED; no raw or learning promotion. The text below records
+> the original proposed scope, not a remaining unstarted task.
+
 2026-09-12. This successor is not an efficacy candidate or authorization to use
 query gaze/physiology. It answers the remaining round2 access/provenance question.
 

@@ -1,0 +1,40 @@
+{
+  "schema": "cfeg.paired-metadata-parallel-preflight.v1",
+  "date_kst": "2026-09-12",
+  "frozen_plan_revision": "aca7cd7",
+  "base_revision": "d2f06ed8d8faf5c67f46e50914cfd592b489d0f7",
+  "status": "COMPLETE_BOTH_PARKED_NO_LEARNING_CANDIDATE",
+  "research_objective_changed": false,
+  "lanes": {
+    "MMV": {"status":"PARK_ACCESS_UNRESOLVED","actual_release_inventory_verified":false,"data_license_verified":false,"offline_validity_verified":false,"new_evidence":"Public generic loader stream-gap code is not optical validity or EEG quality; current importer paths differ, actual MMV importer revision and fields unknown","targets_used":6,"locator_used":1,"external_end_utc":"2026-09-12T09:23:12Z"},
+    "MAMEM": {"status":"PARK_ACCESS_UNRESOLVED","DIN_generator_verified":false,"flash_conversion_verified":false,"new_evidence":"Fixed Session.m computes Dataset I labels from DIN event intervals; query DIN shortcut is ineligible. Dataset II takes supplied labels. Consumer code is not acquisition provenance","targets_used":6,"locator_used":1,"external_end_utc":"2026-09-12T09:24:53.648Z"},
+    "skeptic": {"scope":"Read-only local saved-source and mechanism audit","network":0,"writes":0,"findings":["One support example makes normalized within-class weighting cancel for positive weights","Fixed trial-order covariates can leak even if all arms receive them","Tracker loss to EEG reliability causal link remains hypothetical","Discarded support and tracker setup/recalibration remain acquisition cost"]}
+  },
+  "accesses": [
+    {"lane":"MMV","url":"https://doi.org/10.57760/sciencedb.ai.00010","utc_window":"09:21:35–09:21:36","result":"tool safe-open non-retryable failure; server access policy not established"},
+    {"lane":"MMV","url":"https://api.datacite.org/dois/10.57760/sciencedb.ai.00010","utc_window":"09:22:09–09:22:11","result":"tool safe-open non-retryable failure"},
+    {"lane":"MMV","url":"https://www.nature.com/articles/s41597-024-03729-8/tables/4","utc_window":"09:22:23–09:22:26","result":"500/safe-open of cookie-authorize redirect; table not read"},
+    {"lane":"MMV","url":"https://www.nature.com/articles/s41597-024-03729-8/tables/5","utc_window":"09:22:23–09:22:26","result":"500/safe-open of cookie-authorize redirect; table not read"},
+    {"lane":"MMV","url":"https://github.com/uzh/edf-converter","utc_window":"09:22:37–09:22:39","result":"README/file listing success"},
+    {"lane":"MMV","url":"https://raw.githubusercontent.com/uzh/edf-converter/master/@Edf2Mat/Edf2Mat.m","utc_window":"09:23:08–09:23:12","result":"browser source success; current master not known MMV revision"},
+    {"lane":"MAMEM","url":"https://github.com/MAMEM/ssvep-eeg-processing-toolbox","utc_window":"09:23:31–09:23:33","result":"README success, redirects to MAMEM/eeg-processing-toolbox"},
+    {"lane":"MAMEM","url":"https://github.com/MAMEM/eeg-processing-toolbox/tree/master/%2Beegtoolkit","utc_window":"09:23:39–09:23:41","result":"restricted URL failure"},
+    {"lane":"MAMEM","url":"https://dx.doi.org/10.6084/m9.figshare.2068677","utc_window":"09:23:39–09:23:41","result":"403 Forbidden; not retried"},
+    {"lane":"MAMEM","url":"https://ar5iv.org/abs/1602.00904","utc_window":"09:23:56–09:23:58","result":"initial HTML only, redirect ar5iv.labs.arxiv.org/html/1602.00904; later same-source section failed safe-open/500, acquisition methods not read"},
+    {"lane":"MAMEM","url":"https://api.github.com/repos/MAMEM/eeg-processing-toolbox/git/trees/master?recursive=1","utc_window":"09:24:37.053–09:24:37.353","result":"ordinary GET200,38588bytes,tree truncated:false; display partly truncated, entire tree body not retained"},
+    {"lane":"MAMEM","url":"https://raw.githubusercontent.com/MAMEM/eeg-processing-toolbox/5a03abe2a6a874e9adaceea29a52c2fce35d8a03/+eegtoolkit/+util/@Session/Session.m","utc_window":"09:24:53.350–09:24:53.648","result":"ordinary GET200,22141bytes,full source read"}
+  ],
+  "locator_queries": [
+    {"lane":"MMV","query":"\"10.57760/sciencedb.ai.00010\"","utc_window":"09:21:48–09:21:49","result":"publisher/PMC, no exact release inventory"},
+    {"lane":"MAMEM","query":"MAMEM SSVEP dataset \"flash\" photodiode trigger generation","utc_window":"09:21:43–09:21:45 approximate scout bracket","result":"no new generator provenance"}
+  ],
+  "retained_sources": [
+    {"path":"/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/mmv_edf_converter_20260912.json","artifact_sha256":"bf17c374d467c72496942e91875250015b8e2d77f6a75e2f031a5f67942f92aa","body_sha256":"cf8667bf400539c05513af3970615351f41856b67c8d8670e1c5d4ec1979e8c6","body_bytes":29137,"artifact_bytes":30385,"retrieved_at":"2026-09-12T09:24:41.876Z","status":200},
+    {"path":"/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/mamem_session_loader_20260912.json","artifact_sha256":"4cb9aa3267820d33671c8d8a6ea521c8f9104ab26d6d6efb337299c9dec7ba08","body_sha256":"ed0e307a30e28946dd253bdbd36e500477fa05e95267096257880268b6cf8330","body_bytes":22141,"artifact_bytes":23265,"git_blob":"2159f342f8d5a889eae1feb1f4bcb448797a1d9d","retrieved_at":"2026-09-12T09:25:45.412Z","completed_at":"2026-09-12T09:25:45.463Z","status":200}
+  ],
+  "budget": {"distinct_targets":12,"distinct_target_limit":12,"locator_queries":2,"locator_limit":2,"root_retention_GETs":2,"root_retention_limit":2,"normal_GETs_total":4,"normal_GET_body_bytes_total":112007,"all_normal_GETs_under_2MiB":true,"browser_network_bytes":"UNMEASURED","retained_source_bytes":53650,"retained_source_limit_bytes":16777216,"external_deadline":"2026-09-12T09:45:00Z","last_external_response":"2026-09-12T09:25:45.463Z","external_deadline_met":true,"scholarly_discover_queries":0},
+  "safety": {"new_raw_EEG":0,"human_numeric_arrays":0,"annotations":0,"PDFs":0,"fits":0,"outcomes":0,"held60":0,"outreach":0,"account_or_DUA":0,"paid_resources":0,"retries_after_denial":0},
+  "coordination": {"writers":"root only main and SQLite","read_only_agents":3,"new_worktrees":0,"existing_worktrees_preserved":41,"existing_untracked_directories_preserved":8,"initial_free_KiB":20786164,"full_test_suite_runs":0,"cleanup":0,"push":0},
+  "prior_negative_results_and_scope_deviations":"PRESERVED; no gyro/source39 retry; Eye/XR/Choi remain parked",
+  "next_condition":"New public acquisition-generator/release evidence is needed, not another model tweak or repeated failed endpoint. No automatic schema/raw or learning promotion."
+}

@@ -1828,3 +1828,44 @@
   5c3916935d76fcf1e0d3bfb2030e43cdd17b51bbf8b29648afb7426a36fc6a8f다.
   코드/학습 변경이 없어 전체 pytest는 재실행하지 않았다. 기존 goal은 이미 완료라
   단순 ‘계속’으로 새 goal을 생성하지 않았다.
+
+### 132. 2026-09-12 — MMV·MAMEM 공개 metadata 병렬 확인과 학습 관문 보완
+
+- 사용자 ‘가능한 것들 병렬로 시작’에 따라 [계획](paired_metadata_parallel_preflight_v1_plan.md)을
+  aca7cd7로 먼저 고정했다. Base d2f06ed/main. Academic-research의 문제 signature/
+  existing landscape/근거 관리와 coordinate-worktree-changes의 ownership 절차를
+  사용했다. 독립2개 공개자료 scout와 local mechanism skeptic은 읽기 전용이며,
+  root가 유일한 main/SQLite writer다. 기존41worktrees·8untracked pytest directories
+  보존, 신규 worktree/설치/삭제/push0이다. 공유 파일시스템 시작 여유20,786,164KiB.
+- 각 scout6exact targets+1locator, root 성공 source 보존GET2회를 사용했다. MMV는
+ 09:23:12UTC, MAMEM은09:24:53.648UTC에 외부 조사를 끝냈다. Root 마지막 보존
+  응답09:25:45.463UTC로09:45경계 안이다. 일반GET4개 총112,007bodybytes는 각2MiB
+  미만, root 보존wrapper2개 총53,650bytes다. Browser underlying bytes는 미측정이라
+  전체 네트워크 byte 상한 준수를 주장하지 않는다. 새 scholarly search/PDF/raw/
+  annotation/사람수치배열/fit/outcome/held60/발송/계정·DUA/유료0이다.
+- MMV exactDOI/DataCite는 tool safe-open 실패, schema table4/5는 cookie-authorize
+  redirect 실패다. 서버의 비공개 조건이라고 단정하지 않는다. 공개 Edf2Mat 코드의
+  stream gap은 optical tracking validity/EEG 품질이 아니며 importer 경로별 보존필드가
+  다를 수 있다. 실제 MMV 배포·license·offline validity·clock·사용 revision 미확인.
+- MAMEM 공식tree와 고정 Session.m은 읽었다. I은 DIN_1 간격→frequency→label,
+  II는 별도labels 경로라 query DIN을 metadata로 넣는 정답 shortcut을 확인했다.
+  코드는 consumer이지 hardware generator/.flash 변환기가 아니다. DatasetI DOI403,
+  folder restricted, 보고서 후속section실패를 보존하고 재시도/우회하지 않았다.
+  두 경로의 판정은 PARK_ACCESS_UNRESOLVED, 새 학습 후보0이며 metadata 무용론은 아니다.
+- [결과](paired_metadata_parallel_preflight_v1_results.md), [상태](reports/paired_metadata_parallel_preflight_v1_state.json),
+  [학습 관문](paired_metadata_learning_gate_v1.md)을 저장했다. 독립 skeptic의
+  one-shot 양의 normalized weighting 상쇄, 모든 arm의 고정순서 shortcut, discarded
+  support/추가 tracker calibration 비용 지적을 반영했다. 실제 필드·기작 없이
+  source prior/shrinkage를 자동 재실행하지 않는다. 원 저보정목표와 기존 부정/보류,
+  이전 round2 이탈을 보존했다. MMV 옛 초안에는 이번 실행 결과를 역사 주석으로 연결했다.
+- Root가 성공 source2개의 wrapper/body hash와 MAMEM Git blob2159f342f8d5a889eae1feb1f4bcb448797a1d9d를
+  검산하고 해당 코드 구간을 직접 읽었다. MMV는 mutable master의 내용 hash를
+  고정했고 실제 MMV 사용 revision이라고 소급하지 않았다. 최종 읽기 전용 review는
+  line/source/판정/목표 일치에 PASS, 양의 가중치·분모 조건만 추가 보완했다.
+- Academic claim71c921f7cd5e953b QUALIFIED/3evidence, 기존 gap3f973164c88eabce
+  갱신. 누적1133papers/90searches/45cards/18techniques/79claims/209evidence/45gaps/
+  6analogies/37deepreads(26completed/10queued/1skipped),cutoff2026-09-04 불변.
+  Render11views/SQLitequick_checkok. Repo 코드 변경이 없어 전체 pytest 재실행은
+  하지 않았다. Root의 최종 source hash/JSON/링크/보호 protocol hash 검산과
+  양의3가중치×3스칼라=9개 one-shot 대수 sanity check를 통과했다. 이 대수 검사는
+  학습/EEG 실험이 아니다. 기존 goal 새 생성0.
