@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-12 **현재: 공개 provenance 일부 해소, 실제 학습은 아직 미실행**. [후속 결과](docs/public_provenance_resolution_v1_results.md), [상태](docs/reports/public_provenance_resolution_v1_state.json). MMV DataCite 일반GET200으로 V3·CC BY4.0·정확한 ScienceDB 주소를 확인했다(실제 파일 접근/validity는 미확인). MAMEM 단일 상자 실험의 DIN이 광센서+StimTracker에서 왔다는 저자 보고도 확보했다. Query DIN 누출은 여전하며 DatasetII/.flash/정확한 파일 연결은 별도다. 다음 우선 확인은 MAMEM I 실제 DIN–EEG schema 연결과 support-only 잔여 timing 정보다. 새 raw/fit/held60/외부요청/유료0, 기존 부정 결과 보존. 아래는 각 시점의 이력이다.
+
 > 2026-09-12 **현재: MMV·MAMEM 병렬 preflight 완료, 두 경로 보류**. [결과](docs/paired_metadata_parallel_preflight_v1_results.md), [학습 전 관문](docs/paired_metadata_learning_gate_v1.md). MMV loader의 stream gap은 광학 validity/EEG 품질의 증거가 아니며, MAMEM I loader는 DIN 이벤트 간격에서 label을 계산한다. 실제 MMV 배포·offline validity와 MAMEM 이벤트 생성 출처는 미확인이다. One-shot 정규화 가중평균 상쇄·고정 순서 누출·추가 장치 보정비용을 설계에 반영했다. 읽기 전용3agent+root 단독 통합, 새 raw/fit/held60/요청/유료0. 새 공개 provenance 없이 동일 실패 경로나 모델 튜닝으로 자동 연장하지 않는다. 아래는 시점별 이력이다.
 
 > 2026-09-12 **현재: 공개 acquisition-M 2차 조사 종료, 학습 가능 후보 미확정**. [결과·한계](docs/public_paired_acquisition_round2_v1_results.md), [상태](docs/reports/public_paired_acquisition_round2_v1_state.json). MMV의 보정구간 원래 tracking-validity와 MAMEM I/II의 flash 출처·정답누출 여부를 다음 확인 대상으로 좁혔다. 장시간 PERCLOS를 M로 대체하지 않으며 SpiralE는 raw 요청 방식으로 보류한다. [MMV 정확한 배포 metadata 확인 초안](docs/mmv_public_metadata_preflight_v1_draft.md)은 미실행이다. 새 raw EEG/fit/held60/발송/유료0; 시간 목표 초과·기존 수치행 우발 검색을 기록해 전체 절차 PASS로 표시하지 않았다. 원목표와 기존 부정 결과는 유지한다. 아래는 시점별 이력이다.

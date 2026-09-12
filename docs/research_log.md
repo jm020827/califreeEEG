@@ -1869,3 +1869,44 @@
   하지 않았다. Root의 최종 source hash/JSON/링크/보호 protocol hash 검산과
   양의3가중치×3스칼라=9개 one-shot 대수 sanity check를 통과했다. 이 대수 검사는
   학습/EEG 실험이 아니다. 기존 goal 새 생성0.
+
+### 133. 2026-09-12 — 공개 전송 진단과 optical DIN 출처 부분 해소
+
+- 사용자 ‘시작’에 따라 [별도 유한 계획](public_provenance_resolution_v1_plan.md)을
+  f390e3c로 고정했다(base37bdaf5). Academic-research의 signature/기존 landscape/
+  근거 관리, coordinate-worktree-changes의 root-only쓰기·읽기 전용 scout를 사용했다.
+  MAMEM producer source와 local protocol review를 병렬 진행했고 root는 MMV의
+  tool-only 전송 실패를 단회 진단했다. 기존41worktrees/8untracked dirs 보존,
+  새worktree/설치/삭제/push0. 시작여유19,734,036KiB,공유disk변화를우리작업으로귀속하지않음.
+- 이전 DataCite safe-open 실패는 실제 서버403/인증 요구가 확인된 것이 아니었다.
+  명시적 새 예산의 일반GET1회가09:59:49.417–50.906UTC에200으로 성공했다.
+  DOI10.57760/sciencedb.ai.00010의 V3/CCBY4/265453813779bytes/3905files 및
+  정확한 ScienceDBdataSetId270bcdeaab0c48adb8eee700479daafd를 확인했다. 이는
+  registry선언이며 actualinventory/anonymousfilebytes/offlinevalidity 검증은 아니다.
+- 이어진 ScienceDB 일반GET은 큰 응답의 도구 출력 capture가 잘려 rootJSONparse
+  실패로 끝났다. 정확한 응답status/hash/bodybytes는 보존하지 못했고 본문을 읽었다고
+  하지 않는다. 서버거부로도 단정하지 않는다. 재시도/추측API/계정동작은 하지 않았다.
+  향후 같은실패의 ‘진단예산’을 반복 개설하지 않는다. 전체265GB 일괄수집계획도없음.
+- Scout는 공식 arxivabs→HTMLv2에서 [새 optical DIN 근거](public_provenance_resolution_v1_results.md)를
+  찾았다. V-B에는 CedrusStimTrackerST-100+monitor light sensor가 기록EEG에 DIN을
+  넣는다고 저자가 보고한다. Root는 S5.SS2와S5.SS3.p3.1텍스트를 직접 보존·독해했다.
+  단일상자 실험이며 II동시자극은향후연구라 exactrelease/II/PhysioNet.flash까지
+  소급하지 않는다. 광학측정 출처의 저자보고와실제파일/정확도 검증은별개다.
+- Scout의 초기 넓은 문단 추출에 일부 paper결과 설명이 섞여 노출된 한계를 기록했다.
+  해당 내용은 선택/튜닝에 쓰지 않았고 raw·개별수치배열·PDF는 열지 않았다. Root는
+  acquisition/StimuliLayout만 보존해 범위를 좁혔다. 전체 HTML responseSHA는 계산했지만
+  원문전체는저장하지않아 사후전체hash독립검산은불가다. DOI metadata원문은보존했다.
+- Roottargets2/3,scouttargets2/3+locator1/1,root성공source보존GET1/1이다. 마지막
+  외부응답10:03:19.961UTC로10:20경계안. 보존source2개15991bytes;capture실패 때문에
+  전체network byte합산PASS로쓰지않는다. 새raw/annotation/PDF/fit/held60/발송/계정·DUA/
+  유료0. Query DIN shortcut·공통보정/Q/Q2/QM/SHAM·전체획득cost·기존부정은유지한다.
+- 다음 우선 검증은 MAMEM I exactpublicrelease의 DIN–EEG schema 연결과support-only
+  timing잔차다. 단순nominalfrequency/상수지연이면공통대조정보이고,독립변동이없으면
+  학습후보를종료한다. 실제값·기작 확인 전새모델/과거실험재개는없다.
+- 독립 local최종review는원문/상태/범위/목표일치PASS였다. claimbb1eb1cb03c8788b
+  QUALIFIED/3evidence,기존gap3f973164c88eabce갱신. 누적1133papers/90searches/45cards/
+  18techniques/80claims/212evidence/45gaps/6analogies/37deepreads(26completed/10queued/
+  1skipped),cutoff2026-09-04불변. Render11views/SQLitequick_checkok,신규PDFcard0.
+  코드·learner를바꾸지않아전체pytest는미실행이다. Root가최종JSON/링크/두sourcewrapper/
+  registrybody/세claimartifact와보호문서4개의hash불변·시간경계를검산했다. 전체HTML과
+  capture실패본문의사후hash재검산은미완료로남겼다. 기존goal새생성0.
