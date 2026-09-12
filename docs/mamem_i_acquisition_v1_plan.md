@@ -65,3 +65,24 @@ dataset, failed optimizer rescue or automatic held-out evaluation. Preserve prio
 failures. If download/schema succeeds, the next step is a bounded source-only
 timing mechanism test with common correction/Q/Q2/QM/SHAM and actual prefix costs,
 not a claim of calibration savings. Missing provenance or schema remains unknown.
+
+## Catalogue-based amendment A — before any raw download
+
+At17:31UTC the official version1 catalogue succeeded: it has no standalone MATs,
+only EEG-SSVEP-Part1.rar(3279547652bytes), Part2.rar(3305471846bytes), and a PDF.
+The paper reference44 explicitly names article2068677.v1. The user's explicit
+permission to download all necessary files covers these two non-duplicate parts.
+This is a storage/input-format adjustment, not an outcome-based candidate change.
+
+Override the standalone-only/4GiB/512MiB acquisition clauses above: download
+exactly those two archives, total6585019498bytes, max7GiB cumulative and4GiB per
+file, sequentially. Do not download the PDF. Reserve8GiB free plus all remaining
+download bytes and512MiB for at most one extracted record; recheck during writes.
+If reserve cannot be maintained stop without deleting user or partial files.
+Raw acquisition remains45min from the frozen manifest. No full archive expansion.
+List member metadata using already installed tools or a bounded header parser;
+extract at most lexicographically first MAT only if existing support, non-solid/
+safe structure and uncompressed size<=512MiB permit it. Otherwise retain verified
+archives and report extraction as unexecuted. No installation or silent memory
+bound relaxation. The DIN probe's subject/first-prefix/no-EEG-interpretation
+rules remain unchanged. Use a memory-limited subprocess for any MAT probe.

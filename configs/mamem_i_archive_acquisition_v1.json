@@ -1,0 +1,48 @@
+{
+  "schema": "cfeg.mamem-i-archive-manifest.v1",
+  "date_kst": "2026-09-13",
+  "frozen_at_utc": "2026-09-12T17:35:24+00:00",
+  "overall_deadline_utc": "2026-09-12T18:26:35+00:00",
+  "plan_revision": "97ca67f plus catalogue-based Amendment A frozen with this manifest before raw GET",
+  "catalogue_path": "/home/whwovy/research-spaces/califree-eeg-experiment-design/sources/mamem_i_v1_catalogue_20260913.json",
+  "catalogue_sha256": "0ade7bcd798b78e9b6aeda3b26d1bf629f4f9d1111e0c9544db6aa288bf19b00",
+  "output_dir": "/home/whwovy/data/mamem_i_v1_20260913",
+  "files": [
+    {
+      "id": 3687681,
+      "name": "EEG-SSVEP-Part1.rar",
+      "bytes": 3279547652,
+      "md5": "c4c7a749b5e7834e2f90c19aff507a2c",
+      "url": "https://ndownloader.figshare.com/files/3687681"
+    },
+    {
+      "id": 3687756,
+      "name": "EEG-SSVEP-Part2.rar",
+      "bytes": 3305471846,
+      "md5": "62d6f841bc736c0b861b99bf9486b3e0",
+      "url": "https://ndownloader.figshare.com/files/3687756"
+    }
+  ],
+  "budget": {
+    "total_bytes_max": 7516192768,
+    "file_bytes_max": 4294967296,
+    "reserve_bytes": 8589934592,
+    "extraction_bytes": 536870912,
+    "seconds": 2700
+  },
+  "excluded_files": [
+    {
+      "name": "DataAcquisitionDetails.pdf",
+      "id": 3687771,
+      "reason": "PDF not needed for current acquisition/probe; source HTML already read"
+    }
+  ],
+  "interpretation": {
+    "download_only": true,
+    "archive_extraction": false,
+    "EEG_values": false,
+    "DIN_values": false,
+    "fits": 0,
+    "held60": 0
+  }
+}
