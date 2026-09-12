@@ -52,3 +52,18 @@ def test_installed_unar_stdout_exact_member_generated_zip(tmp_path):
                         str(archive), "folder/chosen.mat"], capture_output=True, timeout=10)
     assert r.returncode == 0 and r.stdout == b"generated selected bytes"
     assert list(tmp_path.iterdir()) == [archive]
+
+
+def test_parent_stdout_cap():
+    with pytest.raises(p.Stop, match="stdout_capture_cap"):
+        p.bounded_run([sys.executable, "-c", "print('x'*1024)"], 64, 5)
+
+
+def test_parent_stderr_cap():
+    with pytest.raises(p.Stop, match="stderr_capture_cap"):
+        p.bounded_run([sys.executable, "-c", "import sys; sys.stderr.write('x'*2000000)"], 64, 5)
+
+
+def test_parent_wall_timeout():
+    with pytest.raises(p.Stop, match="wall_timeout"):
+        p.bounded_run([sys.executable, "-c", "import time; time.sleep(5)"], 64, 0.05)

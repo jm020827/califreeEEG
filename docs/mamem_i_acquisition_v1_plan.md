@@ -101,7 +101,8 @@ scanning can process compressed bytes, so this is not a no-byte-decompression cl
 Select first MAT from the combined verified archive listings; save the selection
 and entire-subject development role before extraction/header/DIN interpretation.
 Extract exactly that literal member to stdout using installed unar, not archive
-paths on disk. Cap its single output to the declared member size and verify CRC32/
+paths on disk. Parent bounded streaming caps stdout at the declared member size
+and stderr at1MiB, with live disk checks; verify CRC32/
 SHA256 before publication. No fallback to another record on failure. Generated ZIP
 test validates stdout/single-member semantics; it does not prove RAR extraction.
 
@@ -113,3 +114,10 @@ Report delta-t minus4*delta-sample; abs residual>4.001ms marks clock mapping
 unresolved, never automatic unit conversion. A residual within that conservative
 one-sample tolerance, even exactly0, does not validate physical jitter or an
 independent metadata learning mechanism. No frequency/label inference is emitted.
+
+Independent review identified subprocess pipe capture is not bounded by child
+RLIMIT_FSIZE. Before any extraction, replace capture_output with parent bounded
+incremental draining for both streams; generated stdout/stderr overflow and wall
+timeout tests must pass. Rehash both archives before inventory, cap each remaining
+operation by the overall deadline, and retain a parent receipt for schema/DIN
+worker failure or missing report. These are prereal-input safety corrections.

@@ -1,12 +1,15 @@
 """List two verified archives, freeze one dev member, or extract that member only."""
 import argparse
 import hashlib
+import io
 import json
 import os
 import re
 import resource
+import selectors
 import shutil
 import subprocess
+import time
 import zlib
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -28,6 +31,51 @@ def limits(file_limit=CAP):
     resource.setrlimit(resource.RLIMIT_AS, (2 * 1024**3, 2 * 1024**3))
     resource.setrlimit(resource.RLIMIT_CPU, (90, 90))
     resource.setrlimit(resource.RLIMIT_FSIZE, (file_limit, file_limit))
+
+
+def remaining_wall(requested):
+    manifest = Path(__file__).resolve().parents[2] / "configs/mamem_i_archive_acquisition_v1.json"
+    end = datetime.fromisoformat(json.loads(manifest.read_bytes())["overall_deadline_utc"]).timestamp()
+    remaining = end - time.time()
+    require(remaining > 0, "overall_deadline_no_execution")
+    return min(requested, remaining)
+
+
+def bounded_run(command, stdout_limit, timeout, destination=None, disk_guard=False):
+    """Drain both pipes incrementally, with independent output/memory bounds."""
+    output = destination if destination is not None else io.BytesIO()
+    counts = {"stdout": 0, "stderr": 0}
+    deadline = time.monotonic() + timeout
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            preexec_fn=lambda: limits(stdout_limit))
+    try:
+        with selectors.DefaultSelector() as selector:
+            selector.register(proc.stdout, selectors.EVENT_READ, "stdout")
+            selector.register(proc.stderr, selectors.EVENT_READ, "stderr")
+            while selector.get_map():
+                require(time.monotonic() < deadline, "subprocess_wall_timeout")
+                for key, _ in selector.select(min(0.5, max(0, deadline - time.monotonic()))):
+                    data = os.read(key.fileobj.fileno(), 65536)
+                    if not data:
+                        selector.unregister(key.fileobj)
+                        continue
+                    channel = key.data
+                    counts[channel] += len(data)
+                    require(counts[channel] <= (stdout_limit if channel == "stdout" else 1024**2),
+                            channel + "_capture_cap")
+                    if channel == "stdout":
+                        if disk_guard:
+                            require(shutil.disk_usage(DATA).free >= 8 * 1024**3 + len(data),
+                                    "extraction_reserve_during_write")
+                        output.write(data)
+        code = proc.wait(timeout=max(0.001, deadline - time.monotonic()))
+        return code, output.getvalue() if destination is None else None, counts
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
+        proc.stdout.close()
+        proc.stderr.close()
 
 
 def parse_listing(text):
@@ -81,13 +129,14 @@ def inventory():
         archive = DATA / row["name"]
         require(archive.is_file() and not archive.is_symlink() and archive.stat().st_size == row["bytes"],
                 "archive_stat_mismatch")
-        result = subprocess.run(["/usr/bin/7z", "l", "-slt", str(archive)], capture_output=True,
-                                text=True, timeout=30, preexec_fn=limits)
-        require(result.returncode == 0, "archive_listing_failed")
-        metadata, members = parse_listing(result.stdout)
+        remaining_wall(30)
+        require(hash_file(archive) == row["sha256"], "archive_hash_mismatch")
+        code, raw, _ = bounded_run(["/usr/bin/7z", "l", "-slt", str(archive)], 1024**2, remaining_wall(30))
+        require(code == 0, "archive_listing_failed")
+        metadata, members = parse_listing(raw.decode())
         require(metadata["Path"] == str(archive), "listing_archive_path")
         listings.append({"archive": metadata, "members": members,
-                         "listing_sha256": hashlib.sha256(result.stdout.encode()).hexdigest()})
+                         "listing_sha256": hashlib.sha256(raw).hexdigest()})
     selected = select_member(listings)
     payload = {"schema": "cfeg.mamem-i-archive-inventory.v1", "listings": listings,
                "selected": selected, "acquisition_sha256": hash_file(DATA / "acquisition.json")}
@@ -107,20 +156,20 @@ def extract_one():
     require(str(Path(selection["archive"]).parent) == str(DATA), "archive_scope")
     require(re.fullmatch(r"EEG-SSVEP-Part[12]/S[0-9]{3}[a-z]\.mat", selection["member"]),
             "literal_member_required")
+    remaining_wall(120)
     report = {"started_utc": datetime.now(timezone.utc).isoformat(), "selected": selection,
               "EEG_interpretation": 0, "DIN_interpretation": 0, "attempts": 1}
     try:
-        # stdout mode creates no archive-provided paths. RLIMIT_FSIZE hard bounds
-        # the single output descriptor; selected safe non-solid member only.
+        # stdout mode creates no archive-provided paths. Parent streaming bounds
+        # the single output; selected safe non-solid member only.
         with output.open("xb") as stream:
-            run = subprocess.run(["/usr/bin/unar", "-q", "-nr", "-k", "skip", "-o", "-",
-                                  selection["archive"], selection["member"]],
-                                 stdout=stream, stderr=subprocess.PIPE, timeout=120,
-                                 preexec_fn=lambda: limits(expected))
+            code, _, counts = bounded_run(
+                ["/usr/bin/unar", "-q", "-nr", "-k", "skip", "-o", "-",
+                 selection["archive"], selection["member"]], expected, remaining_wall(120), stream, disk_guard=True)
             stream.flush()
             os.fsync(stream.fileno())
-        report["returncode"] = run.returncode
-        require(run.returncode == 0, "unar_failed")
+        report.update(returncode=code, capture_counts=counts)
+        require(code == 0, "unar_failed")
         require(output.stat().st_size == expected, "extracted_size_mismatch")
         crc = 0
         with output.open("rb") as stream:
@@ -141,8 +190,34 @@ def extract_one():
     print(json.dumps(report))
 
 
+def probe(mode):
+    destination = DATA / (mode + "_probe.json")
+    parent_report = DATA / (mode + "_parent_receipt.json")
+    require(not destination.exists() and not parent_report.exists(), "probe_no_retry")
+    result = {"mode": mode, "started_utc": datetime.now(timezone.utc).isoformat(), "attempts": 1}
+    try:
+        code, _, counts = bounded_run(
+            [sys.executable, str(Path(__file__).with_name("probe_mamem_i_din_v1.py")),
+             mode, str(DATA / "development_role.json"), str(destination)], 1024**2, remaining_wall(120))
+        result.update(returncode=code, capture_counts=counts, report_exists=destination.is_file())
+        require(code == 0 and destination.is_file(), "worker_failure_or_missing_report")
+        result.update(status="WORKER_REPORT_SAVED", report_sha256=hash_file(destination))
+    except Exception as e:
+        result.update(status="WORKER_STOPPED_NO_RETRY", error_type=type(e).__name__,
+                      reason=str(e) if isinstance(e, Stop) else "details_not_exported")
+    result["ended_utc"] = datetime.now(timezone.utc).isoformat()
+    save(parent_report, result)
+    print(json.dumps(result))
+
+
 if __name__ == "__main__":
+    import sys
     p = argparse.ArgumentParser()
-    p.add_argument("mode", choices=["inventory", "extract"])
+    p.add_argument("mode", choices=["inventory", "extract", "schema", "din"])
     mode = p.parse_args().mode
-    inventory() if mode == "inventory" else extract_one()
+    if mode == "inventory":
+        inventory()
+    elif mode == "extract":
+        extract_one()
+    else:
+        probe(mode)
