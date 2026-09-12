@@ -1,0 +1,61 @@
+{
+  "schema": "cfeg.public-paired-acquisition-round2.v1",
+  "date_kst": "2026-09-12",
+  "status": "FEASIBILITY_COMPLETE_WITH_LIMITS_NO_FIT_READY_CANDIDATE",
+  "frozen_plan_revision": "2039e85",
+  "research_objective_changed": false,
+  "candidate_assessments": [
+    {"name":"MMV2024","paper_doi":"10.1038/s41597-024-03729-8","data_doi":"10.57760/sciencedb.ai.00010","status":"PRIORITY_METADATA_PROVENANCE_FOLLOWUP_ONLY","paired_EEG_eye_author_reported":true,"actual_files_verified":false,"raw_tracking_validity_field_verified":false,"offline_support_pairing_verified":false,"warning":"Reported tracker loss concerns long-term tasks, not verified offline support. PERCLOS is smoothed and supplemented, not acquisition validity. Online commands are not automatically target ground truth. Validity existence alone does not establish an EEG learning mechanism."},
+    {"name":"MAMEM","status":"FLASH_PROVENANCE_FOLLOWUP_ONLY","PhysioNet_I_II_flash_documented":true,"flash_is_photodiode_verified":false,"III_flash_documented":false,"III_public_file_inventory":{"version":3,"files":123,"mat_files":121,"raw_files_downloaded":0},"warning":"Do not conflate PhaseI EEG-eye corpus with SSVEP I-III; query.win, query.flash intervals and fixed trial order/time may reveal target identity."},
+    {"name":"SpiralE2023","doi":"10.1038/s41467-023-39814-6","status":"PARK_RAW_EEG_REQUEST_ROUTE","experimental_contact_impedance_author_reported":true,"raw_EEG_request_statement_read":true,"public_paired_raw_verified":false}
+  ],
+  "budget": {
+    "structured_queries_used":2,"structured_query_limit":3,
+    "web_locator_queries_used":5,"web_locator_query_limit":6,
+    "owner_exact_target_allocations_used":{"root":10,"contact_scout":2,"visual_scout":4},
+    "allocation_transfer":"Two unused contact-scout slots transferred to root for MMV paper and ScienceDB homepage; aggregate cap unchanged",
+    "owner_target_allocation_total":16,"unique_exact_URLs":15,"unique_exact_URL_limit":16,
+    "successful_target_retention_GET_attempts":2,"retention_GET_limit":4,
+    "retention_GET_results":["PhysioNet HTML retained","SpiralE ClientChallenge retained as FAILURE, not paper"],
+    "PDFs":0,"new_raw_EEG_files":0,"new_fits":0,"new_efficacy_outcomes":0
+  },
+  "searches": [
+    {"id":"search:f65052f6d047cfb6","query":"SSVEP dataset electrode impedance contact quality recorded","retrieved_at":"2026-09-12T07:07:11.427505+00:00","records":20,"new_unique":16},
+    {"id":"search:0387f499a5c12d42","query":"SSVEP dataset viewing distance eye tracking public","retrieved_at":"2026-09-12T08:28:48.749443+00:00","records":20,"new_unique":18}
+  ],
+  "locator_queries": [
+    {"owner":"root","q":"MAMEM SSVEP eye tracking dataset validity confidence public figshare"},
+    {"owner":"contact","q":"SSVEP dataset \"impedance\" \"Zenodo\" -Zhu -wearable -Choi -gyro"},
+    {"owner":"contact","q":"SSVEP dataset \"digitized\" electrodes OR \"impedances\" \"data availability\" -Zhu -Choi"},
+    {"owner":"visual","q":"SSVEP dataset photodiode recorded publicly available data","domains":["nature.com","zenodo.org","figshare.com","osf.io","physionet.org","github.com"]},
+    {"owner":"visual","q":"SSVEP dataset \"photodiode\" \"recorded\" OR \"viewing distance\" data -Guttmann -XR -MobileBCI -s26030766"}
+  ],
+  "exact_targets": [
+    {"owner":"visual","url":"https://www.nature.com/articles/s41597-024-03023-7","result":"primary search/initial text only; later section retrieval failure; paired photodiode unverified"},
+    {"owner":"visual","url":"https://www.nature.com/articles/s41597-023-02841-5","result":"exact page failure"},
+    {"owner":"visual","url":"https://www.nature.com/articles/s41598-019-55166-y","result":"initial HTML success, later section retrieval failure"},
+    {"owner":"visual","url":"https://link.springer.com/article/10.3758/s13428-026-03034-9","result":"targeted HTML success; task mismatch, OSF not opened"},
+    {"owner":"contact+root","url":"https://www.nature.com/articles/s41467-023-39814-6","result":"browser HTML success; rawEEG reasonable-request; root ordinary retention returned ClientChallenge"},
+    {"owner":"contact","url":"https://zenodo.org/records/7748035","result":"Internal Error, no retry"},
+    {"owner":"root","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC5700587/","result":"unverified PMCID entered; CAPTCHA; not linked to MAMEM as evidence"},
+    {"owner":"root","url":"https://github.com/MAMEM/ssvep-eeg-processing-toolbox","result":"success, redirected to MAMEM/eeg-processing-toolbox; README reviewed"},
+    {"owner":"root","url":"https://pubmed.ncbi.nlm.nih.gov/29204464/","result":"CAPTCHA; no bypass"},
+    {"owner":"root","url":"https://api.github.com/repos/MAMEM/eeg-processing-toolbox/git/trees/master?recursive=1","result":"success;38588bytebody; full raw output not retained because tool display truncation","repository_revision":"5a03abe2a6a874e9adaceea29a52c2fce35d8a03","producer_response_sha256":"8fa01e34c9db3d1b9e58ad766abd0dba177e265defe55e42ea735a57639363dc"},
+    {"owner":"root","url":"https://api.figshare.com/v2/articles/3413851","result":"success;39976bytebody; parsed payload retained","retrieved_at":"2026-09-12T08:30:15.330020+00:00"},
+    {"owner":"root","url":"https://api.github.com/repos/MAMEM/eeg-processing-toolbox/git/blobs/2159f342f8d5a889eae1feb1f4bcb448797a1d9d","result":"safe-open non-retryable failure; Session.m not read"},
+    {"owner":"root","url":"https://physionet.org/content/mssvepdb/1.0.0/","result":"success; Files/ExperimentalProcedures/Access read and official HTML retained"},
+    {"owner":"root_transferred","url":"https://www.nature.com/articles/s41597-024-03729-8","result":"targeted HTML success; Methods/DataRecords/declaration/CodeAvailability/ref33"},
+    {"owner":"root_transferred","url":"https://ai.scidb.cn/","result":"generic homepage, no readable file inventory; exact data DOI not opened"}
+  ],
+  "scope_deviations": [
+    "30minute completion aim missed: first and second discovery timestamps differ by81minutes37seconds; exact causes and active work duration not measured. Capacity failures separately observed.",
+    "A broad local rg over docs included old human report JSON/JSONL and printed archived prediction/label rows via numeric substring matches. No fresh raw/held data or recomputation; not used for selection. Subsequent local searches restricted to Markdown.",
+    "One unverified PMCID target consumed a slot but yielded only CAPTCHA and no attributable evidence."
+  ],
+  "whole_protocol_pass": false,
+  "held60_opened":false,"external_outreach":false,"account_or_DUA_action":false,"paid_resources":false,
+  "closed_gyro_source39_and_parked_Eye_XR_Choi":"PRESERVED",
+  "coordination":{"writer":"root only","new_worktrees":0,"existing_worktrees_preserved":41,"existing_untracked_directories_preserved":8,"capacity_failures":"contact initial turn and later turn, protocol local review; contact receipt recovered without new network","full_repo_tests":0},
+  "read_only_final_review":{"scope":"Saved MMV/PhysioNet source extracts, results, successor draft; not a complete protocol audit","findings_addressed":["long-term tracker loss is not verified offline support validity","MAMEM query flash intervals and fixed trial order/time can leak labels","pairing documentation is not an EEG-learning mechanism"]},
+  "next":"Draft MMV exact-data DOI metadata/provenance check, not yet executed; no automatic raw acquisition or fit"
+}

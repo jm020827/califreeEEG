@@ -1782,3 +1782,49 @@
   원문/상태/README일치를확인했고Eye문서의옛‘다음XR’표기는역사기록이라고수정.
   새학습·human배열읽기·network감사·repo전체test없음. 문서/JSON/static검증만수행.
   별도worktree/설치/삭제/push0,이전goal은이미완료상태여서새goal을만들지않았다.
+
+### 131. 2026-09-12 — 공개 paired acquisition-M 2차 조사, MMV/MAMEM 조건부 후속
+
+- 사용자 ‘시작/계속’에 따라 [유한 계획](public_paired_acquisition_round2_v1_plan.md)을
+  2039e85로 먼저 고정했다. 학습이 아닌 공개 paired-M 접근·기작 feasibility다.
+  academic-research의 근거등급/직접 원문 원칙으로 실제 측정·사후 가공·공통 자극
+  정보·정답 annotation을 구별했다. coordinate-worktree-changes에 따라 root만
+  main/SQLite를 쓰고 scout는 읽기 전용으로 분리했다. 기존41worktrees와8untracked
+  pytest 디렉터리를 보존했으며 새 worktree/설치/삭제/push는 없다.
+- Structured2/3queries, web locator5/6, exact target 할당16개(root10/contact2/
+  visual4; 중복1로 고유URL15), 추가 보존GET2/4를 사용했다. Contact의 남은2개
+  슬롯을 MMV 원문·ScienceDB 홈페이지에 전환했다. 새 raw/PDF/fit/효능outcome/
+  held60/외부발송/계정·DUA/유료0이다. 남은 검색으로 양성 후보를 억지로 찾지 않았다.
+- [결과](public_paired_acquisition_round2_v1_results.md)의 세 후보는 효능 shortlist가
+  아니다. MMV는 4-target offline40/long-online EEG·eye 동시 수집 저자 보고와
+  장시간 tracker loss에 따른 PERCLOS 보완을 확인했다. Offline 원래 validity/
+  cue/pairing은 미확인, PERCLOS60초 smoothing·보완은 acquisitionM로 대체 불가다.
+  원래 validity도 EEG 학습에 영향을 주는 기작·Q 이상의 정보가 별도 필요하다.
+- MAMEM 공식 PhysioNet I/II `.flash`는 provenance 미확인이다. III 공개 metadata는
+  123files(121MAT/1RAR/1PDF)를 보였으나 실제 파일은 받지 않았다. `.win`뿐 아니라
+  query `.flash` 간격·고정 순서/경과시간도 정답누출 가능성이 있다. MAMEM PhaseI의
+  EEG-eye와 SSVEP I–III를 합치지 않는다. SpiralE는 실험 중 실제 impedance 측정
+  저자 보고가 있지만 raw EEG reasonable-request라 요청 없이 보류했다.
+- [MMV 후속 초안](mmv_public_metadata_preflight_v1_draft.md)은 정확한 데이터 DOI
+  10.57760/sciencedb.ai.00010의 최대6개 공개 metadata/문서·loader만 확인하도록
+  작성했으며 미실행이다. 문서 pairing이 보여도 사람 학습으로 자동 승격하지 않는다.
+  기존 gyro/source39 부정 종료, Eye/XR/Choi 보류·원 저보정 목표·held60 경계 불변.
+- 절차 미준수: 첫/둘째 scholarly 검색 사이81분37초로30분 완료 목표를 넘겼다.
+  capacity 실패가 있었지만 지연 전체 원인이라고 단정하지 않는다. Root의 broad
+  `rg` 숫자 부분문자열 검색이 기존 report JSON/JSONL 예측·label 행을 출력했다.
+  새 raw/held 접근·재계산·튜닝은 없었지만 수치행 비열람 계획 위반을 보존하고
+  이후 Markdown-only 검색으로 제한했다. 전체 protocol PASS로 표시하지 않는다.
+  미확인 PMCID는 CAPTCHA라 근거 제외, SpiralE 보존GET은 ClientChallenge라 논문
+  제외, GitHub tree 전체 body는 출력 잘림으로 독립 보존 검산 미완료다.
+- 읽기 전용 final review는 MMV/PhysioNet 저장 근거와 결과·초안을 대조했다.
+  장시간 loss와 offline구간 구별, MAMEM 추가 누출, MMV 기작 관문을 반영했다.
+  capacity로 실패한 다른 protocol agent를 완료 감사로 세지 않았다.
+- Academic claim86ddfa5ef6bce2bd QUALIFIED/4evidence와 gap3f973164c88eabce를
+  저장했다. 누적1133papers/90searches/45cards/18techniques/78claims/206evidence/
+  45gaps/6analogies/37deepreads(26completed/10queued/1skipped),cutoff2026-09-04
+  불변이다. Render11views와 SQLite quick_checkok; 이번 PDF/card 완료 증가0이다.
+- Root는 새 JSON·보존출처 hashes, 원설계/closeout/deny/직전144fit 보고서 불변을
+  검산했다. [상태JSON](reports/public_paired_acquisition_round2_v1_state.json)의 SHA256은
+  5c3916935d76fcf1e0d3bfb2030e43cdd17b51bbf8b29648afb7426a36fc6a8f다.
+  코드/학습 변경이 없어 전체 pytest는 재실행하지 않았다. 기존 goal은 이미 완료라
+  단순 ‘계속’으로 새 goal을 생성하지 않았다.

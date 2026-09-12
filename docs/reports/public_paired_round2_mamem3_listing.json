@@ -1,0 +1,1385 @@
+{
+  "url": "https://api.figshare.com/v2/articles/3413851",
+  "retrieved_at": "2026-09-12T08:30:15.330020+00:00",
+  "bytes": 39976,
+  "sha256": "6bf734c48c15b0ef18b8e140a0a90d59d78e939974a2ac11570483dfc2f23054",
+  "payload": {
+    "files": [
+      {
+        "id": 5344519,
+        "name": "EEG-SSVEP-Experiment3.rar",
+        "size": 164879649,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/5344519",
+        "supplied_md5": "09586037ae2315d901b25fd888e05f6a",
+        "computed_md5": "09586037ae2315d901b25fd888e05f6a",
+        "mimetype": "application/x-rar"
+      },
+      {
+        "id": 5344522,
+        "name": "DataAcquisitionDetails-Experiment3.pdf",
+        "size": 355149,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/5344522",
+        "supplied_md5": "14cf8ad24d9591c702ace32c3c50429b",
+        "computed_md5": "14cf8ad24d9591c702ace32c3c50429b",
+        "mimetype": "application/pdf"
+      },
+      {
+        "id": 27802707,
+        "name": "U001ai.mat",
+        "size": 1247120,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802707",
+        "supplied_md5": "aaf1b3976e1cee791812782ced2a5202",
+        "computed_md5": "aaf1b3976e1cee791812782ced2a5202",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802710,
+        "name": "U001aii.mat",
+        "size": 1327822,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802710",
+        "supplied_md5": "1f2ec1719f6f8f722402fe3fd920e559",
+        "computed_md5": "1f2ec1719f6f8f722402fe3fd920e559",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802713,
+        "name": "U001bi.mat",
+        "size": 1239903,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802713",
+        "supplied_md5": "66e9a0d6f39e23f0eaf51636eb00aef3",
+        "computed_md5": "66e9a0d6f39e23f0eaf51636eb00aef3",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802716,
+        "name": "U001bii.mat",
+        "size": 1346610,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802716",
+        "supplied_md5": "6cf622a62038882cae30fd7883a4d027",
+        "computed_md5": "6cf622a62038882cae30fd7883a4d027",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802719,
+        "name": "U001ci.mat",
+        "size": 1218238,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802719",
+        "supplied_md5": "e801e4395d419e922f15572ca5ba46d1",
+        "computed_md5": "e801e4395d419e922f15572ca5ba46d1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802722,
+        "name": "U001cii.mat",
+        "size": 1597337,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802722",
+        "supplied_md5": "07e4fd2a206011cf5a462422d90370a0",
+        "computed_md5": "07e4fd2a206011cf5a462422d90370a0",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802725,
+        "name": "U001di.mat",
+        "size": 1283569,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802725",
+        "supplied_md5": "5e7f98d46741d35f6203bcc724058ae8",
+        "computed_md5": "5e7f98d46741d35f6203bcc724058ae8",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802728,
+        "name": "U001dii.mat",
+        "size": 1366933,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802728",
+        "supplied_md5": "d2a147b15e8968898226df56928cb737",
+        "computed_md5": "d2a147b15e8968898226df56928cb737",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802731,
+        "name": "U001ei.mat",
+        "size": 1154767,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802731",
+        "supplied_md5": "1463804e2800d01c3f119c89f7d77595",
+        "computed_md5": "1463804e2800d01c3f119c89f7d77595",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802734,
+        "name": "U001eii.mat",
+        "size": 1235648,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802734",
+        "supplied_md5": "b431ac2c45a560587a776babfa26033a",
+        "computed_md5": "b431ac2c45a560587a776babfa26033a",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27802737,
+        "name": "U001x.mat",
+        "size": 1227553,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27802737",
+        "supplied_md5": "67ea72cba2b98f2338bc416b493cf8eb",
+        "computed_md5": "67ea72cba2b98f2338bc416b493cf8eb",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901395,
+        "name": "U002ai.mat",
+        "size": 1164838,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901395",
+        "supplied_md5": "80c79a6957e89ada82363b0aca8aa46b",
+        "computed_md5": "80c79a6957e89ada82363b0aca8aa46b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901398,
+        "name": "U002aii.mat",
+        "size": 1232354,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901398",
+        "supplied_md5": "ceaec9005fda899939b93efe0d934c90",
+        "computed_md5": "ceaec9005fda899939b93efe0d934c90",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901401,
+        "name": "U002bi.mat",
+        "size": 1165436,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901401",
+        "supplied_md5": "e0bac455bcbaf74c645ff1af819521a0",
+        "computed_md5": "e0bac455bcbaf74c645ff1af819521a0",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901404,
+        "name": "U002bii.mat",
+        "size": 1255834,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901404",
+        "supplied_md5": "b8e21b0b085d4cde26119bcd9ce30717",
+        "computed_md5": "b8e21b0b085d4cde26119bcd9ce30717",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901407,
+        "name": "U002ci.mat",
+        "size": 1210461,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901407",
+        "supplied_md5": "8678c68456754f1a28fac702d33e2d61",
+        "computed_md5": "8678c68456754f1a28fac702d33e2d61",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901410,
+        "name": "U002cii.mat",
+        "size": 1213275,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901410",
+        "supplied_md5": "34052986b8ecd2ca80f6e6a28c5df4e0",
+        "computed_md5": "34052986b8ecd2ca80f6e6a28c5df4e0",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901413,
+        "name": "U002di.mat",
+        "size": 1175548,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901413",
+        "supplied_md5": "501a118b81420f86d29469f26448935b",
+        "computed_md5": "501a118b81420f86d29469f26448935b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901416,
+        "name": "U002dii.mat",
+        "size": 1242046,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901416",
+        "supplied_md5": "447cfb4788e66862711a4c536b2d12ef",
+        "computed_md5": "447cfb4788e66862711a4c536b2d12ef",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901419,
+        "name": "U002ei.mat",
+        "size": 1145184,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901419",
+        "supplied_md5": "0eb281469e011e38beb641f0ad973607",
+        "computed_md5": "0eb281469e011e38beb641f0ad973607",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901422,
+        "name": "U002eii.mat",
+        "size": 1250709,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901422",
+        "supplied_md5": "e3b521091412ed7ebcc408879769f1b1",
+        "computed_md5": "e3b521091412ed7ebcc408879769f1b1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901425,
+        "name": "U002x.mat",
+        "size": 980852,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901425",
+        "supplied_md5": "1a250e91a6807fae27ae60e2e6121756",
+        "computed_md5": "1a250e91a6807fae27ae60e2e6121756",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901428,
+        "name": "U003ai.mat",
+        "size": 1492239,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901428",
+        "supplied_md5": "cb23042ec58c799fd8a06664b2b1a3ce",
+        "computed_md5": "cb23042ec58c799fd8a06664b2b1a3ce",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901431,
+        "name": "U003aii.mat",
+        "size": 1607051,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901431",
+        "supplied_md5": "9e47b715fcf1080a714b6b88a7f34173",
+        "computed_md5": "9e47b715fcf1080a714b6b88a7f34173",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901434,
+        "name": "U003bi.mat",
+        "size": 1581838,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901434",
+        "supplied_md5": "60acbf20d7025a4482a9f6b0be4494e3",
+        "computed_md5": "60acbf20d7025a4482a9f6b0be4494e3",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901437,
+        "name": "U003bii.mat",
+        "size": 1544613,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901437",
+        "supplied_md5": "b1a7a5ff72cb74e38a6664b0db9e0553",
+        "computed_md5": "b1a7a5ff72cb74e38a6664b0db9e0553",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901440,
+        "name": "U003ci.mat",
+        "size": 1456069,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901440",
+        "supplied_md5": "546d6cfc386eaa46e345a6f423493ec1",
+        "computed_md5": "546d6cfc386eaa46e345a6f423493ec1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901443,
+        "name": "U003cii.mat",
+        "size": 1618585,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901443",
+        "supplied_md5": "aa41128f15ab4c735dd1b453f4856388",
+        "computed_md5": "aa41128f15ab4c735dd1b453f4856388",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901446,
+        "name": "U003di.mat",
+        "size": 1502625,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901446",
+        "supplied_md5": "7bddf2004ecf9df6f7203e8dddfcd0fd",
+        "computed_md5": "7bddf2004ecf9df6f7203e8dddfcd0fd",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901449,
+        "name": "U003dii.mat",
+        "size": 1624633,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901449",
+        "supplied_md5": "1d1ecb3245d300494aac589406a627ad",
+        "computed_md5": "1d1ecb3245d300494aac589406a627ad",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901452,
+        "name": "U003ei.mat",
+        "size": 1442040,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901452",
+        "supplied_md5": "662cb41567901e9a6987de4c0e629d1b",
+        "computed_md5": "662cb41567901e9a6987de4c0e629d1b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901455,
+        "name": "U003eii.mat",
+        "size": 1637148,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901455",
+        "supplied_md5": "ecba36ecdc20b0c5bab485527cb35112",
+        "computed_md5": "ecba36ecdc20b0c5bab485527cb35112",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901458,
+        "name": "U003x.mat",
+        "size": 1290830,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901458",
+        "supplied_md5": "25f066c82b5c128b61d35b4540718b19",
+        "computed_md5": "25f066c82b5c128b61d35b4540718b19",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901461,
+        "name": "U004ai.mat",
+        "size": 1201726,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901461",
+        "supplied_md5": "2396692dda4132b498e6891897aa7a44",
+        "computed_md5": "2396692dda4132b498e6891897aa7a44",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901464,
+        "name": "U004aii.mat",
+        "size": 1303729,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901464",
+        "supplied_md5": "430b2e2f6b46f18aeeb99eda60940225",
+        "computed_md5": "430b2e2f6b46f18aeeb99eda60940225",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901467,
+        "name": "U004bi.mat",
+        "size": 1197394,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901467",
+        "supplied_md5": "e33e10d59bfbea2e1a60a6d552ab49ec",
+        "computed_md5": "e33e10d59bfbea2e1a60a6d552ab49ec",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901470,
+        "name": "U004bii.mat",
+        "size": 1289841,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901470",
+        "supplied_md5": "48ee6954e7242aac0c9569b597ab81b4",
+        "computed_md5": "48ee6954e7242aac0c9569b597ab81b4",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901473,
+        "name": "U004ci.mat",
+        "size": 1254975,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901473",
+        "supplied_md5": "518f39e8facba9a3a6608805db22f9a1",
+        "computed_md5": "518f39e8facba9a3a6608805db22f9a1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901476,
+        "name": "U004cii.mat",
+        "size": 1350397,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901476",
+        "supplied_md5": "240af55d520eca4ea4369250a3870842",
+        "computed_md5": "240af55d520eca4ea4369250a3870842",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901479,
+        "name": "U004di.mat",
+        "size": 1240886,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901479",
+        "supplied_md5": "05bd2c3e86aabd122349c007073099f0",
+        "computed_md5": "05bd2c3e86aabd122349c007073099f0",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901482,
+        "name": "U004dii.mat",
+        "size": 1327184,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901482",
+        "supplied_md5": "f3badf0e4aa3001b1a14004f868ea6b8",
+        "computed_md5": "f3badf0e4aa3001b1a14004f868ea6b8",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901485,
+        "name": "U004ei.mat",
+        "size": 1281711,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901485",
+        "supplied_md5": "2e23f52041c681e99df30cbc900a9cab",
+        "computed_md5": "2e23f52041c681e99df30cbc900a9cab",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901488,
+        "name": "U004eii.mat",
+        "size": 1332220,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901488",
+        "supplied_md5": "8e0d67d38c983ca93ac2449561af6f42",
+        "computed_md5": "8e0d67d38c983ca93ac2449561af6f42",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901491,
+        "name": "U004x.mat",
+        "size": 1030346,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901491",
+        "supplied_md5": "7ee27881b9105c699bb748112a698c51",
+        "computed_md5": "7ee27881b9105c699bb748112a698c51",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901494,
+        "name": "U005ai.mat",
+        "size": 1455371,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901494",
+        "supplied_md5": "47a98a65086d297a5448136f989eae95",
+        "computed_md5": "47a98a65086d297a5448136f989eae95",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901497,
+        "name": "U005aii.mat",
+        "size": 1702388,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901497",
+        "supplied_md5": "222c892a017e6be58204899a0e429ba1",
+        "computed_md5": "222c892a017e6be58204899a0e429ba1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901500,
+        "name": "U005bi.mat",
+        "size": 1528469,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901500",
+        "supplied_md5": "1df4df1f1c6d0ef589c674f04a0bbd0f",
+        "computed_md5": "1df4df1f1c6d0ef589c674f04a0bbd0f",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901503,
+        "name": "U005bii.mat",
+        "size": 1676374,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901503",
+        "supplied_md5": "289a03bc8c3e6f615e9fa890ed6bd08d",
+        "computed_md5": "289a03bc8c3e6f615e9fa890ed6bd08d",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901506,
+        "name": "U005ci.mat",
+        "size": 1518837,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901506",
+        "supplied_md5": "94ce009be72bb84145824018a7ee90cd",
+        "computed_md5": "94ce009be72bb84145824018a7ee90cd",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901509,
+        "name": "U005cii.mat",
+        "size": 1559228,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901509",
+        "supplied_md5": "56aec04ef4a4cd1ddf44a68f677e4c0a",
+        "computed_md5": "56aec04ef4a4cd1ddf44a68f677e4c0a",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901512,
+        "name": "U005di.mat",
+        "size": 1449465,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901512",
+        "supplied_md5": "aae3ebc29ff7f85dc7b6d4e1a456bfdf",
+        "computed_md5": "aae3ebc29ff7f85dc7b6d4e1a456bfdf",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901515,
+        "name": "U005dii.mat",
+        "size": 1642672,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901515",
+        "supplied_md5": "6c4378ec4276804b7fa6c8ecd8e19bf8",
+        "computed_md5": "6c4378ec4276804b7fa6c8ecd8e19bf8",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901518,
+        "name": "U005ei.mat",
+        "size": 1471869,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901518",
+        "supplied_md5": "7048d2cf643e748dd4c294f88e18e8cd",
+        "computed_md5": "7048d2cf643e748dd4c294f88e18e8cd",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901521,
+        "name": "U005eii.mat",
+        "size": 1555915,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901521",
+        "supplied_md5": "9cf52fd85deb627619587a4f53463447",
+        "computed_md5": "9cf52fd85deb627619587a4f53463447",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901524,
+        "name": "U005x.mat",
+        "size": 1249804,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901524",
+        "supplied_md5": "9fcc684760442e4150806b751efa894d",
+        "computed_md5": "9fcc684760442e4150806b751efa894d",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901527,
+        "name": "U006ai.mat",
+        "size": 1176172,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901527",
+        "supplied_md5": "ac4aad02b6583f273cb88a5d9532d0ec",
+        "computed_md5": "ac4aad02b6583f273cb88a5d9532d0ec",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901530,
+        "name": "U006aii.mat",
+        "size": 1300761,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901530",
+        "supplied_md5": "9a6d1c47f3867ed9668d47744c3bb701",
+        "computed_md5": "9a6d1c47f3867ed9668d47744c3bb701",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901533,
+        "name": "U006bi.mat",
+        "size": 1193938,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901533",
+        "supplied_md5": "3894652732f8015f34699cccf9711931",
+        "computed_md5": "3894652732f8015f34699cccf9711931",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901536,
+        "name": "U006bii.mat",
+        "size": 1321055,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901536",
+        "supplied_md5": "1407f3386aa489f53cdc00e9325a0dc6",
+        "computed_md5": "1407f3386aa489f53cdc00e9325a0dc6",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901539,
+        "name": "U006ci.mat",
+        "size": 1205210,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901539",
+        "supplied_md5": "fa7719fb7b507c0686d0e5753816af79",
+        "computed_md5": "fa7719fb7b507c0686d0e5753816af79",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901542,
+        "name": "U006cii.mat",
+        "size": 1296601,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901542",
+        "supplied_md5": "0d6b5ea5b8a73fe4956d575017b330ca",
+        "computed_md5": "0d6b5ea5b8a73fe4956d575017b330ca",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901545,
+        "name": "U006di.mat",
+        "size": 1254975,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901545",
+        "supplied_md5": "badb6308836050ca176d00f68c551740",
+        "computed_md5": "badb6308836050ca176d00f68c551740",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901548,
+        "name": "U006dii.mat",
+        "size": 1309792,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901548",
+        "supplied_md5": "0f3952836a96c6de3fe2319038ab673f",
+        "computed_md5": "0f3952836a96c6de3fe2319038ab673f",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901551,
+        "name": "U006ei.mat",
+        "size": 1280146,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901551",
+        "supplied_md5": "81fe9cc911e1e9049176265c2db25a70",
+        "computed_md5": "81fe9cc911e1e9049176265c2db25a70",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901554,
+        "name": "U006eii.mat",
+        "size": 1320303,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901554",
+        "supplied_md5": "fc19132770f412410ac98aa34ec00694",
+        "computed_md5": "fc19132770f412410ac98aa34ec00694",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901557,
+        "name": "U006x.mat",
+        "size": 1010049,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901557",
+        "supplied_md5": "33e14b71388a14f5411d927d6376d1dd",
+        "computed_md5": "33e14b71388a14f5411d927d6376d1dd",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901560,
+        "name": "U007ai.mat",
+        "size": 1241496,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901560",
+        "supplied_md5": "b02227535b7b0e90301cdf412e2804d5",
+        "computed_md5": "b02227535b7b0e90301cdf412e2804d5",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901563,
+        "name": "U007aii.mat",
+        "size": 1322344,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901563",
+        "supplied_md5": "355bc030a3b1ae208438f7a7ab774454",
+        "computed_md5": "355bc030a3b1ae208438f7a7ab774454",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901566,
+        "name": "U007bi.mat",
+        "size": 1255754,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901566",
+        "supplied_md5": "fc2c0991d2e7773b58ed373e2cce9175",
+        "computed_md5": "fc2c0991d2e7773b58ed373e2cce9175",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901569,
+        "name": "U007bii.mat",
+        "size": 1330696,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901569",
+        "supplied_md5": "4f1f45af7e198847ddc459d93d3f012d",
+        "computed_md5": "4f1f45af7e198847ddc459d93d3f012d",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901572,
+        "name": "U007ci.mat",
+        "size": 1253523,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901572",
+        "supplied_md5": "de87a1289c87dc563c184a690a641390",
+        "computed_md5": "de87a1289c87dc563c184a690a641390",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901575,
+        "name": "U007cii.mat",
+        "size": 1350388,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901575",
+        "supplied_md5": "97e5b4955af1cc095ad67bbd2557efea",
+        "computed_md5": "97e5b4955af1cc095ad67bbd2557efea",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901578,
+        "name": "U007di.mat",
+        "size": 1490472,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901578",
+        "supplied_md5": "40917b3246b0f0def340041124dc5017",
+        "computed_md5": "40917b3246b0f0def340041124dc5017",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901581,
+        "name": "U007dii.mat",
+        "size": 1517683,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901581",
+        "supplied_md5": "6e8af500d0256ab17ee8c2e88202ef6c",
+        "computed_md5": "6e8af500d0256ab17ee8c2e88202ef6c",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901584,
+        "name": "U007ei.mat",
+        "size": 1286983,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901584",
+        "supplied_md5": "cab263403aa0fe4eadbd74b7b4d40e8e",
+        "computed_md5": "cab263403aa0fe4eadbd74b7b4d40e8e",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901587,
+        "name": "U007eii.mat",
+        "size": 1359984,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901587",
+        "supplied_md5": "0c160723056fc1d06222d3f8abc3fb7b",
+        "computed_md5": "0c160723056fc1d06222d3f8abc3fb7b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901590,
+        "name": "U007x.mat",
+        "size": 1053124,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901590",
+        "supplied_md5": "b49115b4377a57256713d10fd1e12501",
+        "computed_md5": "b49115b4377a57256713d10fd1e12501",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901593,
+        "name": "U008ai.mat",
+        "size": 1274142,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901593",
+        "supplied_md5": "1008c6da4080f30f301bc1bf0b49b69c",
+        "computed_md5": "1008c6da4080f30f301bc1bf0b49b69c",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901596,
+        "name": "U008aii.mat",
+        "size": 1358610,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901596",
+        "supplied_md5": "bf0caf63c81f3c3317de12f465b79a35",
+        "computed_md5": "bf0caf63c81f3c3317de12f465b79a35",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901599,
+        "name": "U008bi.mat",
+        "size": 2186852,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901599",
+        "supplied_md5": "e6633b7b3a89255ecb44583500994b35",
+        "computed_md5": "e6633b7b3a89255ecb44583500994b35",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901602,
+        "name": "U008bii.mat",
+        "size": 1466028,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901602",
+        "supplied_md5": "2cb8167779db471cb1e6c39a14b93d61",
+        "computed_md5": "2cb8167779db471cb1e6c39a14b93d61",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901605,
+        "name": "U008ci.mat",
+        "size": 4871822,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901605",
+        "supplied_md5": "180341b2e046654ec50b652307fe3b7b",
+        "computed_md5": "180341b2e046654ec50b652307fe3b7b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901608,
+        "name": "U008cii.mat",
+        "size": 1456261,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901608",
+        "supplied_md5": "00661a569cc267c3b7463f6fd704b5c3",
+        "computed_md5": "00661a569cc267c3b7463f6fd704b5c3",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901611,
+        "name": "U008di.mat",
+        "size": 2054729,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901611",
+        "supplied_md5": "c5b6cf06e76058ca6f5199e14fe12e7e",
+        "computed_md5": "c5b6cf06e76058ca6f5199e14fe12e7e",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901614,
+        "name": "U008dii.mat",
+        "size": 1589901,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901614",
+        "supplied_md5": "196a5c3db85c7e160d1986b10722c55c",
+        "computed_md5": "196a5c3db85c7e160d1986b10722c55c",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901617,
+        "name": "U008ei.mat",
+        "size": 2367005,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901617",
+        "supplied_md5": "5c6d74d247f0b3bf7e046f0d3e1b50e6",
+        "computed_md5": "5c6d74d247f0b3bf7e046f0d3e1b50e6",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901620,
+        "name": "U008eii.mat",
+        "size": 1553482,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901620",
+        "supplied_md5": "f8c848b16a55593d010b95017091b0f6",
+        "computed_md5": "f8c848b16a55593d010b95017091b0f6",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901623,
+        "name": "U008x.mat",
+        "size": 1122590,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901623",
+        "supplied_md5": "53e25829f3d830accebb4d460de10ebc",
+        "computed_md5": "53e25829f3d830accebb4d460de10ebc",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901626,
+        "name": "U009ai.mat",
+        "size": 1114642,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901626",
+        "supplied_md5": "60ad3f7f621c68d1153b4be6b85193f1",
+        "computed_md5": "60ad3f7f621c68d1153b4be6b85193f1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901629,
+        "name": "U009aii.mat",
+        "size": 1333050,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901629",
+        "supplied_md5": "6f29d62cc637e64c9364ef95fb9f3616",
+        "computed_md5": "6f29d62cc637e64c9364ef95fb9f3616",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901632,
+        "name": "U009bi.mat",
+        "size": 1117646,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901632",
+        "supplied_md5": "755d9fb6b98b6187954e0d7e67652574",
+        "computed_md5": "755d9fb6b98b6187954e0d7e67652574",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901635,
+        "name": "U009bii.mat",
+        "size": 1194217,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901635",
+        "supplied_md5": "95f744686b7235ee67f630ae61c66762",
+        "computed_md5": "95f744686b7235ee67f630ae61c66762",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901638,
+        "name": "U009ci.mat",
+        "size": 1113303,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901638",
+        "supplied_md5": "7e5d3e86bb3c363081b5f28aeb58bf05",
+        "computed_md5": "7e5d3e86bb3c363081b5f28aeb58bf05",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901641,
+        "name": "U009cii.mat",
+        "size": 1186777,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901641",
+        "supplied_md5": "9a07bd7580b40763fa1b545b5a831eb1",
+        "computed_md5": "9a07bd7580b40763fa1b545b5a831eb1",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901644,
+        "name": "U009di.mat",
+        "size": 1174467,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901644",
+        "supplied_md5": "0356e47406d9cd674698415431434498",
+        "computed_md5": "0356e47406d9cd674698415431434498",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901647,
+        "name": "U009dii.mat",
+        "size": 1350170,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901647",
+        "supplied_md5": "e492596edef8073ec2495b3385e69d8f",
+        "computed_md5": "e492596edef8073ec2495b3385e69d8f",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901650,
+        "name": "U009ei.mat",
+        "size": 1105251,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901650",
+        "supplied_md5": "0701e1e35990d5f9f04e4233180e78d5",
+        "computed_md5": "0701e1e35990d5f9f04e4233180e78d5",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901653,
+        "name": "U009eii.mat",
+        "size": 1315272,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901653",
+        "supplied_md5": "4d248c28c0aac36cf0b6f741a872c021",
+        "computed_md5": "4d248c28c0aac36cf0b6f741a872c021",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901656,
+        "name": "U009x.mat",
+        "size": 1066641,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901656",
+        "supplied_md5": "c6b942478c001757043a9f0d30ef6905",
+        "computed_md5": "c6b942478c001757043a9f0d30ef6905",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901659,
+        "name": "U010ai.mat",
+        "size": 1128310,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901659",
+        "supplied_md5": "d5b3645ee75d1e64b3896e6454ee4537",
+        "computed_md5": "d5b3645ee75d1e64b3896e6454ee4537",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901662,
+        "name": "U010aii.mat",
+        "size": 1673242,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901662",
+        "supplied_md5": "fb8e46f52596f9cf8ef4d39665849158",
+        "computed_md5": "fb8e46f52596f9cf8ef4d39665849158",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901665,
+        "name": "U010bi.mat",
+        "size": 1141190,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901665",
+        "supplied_md5": "8fb79c3f3862a50b15853454a1c6d842",
+        "computed_md5": "8fb79c3f3862a50b15853454a1c6d842",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901668,
+        "name": "U010bii.mat",
+        "size": 1359734,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901668",
+        "supplied_md5": "367e2cf91931dec94bfb4e50b4b6e884",
+        "computed_md5": "367e2cf91931dec94bfb4e50b4b6e884",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901671,
+        "name": "U010ci.mat",
+        "size": 1143290,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901671",
+        "supplied_md5": "8b40a1512599f6ad18a2739446296a2b",
+        "computed_md5": "8b40a1512599f6ad18a2739446296a2b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901674,
+        "name": "U010cii.mat",
+        "size": 1244559,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901674",
+        "supplied_md5": "332f15349538093a77cec1eddd300d5b",
+        "computed_md5": "332f15349538093a77cec1eddd300d5b",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901677,
+        "name": "U010di.mat",
+        "size": 1147815,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901677",
+        "supplied_md5": "315317c7e2860d708f3e0180f4d5e7ff",
+        "computed_md5": "315317c7e2860d708f3e0180f4d5e7ff",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901680,
+        "name": "U010dii.mat",
+        "size": 1269231,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901680",
+        "supplied_md5": "f5ef438b0fc011832daad0d38d169a75",
+        "computed_md5": "f5ef438b0fc011832daad0d38d169a75",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901683,
+        "name": "U010ei.mat",
+        "size": 1131245,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901683",
+        "supplied_md5": "1952e20a26e5b5c4138f80f35ef95d65",
+        "computed_md5": "1952e20a26e5b5c4138f80f35ef95d65",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901686,
+        "name": "U010eii.mat",
+        "size": 1213907,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901686",
+        "supplied_md5": "f3df1d315dfe1c8a189c5daebd0bd19a",
+        "computed_md5": "f3df1d315dfe1c8a189c5daebd0bd19a",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901689,
+        "name": "U010x.mat",
+        "size": 959474,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901689",
+        "supplied_md5": "ce8ffe809737056f6bf1463d92ba8bf6",
+        "computed_md5": "ce8ffe809737056f6bf1463d92ba8bf6",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901692,
+        "name": "U011ai.mat",
+        "size": 1198996,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901692",
+        "supplied_md5": "3d6c8928b41d46010f72e446051a0889",
+        "computed_md5": "3d6c8928b41d46010f72e446051a0889",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901695,
+        "name": "U011aii.mat",
+        "size": 1368782,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901695",
+        "supplied_md5": "4d612dfa8d72deac1d96a1010ab7db42",
+        "computed_md5": "4d612dfa8d72deac1d96a1010ab7db42",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901698,
+        "name": "U011bi.mat",
+        "size": 1358917,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901698",
+        "supplied_md5": "c8bf6566be6499702e471d287e334722",
+        "computed_md5": "c8bf6566be6499702e471d287e334722",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901701,
+        "name": "U011bii.mat",
+        "size": 1484064,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901701",
+        "supplied_md5": "e68220d979a94f65ca181feeeba40245",
+        "computed_md5": "e68220d979a94f65ca181feeeba40245",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901704,
+        "name": "U011ci.mat",
+        "size": 1277563,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901704",
+        "supplied_md5": "619284f2669d66ca9f19e676e83b4d04",
+        "computed_md5": "619284f2669d66ca9f19e676e83b4d04",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901707,
+        "name": "U011cii.mat",
+        "size": 1340439,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901707",
+        "supplied_md5": "0711dd4f860d1712921907ff69ecd19e",
+        "computed_md5": "0711dd4f860d1712921907ff69ecd19e",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901710,
+        "name": "U011di.mat",
+        "size": 1282459,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901710",
+        "supplied_md5": "e9682e05b949e36aca74b06edf7f83cc",
+        "computed_md5": "e9682e05b949e36aca74b06edf7f83cc",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901713,
+        "name": "U011dii.mat",
+        "size": 1346319,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901713",
+        "supplied_md5": "1d1255e61d6fafb9c1acb7fc03d29914",
+        "computed_md5": "1d1255e61d6fafb9c1acb7fc03d29914",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901716,
+        "name": "U011ei.mat",
+        "size": 1216675,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901716",
+        "supplied_md5": "d2662e1f740d50086f2904f2c46002a2",
+        "computed_md5": "d2662e1f740d50086f2904f2c46002a2",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901722,
+        "name": "U011eii.mat",
+        "size": 1317773,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901722",
+        "supplied_md5": "a7f666deb4aee278d6ec9db98b0fc7b7",
+        "computed_md5": "a7f666deb4aee278d6ec9db98b0fc7b7",
+        "mimetype": "application/octet-stream"
+      },
+      {
+        "id": 27901725,
+        "name": "U011x.mat",
+        "size": 1085236,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/27901725",
+        "supplied_md5": "a4c3cd465a3e31b15dde8f288197d0fd",
+        "computed_md5": "a4c3cd465a3e31b15dde8f288197d0fd",
+        "mimetype": "application/octet-stream"
+      }
+    ],
+    "folder_structure": {},
+    "authors": [
+      {
+        "id": 1372422,
+        "full_name": "Spiros Nikolopoulos",
+        "first_name": "Spiros",
+        "last_name": "Nikolopoulos",
+        "is_active": true,
+        "url_name": "_",
+        "orcid_id": ""
+      }
+    ],
+    "custom_fields": [],
+    "figshare_url": "https://figshare.com/articles/dataset/MAMEM_EEG_SSVEP_Dataset_III_14_channels_11_subjects_5_frequencies_presented_simultaneously_/3413851",
+    "download_disabled": false,
+    "description": "<div>EEG\nsignals with 14 channels captured from 11 subjects executing a SSVEP-based\nexperimental protocol. Five different frequencies (6.66, 7.50, 8.57, 10.00 and\n12.00 Hz) have been used for the visual stimulation, and the Emotiv EPOC, using\n14 wireless channels has been used for capturing the signals.</div><div><br><div>Check <b>https://github.com/MAMEM/ssvep-eeg-processing-toolbox </b>for the processing toolbox.</div></div>",
+    "funding": "H20202-644780-MAMEM",
+    "funding_list": [
+      {
+        "id": 29918,
+        "title": "H20202-644780-MAMEM",
+        "grant_code": "",
+        "funder_name": null,
+        "is_user_defined": 1
+      }
+    ],
+    "version": 3,
+    "status": "public",
+    "size": 330128834,
+    "created_date": "2021-05-05T15:45:29Z",
+    "modified_date": "2023-05-30T19:48:12Z",
+    "is_public": true,
+    "is_confidential": false,
+    "is_metadata_record": false,
+    "confidential_reason": "",
+    "metadata_reason": "",
+    "license": {
+      "value": 1,
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "tags": [
+      "EEG Data Recorded",
+      "SSVEP response",
+      "BCI systems",
+      "signal processing tools",
+      "Biomechanical Engineering",
+      "Computer Engineering",
+      "Signal Processing",
+      "Neuroscience and Physiological Psychology"
+    ],
+    "keywords": [
+      "EEG Data Recorded",
+      "SSVEP response",
+      "BCI systems",
+      "signal processing tools",
+      "Biomechanical Engineering",
+      "Computer Engineering",
+      "Signal Processing",
+      "Neuroscience and Physiological Psychology"
+    ],
+    "categories": [
+      {
+        "id": 26272,
+        "title": "Biomechanical engineering",
+        "parent_id": 26263,
+        "path": "/26212/26263/26272",
+        "source_id": "400303",
+        "taxonomy_id": 100
+      },
+      {
+        "id": 26494,
+        "title": "Digital processor architectures",
+        "parent_id": 26485,
+        "path": "/26212/26485/26494",
+        "source_id": "400903",
+        "taxonomy_id": 100
+      },
+      {
+        "id": 29236,
+        "title": "Other information and computing sciences not elsewhere classified",
+        "parent_id": 29233,
+        "path": "/28798/29233/29236",
+        "source_id": "469999",
+        "taxonomy_id": 100
+      },
+      {
+        "id": 26407,
+        "title": "Signal processing",
+        "parent_id": 26386,
+        "path": "/26212/26386/26407",
+        "source_id": "400607",
+        "taxonomy_id": 100
+      },
+      {
+        "id": 30343,
+        "title": "Psychophysiology",
+        "parent_id": 30325,
+        "path": "/30292/30325/30343",
+        "source_id": "520206",
+        "taxonomy_id": 100
+      }
+    ],
+    "references": [
+      "http://www.mamem.eu/"
+    ],
+    "has_linked_file": false,
+    "citation": "Nikolopoulos, Spiros (2016). MAMEM EEG SSVEP Dataset III (14 channels, 11 subjects, 5 frequencies presented simultaneously). figshare. Dataset. https://doi.org/10.6084/m9.figshare.3413851.v3",
+    "related_materials": [
+      {
+        "id": 4604816,
+        "identifier": "http://www.mamem.eu/",
+        "title": "",
+        "relation": "References",
+        "identifier_type": "URL",
+        "is_linkout": false,
+        "link": "http://www.mamem.eu/"
+      }
+    ],
+    "is_embargoed": false,
+    "embargo_date": null,
+    "embargo_type": "file",
+    "embargo_title": "",
+    "embargo_reason": "",
+    "embargo_options": [],
+    "id": 3413851,
+    "title": "MAMEM EEG SSVEP Dataset III (14 channels, 11 subjects, 5 frequencies presented simultaneously)",
+    "doi": "10.6084/m9.figshare.3413851.v3",
+    "handle": "",
+    "url": "https://api.figshare.com/v2/articles/3413851",
+    "published_date": "2021-05-05T15:45:29Z",
+    "thumb": "https://s3-eu-west-1.amazonaws.com/pfigshare-u-previews/5344522/thumb.png",
+    "defined_type": 3,
+    "defined_type_name": "dataset",
+    "group_id": null,
+    "url_private_api": "https://api.figshare.com/v2/account/articles/3413851",
+    "url_public_api": "https://api.figshare.com/v2/articles/3413851",
+    "url_private_html": "https://figshare.com/account/articles/3413851",
+    "url_public_html": "https://figshare.com/articles/dataset/MAMEM_EEG_SSVEP_Dataset_III_14_channels_11_subjects_5_frequencies_presented_simultaneously_/3413851",
+    "timeline": {
+      "posted": "2021-05-05T15:45:29",
+      "firstOnline": "2016-06-06"
+    },
+    "resource_title": null,
+    "resource_doi": null
+  }
+}
