@@ -2139,3 +2139,30 @@
   누적1134records/90searches/46cards/18techniques/89claims/233evidence/45gaps/
   6analogies/38deepreads,cutoff2026-09-04 유지. Render11views/SQLitequick_checkok.
   최종 관련134tests 재확인PASS; fit의 재실행이 아닌 단위검사다.
+
+### 140. 2026-09-13 — 개발 DIN-only 원인 진단과 저자 Trial label 연결 복원
+
+- 직전턴은 v1구현/32generatedfits/단회개발label실패라는 progress로 분류했다.
+  c4d6084/main·trackedclean/8untracked·300GiBfree를 확인했다. v1시도는재개하지않고
+  새DIN-only계약·producer4dbe325/86관련생성tests 후 S001a만 단회실행했다.
+- 12:37:41.547599–12:37:41.761676UTC(terminal기준0.214077초), DIN_1만decode,
+  EEG는header만, descriptor해석/학습용M2/Q/fit0이다. 23group·모든고정window포함,
+  옛guardband실패[2,15,17,18,19] 확인. adaptation1/main4이므로 adaptation만제외해
+  해결됐다고하지않는다. 실제display/뇌/EEG손상원인은추정하지않는다.
+- 읽기전용review가늦게도착해 PINkeyset·parent출력scope검사 등 예방장치부족을
+  지적했다. producer를사후수정/재실행하지않았고 실제artifact사후감사에서3pins/
+  23indices/S001/MAT/모든scope/guardmembership/17,124bytes/PASS를확인했다.
+  이PASS는예방장치가원래있었다는뜻이아니다. 상세한계를결과문서에보존했다.
+- 기존Session.m과MOABB함수를다시읽고, 별도공식code읽기예산2requests중1회로
+  저자Trial.m을동일revision5a03abe...에서1044bytes받았다. Full37lines/line24의
+  T.label=label로연속주파수를그대로저장함을확인, blobde32cd15...를로컬재검증했다.
+  새PDF0, 기존DIN/효능파일추가접근0. Quarter-spacing은우리추가정책이며author
+  허용오차가아니다. MOABB의doublefloor key→class관례와nominalHz를분리했다.
+- [진단결과](mamem_event_label_diagnostic_v1_results.md), 원manifest/terminal/진단,
+  claim61e473e51eda0a2b QUALIFIED/3근거 보존. 같은metadata후보를위해 source-backed
+  label compatibility v2계약ce05361을 **S002–S011 DIN/EEG/M/label통계0 상태에서**
+  고정했다. Guardband확대/nearest/orderlabel아님, 독립groundtruth한계는유지한다.
+- 새2writerworktrees를격리하고parser/runner를독립구현한다. Parsercbc4eeb→333648f
+  통합72testsPASS, v1수정0. Root는 독립no-refit모델검산2cc1cc7/6tests를추가했다.
+  v2 generated0추가fits/실제최대80,14:00UTC마감,source모두적격성봉인전fit0이다.
+  이항목작성시 sourcecohort와v2rawphase는미실행이며후속실제결과는별도로기록한다.
