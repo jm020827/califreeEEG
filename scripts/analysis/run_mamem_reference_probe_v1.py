@@ -372,6 +372,8 @@ def execute():
                         worker_claim_sha256=sha(RUN / "worker_claim.json"))
         remaining()
     except Exception as error:  # noqa: BLE001 -- preserve failure, never retry
+        terminal.pop("predictions", None)
+        terminal.pop("result_sha256", None)
         terminal.update(status="STOPPED_NO_RETRY", error_type=type(error).__name__,
                         reason=str(error) if isinstance(error, ValueError) else "see_bounded_log")
         if terminal["started_sha256"] is None:

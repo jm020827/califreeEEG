@@ -304,3 +304,40 @@ def test_worker_refuses_unbound_or_repeated_parent(tmp_path, monkeypatch, wrong)
         runner.save(tmp_path / "worker_claim.json", {"attempt": 1})
     with pytest.raises(FileExistsError if wrong == "claimed" else ValueError):
         runner.worker()
+
+
+def test_final_deadline_failure_keeps_partial_result_without_complete_terminal(tmp_path, monkeypatch):
+    monkeypatch.setattr(runner, "RUN", tmp_path)
+    monkeypatch.setattr(runner, "manifest", dict)
+    monkeypatch.setattr(runner, "sha", lambda _: "a" * 64)
+    calls = []
+
+    def remaining():
+        calls.append(1)
+        if len(calls) == 3:
+            raise ValueError("deadline")
+        return 60
+
+    class FakeProcess:
+        returncode = 0
+
+        def __init__(self, *args, **kwargs):
+            runner.save(tmp_path / "result.json", {
+                "status": "DEVELOPMENT_DIAGNOSTIC_NOT_EFFICACY", "mat_sha256": runner.MAT_SHA,
+                "role_sha256": runner.ROLE_SHA, "queries": [{}] * 15, "scope": runner.SCOPE})
+            runner.save(tmp_path / "worker_claim.json", {"attempt": 1})
+
+        def wait(self, timeout=None):
+            return 0
+
+        def poll(self):
+            return 0
+
+    monkeypatch.setattr(runner, "remaining", remaining)
+    monkeypatch.setattr(runner.subprocess, "Popen", FakeProcess)
+    with pytest.raises(SystemExit):
+        runner.execute()
+    terminal = runner.read_json(tmp_path / "terminal.json")
+    assert terminal["status"] == "STOPPED_NO_RETRY" and terminal["reason"] == "deadline"
+    assert "predictions" not in terminal and "result_sha256" not in terminal
+    assert (tmp_path / "result.json").is_file()
