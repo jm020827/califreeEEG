@@ -1,5 +1,15 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> **2026-09-14 최신 상태:** [Welch/source-SVM core 마감](welch_source_baseline_v1_results.md).
+> 합성 최종 48 tests PASS는 공통 비교기준의 부분 구현 검증이며 실제 EEG/M 효능이 아니다.
+> [MobileBCI 안정화 후속](block_scaled_router_human_v1_results.md)은 이미 M의 gate/margin
+> 작동을 확인했지만 저보정 QM−Q −0.162pp·보정량 절감 0%로 후보를 종료했다.
+> 옛 포화 문제를 아직 해결하지 못한 현재 병목으로 설명하거나 optimizer rescue를 재개하지 않는다.
+> 현재 검토된 새 적격 실제 M 후보는 없다. 다음 실험에는 구별되는 기작·실제 pairing·공정한
+> 대조군·유한 예산·독립 검증 역할이 필요하다. Q utility를 먼저 올려야만 M을 시험할 수 있다는
+> 무한 선행조건은 복원하지 않는다. 아래의 ‘현재/다음’은 각 날짜의 보존 이력이지 실행 권한이 아니다.
+> 원 목표와 기존 음성 결과, held60·외부 요청·유료의 별도 승인 경계를 유지한다.
+
 > 2026-09-09 **고정 2후보 프로그램 종료**: [종합 결과와 후속 검증 계획](metadata_learning_program_v1_results.md). C1은 source39의24,000updates 뒤 최종 수치 검증 실패, C2는 균일 대조군의 사전 인공 수치 검증 실패로 종료했다. 독립 실패 감사·전체2857tests PASS를 완료했지만 **효능·보정량 감소는 미평가이며 유망 후보는 없다.** 원 저보정 목표와 연구 질문은 유지한다. 사람 attempt1/query모델 개봉1/recovery0; held60·외부 요청·유료 자원0. 다음 수치 검증 연구는 별도 계획/승인 대상으로 남기며 세 번째 후보나 실패 재실행을 자동 추가하지 않는다. 아래는 이전 단계 이력이다.
 
 > 2026-09-09 [Temporal Q/QM 학습기 통합 검증 완료](task_trca_temporal_v1_engineering.md): 같은 새 점수의 Q/QM/Q2/SHAM 및 원 FULL_NATIVE/별도 FULL_CENTERED 대조 설계를 고정했다. 실제 Q15·Q 동결·잔차·nested 학습을 생성6명에서 연결했고, 네 head CPU/CUDA 일치·독립 cold 감사·전체2376tests PASS를 확인했다. **사람 EEG 효능·metadata 보정량 절감은 미평가**다. 이번 source archive/실제 M/기존 실패 진단/사람 query/held60 접근0. 다음은 새 역할 제한 reader·완료 경로 감사·실행 manifest의 별도 구현·생성 검증이며, 기존 실패 후보 재개나 source39 자동 실행은 없다. 아래는 이전 단계 이력이다.

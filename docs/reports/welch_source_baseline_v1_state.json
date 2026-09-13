@@ -1,0 +1,170 @@
+{
+  "schema": "cfeg.welch-source-core.v1",
+  "status": "SYNTHETIC_CORE_QUALIFIED_NOT_HUMAN_BASELINE",
+  "base_commit": "b6d8c4ae513eb175cf1f9c412d7295deca5c6d1f",
+  "files": {
+    "code": "src/cfeg/baselines/welch_source.py",
+    "code_sha256": "fafa5d2d4d6f523b0be3bca48b7fbcbfab778f25fd15f10f250adbca287a54c0",
+    "tests": "tests/test_welch_source_baseline.py",
+    "tests_sha256": "c35adaa4167fa654089e48a13cf2e762f62430e2fc1738d34b5369106d0f7cef",
+    "contract": "docs/welch_source_baseline_v1_contract.md",
+    "contract_sha256": "b0acde8e2a9297a1f0b42e2c4ea2fe6008356cfdaaca7f79c8e40882274e89d8"
+  },
+  "source_revision": "MAMEM/eeg-processing-toolbox 5a03abe2a6a874e9adaceea29a52c2fce35d8a03",
+  "source_artifact_directory": "/home/whwovy/research-spaces/califree-eeg-experiment-design/source-probes/welch_source_baseline_v1",
+  "sources": [
+    {
+      "index": 0,
+      "path": "+eegtoolkit/+featextraction/@PWelch/PWelch.m",
+      "blob_sha": "0dc4a926cec7134658c3c980beb71c02247157d5",
+      "decoded_bytes": 4290,
+      "decoded_sha256": "f97c3967cd1130d1638bf7829f02d6c15fa80ea94de42e7fa13aaaeac6071d07",
+      "body_bytes": 7228,
+      "body_sha256": "345da693d9c6787ee8a75d4efdfa836caa6388733309d8e8ff2874311a753c1a",
+      "headers_bytes": 1304,
+      "headers_sha256": "7c81b4d33aca7aed2fd5c8b274e58b94dd901888b240a151ba6a7eab4ef2e99b",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:29 GMT"
+      ]
+    },
+    {
+      "index": 1,
+      "path": "+eegtoolkit/+featextraction/@PSDExtractionBase/PSDExtractionBase.m",
+      "blob_sha": "d2a71a7f2b8b46ee0c85de21f00984588ea19310",
+      "decoded_bytes": 268,
+      "decoded_sha256": "ddb9cc37f1ec3f0dc82597c211be7dfd705f357ce83a8b64e0c222d164512fe3",
+      "body_bytes": 1830,
+      "body_sha256": "7147635eefb4e6cae8ca9ecfcfa1600766d19cf59864b744d1af713d4990c1a0",
+      "headers_bytes": 1301,
+      "headers_sha256": "dc4eac91c83c6c10da23f6f063c98f628b9c4cc9bbcd03a489838fad42ae8d12",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:30 GMT"
+      ]
+    },
+    {
+      "index": 2,
+      "path": "+eegtoolkit/+classification/@LIBSVMFast/LIBSVMFast.m",
+      "blob_sha": "429d32f839f1fdb486b5f5c853f4c5d91b825faf",
+      "decoded_bytes": 4743,
+      "decoded_sha256": "b200196bbfca9a5c1a63ea12e90e3e1a0764372278be047c809d26eee54952e2",
+      "body_bytes": 7904,
+      "body_sha256": "a347a31b033171b5de6f1cc9b884113775aa0757aa85f02a9f465523212e4dde",
+      "headers_bytes": 1301,
+      "headers_sha256": "ea887fad86ddbcf50c24ded9f967e388c6b8e7acf32da37c7a9eafe18c819978",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:30 GMT"
+      ]
+    },
+    {
+      "index": 3,
+      "path": "+eegtoolkit/+classification/@LIBSVM/LIBSVM.m",
+      "blob_sha": "1db8ec3eb7965e6a4e807ff6cdae064a8b4c133d",
+      "decoded_bytes": 4596,
+      "decoded_sha256": "1be7e98f1b4a4ad5302644f8c4453bc14b487ed0c7926bd9432aa94aff4b982b",
+      "body_bytes": 7650,
+      "body_sha256": "bc4be15a4899ed6f03751d3bcd8229152cb24d91b5fad911eab32f2eecb4d43f",
+      "headers_bytes": 1301,
+      "headers_sha256": "debeb04e89a84872810867dd77ad752d88813950bead916e0b64729893065f66",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:31 GMT"
+      ]
+    },
+    {
+      "index": 4,
+      "path": "+eegtoolkit/+preprocessing/@DigitalFilter/DigitalFilter.m",
+      "blob_sha": "e3390be59bb11efb4894477266e06253d77b881c",
+      "decoded_bytes": 1455,
+      "decoded_sha256": "4898a383bfbf31e3a19d4b04990f0a9dbbca230c192208ae5db61f6e70765529",
+      "body_bytes": 3407,
+      "body_sha256": "e6dae6db88eba739d8c11d1a720d21d2191e9f80233ad45d85dcd5ca1bd4494f",
+      "headers_bytes": 1304,
+      "headers_sha256": "e135704841f8c47577aaaa96a6f1665eda942cebecc91fb5b2ebd6fc52989330",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:31 GMT"
+      ]
+    },
+    {
+      "index": 5,
+      "path": "+eegtoolkit/+preprocessing/@Rereferencing/Rereferencing.m",
+      "blob_sha": "06c48e7f274695d80e785775f713fe097a8ee90e",
+      "decoded_bytes": 1273,
+      "decoded_sha256": "5ecc35484ea0665a9c6f18c3b1c639ec6030e1897a838f28bd6a61c3b1beb6c7",
+      "body_bytes": 3159,
+      "body_sha256": "49a957ad4f5d4ab29a19d40465449aa7b9985fdeae2270fe3de611baabf78562",
+      "headers_bytes": 1301,
+      "headers_sha256": "8f2c269e167a1ae3e2f9e6de114723e661e963d64e6d54c66085f70a91ca329d",
+      "http_dates": [
+        "Sun, 13 Sep 2026 17:56:32 GMT"
+      ]
+    }
+  ],
+  "requests": {
+    "code_gets": 6,
+    "http_200": 6,
+    "redirects": 0,
+    "retries": 0,
+    "body_bytes": 31178,
+    "decoded_bytes": 16625,
+    "official_web_api_doc_pages": 2,
+    "web_internal_requests_bytes": "unmeasured"
+  },
+  "tests": {
+    "invocations_limit": 3,
+    "invocations_used": 3,
+    "attempts": [
+      {
+        "tests": 37,
+        "passed": 37,
+        "pytest_seconds": 0.45
+      },
+      {
+        "tests": 45,
+        "passed": 45,
+        "pytest_seconds": 0.47
+      },
+      {
+        "tests": 48,
+        "passed": 48,
+        "pytest_seconds": 0.48
+      }
+    ],
+    "real_synthetic_pipeline_fits": 6,
+    "binary_svc_fits": 30,
+    "mocked_nonconvergence_calls": 3,
+    "full_repository_suite": false,
+    "interpreter": "/usr/bin/python3 Python3.10.12",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "sklearn": "1.7.2",
+    "blas_threads": 1,
+    "installations": 0
+  },
+  "review": {
+    "static_protocol": "PASS normal source-only path; direct-constructor validation added",
+    "static_numeric": "DFT/Parseval/SVC orientation PASS; raw-constant precheck added",
+    "final_constant_fix": "covered by48-pass final suite; agents did not rerun numeric tests",
+    "closeout_static": "Reviewer found no material inconsistency across contract/code/test/state. Static review only, not independent test or HTTP execution.",
+    "root_closeout_receipts": "Revalidated local code/test/contract hashes and all6 stored API body/header/decoded lengths and hashes, Git blob IDs, paths and HTTP200 status lines. No requests or fits.",
+    "pytest_stdout_artifact": "No separate stdout artifact retained; attempt counts/times are session observations recorded in this state, not newly reconstructed independent logs."
+  },
+  "deviations": [
+    "Initial ruff import-order violation corrected before second suite; no test failure.",
+    "Main .venv lacks sklearn; used existing system environment. No installation or CUDA change.",
+    "Source-loaded MATLAB window defaults/filter coefficients/probability calibration not replicated."
+  ],
+  "qualification_limits": [
+    "Only reader-free spectral/source SVM core; no qualified acquisition preprocessor or real-data runner.",
+    "Participant-role checks trust caller IDs; do not establish raw-file provenance.",
+    "Fixed source scaling and margin OVR are explicit design choices, not author LIBSVMFast probability reproduction.",
+    "Toy>=90% sanity is not real EEG efficacy or metadata incremental benefit.",
+    "Trailing samples enter full-trial mean but not incomplete FFT segments."
+  ],
+  "new_human_fits": 0,
+  "new_eeg_read": 0,
+  "new_metadata_efficacy": 0,
+  "held60": 0,
+  "people_requests": 0,
+  "paid_resources": 0,
+  "next_human_candidate": "NONE currently qualified",
+  "goal_status": "active"
+}

@@ -2746,3 +2746,37 @@
 - 최종JSON파싱/diffcheck PASS,보호6개SHA 전부동일. 두state와해석문서에대한독립
   read-only일관성검토PASS(효능재계산아님). 학습코드변경없어pytest미실행.
   Workspace108claims/281evidence,기존문헌cutoff2026-09-04와나머지읽기완료수불변.
+
+### 156. 2026-09-14 KST / 2026-09-13 UTC — Welch core 검증 마감·최신 병목 정정
+
+- 직전 사용자 질문 turn은 기존 결과를 대조해 설명했고 새 과학적 증거/실행은 없었다.
+  Goal audit상 NO_PROGRESS로 분류한다. 이번에는 이미 작성·검증한 untracked core의
+  출처·실행 기록을 실제 파일로 검산하고 결과 문서와 연구계획의 최신 상태를 통합한다.
+  Main base b6d8c4a, 기존46 worktrees와8 untracked 시험 디렉터리를 보존한다.
+- [사전 계약](welch_source_baseline_v1_contract.md)의 정확한 저자 source6GET을 완료한
+  원본을 재검사했다. 모두200/redirect0/retry0, body31,178B/decoded16,625B,
+  파일별 길이·SHA256·Git blob 일치. 이번 마감의 새 GET은0이다. API문서2 web페이지는
+  별도이며 내부 요청 수/byte는 미측정이다. 새 논문/PDF/사람 EEG 수집으로 세지 않는다.
+- [Reader-free Welch/source-SVM](../src/cfeg/baselines/welch_source.py)은 명시적 PSD 규칙,
+  source-only scaling/linear margin fit, participant role/expected class 검사, frozen export를
+  제공한다. 필터/reader/provenance binding/사람 runner는 없다. 저자 probability pipeline
+  재현이나 실제 강한 baseline 확보로 주장하지 않는다.
+- 합성 suite 예산3회는 이전 실행37/37·45/45·48/48 PASS로 소진, 총6 pipeline/30 binary
+  SVC fit와3 mocked nonconvergence 호출이다. 최종 code/test/contract hash를 재검사했으며
+  이번에는 pytest/fit/예측0이다. Import 순서 오류, export mutable 입력,0.1 상수 평균
+  roundoff 보강과 재현 한계를 [결과](welch_source_baseline_v1_results.md)에 보존했다.
+- Root 단독 writer, reviewer 읽기 전용 정적 검토에서 중대 정보권한/해석 모순 없음.
+  Agents의 정적 검토를 실행 시간/HTTP/효능의 독립 재현으로 확대하지 않는다.
+  기존 system Python 사용, 설치·환경변경·CUDA·worktree 추가·삭제·push0.
+- 최신 MobileBCI 후속은 이미 포화를 개선하고 M이 gate와 margin을 바꾸는 실제 실험까지
+  완료했으나 −0.162pp/보정량 절감0%다. 이 결과를 빠뜨린 옛 optimizer 병목 설명을
+  [연구계획 첫머리](goal_aligned_research_loop.md)에 정정했다. 기존 원본/판정은 변경하지 않는다.
+  Q utility-first 무한 선행조건을 되살리지 않으며 새 적격 actual-M 후보는 현재0이다.
+- 이번 유한 core 분기는 종료하되 원 저보정 metadata 목표는 미완료/active다. 새 사람
+  실험에는 구별되는 기작·paired actual-M·공정 대조·비용·검증 역할이 필요하다.
+  Held60·요청·유료는 별도 승인이고 종료한 학습/접근 경로를 자동 재개하지 않는다.
+- Academic-research claim9ef8906559668ad5는 QUALIFIED/근거3개로 등록, 기존
+  gap3f973164c88eabce를 갱신하고 render11을 완료했다. 총109claims/284evidence,
+  논문1151/search92/targeted29 등 읽기·검색 수와 cutoff2026-09-04는 불변이다.
+  Claim이 참조한3artifact hash와 JSON 파싱,보호된6원본SHA,ruff/diffcheck PASS,
+  SQLite quick_check ok다. 이전 pytest 결과를 새로운 실행으로 세지 않는다.
