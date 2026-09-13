@@ -1,0 +1,90 @@
+{
+  "schema": "cfeg.mamem-timing-identifiability-generated.v1",
+  "status": "GENERATED_INVARIANTS_PASS",
+  "seed_label": 20260913,
+  "random_draws": 0,
+  "scenario_count": 3,
+  "scenarios": [
+    {
+      "name": "intended_frame_schedule",
+      "events": 120,
+      "true_optical_deviation_max_abs_ms": 0.0,
+      "absolute_marker_delay_min_max_ms": [
+        4.0,
+        4.0
+      ],
+      "timestamp_interval_min_max_ms": [
+        50,
+        84
+      ],
+      "timestamp_interval_std_ms": 10.481899012406672,
+      "delta_z_minus_4delta_s_max_abs_ms": 3,
+      "observation_sha256": "224aad6eef8889ca94e71c5b6e25072054806e9dd49542dcd9a8fedd36266797"
+    },
+    {
+      "name": "optical_change",
+      "events": 120,
+      "true_optical_deviation_max_abs_ms": 3.0,
+      "absolute_marker_delay_min_max_ms": [
+        4.0,
+        4.0
+      ],
+      "timestamp_interval_min_max_ms": [
+        52,
+        88
+      ],
+      "timestamp_interval_std_ms": 11.642340829615767,
+      "delta_z_minus_4delta_s_max_abs_ms": 4,
+      "observation_sha256": "18d4320a27c700cab400fb07c0c0800b984c4bc0c18c044bab07d7c8f13e8342"
+    },
+    {
+      "name": "shared_marker_path_change",
+      "events": 120,
+      "true_optical_deviation_max_abs_ms": 0.0,
+      "absolute_marker_delay_min_max_ms": [
+        2.0,
+        7.0
+      ],
+      "timestamp_interval_min_max_ms": [
+        52,
+        88
+      ],
+      "timestamp_interval_std_ms": 11.642340829615767,
+      "delta_z_minus_4delta_s_max_abs_ms": 4,
+      "observation_sha256": "18d4320a27c700cab400fb07c0c0800b984c4bc0c18c044bab07d7c8f13e8342"
+    }
+  ],
+  "invariants": {
+    "normal_spread_without_optical_departure": true,
+    "nearest_quantization_delta_bound_5ms": true,
+    "all_marker_delays_nonnegative": true,
+    "physical_vs_shared_z_identical": true,
+    "physical_vs_shared_s_identical": true,
+    "physical_vs_shared_true_optical_different": true,
+    "physical_vs_shared_toy_response_different": true,
+    "oracle_correction_recovers_canonical": true,
+    "same_oracle_correction_is_wrong_in_shared_world": true,
+    "all_named_copies_same_correction": true
+  },
+  "oracle_algebra": {
+    "uncorrected_max_complex_error": 0.5579822120784586,
+    "corrected_max_complex_error": 1.5700924586837752e-16,
+    "wrong_world_max_complex_error": 0.5579822120784586,
+    "tolerance": 1e-12
+  },
+  "scope": {
+    "real_data_inputs": 0,
+    "new_raw_opens": 0,
+    "fits": 0,
+    "accuracy_evaluations": 0,
+    "held60": 0,
+    "learned_arms_instantiated": false,
+    "quantized_DIN_to_true_j_recovery": false,
+    "EEG_plus_DIN_nonidentifiability_proved": false,
+    "MAMEM_physical_or_marker_error_verified": false,
+    "calibration_savings_evaluated": false
+  },
+  "conclusion": "DIN_pair_alone_is_nonidentifying_under_the_constructed_shared_path_error_model",
+  "run_at_utc": "2026-09-13T02:45:53.278397+00:00",
+  "source_sha256": "fedb65caaf23ca3bf15f429d174416a42b95225f8a979b813d1f061109374467"
+}

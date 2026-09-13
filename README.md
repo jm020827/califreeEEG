@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **현재: MAMEM 시간 metadata의 해석 관문 완료**. [결과](docs/mamem_i_timing_identifiability_v1_results.md), [상태](docs/reports/mamem_i_timing_identifiability_v1_state.json). 배포PDF로S001–S011 namespace를확인했으며S013동일인alias/257번째행은미확정이다. Cedrus의ST100–EGI polarity공지와3개생성상황검사로DIN만의국소clock일치≠physicaljitter검증을구분했다. `기록된 event 규칙성`의추가예측가치는열려있고새fit/EEG값/held60/발송/유료0이다. 관련43tests·독립생성검산PASS,PDFqueue-before-download이탈은보존했다. [후속초안](docs/mamem_i_recorded_event_metadata_v1_draft.md)은채널/이벤트정의와boundedS001metadata확인부터진행한다. 아래는시점별이력이다.
+
 > 2026-09-13 **현재: MAMEM I 원자료6.59GB 확보·첫 DIN 구조 점검 완료**. [결과](docs/mamem_i_acquisition_v1_results.md), [상태](docs/reports/mamem_i_acquisition_v1_state.json). 공개v1 압축본2개의 checksum을 검산하고48MAT/파일명11ID 목록을 확인했다. S001a 한 기록만 추출·검산했다. 첫72이벤트의 국소 timestamp↔sample 일관성을 확인했지만 physical jitter·M 효능·보정절감은 미검증이다. S001 전체는개발용, EEG파형/새fit/held60/발송/유료0. S011↔S013 파일명 차이와257행 channel mapping을 임의 수정하지 않는다. [다음 관문 초안](docs/mamem_i_timing_identifiability_v1_draft.md)은 공통 보정·격자·기록오차와 잔여M을 구분한다. 아래는 시점별 이력이다.
 
 > 2026-09-12 **현재: 공개 provenance 일부 해소, 실제 학습은 아직 미실행**. [후속 결과](docs/public_provenance_resolution_v1_results.md), [상태](docs/reports/public_provenance_resolution_v1_state.json). MMV DataCite 일반GET200으로 V3·CC BY4.0·정확한 ScienceDB 주소를 확인했다(실제 파일 접근/validity는 미확인). MAMEM 단일 상자 실험의 DIN이 광센서+StimTracker에서 왔다는 저자 보고도 확보했다. Query DIN 누출은 여전하며 DatasetII/.flash/정확한 파일 연결은 별도다. 다음 우선 확인은 MAMEM I 실제 DIN–EEG schema 연결과 support-only 잔여 timing 정보다. 새 raw/fit/held60/외부요청/유료0, 기존 부정 결과 보존. 아래는 각 시점의 이력이다.

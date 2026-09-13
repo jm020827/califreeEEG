@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-13 **현재: MAMEMI 문헌·측정모형 관문 종료**. [결과](mamem_i_timing_identifiability_v1_results.md), [상태](reports/mamem_i_timing_identifiability_v1_state.json). S011은exactrelease설명서상정상ID이지만S013alias/row257는미확정이다. ST100–EGI vendor공지로eventedge확인필요성을확인했고,3생성세계에서DIN(z,s)만으로물리변화와공유기록경로오차를구분못하는조건부반례를검산했다. 모든EEG+M의무용성결론은아니다. 새EEG값/fit/held60/외부발송/유료0,43testsPASS·PDFqueue삽입이탈기록. [후속초안](mamem_i_recorded_event_metadata_v1_draft.md)은recorded-event정의/채널adapter후새후보를명세한다. 원저보정목표·기존부정결과는유지한다. 아래는이력이다.
+
 > 2026-09-13 **현재: MAMEM I 실제 파일 확보·국소 DIN schema 관문 완료**. [결과](mamem_i_acquisition_v1_results.md), [상태](reports/mamem_i_acquisition_v1_state.json). v1의압축본2개6.59GB checksum검산·48MAT/11파일명ID목록확인을완료했고 S001a만개발용으로추출검산·첫72이벤트를점검했다. timestamp와250Hz선언의sample-clock은국소적으로양립하지만 jitter/metadata효능은검증하지않았다. S001전체개발용·257행채널과S011/S013대응미확정·EEG값/새fit/held60/외부요청/유료0. [다음초안](mamem_i_timing_identifiability_v1_draft.md)은기록오차/공통보정/잔여정보식별이며자동추가개봉계약이아니다. 원목표와기존부정결과유지. 아래는당시이력이다.
 
 > 2026-09-12 **현재: MMV registry·단일 자극 optical DIN 문헌 근거 확인**. [결과](public_provenance_resolution_v1_results.md), [상태](reports/public_provenance_resolution_v1_state.json). 이전 tool-only 실패에 명시적 단회 일반GET 진단을 적용해 MMV V3/CC BY4.0/배포 URL 선언을 확인했다. ScienceDB 페이지는 로컬 출력 capture 실패라 실제 file inventory는 미확인이다. MAMEM 단일 상자 실험은 저자 원문에 광센서/StimTracker DIN이 기술돼 있으나 exact release/II/.flash·잔여 학습정보는 미확인이다. 다음은 정확한 공개 DIN–EEG schema 연결이며 새 raw/fit/held60/발송/계정·DUA/유료0. 원목표·이전 부정/실패·query 누출 방지 유지. 아래의 미확인 표기는 당시 범위의 이력이다.

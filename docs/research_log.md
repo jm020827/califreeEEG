@@ -1954,3 +1954,45 @@
  6analogies/37deepreads(26completed/10queued/1skipped),cutoff2026-09-04불변.
   Render11views/SQLitequick_checkok. 보호문서4개hash불변. 독립후속검토는기록과
   좁은해석을확인했으며,실제파일전체의생물학적타당성이나효능PASS로확대하지않는다.
+
+### 135. 2026-09-13 — MAMEM eventedge 근거와 DIN-only 식별 반례
+
+- 사용자 ‘계속’에 따라 base9cafdce/main에서[계획](mamem_i_timing_identifiability_v1_plan.md)을
+  c8759b0로고정했다. Academic-research의signature/context/PDF카드/claim근거관리와
+  coordinate-worktree-changes의단독쓰기·읽기전용병렬화를적용했다. Author코드와
+  Cedrusvendor scout,별도기작review가읽기전용으로병렬작업했고root만repo/SQLite쓰기.
+  초기free8,479,136KiB라새worktree를만들지않았다. 기존41worktrees/8untracked
+  directories보존·설치/삭제/push/새goal0. 이번rawarchive/MAT/EEG수치개봉0.
+- Source4unique targets,root성공source재보존2,locator1을사용했다. Exactrelease
+  DataAcquisitionDetails.pdf276431bytes/MD5/SHA검산,본문5pages·렌더1–4pages읽기완료.
+  PDFskill부재로pdftotext/pdftoppm fallback을사용하고targetedfulltext카드를저장했다.
+  다만persistentdeepread등록2회실패(미등록record,commit누락)뒤download가queue보다
+  먼저시작된절차이탈이있었다. 질문/예산은GET전계획에존재했고PDF내용읽기전queue를
+  수리했지만strictqueue-before-download는FAIL로보존했다. 날짜29Jan2016의dataset
+  기술문서이며새동료심사논문이아니다. Source본문·해시는원본보존범위를명시했다.
+- p1Table1은S001–S011을나열하므로S011은v1의정상filename namespace로확인했다.
+  Code의S013동일인alias는없다.257번째EEGrow/reference는5페이지에정의되지않았다.
+  p3adaptation100초본문vs80초그림,세션제외이력의불완전대응은비용/adapter공백으로
+  남기고실제선택·보정량수치를만들지않았다. 개인정보table/아티팩트메모를learner입력에
+  사용하지않았다. GitHubmaintainer댓글은행렬방향/과거누락이력만확인했고alias근거없음.
+- Cedrus공식13Jun2022공지의현재HTML은원래ST100의positive logic와EGInegative logic,
+  NetStation의onset/offset선택차이를명시한다. ExactMAMEM설정·오류발생은미확인이다.
+  이generalwarning을MAMEM의임의ms jitter나자동offset정정근거로사용하지않았다.
+  Root마지막성공보존응답02:43:34.555UTC로03:08source경계내. 새discovery/PDF추가0.
+- 독립기작review의음의절대지연문제를공통D0=4ms로수리하고oracle좌표·DIN-only범위를
+  명시한뒤306da05로구현고정했다.3생성상황×120events,seedlabel20260913/randomdraws0/
+  fit0을02:45:53UTC에실행했다. 실제자극변화와공유marker경로변화가동일z/s를만들되
+  trueoptical/toyresponse는다른반례를확인했다. 모든10invariantsPASS;oracle오차
+ 1.57e-16/잘못적용시0.558. 단순공통변환대수검사이지실제Q/Q2/QM/SHAM학습아님.
+- 독립생성재계산이3hash/수치/producerSHA와일치했다. exactrational대float64의normal
+  sample경계2/120차이를명시했고뒤두세계동일성에는영향없어재실행하지않았다.
+  새단위6+직전입력37=43testsPASS,전체repo suite미실행. [결과](mamem_i_timing_identifiability_v1_results.md)/
+  [상태](reports/mamem_i_timing_identifiability_v1_state.json)/[후속초안](mamem_i_recorded_event_metadata_v1_draft.md)
+  저장. Physicaljitter특징해석은보류하지만recorded-event규칙성의추가예측가치는열어둔다.
+  다음은채널/이벤트정의와S001-only소수metadata확인의별도유한계약이며새사람fit아님.
+- Academicsourceclaimb2f0388f61e8e0b4 QUALIFIED/3evidence,조건부generatedclaim6296f5e268190608
+  VERIFIED/1evidence;기존gap3f973164c88eabce갱신. 누적1134records(dataset첨부1추가)/
+ 90searches/46cards/18techniques/83claims/221evidence/45gaps/6analogies/38deepreads
+ (27completed/10queued/1skipped),cutoff2026-09-04불변. Render11views/SQLitequick_checkok.
+  보호문서4hash불변,기존부정결과·S001개발용·실제획득prefix/setupcost·held60경계유지.
+  이번새raw/fit/accuracy/calibration효능/외부발송/계정·DUA/유료0이다.
