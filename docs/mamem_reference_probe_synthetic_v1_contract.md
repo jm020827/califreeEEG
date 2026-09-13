@@ -46,7 +46,9 @@ Deadline2026-09-13T14:30:00Z,root단독writer. 구현파일1개/새tests1개,외
 - 명시된 합성 shifted5bank[6.49,7.34,8.31,9.60,11.61]에서5/5분류; nominal과
   scores차이 존재. 두 bank의 실제 EEG 우열로해석하지않는다.
 - Label-free independent least-squares projection식과score일치≤1e−10.
-- 상수offset/비영scale/부호/각harmonic공통phase회전의score불변성≤1e−10.
+- Query 상수offset/비영scale/부호 변화의score불변성≤1e−10. 별도로 **query를
+  고정한 상태의 reference sin/cos 기저 harmonic별 phase회전**에서score불변성≤1e−10.
+  실제 query harmonic phase를 바꾸면 유한창의 다른 candidate leakage는 달라질 수 있다.
 - 직교화한negative trace는전bank의합집합에직교하므로score≈0. Pure sinusoid
   reference canary는실제 EEG성능의대리변수가아니다.
 - Invalidshape/NaN/constant/비정수·비증가event/duplicate frequency/nonorthogonal
@@ -56,4 +58,8 @@ Deadline2026-09-13T14:30:00Z,root단독writer. 구현파일1개/새tests1개,외
 모두통과하면 `SYNTHETIC_OPERATOR_READY_ONLY`로기록한다. 실패하면합성gate실패,
 최대3회소진시STOP. 실제decoder복원/M기여/보정절감/held60효능승격은모두금지다.
 후속은별도실제개발계약(정확한S001a/b입력pins,지원5trial 비용,공통2bank,
-단회15query/30predictions,누출검사,수치감사,중단기준)을고정할지결정하는것이다.
+  단회15query/30predictions,누출검사,수치감사,중단기준)을고정할지결정하는것이다.
+
+합성 첫49검사 뒤 phase불변성의 대상을 명확화했다. 처음부터 구현된 검사는 query고정/
+reference회전이므로 계산·합성입력·통과조건의 변경은 아니다. Integer event의 구현상
+범위는float64정수정확성을 위해[1,2^53−1]로 제한하며 더 큰 값은 추정 복구하지 않는다.
