@@ -1996,3 +1996,46 @@
  (27completed/10queued/1skipped),cutoff2026-09-04불변. Render11views/SQLitequick_checkok.
   보호문서4hash불변,기존부정결과·S001개발용·실제획득prefix/setupcost·held60경계유지.
   이번새raw/fit/accuracy/calibration효능/외부발송/계정·DUA/유료0이다.
+
+### 136. 2026-09-13 — 용량 재확인·MAMEM samplingRate 및 입력 격리 경계
+
+- 사용자 ‘계속’ 뒤 scalar 관문 계획을 0bcfc26으로 고정했고, ‘용량 확보됐으니
+  다시 확인 후 계속’에 따라 10:28:33UTC 가용 315,703,184KiB(약323GB/301GiB)를
+  확인했다. 디스크 병목은 해소됐으나 현재 문서/scalar 8MiB 계약을 bulk 추출로
+  확대하지 않았다. 삭제·설치·push·새 goal 0, 기존41worktrees/8untracked 보존.
+- Academic-research의 signature/context/claim·gap 근거 관리를 적용했다.
+  Coordinate-worktree-changes에 따라 root만 repo/SQLite를 쓰고, 세 agent는
+  채널 source·Cedrus source·독립 protocol 검토를 읽기전용으로 병렬 수행했다.
+- 공식 source3targets+locator1. EEGLAB 특정 경로404는 재시도하지 않았다.
+  Cedrus setup 및 MOABB 코드 API의 성공 응답을 각각 한 번 보존·선택 본문 읽기,
+  독립 hash/size/MOABB git blob 검산 PASS. 새 PDF/논문 discovery 0. Cedrus의
+  4.5.5/Pulse/trigger 번호는 실제 MAT descriptor나 eventedge의 정의가 아니다.
+  따라서 선택적 DIN descriptor 값 열람은 생략했다. 실제 samplingRate와 독립이다.
+- MOABB는 DIN class marker를 마지막 행에 쓰고 해당 채널을 명시적으로 stim으로
+  분류한다. 일반 MOABB 사용의 누출이라는 주장은 하지 않는다. 우리 predictor가
+  변환된 stim행을 EEG로 오용할 때의 누출 경계다. 원본 v1 row257의 정체·reference·
+  실제 montage는 여전히 미확정이고 최신/로컬 코드 전체 파일 동일성도 없다.
+- SamplingRate-only reader/manifest를 58043ba로 동결했다. 독립 review의 deadline
+  재계산 지적을 실제 접근 전에 반영했고, 고정 outputdir+배타적 worker claim으로
+  직접 worker/새 경로 재호출을 차단했다. 생성34+기존관련43=77tests PASS.
+  시간/메모리/출력 상한·실패 기록·whitelist·hash/role/shape/value를 확인했다.
+- 기존 S001a 파일/역할 검산 뒤 10:40:02.064–.379UTC 단회 실제 scalar 읽기를
+  실행했다. `samplingRate=250.0Hz`, parent MATCH/child0/attempt1이다. EEG/DIN 배열
+  요청은0이며 hash/header는 압축 byte를 처리할 수 있다. 실제 ADC clock 측정이나
+  M 효능·보정절감 실험이 아니다. 다른 참가자·EEG파형·fit·query·held60·발송·유료0.
+- [결과](mamem_i_scalar_adapter_v1_results.md)/[상태](reports/mamem_i_scalar_adapter_v1_state.json)/
+  [단회 영수증](reports/mamem_i_scalar_adapter_v1_run/terminal.json)을 보존했다.
+  [다음 초안](mamem_i_256row_adapter_v1_draft.md)은 row257의 정체 확인을 영구 병목으로
+  삼지 않고 공통 앞256행만 쓰는 geometry-free 입력 격리를 제안한다. 의미를 확인한
+  척하는 임의 삭제와 구분하고, 제외 행/시간 perturbation 불변 검사를 다음에 한다.
+  아직 새 EEG adapter·M learner 실행이 아니며 k1-effective M 정의/예산은 남아 있다.
+- Source claim cde98885729bd977 QUALIFIED/2evidence, 실제 scalar claim
+  773ac86219138482 VERIFIED/1evidence. 기존 gap3f973164c88eabce 갱신.
+  누적1134records/90searches/46cards/18techniques/85claims/224evidence/45gaps/
+  6analogies/38deepreads(27completed/10queued/1skipped), cutoff2026-09-04 불변.
+  Render11views/SQLitequick_checkok, 보호4문서hash 불변. 기존 실패·부정 결과·
+  S001 개발용·Q/Q2/QM/SHAM·실제 획득prefix/setupcost·held60 승인 경계를 유지한다.
+- 최종 읽기전용 감사는 producer/config와58043ba, STARTED/worker/child/terminal
+  해시·시각·범위·문서 및 0byte stdout/stderr를 확인해 PASS했다. 기록된 전체 시도
+  0.315117초다. 실제 MAT 재열람·별도 test 재실행 감사는 아니며, root 관련77tests는
+  마감 전 다시 PASS했다. 새 차단 문제는 없고 후속256행 초안은 미실행으로 남긴다.

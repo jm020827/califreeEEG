@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP 연구 프로토콜 현재 상태
 
+> 2026-09-13 **현재: MAMEM scalar·누출 경계 관문 완료**. 용량 약 323GB 확보 확인, S001a samplingRate 단회 읽기 250Hz/MATCH, 관련 77tests PASS. [결과](mamem_i_scalar_adapter_v1_results.md), [상태](reports/mamem_i_scalar_adapter_v1_state.json). MOABB의 마지막 stim행을 EEG로 오용하지 않는 경계와 원본 row257 미확정을 구분한다. Descriptor 정의가 없어 해당 읽기는 생략했다. [공통 256행 입력 격리 후속 초안](mamem_i_256row_adapter_v1_draft.md)은 학습 전 안전한 진행 경로이며 아직 실행하지 않았다. 새 EEG파형/fit/held60/발송/유료 0, 원 저보정 목표·기존 부정 결과 유지. 아래는 이력이다.
+
 > 2026-09-13 **현재: MAMEMI 문헌·측정모형 관문 종료**. [결과](mamem_i_timing_identifiability_v1_results.md), [상태](reports/mamem_i_timing_identifiability_v1_state.json). S011은exactrelease설명서상정상ID이지만S013alias/row257는미확정이다. ST100–EGI vendor공지로eventedge확인필요성을확인했고,3생성세계에서DIN(z,s)만으로물리변화와공유기록경로오차를구분못하는조건부반례를검산했다. 모든EEG+M의무용성결론은아니다. 새EEG값/fit/held60/외부발송/유료0,43testsPASS·PDFqueue삽입이탈기록. [후속초안](mamem_i_recorded_event_metadata_v1_draft.md)은recorded-event정의/채널adapter후새후보를명세한다. 원저보정목표·기존부정결과는유지한다. 아래는이력이다.
 
 > 2026-09-13 **현재: MAMEM I 실제 파일 확보·국소 DIN schema 관문 완료**. [결과](mamem_i_acquisition_v1_results.md), [상태](reports/mamem_i_acquisition_v1_state.json). v1의압축본2개6.59GB checksum검산·48MAT/11파일명ID목록확인을완료했고 S001a만개발용으로추출검산·첫72이벤트를점검했다. timestamp와250Hz선언의sample-clock은국소적으로양립하지만 jitter/metadata효능은검증하지않았다. S001전체개발용·257행채널과S011/S013대응미확정·EEG값/새fit/held60/외부요청/유료0. [다음초안](mamem_i_timing_identifiability_v1_draft.md)은기록오차/공통보정/잔여정보식별이며자동추가개봉계약이아니다. 원목표와기존부정결과유지. 아래는당시이력이다.

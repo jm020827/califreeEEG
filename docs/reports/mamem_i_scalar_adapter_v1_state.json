@@ -1,0 +1,22 @@
+{
+  "schema": "cfeg.mamem-i-scalar-adapter.v1",
+  "status": "SCALAR_MATCH_SCHEMA_QUALIFIED",
+  "date": "2026-09-13",
+  "plan_commit": "0bcfc26",
+  "producer_commit": "58043ba",
+  "disk_recheck": {"at_utc": "2026-09-13T10:28:33+00:00", "available_KiB": 315703184, "about_GB": 323, "about_GiB": 301, "scope_expanded": false, "deleted_by_agent": false},
+  "ownership": {"writer": "root", "readonly_agents": 3, "preserved_worktrees": 41, "preserved_untracked_directories": 8, "new_worktrees": 0},
+  "source_budget": {"unique_targets_max": 3, "unique_targets_used": 3, "locator_used": 1, "root_successful_retentions": 2, "source_deadline_utc": "2026-09-13T10:49:00+00:00", "round_deadline_utc": "2026-09-13T11:00:00+00:00", "new_task_artifacts_cap_bytes": 8388608, "bulk_downloads_or_extractions": 0, "new_PDFs": 0},
+  "sources": [
+    {"url": "https://api.github.com/repos/sccn/eeglab/contents/functions/popfunc/pop_readegiepo.m?ref=develop", "status": "HTTP404_NO_RETRY", "scout_response_bytes": 127, "scout_sha256": "e45906ce02e79f16fb87a838d86bb4e497e37a9591f97608fa013bbcd8b9cbc2", "source_body_retained": false},
+    {"url": "https://cedrus.com/support/stimtracker_1g/tn1468_egi.htm", "status": "HTTP200_RETAINED", "bytes": 44280, "sha256": "791350c0d2663bfdbcc575c3f7e42f3ae7bddc67d54dce7dc94832d5c3a51045", "scope": "selected HTML text, no image/PDF"},
+    {"url": "https://api.github.com/repos/NeuroTechX/moabb/contents/moabb/datasets/ssvep_mamem.py?ref=develop", "status": "HTTP200_RETAINED", "bytes": 80327, "sha256": "3eca229d6fde2210dd34f6daf412b07228cf6a23dc0077db314295fd1e55767b", "decoded_code_bytes": 57651, "decoded_code_sha256": "0923958d1fc7a5e2e20db7139dce730d2663f7a0fd67e74f006752b63a1a42f4", "git_blob": "eef0203f06c86f18f6db53f7cc67cbd4a6af685b", "reviewed_lines": ["57-100", "157-170"], "normal_MOABB_stim_type_preserved": true, "original_v1_row257_identity_confirmed": false}
+  ],
+  "actual_check": {"subject": "S001", "role": "development_only_all_records", "member": "EEG-SSVEP-Part1/S001a.mat", "attempts": 1, "status": "MATCH", "stored_samplingRate_hz": 250.0, "requested_variables": ["samplingRate"], "EEG_arrays_requested": false, "DIN_arrays_requested": false, "hash_header_may_process_compressed_bytes": true, "physical_sampling_clock_measured": false, "started_utc": "2026-09-13T10:40:02.064231+00:00", "ended_utc": "2026-09-13T10:40:02.379348+00:00", "child_sha256": "09e994853875fb406c73201e0d1f2983bc5d4790de5abef22aa9ef52176106e9", "terminal_sha256": "a565e9468ebe603837c4f206bf6b8265e5ecfa91e511f807193f676d5a05d8b3"},
+  "descriptor_branch": {"status": "SKIPPED_SCHEMA_NOT_DEFINED", "cells_inspected": 0},
+  "verification": {"generated_new": 34, "related_prior": 43, "total_passed": 77, "full_repo_suite_run": false, "source_independent_audit": "PASS", "preflight_independent_review": "deadline fix implemented before read", "final_receipt_audit": "PASS", "final_audit_scope": "Saved receipts, producer/config against58043ba, timestamps/hash/status/scope and docs; no actual MAT re-read or independent test rerun", "stdout_bytes": 0, "stderr_bytes": 0, "attempt_elapsed_seconds": 0.315117},
+  "claims": {"source": "claim:cde98885729bd977", "scalar": "claim:773ac86219138482"},
+  "research_workspace": {"records": 1134, "search_runs": 90, "paper_cards": 46, "techniques": 18, "claims": 85, "evidence": 224, "gaps": 45, "analogies": 6, "deep_reads": 38, "rendered_views": 11, "sqlite_quick_check": "ok", "cutoff": "2026-09-04"},
+  "next": {"status": "DRAFT_NOT_EXECUTED", "document": "docs/mamem_i_256row_adapter_v1_draft.md", "row257_exclusion_is_common_policy_not_physical_identity_claim": true, "new_learner_frozen": false},
+  "scope": {"new_EEG_waveform_reads": 0, "new_participants": 0, "fits": 0, "accuracy_evaluations": 0, "calibration_savings_evaluations": 0, "held60": 0, "outreach": 0, "paid_resources": 0, "new_goal_created": false, "old_negatives_preserved": true, "known_current_round_scope_deviation": false}
+}

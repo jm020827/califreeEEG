@@ -1,0 +1,19 @@
+{
+  "status": "MATCH",
+  "attempts": 1,
+  "scope": {
+    "requested_variables": [
+      "samplingRate"
+    ],
+    "EEG_arrays_requested": false,
+    "DIN_arrays_requested": false,
+    "fits": 0,
+    "held60": 0,
+    "hash_header_may_process_compressed_file_bytes": true,
+    "physical_sampling_clock_measured": false
+  },
+  "child_returncode": 0,
+  "stored_samplingRate_hz": 250.0,
+  "child_sha256": "09e994853875fb406c73201e0d1f2983bc5d4790de5abef22aa9ef52176106e9",
+  "ended_utc": "2026-09-13T10:40:02.379348+00:00"
+}

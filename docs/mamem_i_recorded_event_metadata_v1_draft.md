@@ -1,5 +1,7 @@
 # MAMEM I recorded-event metadata 후속 초안
 
+> 후속 갱신: [scalar 관문 결과](mamem_i_scalar_adapter_v1_results.md)에서 저장250Hz를 확인했다. DIN descriptor 정의는 미확정이라 읽지 않았다. Row257의 물리적 의미를 추측하지 않으면서 공통 앞256행만 사용하는 별도 정책은 [새 후속 초안](mamem_i_256row_adapter_v1_draft.md)에서 제안한다. 아래의 ‘임의 삭제 금지’는 이런 사전 공통정책 자체를 영구 금지한다는 뜻으로 확대하지 않는다. 아래는 당시 초안이다.
+
 2026-09-13. DRAFT_NOT_EXECUTED. [식별 관문 결과](mamem_i_timing_identifiability_v1_results.md)
 뒤의 제안이며 새 EEG fit이나 만료된 probe의 재실행 명령이 아니다.
 

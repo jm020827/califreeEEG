@@ -1,0 +1,20 @@
+{
+  "started_utc": "2026-09-13T10:40:02.085592+00:00",
+  "scope": {
+    "requested_variables": [
+      "samplingRate"
+    ],
+    "EEG_arrays_requested": false,
+    "DIN_arrays_requested": false,
+    "fits": 0,
+    "held60": 0,
+    "hash_header_may_process_compressed_file_bytes": true,
+    "physical_sampling_clock_measured": false
+  },
+  "status": "MATCH",
+  "stored_samplingRate_hz": 250.0,
+  "expected_release_hz": 250,
+  "mat_sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a",
+  "subject": "S001",
+  "ended_utc": "2026-09-13T10:40:02.318602+00:00"
+}

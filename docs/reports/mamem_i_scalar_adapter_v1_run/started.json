@@ -1,0 +1,24 @@
+{
+  "status": "STARTED",
+  "started_utc": "2026-09-13T10:40:02.064231+00:00",
+  "manifest_sha256": "c57b59c903f3f05bbe9e8a3001c639f95ab56bfa1b32a986186d43d6fb6e9ea5",
+  "producer_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008",
+  "limits": {
+    "address_space_bytes": 2147483648,
+    "cpu_seconds": 30,
+    "wall_seconds": 60,
+    "each_output_bytes": 32768
+  },
+  "attempts": 1,
+  "scope": {
+    "requested_variables": [
+      "samplingRate"
+    ],
+    "EEG_arrays_requested": false,
+    "DIN_arrays_requested": false,
+    "fits": 0,
+    "held60": 0,
+    "hash_header_may_process_compressed_file_bytes": true,
+    "physical_sampling_clock_measured": false
+  }
+}

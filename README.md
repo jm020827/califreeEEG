@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **현재: 용량 확보·MAMEM scalar 관문 완료**. 가용 약 323GB를 재확인했고, S001a에서 samplingRate 하나만 단회 확인해 250Hz/MATCH를 얻었다. [결과](docs/mamem_i_scalar_adapter_v1_results.md), [상태](docs/reports/mamem_i_scalar_adapter_v1_state.json). 관련 77tests PASS. MOABB는 마지막 행을 명시적으로 stim으로 처리한다. 이를 우리 EEG 입력에 포함하지 않도록 하되 원본 row257의 물리적 의미를 확인한 척하지 않는다. 미정의 DIN descriptor는 읽지 않았고 새 EEG파형/fit/held60/발송/유료 0. [다음 초안](docs/mamem_i_256row_adapter_v1_draft.md)은 공통 256행 입력 격리이며 아직 미실행이다. 아래는 시점별 이력이다.
+
 > 2026-09-13 **현재: MAMEM 시간 metadata의 해석 관문 완료**. [결과](docs/mamem_i_timing_identifiability_v1_results.md), [상태](docs/reports/mamem_i_timing_identifiability_v1_state.json). 배포PDF로S001–S011 namespace를확인했으며S013동일인alias/257번째행은미확정이다. Cedrus의ST100–EGI polarity공지와3개생성상황검사로DIN만의국소clock일치≠physicaljitter검증을구분했다. `기록된 event 규칙성`의추가예측가치는열려있고새fit/EEG값/held60/발송/유료0이다. 관련43tests·독립생성검산PASS,PDFqueue-before-download이탈은보존했다. [후속초안](docs/mamem_i_recorded_event_metadata_v1_draft.md)은채널/이벤트정의와boundedS001metadata확인부터진행한다. 아래는시점별이력이다.
 
 > 2026-09-13 **현재: MAMEM I 원자료6.59GB 확보·첫 DIN 구조 점검 완료**. [결과](docs/mamem_i_acquisition_v1_results.md), [상태](docs/reports/mamem_i_acquisition_v1_state.json). 공개v1 압축본2개의 checksum을 검산하고48MAT/파일명11ID 목록을 확인했다. S001a 한 기록만 추출·검산했다. 첫72이벤트의 국소 timestamp↔sample 일관성을 확인했지만 physical jitter·M 효능·보정절감은 미검증이다. S001 전체는개발용, EEG파형/새fit/held60/발송/유료0. S011↔S013 파일명 차이와257행 channel mapping을 임의 수정하지 않는다. [다음 관문 초안](docs/mamem_i_timing_identifiability_v1_draft.md)은 공통 보정·격자·기록오차와 잔여M을 구분한다. 아래는 시점별 이력이다.
