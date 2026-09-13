@@ -180,6 +180,14 @@ def serial(value):
     raise TypeError("unsupported_json")
 
 
+def sync_parent(path):
+    descriptor = os.open(Path(path).parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def save(path, value, cap=2 * 1024**2):
     raw = json.dumps(value, default=serial, allow_nan=False, separators=(",", ":")).encode() + b"\n"
     require(len(raw) <= cap, "json_cap")
@@ -187,6 +195,7 @@ def save(path, value, cap=2 * 1024**2):
         stream.write(raw)
         stream.flush()
         os.fsync(stream.fileno())
+    sync_parent(path)
 
 
 def append(phase, kind, payload):
@@ -199,6 +208,7 @@ def append(phase, kind, payload):
         stream.write(raw)
         stream.flush()
         os.fsync(stream.fileno())
+    sync_parent(path)
 
 
 def budget():
@@ -254,6 +264,8 @@ def freeze():
     require(all(code_pins[name] == value for name, value in UNCHANGED.items()), "unchanged_v1_pins")
     RUN.mkdir()
     CACHE.mkdir()
+    sync_parent(RUN)
+    sync_parent(CACHE)
     save(
         RUN / "manifest.json",
         {
@@ -841,9 +853,9 @@ def extract(row, phase):
 def io_child(name):
     cfg = manifest()
     import numpy as np
-    from cfeg.mamem_events_v2 import parse_main_trials
     from scipy.io import loadmat, whosmat
 
+    from cfeg.mamem_events_v2 import parse_main_trials
     from cfeg.mamem_signal_v1 import analyze_window
 
     row = read_json(CACHE / (name + "_input.json"))
@@ -1010,8 +1022,8 @@ def load_data(subjects):
 
 def generated_data():
     import numpy as np
-    from cfeg.mamem_events_v2 import FREQUENCIES, parse_main_trials
 
+    from cfeg.mamem_events_v2 import FREQUENCIES, parse_main_trials
     from cfeg.mamem_signal_v1 import analyze_window
 
     data = {}
