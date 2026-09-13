@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **최신: 실제 MAMEM metadata 학습 80회 완료, 후보 종료**. [v2 결과](docs/mamem_recorded_event_source_v2_results.md): 10명 one-shot Q/Q2/QM/SHAM 평균 모두 25.33%, metadata 추가 이득과 보정량 감소 기준 미통과. M은 혼합 계수·일부 예측을 바꿨으나 정확도를 높이지 못했다. [독립 저장 산술 감사](docs/reports/mamem_recorded_event_source_v2_audit.json)와 관련 272tests PASS. 실제 query-ready 시간 절감은 미확인이다. 여유 약 296GiB, 기존 실패·held60 보호 유지. [다음 초안](docs/mamem_signal_validity_next.md)은 개발용 S001a의 시간축/reference/기본 검출 진단이며 아직 미실행이다. 아래의 “현재” 표기는 해당 과거 시점의 기록이다.
+
 > 2026-09-13 **현재: 실제256행 입력과 one-shot M 생성 학습 관문 완료**. [S001 고정2초 입력](docs/mamem_i_256row_adapter_v1_results.md)은 전체 decode 후 선택256×500만 QC해 finite/nonconstant를 확인했다. [새 후보의12-fit 생성 결과](docs/recorded_event_shrinkage_generated_v1_results.md)는 M→PSD template 혼합→score 작동과 null/schedule/SHAM 대조27개를 통과했다. 관련147tests 및 재fit 없는 독립 수치 감사 PASS. **실제 강한Q 이상의 M 효능·보정량 감소는 아직 미검증**이며 기존 부정 결과/held60 보호를 유지한다. [다음 실제 source 연결 초안](docs/mamem_recorded_event_source_learning_v1_draft.md)은 아직 실행하지 않았다. 아래는 이력이다.
 
 > 2026-09-13 **현재: 용량 확보·MAMEM scalar 관문 완료**. 가용 약 323GB를 재확인했고, S001a에서 samplingRate 하나만 단회 확인해 250Hz/MATCH를 얻었다. [결과](docs/mamem_i_scalar_adapter_v1_results.md), [상태](docs/reports/mamem_i_scalar_adapter_v1_state.json). 관련 77tests PASS. MOABB는 마지막 행을 명시적으로 stim으로 처리한다. 이를 우리 EEG 입력에 포함하지 않도록 하되 원본 row257의 물리적 의미를 확인한 척하지 않는다. 미정의 DIN descriptor는 읽지 않았고 새 EEG파형/fit/held60/발송/유료 0. [다음 초안](docs/mamem_i_256row_adapter_v1_draft.md)은 공통 256행 입력 격리이며 아직 미실행이다. 아래는 시점별 이력이다.

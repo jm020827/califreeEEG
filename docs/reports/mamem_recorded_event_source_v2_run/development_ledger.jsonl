@@ -1,0 +1,8 @@
+{"kind": "EXTRACTION_STARTED", "utc": "2026-09-13T12:59:22.934512+00:00", "file": "S001a", "member": "EEG-SSVEP-Part1/S001a.mat"}
+{"kind": "EXTRACTION_COMPLETE", "utc": "2026-09-13T12:59:23.114114+00:00", "file": "S001a", "bytes": 137357437, "sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a"}
+{"kind": "IO_STARTED", "utc": "2026-09-13T12:59:23.114593+00:00", "file": "S001a"}
+{"kind": "IO_COMPLETE", "utc": "2026-09-13T12:59:24.123728+00:00", "file": "S001a", "trial_receipt_sha256": "2d548686fa188d09afb5748cc92019615104179c9434297f6e3957808e37be77"}
+{"kind": "EXTRACTION_STARTED", "utc": "2026-09-13T12:59:24.124710+00:00", "file": "S001b", "member": "EEG-SSVEP-Part1/S001b.mat"}
+{"kind": "EXTRACTION_COMPLETE", "utc": "2026-09-13T12:59:25.623684+00:00", "file": "S001b", "bytes": 137631703, "sha256": "3beaafa44f7717c690915e7ed85dfa720d96e7da89c7af59113305686c7c9a03"}
+{"kind": "IO_STARTED", "utc": "2026-09-13T12:59:25.624357+00:00", "file": "S001b"}
+{"kind": "IO_COMPLETE", "utc": "2026-09-13T12:59:26.684816+00:00", "file": "S001b", "trial_receipt_sha256": "ae7a5b4d8d799df26bc7d6c65c3c01044e9f51238ab9164623c3854d27ec2fc2"}

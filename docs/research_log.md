@@ -2166,3 +2166,54 @@
   통합72testsPASS, v1수정0. Root는 독립no-refit모델검산2cc1cc7/6tests를추가했다.
   v2 generated0추가fits/실제최대80,14:00UTC마감,source모두적격성봉인전fit0이다.
   이항목작성시 sourcecohort와v2rawphase는미실행이며후속실제결과는별도로기록한다.
+
+### 141. 2026-09-13 — MAMEM 실제 80-fit 완료, metadata 후보 종료와 신호 타당성 후속
+
+- 용량 약296GiB free를 재확인했다. Source-backed label v2 계약ce05361 뒤 parser
+  cbc4eeb→333648f, runner6589a646→8149536 순으로 별도 worktree 변경을 main에
+  통합했다. Root333bd08/39807d8에서 import·directoryfsync·최종deadline 검사를
+  완료했다. Shared contract/실제 실행/SQLite는 root 단일 writer다. 총45worktrees와
+  기존8untracked pytest 디렉터리 보존; cleanup/install/push0.
+- 실제 효능 전에 auditor2cc1cc7→108a739→b86684d로 shape·독립argmax accuracy·
+  SHAM·정수 비용 검사를 고정했다. 관련272tests 최종1.17초 PASS, ruff PASS,
+  전체repository suite 미실행. 통합 변경은 source 데이터 관측 전 고정했다.
+- Generated12:58:59.921640–12:59:01.826016UTC:4FAKEpeople×a/b,8fold/240scalar
+  oracle preflight, gatefit0. Development12:59:19.638851–12:59:26.686467:
+  S001a/b2files/0fit COMPLETE. S001은 실제 평가에서 제외, 이전v1생성32fit·
+  development schema STOP/실제0fit 기록은 그대로다.
+- Real13:00:10.962826–13:01:20.750556UTC: S002–S011의20a/bfiles,20fold,
+  1800scalar source oracle,80고유gate fit STARTED/COMPLETE(80/80),validated true.
+  원파일/feature/fullmodel은Git밖2.9GiB cache에 보존했다. 새network/PDF0.
+  학습80회는10명의대조군 반복이지80독립표본이 아니다. Query M계산0.
+- One-shot Q/Q2/QM/SHAM 모두25.3333%; two-shot27.3333/26/26.6667/26.6667%.
+  QM1−Q1=0pp[0,0], QM1−Q2_1≈0pp[−2,+2], QM1−SHAM1=0pp[0,0].
+  QM1−Qk2=−2pp[−6.6667,+2],−2pp비열등성하한 기준도 FAIL. Participant harm>5pp는
+  비교별0/1/0/3명. 고정seed/10000participant bootstrap이며 새fit 없음.
+- Metadata는 모델에 들어갔다. 별도 수치review와root jq 검산에서 QM1 예측은Q1과
+  3/150,SHAM1과3/150 달랐고λ도 달랐다. 그러나 맞힌수는 늘지 않았다. SHAM의
+  의미변화82.22–100%,PSD fallback/degenerate oracle0. 입력 미연결·hardcollapse로
+  이 결과를 설명하지 않는다. Source-only26.67%,target-only22→23.33%,zero-shot25.33%
+  의 낮은 baseline 때문에 모든M의무효/뇌반응부재/데이터손상으로 일반화하지 않는다.
+- Prefix차이 평균9.9568초(9.872–10.040),1-shot445.904–457.828초. Label5대10이
+  실제수집시간50%절감은아니다. Remaininga/a→b gap·setup비용미측정,성능유지미입증으로
+  실제query-ready savings UNKNOWN. Zero-shot80%도달0/10. OnlineBCI/ITR주장없음.
+- Root 독립auditor 1회2GiBAS/30CPU/60wall상한,exit0.80모델/800λ/900SHAM/
+  2100savedargmax/160fit events·bootstrap·비용검산 PASS,normal-equation residual
+  최대4.9960036108132044e−15,λerror0. MAT/NPZ read와refit/solve0. 원EEG→PSD/
+  oracle/queryscore 자체는독립재구축하지않았다. 원정답도DIN추론이며독립검증아님.
+- 별도 read-only numerical agent는4savedJSON만 읽어0.03424wall/0.03399CPU에
+  같은산술과판정 확인. Protocol agent는9pins/각20extract·IO/80uniquefit와
+  lastIO13:01:02.648798<preflightmtime13:01:16.770510<firstfit13:01:16.773254를
+  확인했다. 시간근거는code/ledger/mtime이며외부서명증명아님. 두감사모두write/rawfit0.
+- [결과](mamem_recorded_event_source_v2_results.md)/[상태](reports/mamem_recorded_event_source_v2_state.json)/
+  [감사](reports/mamem_recorded_event_source_v2_audit.json)와실행기록을보존했다.
+  판정RETIRE_UNDER_FROZEN_PROTOCOL/80fitbudget소진. 후속은[개발용S001a 신호진단초안](mamem_signal_validity_next.md),
+  아직미구현·미실행이다. Nominal↔timestamp/sampleclock·reference overlap·CCA선택성을
+  별도0fit진단으로보며frequency/channel/ridge/window sweep·같은10명재튜닝을하지않는다.
+  새participant 독립확인은같은사람의미개봉run만으로확보되지않는다.
+- Academic-research는측정·수치감사·라벨/물리해석한계를분리하도록반영했다.
+  Claim39db84a21009de29 QUALIFIED/4evidence, gap3f973164c88eabce갱신. 누적
+  1134papers/90searches/46cards/18techniques/91claims/240evidence/45gaps/6analogies/
+  38deepreads(27complete10queued1skipped),cutoff2026-09-04 유지. 신규검색/PDF0,
+  다음불확실성은문헌더쌓기보다유한신호진단이다. Render11views/SQLitequick_checkok.
+  README최신요약갱신. 보호4문서SHA불변,held60/사람자료요청/유료0,전체goal은active.

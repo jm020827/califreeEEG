@@ -1,0 +1,25 @@
+{
+  "schema": "cfeg.mamem-source-v2.independent-saved-artifact-audit",
+  "date": "2026-09-13",
+  "review_commit": "b86684da28e59846572eb9593f52f1ba9e8be363",
+  "script_sha256": "90f6a5f73e396c391613074bfd2f119eac399516a8275b5c4e5a6e4f726de4ea",
+  "command": "prlimit --as=2147483648 --cpu=30 -- timeout 60s env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python scripts/analysis/audit_mamem_source_v2_results.py /home/whwovy/califreeEEG/docs/reports/mamem_recorded_event_source_v2_run",
+  "executions": 1,
+  "exit_code": 0,
+  "completed_before_utc": "2026-09-13T13:07:40Z",
+  "stdout_json": {
+    "status": "PASS_SAVED_ARITHMETIC_AND_ROLES",
+    "models": 80,
+    "lambda_scalars": 800,
+    "query_argmax_predictions": 2100,
+    "sham_rows": 900,
+    "fit_events": 160,
+    "max_normal_equation_residual": 4.9960036108132044e-15,
+    "max_lambda_error": 0.0,
+    "refits": 0,
+    "MAT_or_feature_cache_reads": 0,
+    "limitations": "Does not reconstruct original EEG PSD, oracle or query scores; labels remain inferred.",
+    "result_sha256": "12e02744f2dca6ff82cce06d4c0f4b6c5596bda944e81b928b2015b5bd674500"
+  },
+  "interpretation": "Saved-model arithmetic, recorded exclusion roles, SHAM construction, saved-score argmax, participant bootstrap and cost accounting pass. This does not independently validate raw EEG feature production, label truth, original query scores, physical jitter, efficacy or time savings. 2100 prediction entries include repeated zero-shot entries across k."
+}
