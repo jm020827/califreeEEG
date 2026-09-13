@@ -30,6 +30,7 @@ Problem signature: class별 2초 DIN event sample 간격; 병목은 공통 설�
   bounds 검사 뒤 include_metadata=False. M2 extractor0.
   모든main trial의 [onset0+250,onset0+750) event samples에서
   `f=250*(n−1)/(2*(last−first))`, 2events/cycle 가정. class별시간순repeat0/1/2.
+  매repeat 5class bank는 기존pureAPI의0<f<62.5Hz·class순상승검사를그대로사용한다.
 - A10파일을 먼저 읽어 전체150창/주파수/역할을 `a_frozen.json`으로 저장한 뒤 B10파일.
   B도150창 event-frequency를 **diagnostic target**으로 계산하므로 B추출0이라고
   기록하지 않는다. B predictor사용/EEG classification0. 읽기 완료 파일을 각각 별도
@@ -37,6 +38,7 @@ Problem signature: class별 2초 DIN event sample 간격; 병목은 공통 설�
 - 실제1attempt, source20파일/300eventwindows, parameterfits0, EEGpredictions0.
   deadline2026-09-13T15:30:00Z, parentwall180s, workerCPU120s/AS2GiB,
   perfile1MiB/총run8MiB, reserve8GiB, BLAS/OMP1thread. GPU/네트워크/유료0.
+  일반artifact는stdout/stderr각1MiB+terminal1MiB총3MiB를미리예약한다.
   manifest/start/workerclaim/terminal/pins/exclusivecreate; 실패시STOPPED_NO_RETRY.
 - 실행전 합성테스트 최대3suite, suite당60wall초; 최종 관련회귀1회/60초.
   실제 저장수치 독립 검사1회/60초, raw再읽기/fit0. 검사 script도 실제 전에 동결.
@@ -48,7 +50,7 @@ F[p,r,c,j]는 Hz, shape10×2×5×3; L=log(F). r=A/B, j=시간순repeat.
 각 held-out p에 대해 **다른9명의 모든3repeat만** 사용하여 별도로
 `muA[-p,c]=mean(L[others,A,c,:])`, `muB[-p,c]=mean(L[others,B,c,:])`.
 Held-out의 A/B 어느 쪽도 common 값에 들어가지 않는다. B-source의 공통 설정도 허용하는
-강한 source-only baseline이다. 두 run의 공통 drift는 M의 개인 기여로 세지 않는다.
+강한 source-only baseline이다. 두 run의 공통 역할 차이는 M의 개인 기여로 세지 않는다.
 
 - A지원값 `x[p,c]=L[p,A,c,0]−muA[-p,c]` (class당1trial=총5trial).
 - B평가값 `target[p,c]=exp(mean(L[p,B,c,:]))` (3repeat 기하평균).
@@ -69,18 +71,22 @@ W는 quantization/추정오차뿐 아니라 실제 trial변화도 포함하므�
 
 **주판정: size/repeat 두run통과 AND pooledMSE 10%이상감소 AND 7/10명 strict개선**.
 통과=`ELIGIBLE_CLASSWISE_DIRECT_TRANSFER_ONLY`, 그외=`RETIRE_FULL_RESIDUAL_ROUTE`.
-0.025Hz/2배/10%/7명은 데이터를 보기 전에 고른 보수적 운영 기준이며 문헌에서 정한
+0.025Hz/2배/10%/7명은 데이터를 보기 전에 고른 탐색용 운영 기준이며 문헌에서 정한
 유의수준·검정력·통계적확증이 아니다. 통과도 학습M/Q이상/보정절감 증거가 아니다.
 
 이 gate는 full잔차 전달에 보수적이다. noisy M을 **부분 shrinkage**하면 유용할 수 있어도
 full전달은 실패할 수 있다. 따라서 미통과를 모든 reference 학습/metadata무효의 증명으로
 확대하지 않는다. 이번 예산에서 실패를 보고 partial계수/grid/same-run으로 구제하지 않는다.
 
-공통logbank 대 nominal차이, class별 common/direct오차 및 A/B잔차는 모두 공개한다.
+고정nominal값(6.66/7.5/8.57/10/12)과공통bank를보고서에서나란히표시한다.
+별도nominal-delta필드를감사했다고주장하지않는다.
+class별 common/direct오차 및 A/B잔차는 모두 공개한다.
 전5class x의 all-ones 방향 투영 에너지비
 `sum_p(5*mean_c(x)^2)/sum_p,c(x^2)`와 직교 잔차 RMS를 **기술통계만** 보고한다.
+분모≤1e−24면zero_residual_energy로표시하고factor비율0;수치roundoff를방향성으로세지않는다.
 PCA 최선축을 clock이라고 부르지 않으며 factor값으로 별도후보 승격0. 총1trial 전파는
 검정하지 않는다. B평가3repeat를 본 뒤 support 수/기준/bank정의 교체0.
+공통 source를 공유하는10개fold도 통계적으로 완전히 독립적인 것은 아니다.
 
 ## 비용·출력·후속
 
