@@ -1,0 +1,42 @@
+{
+  "schema": "cfeg.mamem-baseline-contribution-review.v1",
+  "status": "AUTHOR_BASELINE_FAMILY_IDENTIFIED_NO_NEW_EFFICACY",
+  "source_url": "https://arxiv.org/html/1602.00904v2",
+  "source_revision": "arXiv1602.00904v2 technical preprint; identical full HTML hash to earlier acquisition-scope retrieval",
+  "http_date_utc": "2026-09-13T17:46:09Z",
+  "requests": 1,
+  "request_limit": 1,
+  "http_status": 200,
+  "mime": "text/html; charset=utf-8",
+  "body_bytes": 724536,
+  "header_bytes": 577,
+  "body_sha256": "d764662a2b2c6f8e75633c1afc843948d3e352ab7a4870df5189ecda529edef3",
+  "headers_sha256": "7a5857cba71a3ce9bb65e6c653ce95b1a1d9d2f1c6ffc75ca5df22330ab04ba8",
+  "artifact_directory": "/home/whwovy/research-spaces/califree-eeg-experiment-design/source-probes/mamem_baseline_contribution_v1",
+  "curl_seconds": 0.174655,
+  "redirects": 0,
+  "retries": 0,
+  "reading_depth": "targeted_html_fulltext",
+  "locators": ["S2.p6.1", "S3.p3.1", "S5.SS3", "S6.SS1", "S6.SS2", "S6.SS3.p1.1", "S6.SS5", "S6.SS7", "S6.SS8", "S6.SS9", "S6.T3", "S6.T15"],
+  "reported_findings": [
+    "Default evaluation uses source-trained PWelch/linear SVM, 5-second EEG and 5-48Hz filtering, not the new 2-second unfiltered reference-projection diagnostic.",
+    "Authors explicitly use LOSO and no subject-specific training; zero target calibration is not a new distinction.",
+    "Reviewed model-selection text does not establish a separate nested or independent final evaluation."
+  ],
+  "agent_inferences": [
+    "Close the search for a Dataset-I CCA default recipe in this report; qualify source-trained spectral baselines separately.",
+    "A reference-bank factorial cannot be assigned to a PWelch/SVM model without defining an actual reference-dependent operation.",
+    "Current common-reference improvement remains a development diagnostic, not proof of superiority to the author's pipeline or learned M efficacy."
+  ],
+  "local_parser_first_attempt": "system python missing bs4; used existing backend venv without installation or network retry",
+  "source_numeric_table_exposure": "Output selection also surfaced author accuracy tables; no recomputation, direct ranking, threshold selection, or new human outcome analysis used them",
+  "review": "Independent read-only protocol review corroborated LOSO/target0/window/classifier settings and selected-scope evaluation caveats",
+  "new_pdfs": 0,
+  "new_eeg_or_private_values": 0,
+  "new_fits": 0,
+  "new_predictions": 0,
+  "held60": 0,
+  "people_requests": 0,
+  "paid_resources": 0,
+  "goal_status": "active"
+}

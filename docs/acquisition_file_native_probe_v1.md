@@ -96,3 +96,44 @@ MD5 `3412b6c38efa578f33e17ce51505b065`,
 학습진입에는실측값·단위·pre-query시점·조정전후·EEG대응·총비용이필요하다.
 이번numeric EEG/개인좌표/impedance값/PDF/fit/예측/held60/외부사람요청/유료는모두0이다.
 목표나실패판정은바꾸지않았으며,효능/보정절감을아직입증하지못했다.
+
+## 후속: 실제 원자료 pointer 확인 — 실행 전
+
+2026-09-14 KST / 2026-09-13 UTC, basebf5e148. 직전의4query/4target탐색은완료이며
+재개하지않는다. 이번에는위에서확인된단일설명파일31816823부터출발한다.
+질문은‘실제EEG배포경로·형식·권리가무엇인가’이며,측정값이나학습효과를추측하지않는다.
+
+- 최대6HTTPS GET(redirect포함), 15분, 요청당60초/20MiB. 총120MiB상한이나
+  최초파일은공식기재4416bytes/MD5와일치해야한다. AutoHTTPSredirect최대2/전송,
+  누적요청수가6을넘지않게다음전송의redirect여유를줄인다. Retry0/TLS검증/curlrc무시.
+- 이후에는받은설명파일의literal공개저장소/문서/목록pointer만확인한다.
+  기록된공개저장소ID를공식metadata API에적용할때는유도방식을명시한다.
+  새검색0/동일실패URL재시도0/ZIP·numericEEG·개인header·측정값·PDF·fit0.
+- DOI/title/권리/파일역할을확인하고자료부재와metadata-only·접근실패를구분한다.
+  401/403/429/challenge/계정요구시해당경로중단. 사람요청/유료/held60은별도승인원칙유지.
+- Root단독writer,읽기전용독립review. Coordinate-worktree-changes에따라새worktree없이
+  기존46개/8untracked/여유290GiB를보존한다. 과정의signed redirect query는보고서에노출하지않는다.
+
+### 후속 결과 — 원자료 pointer는 기존 접근 실패 OSF와 동일
+
+`data.json`을 실제 다운로드해 4,416bytes/MD5 일치를 확인했다. HTTP302→200,
+2/6 GET, retry0, curl1.768052초다. 첫 응답 Date는 2026-09-13 17:34:15UTC,
+최종 응답은17:34:17UTC다. body SHA256은
+`7df70796066f7bfaf733c2bded73db2415d65fd8824d4988797a136707e0434b`다.
+
+`/repositories/0/value`는 `https://doi.org/10.17605/OSF.IO/R7S9B`다. 하지만 기존
+`reports/alternative_metadata_candidate_triage_v1_sources.json`의 `id=osf`에 같은
+OSF 프로젝트의403 및 root API 접근 실패가 이미 기록돼 있다. 따라서 OSF/DOI/API를
+재요청하지 않고 **POINTER_RESOLVED_TO_PREVIOUSLY_FAILED_ROUTE**로 종료한다.
+남은4GET은 사용하지 않으며 다른 검색이나 raw 확보에 전용하지 않는다.
+
+JSON에는 EEG/각속도/가속도/자기장이라는 측정 범주와 자극 주파수·참가자 속도라는
+요인명이 있지만, 개인 측정값·파일 inventory·시간/채널/EEG 대응 schema는 없다.
+`Data Descriptor License=CC-BY-4.0`도 설명 논문의 표시이지 OSF raw 권리 검증이 아니다.
+새 dataset/독립 cohort/실측 M/학습 후보는0이며, 기존 Wearable/MobileBCI 실자료와
+그 부정 결과는 그대로다. 공개되지 않았다고 단정하지 않고 **현재 접근 미검증**으로 남긴다.
+
+독립 read-only 감사는 body/header 크기·hash·pointer·license 범위를 확인했다.
+curl 실행 자체와 미기록 요청 부재까지 독립 검증한 것은 아니다. 상세 receipt는
+[후속 상태](reports/mobilebci_original_pointer_v1_state.json)에 보존했다.
+새 EEG/개인 header/PDF/fit/예측/held60/사람 요청/유료/설치/삭제/push는0이다.

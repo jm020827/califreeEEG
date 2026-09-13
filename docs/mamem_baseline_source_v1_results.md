@@ -5,6 +5,11 @@
 따라서 이 계획 아래 S001a/b 실제 두-reference 비교와 새 metadata 학습은 실행하지 않는다.
 이것은 연구 전체의 불가능 판정이 아니라, 서로 다른 예제를 한 구현으로 오인하지 않는 경계다.
 
+> 후속 원문 판독: [baseline 기여 자격 검토](mamem_baseline_contribution_review_v1.md)에서
+> 저자 보고서의 기본 pipeline은 PWelch/SVM·5초·LOSO임을 확인했다. 이 보고서를
+> Dataset-I CCA 설정 출처로 계속 추적하지 않는다. 아래 당시 NOT MET와 그 뒤의
+> 진단 결과는 보존하며, 이 확인이 새로운 사람 실험이나 학습 M 효능은 아니다.
+
 ## 확인된 사실과 확인되지 않은 연결
 
 고정 [저자 revision](https://github.com/MAMEM/eeg-processing-toolbox/tree/5a03abe2a6a874e9adaceea29a52c2fce35d8a03)의 tree1회와 code/docs8파일을 읽었다.

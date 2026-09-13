@@ -2711,3 +2711,38 @@
   (completed29/queued10/skipped1),render11/SQLitequick_checkok/JSON·diffcheckPASS/보호6hash불변.
   검색후새기여는sourceheader의metadata손실주의와raw배포처식별교정이다. 다음불확실성은
   새broadsearch보다정확한작은설명파일로줄인다. 원goal미완료/active,설치/삭제/push0.
+
+### 155. 2026-09-14 KST / 2026-09-13 UTC — 원자료 pointer 경로 종료·baseline 비교대상 확인
+
+- 직전 사용자 질문 응답은 기존 결과 설명/상태 재검토이며 새 효능 진전은 없었다.
+  이번에는 실제 보존 JSON과 원논문 표적 판독으로 다음 행동을 바꾸는 근거를 얻었다.
+  Basebf5e148/main/여유약290GiB/기존46worktrees/8untracked를 보존했다.
+- 공식file31816823 실제 GET은302→200,4416bytes,MD5일치,2/6GET,retry0,
+  curl1.768052초였다. JSON은 OSF R7S9B를 직접 지목하지만 같은 경로의 이전403/API
+  실패가 이미 기록돼 있어 재요청0/남은4GET미사용으로 종료했다. 측정 범주만 있고
+  개인값·inventory·clock/join schema는 없다. Data Descriptor License를 raw 권리로
+  이식하지 않았다. [receipt](reports/mobilebci_original_pointer_v1_state.json).
+- 사용자 baseline 연구가치 질문에 따라 원목표를 바꾸지 않고 관련 비교기준을 검토했다.
+  기존 코드 tree/README에서 확인한 정확한 저자보고서 HTML만 별도1GET/30초/8MiB
+  계약으로 받았다:200/724536bytes/0.174655초/redirect0/retry0. 이전 전체HTML과hash동일,
+  이번은 미독 평가설정의 표적 판독이다. 새논문/새개정/전체정독/PDF로세지않는다.
+- **확인:** arXiv1602.00904v2의 TableIII는5초·5–48Hz필터·PWelch·linear SVM C=1,
+  본문은 source-labelled EEG로LOSO와target-specific training0을 설명한다. 따라서
+  저자 Dataset-I CCA default recipe를 이 보고서에서 계속 찾지 않는다. 우리 E126·2초·
+  무필터reference projection진단은저자재현이아니며,+25.33pp를저자대비우위로세지않는다.
+- [기여 검토](mamem_baseline_contribution_review_v1.md)에 원문locators,정보권한/시간창,
+  별도nested/독립최종평가미확인,reference-ablation과whole-method비교의차이를 기록했다.
+  PWelch/SVM에 NOMINAL/COMMON 이름만 붙이면 referenceablation이 되지 않는다는
+  구현상 경계를 명시했다. 기존80%운영gate와출판가능성은구분,기존결과판정소급변경0.
+- Root만문서/SQLite쓰기,agent는metadataartifact와원논문protocol읽기전용병렬검토.
+  systempython bs4부재는기존backend환경으로해결,설치/GET재시도0. 표추출중원논문성능
+  수치노출은보존하되우리결과와의직접순위비교/새선택/재계산에는사용하지않았다.
+- Academic-research claim7e8bf26257170336 SUPPORTED/근거1,
+  claim28c757820a1c47fa QUALIFIED/근거2,기존gap3f973164c88eabce갱신/render11.
+  Coordinate-worktree-changes에따라새worktree0/동시writer0. 새학습후보·fit·예측·
+  raw·개인header·held60·사람요청·유료·설치·삭제·push0,보호6원본불변을최종검사한다.
+  종료한source수집경로를재시도하지않고,다음실험에는올바른baseline과정보권한·예산·
+  독립검증역할을먼저명시한다. 전체저보정metadata연구goal은미완료/active다.
+- 최종JSON파싱/diffcheck PASS,보호6개SHA 전부동일. 두state와해석문서에대한독립
+  read-only일관성검토PASS(효능재계산아님). 학습코드변경없어pytest미실행.
+  Workspace108claims/281evidence,기존문헌cutoff2026-09-04와나머지읽기완료수불변.
