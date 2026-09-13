@@ -37,8 +37,9 @@ trials inb, sameforbothk/allarms. Never use later a trials to improve k1/2 templ
 For targetLOSO, exclude entire target fromgate fitting,scalers,sourceprior,T* anddonors.
 For each source pseudo-target p,class, supportT fromp/a firstk; T*=meanPSD ofp/b3class
 trials; P excludes BOTH realtarget andp and uses all eligible maintrials a/b of remaining
-sourcepeople. For realtarget use P fromall9sourcepeople. RawqueryDIN supplieslabels only,
-notgate/predictor features. Querytimestamps/count/order/labels neverenterpredictor API.
+sourcepeople. For realtarget use P fromall9sourcepeople. RawqueryDIN supplies evaluation
+labels and the common predeclared window segmentation only, notgate/predictor features.
+Querytimestamps/count/order/labels neverenterpredictor API.
 
 ## Frozen label/selection policy (not legacy floor-key fallback)
 
@@ -82,7 +83,8 @@ then divide byglobal centeredRMS (stored unit invariant),stopzeroenergy; nofilte
 channel-selection/montage. Return:
 - covariance:(256,256)float64, Xscaled@Xscaled.T/500.
 - factors:(5,2,256,2)float64. For each nominalfrequency/harmonic, QR-orthonormalize
-  sin/cos references on the500sampletimeaxis, B=Xscaled@U/sqrt(500); H=B@B.T.
+  column-centered sin/cos references on the500sampletimeaxis, B=Xscaled@U/sqrt(500);
+  H=B@B.T. Center references before all full/neighbor/half/joint QR operations.
   This is a REAL PSD from sine/cosine quadrature, not a full complex temporal template.
 - q:(5,2,4): [relative projectionenergy, log harmonic-to-neighbor(.5Hz either side)
   energy ratio, effective spatialrank/C, split-half trace-normalized H discrepancy].
@@ -96,7 +98,11 @@ amplitude cutoff inunknownphysicalunits. Freeze numericalzero floors inmodule/te
 
 ## Root engine and fair comparisons
 
-Hnormalize=H/trace(H), zero H ->I/C (flag). Support T averageofk pertrialnormalizedPSD,
+Hnormalize=H/trace(H), trace(H)<=1e-12*trace(C) ->I/C (flag).
+Effective rank is exp(-sum(p log p))/C from covariance eigenvalue proportions.
+Neighbor log ratio floor is 1e-12*trace(C); half-PSD uses the same relative floor.
+Q2 lag1 is the flattened shifted-window cosine; channel power uses diagonal(C).
+Support T averageofk pertrialnormalizedPSD,
 P/T* mean same normalizedPSD. A_h=(1−λ_h)T_h+λ_hP_h. Queryscore_j=sum_h h^{-1}*
 tr(A_jh H_query_jh)/max(tr(A_jh C_query),1e−12); eigengramvalidity tested. Argmax stable
 lowestindex tie. Baselines identical inputs: zero-shotCCA, λ0target-only, λ1source-only.
@@ -105,6 +111,8 @@ No transfer from a querylabel into this allcandidatefrequency scoring.
 Q input=mean pertrial8Q values pluscommon onehotclass5,k,meanM-eventcount,window2s.
 Q2 addsmean2Q2; QM adds2M; SHAM addsjointdonor2M. Ridgeoutput2harmonic λ* withunpenalized
 intercept,train-onlypopulationstandardization/std<1e−9→scale1,alpha.1,λclip[0,1].
+Oracle lambda minimizes Frobenius squared error to T*: clip(<T*-T,P-T>/||P-T||²,0,1);
+denominator<=1e-24 returns0, recorded as degenerate. This uses source repeats only.
 Subtracttrainclassmean M fromM beforeQM/SHAM; unobservedclassnotallowed. SourceSHAM
 cyclesparticipantIDs within EXACT(class,k,mean eventcount)strata; singletonselfmarked,
 donor vectors neverdimensionwisemixed. Eval uses realM inbothQM/SHAM. Recordchangedfraction;
@@ -126,6 +134,9 @@ nottrainingfits. This is exploratoryscreen, multiplicity/10subjectuncertainty ex
 Perclass5labelsk1/10labelsk2 is not acquiredtimehalving: prefixcost=end oflatestselected
 5sectrialfromrecordstart,includesrest/adaptation/interveningtrials. Compare samequeryb.
 Unknownsensor/setup increments =>reportbreak-evenaddedsetup only, notnetsavingsproof.
+Support-prefix seconds measure required support acquisition from a's record start;
+actual query-ready elapsed remains UNKNOWN because the remaining a tail and a→b gap
+have not been removed or measured. No chronological/online savings claim is licensed.
 Baselinezero-shot accuracy and80%attainmentreported; ifzero-shotalreadyattains80%,
 donotclaimcalibrationreductionforit. No onlineITR/simultaneousBCI generalization.
 
