@@ -1,0 +1,83 @@
+{
+  "contract_commit": "68642dd",
+  "artifact_dir": "/home/whwovy/research-spaces/califree-eeg-experiment-design/source-probes/openbmi_canonical_read_v1",
+  "requests_allowed": 6,
+  "requests_used": 5,
+  "requests": [
+    {
+      "request": 1,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/",
+      "http_code": 200,
+      "content_type": "text/html; charset=utf-8",
+      "curl_exit_code": 0,
+      "body_bytes": 293451,
+      "header_bytes": 807,
+      "curl_seconds": 1.066999,
+      "automatic_redirects": 0,
+      "location": null,
+      "body_sha256": "11f0a13b8b10dbb7d1ad03c87400ee0dd8bfe7001bc79bbfee4a54b8acb44b14",
+      "headers_sha256": "24d049d16c89e22903ee3a6587b1d1bcf1b1dab8378dba4c7314faf71f5d57aa"
+    },
+    {
+      "request": 2,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/pdf/giz002.pdf",
+      "http_code": 200,
+      "content_type": "text/html; charset=utf-8",
+      "curl_exit_code": 0,
+      "body_bytes": 1817,
+      "header_bytes": 624,
+      "curl_seconds": 0.378366,
+      "automatic_redirects": 0,
+      "location": null,
+      "body_sha256": "e658d88c92a5113b3c4381bfc8a6dfd440a0604f0fef5cf8fdcc12956e24f43b",
+      "headers_sha256": "5b4e0bab9dbaf1b3d10311787ca65813d11f0c036af753e3bb0e6e5fb5da2a69"
+    },
+    {
+      "request": 3,
+      "url": "https://doi.org/10.5524/100542",
+      "http_code": 302,
+      "content_type": "text/html;charset=utf-8",
+      "curl_exit_code": 0,
+      "body_bytes": 149,
+      "header_bytes": 746,
+      "curl_seconds": 0.2911,
+      "automatic_redirects": 0,
+      "location": "http://gigadb.org/dataset/100542",
+      "body_sha256": "4cf16d5db6b6c858fbd8b83d77ede7a65c856f88c18507565e16a0b76375c47a",
+      "headers_sha256": "eb3eed9df23c253966d6850f81fb862a5f940b2f6e525ddd617a94eb220b5680"
+    },
+    {
+      "request": 4,
+      "url": "https://github.com/PatternRecognition/OpenBMI/tree/master/GigaScience/",
+      "http_code": 200,
+      "content_type": "text/html; charset=utf-8",
+      "curl_exit_code": 0,
+      "body_bytes": 311564,
+      "header_bytes": 5027,
+      "curl_seconds": 0.549279,
+      "automatic_redirects": 0,
+      "location": null,
+      "body_sha256": "231205dbc515e8885026c7589e765f8c2a91258a1d73ccb0e9925a59507d1c49",
+      "headers_sha256": "5888ea233f2f0c6c49a3a0806a184983de784ab69880d1f39f86a189b194b8c9"
+    },
+    {
+      "request": 5,
+      "url": "https://gigadb.org/dataset/100542",
+      "http_code": 200,
+      "content_type": "text/html",
+      "curl_exit_code": 0,
+      "body_bytes": 1282,
+      "header_bytes": 365,
+      "curl_seconds": 0.330482,
+      "automatic_redirects": 0,
+      "location": null,
+      "body_sha256": "42a15a1edc6dd187bd30a6e573802b084245f5afb563d7ebada832b732952823",
+      "headers_sha256": "c4b57118731b0acc3719f6b3f482c1e51135d0693330d9e77febfcbbff620460"
+    }
+  ],
+  "total_body_bytes": 608263,
+  "sum_curl_seconds": 2.616226,
+  "stop_reason": "Targeted primary read completed. PDF wrong MIME; repository README license only; explicitly HTTPS-upgraded GigaDB Location returned generic SPA shell, no dataset-specific inventory. No scripts executed or API guessed; remaining slot unused.",
+  "no_raw_data_requests": true,
+  "contract_amendment_before_request5": "Explicit HTTPS-only normalization of official DOI Location host/path; 6GET/20min/scientific criteria unchanged."
+}

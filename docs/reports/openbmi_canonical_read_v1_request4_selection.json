@@ -1,0 +1,13 @@
+{
+  "request_number": 4,
+  "selected_before_request": true,
+  "url": "https://github.com/PatternRecognition/OpenBMI/tree/master/GigaScience/",
+  "source": "request1.body, article #sec2-5 / #bib51, literal author repository link",
+  "purpose": "Read the author-provided dataset directory description for channel/EMG/impedance schema; no dataset files or code execution.",
+  "prior_route_decisions": {
+    "pdf": "Stopped on text/html instead of PDF; primary article HTML remains usable.",
+    "dataset_doi": "HTTP redirect destination not followed under HTTPS-only contract."
+  },
+  "remaining_requests_after_this_request": 2,
+  "raw_data_download_authorized_in_this_contract": false
+}

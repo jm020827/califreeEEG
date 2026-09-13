@@ -1,0 +1,6 @@
+{
+  "request": 2,
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/pdf/giz002.pdf",
+  "provenance": "Exact citation_pdf_url meta tag and pdf/giz002.pdf href in request1.body; matching DOI/title in the retrieved primary HTML",
+  "reason": "Acquire the primary paper PDF for page-stable targeted Methods/DataAvailability review; review/old-submission PDFs are not substituted."
+}

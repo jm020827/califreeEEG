@@ -1,0 +1,100 @@
+{
+  "status": "NO_ACQUISITION_CANDIDATE_IDENTIFIED_IN_READ_SCOPE",
+  "progress": "PRIMARY_HTML_TARGETED_READ_AND_DESIGN_BOUNDARIES_RECORDED",
+  "base_commit": "c5bc4a3",
+  "contract_commit": "68642dd",
+  "contract_amended_before_request5": true,
+  "contract_current_sha256": "f0e84442fb507e916781cc5d2ffe06f44de55e6d4cb84ca10cbf1faeba2ef2ee",
+  "requests_used": 5,
+  "requests_allowed": 6,
+  "body_bytes": 608263,
+  "sum_curl_seconds": 2.616226,
+  "http": [
+    200,
+    200,
+    302,
+    200,
+    200
+  ],
+  "reading": {
+    "format": "primary HTML",
+    "coverage": "targeted_fulltext",
+    "primary_document_identity_verified": true,
+    "pdf_downloads": 0,
+    "raw_downloads": 0,
+    "deep_read": "completed",
+    "legacy_card_enum": "abstract",
+    "legacy_card_caveat": "Backend targeted_fulltext card requires PDF; actual HTML review is saved in report and direct fulltext claim. Card pointer explains this format limitation, not unread primary status.",
+    "review_sections": [
+      "#sec1-2",
+      "#tbl1",
+      "#tbl2",
+      "#tbl3",
+      "#sec2-5",
+      "#sec2-5-1",
+      "#sec4",
+      "#sec5"
+    ],
+    "fulltext_complete": false
+  },
+  "scientific": {
+    "new_learning_candidates": 0,
+    "new_schema_candidates": 0,
+    "fit": 0,
+    "predictions": 0,
+    "actual_impedance_release": "UNVERIFIED",
+    "SSVEP_EMG_pairing": "UNVERIFIED",
+    "efficacy_or_calibration_savings_established": false,
+    "prior_P3_context_status_unchanged": true,
+    "prior_negative_results_preserved": true
+  },
+  "workspace": {
+    "counts": {
+      "papers": 1151,
+      "search_runs": 92,
+      "paper_cards": 48,
+      "techniques": 18,
+      "claims": 104,
+      "evidence": 275,
+      "gaps": 45,
+      "analogies": 6,
+      "deep_reads": 40
+    },
+    "deep_read_status": {
+      "completed": 29,
+      "queued": 10,
+      "skipped": 1
+    },
+    "rendered_views": 11,
+    "sqlite_quick_check": "ok",
+    "cutoff_unchanged": "2026-09-04",
+    "claim": "claim:0245e6f42cdcb5a6",
+    "claim_status": "qualified",
+    "gap": "gap:3f973164c88eabce"
+  },
+  "verification": {
+    "body_headers_audit": "PASS_10_OF_10",
+    "original_transport_execution_independently_proven": false,
+    "protocol_review": "READ_ONLY_TARGETED_PRIMARY_HTML",
+    "pytest": 0,
+    "reason_no_pytest": "NO_EXECUTABLE_CHANGE",
+    "protected_six_hashes": "UNCHANGED",
+    "free_disk_gib_rounded": 290
+  },
+  "boundaries": {
+    "raw_eeg": 0,
+    "held60": 0,
+    "external_person_requests": 0,
+    "accounts": 0,
+    "paid": 0,
+    "bypass": 0,
+    "installs": 0,
+    "deletions": 0,
+    "pushes": 0,
+    "new_worktrees": 0,
+    "existing_worktrees": 46,
+    "existing_untracked_dirs": 8,
+    "root_sole_writer": true
+  },
+  "next": "Park OpenBMI as acquisition learner absent new public paired-field evidence. Read-only re-triage of four saved round4 records identifies no new eligible candidate or concrete public-schema target. Further work needs new public measured-field evidence, not repeated landing/PDF retries or EEG-only bulk downloads. Existing original research goal remains active and unachieved."
+}

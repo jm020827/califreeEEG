@@ -1,0 +1,10 @@
+{
+  "request_number": 5,
+  "selected_before_request": true,
+  "source_location": "http://gigadb.org/dataset/100542",
+  "url": "https://gigadb.org/dataset/100542",
+  "derivation": "Explicit HTTPS upgrade of exact official DOI Location; host/path unchanged, not a literal HTTPS link.",
+  "contract_amendment": "Transport-only normalization recorded before request5; original rule not retroactively claimed unchanged.",
+  "purpose": "Read official dataset inventory and available file descriptions; no participant data download.",
+  "remaining_requests_after_this_request": 1
+}

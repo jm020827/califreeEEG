@@ -1,0 +1,6 @@
+{
+  "request": 3,
+  "url": "https://doi.org/10.5524/100542",
+  "provenance": "Literal DOI link in request1.body reference bib71, cited by section sec5 Availability of supporting data",
+  "reason": "Identify the author's exact dataset release and documentation/inventory, not download raw EEG or individual measurements. The PMC primary article has been read in HTML; PDF endpoint returned non-PDF preparation HTML and is not retried."
+}

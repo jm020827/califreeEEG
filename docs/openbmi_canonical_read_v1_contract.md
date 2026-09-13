@@ -32,3 +32,12 @@ PARK_UNRESOLVED. 본문밖원자료부재의증명으로쓰지않으며P3/contex
 실제raw EEG/개인임피던스값file/ZIP/video/학습/예측/held60/사람요청/설치/삭제/push0.
 Rootsolewriter/연구SQLite단독,agent는읽기전용원문·artifact감사. 새worktree0/기존46·8untracked
 유지,여유약290GiB(20GiB미만시시작금지). 기존negative/Q/common/Q2/SHAM/directM·총비용조건유지.
+
+## 2026-09-13 17:15 UTC — 요청5 전 공개 경로 규칙 보완
+
+요청3의 공식 DOI가 `http://gigadb.org/dataset/100542`를 반환했다. HTTP는 요청하지 않는다.
+동일 host/path의 `https://gigadb.org/dataset/100542`로 protocol만 강화한 주소를 요청5로
+허용한다. 이는 literal HTTPS link가 아니라 명시적인 transport normalization이다.
+기존 URL 추측 금지를 이 한 주소에 한해 보완하며 사후에 원계약 그대로였다고 주장하지 않는다.
+과학적 판정·파일 범위·전체6GET·20분·TLS검증·challenge중단 조건은 그대로다.
+공개 inventory의 나머지1요청만 허용하며 raw EEG/개인값/ZIP 다운로드는 계속0이다.

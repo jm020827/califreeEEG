@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "agent": "mobile_features_review",
+  "mode": "READ_ONLY_SAVED_ARTIFACT_AUDIT",
+  "checked_requests": 5,
+  "body_header_hash_size_checks": "10/10 PASS",
+  "total_body_bytes": 608263,
+  "recorded_curl_seconds_sum": 2.616226,
+  "recorded_automatic_redirects": 0,
+  "identity": "Primary PMC title/DOI match; literal PDF/DOI/GitHub links confirmed",
+  "pdfs_acquired": 0,
+  "github_currentOid": "c0e56825366681ae576801af08eb5fe326a5afd8",
+  "github_read_scope": "Embedded GigaScience README is GNU GPLv3; no MATLAB/subdirectory review",
+  "gigadb": "Generic SPA shell, no dataset-specific inventory; JS/API not executed",
+  "request5": "Explicit HTTP-to-HTTPS normalization, not literal HTTPS redirect",
+  "scientific_boundary": "Impedance maintenance threshold/check schedule does not establish actual per-person/channel/time release",
+  "limitations": [
+    "Saved numbers/arithmetic checked, not independent reproduction of original curl execution.",
+    "Prior contract amendment timing and absence of unrecorded requests not independently proven."
+  ],
+  "agent_network_writes_DB_raw_model": 0,
+  "protocol_review": {
+    "agent": "mobile_protocol_review",
+    "format": "primary HTML targeted sections",
+    "sections": [
+      "#sec1-2-1",
+      "#sec1-2-2",
+      "#tbl1",
+      "#tbl2",
+      "#tbl3",
+      "#sec2-5-1",
+      "#sec5",
+      "#bib71"
+    ],
+    "correction": "#tbl4 is classification accuracy; Data structure is #sec2-5-1",
+    "conclusion": "Actual impedance release and SSVEP EMG pairing unverified; post-run questionnaire includes outcome-related fields",
+    "pdf_opened": false
+  }
+}

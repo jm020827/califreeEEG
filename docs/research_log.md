@@ -2653,3 +2653,34 @@
   기존gap갱신. Catalog1151/search92/card48/technique18/claim103/evidence272/gap45/
   analogy6/deepread40(completed28/queued11/skipped1),render11/SQLitequick_checkok.
   코드변경없어pytest0,held60/사람요청/계정/유료/우회/설치/삭제/push0. 원목표미완료/active.
+
+### 153. 2026-09-14 KST / 2026-09-13 UTC — OpenBMI 실제 본문 판독·설계 경계 반영
+
+- 용량290GiB 재확인. 계약68642dd에서PMC canonical200/HTML293,451bytes를 확보,
+  DOI/title일치·실제Methods/Data structure/Availability를targeted정독했다. PDF링크는
+  200/HTML1,817bytes라PDF로세지않았다. 원문hash11f0a13b…4b14/sectionlocator보존.
+- Dataset DOI302는HTTP destination, 저자GitHub200/311,564bytes는해당폴더README가GPL3.
+  Request5전명시적규칙보완으로exactDOILocation의host/path를유지한HTTPS만확인했다.
+  200/1,282bytes일반GigaDB앱shell로실제inventory는미확인. 원계약불변/literalHTTPS라고
+  소급기술하지않았다. JS실행/API추측0,남은1슬롯미사용. 5GET/608,263bytes/2.616226초.
+- [결과](openbmi_canonical_read_v1_results.md): NO_ACQUISITION_CANDIDATE_IDENTIFIED_IN_READ_SCOPE.
+  Impedance10kΩ미만은관리기준;명시된7개MAT필드에는실측값없음. 전체보조파일부재증명아님.
+  EMG장착/별도artifact기록≠SSVEPpairedstream공개. 설문II는사후/outcome관련필드포함,
+  고정ERP→MI→SSVEP순서와예정점검시간을사전정보·실측비용으로혼동하지않는다.
+- [측정추가규칙](acquisition_contact_measurement_addendum.md)에위경계를반영했다.
+  OpenBMI는P3/context유지/새learner0. 신규사용자1회실측M은여전히허용하며 반복없음을
+  실패이유로쓰지않는다. 원목표/Q/Q2/QM/SHAM/directM/총비용·이전negative유지.
+- Academic-research: primaryHTMLfulltext근거3개를claim0245e6f42cdcb5a6 QUALIFIED로등록,
+  기존gap갱신/표적deepreadcompleted. PDF-onlycardvalidator를우회하지않고legacyabstract
+  card에실제HTML정독보고서pointer와형식제한을명시했다. 가짜PDF/backend수정0.
+  Catalog1151/search92/card48/technique18/claim104/evidence275/gap45/analogy6/
+  deepread40(completed29/queued10/skipped1),render11/SQLitequick_checkok.
+- Coordinate-worktree-changes: rootsolewriter+read-only원문검토/저장응답감사병렬.
+  Table4는데이터구조가아닌성능표라는locator교정반영. [독립감사](reports/openbmi_canonical_read_v1_review.json)
+  body/header10개hash/size/HTTP/MIME/기록산술PASS. 실제curl실행/미기록요청부재/사전수정시점의
+  독립증명은아니다. 코드변경없어pytest0,보호6hash불변,46worktrees/8untracked보존.
+- Raw/fit/예측/held60/사람요청/계정/유료/설치/삭제/push0. 새학습효능·보정절감미확립.
+  [상태](reports/openbmi_canonical_read_v1_state.json). 공개실측pairedfield의새근거없이는OpenBMI
+  learner를보류하고다른구체적공개후보를우선한다. 전체연구goal은미완료/active다.
+- 추가read-onlyscout는보존round4문서4개에서새적격후보/구체적public-schema대상NONE으로
+  판단했다. 새검색/독립원문독서로과장하지않으며 다음후보가이미확보됐다고기록하지않는다.
