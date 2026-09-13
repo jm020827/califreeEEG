@@ -1,0 +1,7 @@
+{
+  "request": 2,
+  "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/6501944",
+  "provenance": "request1.body /locations[2]/landing_page_url, repository PubMed Central; DOI/title exact match verified in OpenAlex response",
+  "reason": "Independent official repository explicitly indexed OA cc-by; publisher best_oa_location is the previously challenged OUP PDF and is not retried.",
+  "caveat": "OpenAlex labels version submittedVersion; actual repository version/license and fulltext still require validation."
+}

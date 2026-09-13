@@ -1,0 +1,95 @@
+{
+  "schema": "cfeg.openbmi-repository-fulltext-v1.state",
+  "status": "COMPLETE_BOUNDED_ROUTE_DISCOVERY_FULLTEXT_PENDING",
+  "decision": "PARK_UNRESOLVED",
+  "decision_scope": "Four-request budget exhausted after OA metadata and three official redirects; canonical article not requested",
+  "goal_status": "active",
+  "prior_goal_turn": "PROGRESS_ACCESS_RESPONSES_AND_ID_SEMANTICS",
+  "base_commit": "cb88af2",
+  "contract_commit": "374564b",
+  "contract_sha256": "9cb26f3a165330b8b35f9905fc6ed9c8b8f15031229874a925a6f9b21cf2d486",
+  "requests_allowed": 4,
+  "requests_used": 4,
+  "http": [
+    200,
+    301,
+    301,
+    301
+  ],
+  "retained_body_bytes": 30670,
+  "sum_curl_seconds": 2.401983,
+  "automatic_redirects": 0,
+  "retries": 0,
+  "source": {
+    "openalex": "W2912885887",
+    "doi": "10.1093/gigascience/giz002",
+    "metadata_doi_title_verified": true,
+    "registry_pmc_is_oa": true,
+    "registry_pmc_license": "cc-by",
+    "registry_pmc_version": "submittedVersion",
+    "final_pmc_document_license_verified": false,
+    "final_pmc_document_version_verified": false,
+    "canonical": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/",
+    "canonical_requested": false
+  },
+  "reading": {
+    "card": "abstract",
+    "deep_read": "queued",
+    "primary_text_read": false,
+    "pdf_downloads": 0,
+    "raw_downloads": 0
+  },
+  "scientific": {
+    "new_learning_candidates": 0,
+    "new_schema_candidates": 0,
+    "fit": 0,
+    "predictions": 0,
+    "efficacy_or_calibration_savings_established": false,
+    "prior_P3_context_status_unchanged": true
+  },
+  "workspace": {
+    "catalog_records": 1151,
+    "search_runs": 92,
+    "paper_cards": 48,
+    "techniques": 18,
+    "claims": 103,
+    "evidence": 272,
+    "gaps": 45,
+    "analogies": 6,
+    "deep_reads": 40,
+    "deep_read_status": {
+      "completed": 28,
+      "queued": 11,
+      "skipped": 1
+    },
+    "rendered_views": 11,
+    "sqlite_quick_check": "ok",
+    "cutoff_unchanged": "2026-09-04",
+    "claim": "claim:81f9eed5675c80db",
+    "gap": "gap:3f973164c88eabce"
+  },
+  "verification": {
+    "body_headers_audit": "PASS",
+    "independent_curl_telemetry_audit": false,
+    "pytest": 0,
+    "reason_no_pytest": "NO_EXECUTABLE_CHANGE",
+    "protected_six_hashes": "UNCHANGED",
+    "free_disk_gib_rounded": 290
+  },
+  "boundaries": {
+    "raw_eeg": 0,
+    "held60": 0,
+    "external_person_requests": 0,
+    "accounts": 0,
+    "paid": 0,
+    "bypass": 0,
+    "installs": 0,
+    "deletions": 0,
+    "pushes": 0,
+    "new_worktrees": 0,
+    "existing_worktrees": 46,
+    "existing_untracked_dirs": 8,
+    "root_sole_writer": true
+  },
+  "next": "Freeze finite canonical article/PDF acquisition and reading budget; begin directly at verified PMC6501944 canonical, do not repeat OpenAlex, three redirects or failed publisher route."
+}

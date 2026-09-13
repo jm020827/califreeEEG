@@ -1,0 +1,6 @@
+{
+  "request": 4,
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/6501944/",
+  "provenance": "Literal relative Location /articles/6501944/ in request3.headers, resolved against the request3 origin https://pmc.ncbi.nlm.nih.gov",
+  "reason": "Last allowed request follows the official repository normalization redirect; no further requests even if another redirect follows."
+}

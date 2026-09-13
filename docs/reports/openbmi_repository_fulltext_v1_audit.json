@@ -1,0 +1,49 @@
+{
+  "schema": "cfeg.openbmi-repository-fulltext-v1.audit",
+  "status": "PASS_BODY_HEADERS_AND_ROUTE_SCOPE",
+  "provenance": "Root transcription of read-only agent final; not an executable auditor",
+  "agent": "mobile_features_review",
+  "reviewed": "contract and eight saved request1–4 body/header files",
+  "not_reviewed": "transport.json was absent at the agent's read time; curl timings/auto-redirect counters are root checks, not independently verified by this review",
+  "http": [
+    200,
+    301,
+    301,
+    301
+  ],
+  "body_bytes": [
+    30377,
+    293,
+    0,
+    0
+  ],
+  "total_retained_body_bytes": 30670,
+  "body_sha256": [
+    "1367df89c685ae4b636d5cfe4dff62c72b2122fd52bd6504b90a617974f6de3e",
+    "c5baf02ed69a0087dec10c13974dee0a65a606bb2c36d7816532d2f88568d39e",
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "headers_sha256": [
+    "07b75b074cdc62ae490a585fdec1e9e28645799c4c55652a262cb438e1051779",
+    "e5500fbd276e5bd2993f1cf03973ffa5dba14e2d74aaef600531a2adaf05b94c",
+    "3dd71d49320f47a53c951c6f89e4f69ee04c6a35683ac6a01371073df4c33519",
+    "4659f60a121cdc77131421c983bb0f8296b334b983f21fd3d2361944fd25abb8"
+  ],
+  "doi_title_matched": true,
+  "oa_flags_are_registry_reports_only": true,
+  "relative_locations_resolved_correctly": true,
+  "final_canonical": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/",
+  "canonical_request_not_in_saved_set": true,
+  "fulltext_pdf_raw_obtained": false,
+  "limits": [
+    "Four saved responses do not independently prove absence of unrecorded network requests.",
+    "Indexed submittedVersion/cc-by are not final repository document facts.",
+    "Only OA location and redirects checked, not paper methods, raw availability or M efficacy."
+  ],
+  "audit_network": 0,
+  "audit_writes": 0,
+  "audit_db": 0,
+  "audit_raw": 0,
+  "audit_models": 0
+}

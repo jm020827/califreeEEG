@@ -2630,3 +2630,26 @@
   브라우저우회/계정/저자문의/유료0. 이번새PDF/raw/모델fit/EEG예측/held60개봉0.
   코드변경없어pytest0. 이전PreG원문성공/모든negative유지,새적격dataset없음.
   Goal은미완료/active이며좁은access검증완료를원목표완료로바꾸지않는다.
+
+### 152. 2026-09-14 KST / 2026-09-13 UTC — OpenBMI 공식 OA 경로와 canonical 발견
+
+- 직전goalturn의access2응답/개인1회M문구수정은PROGRESS. Currentcb88af2/여유290GiB/
+  기존46worktrees/8untracked확인. [계약](openbmi_repository_fulltext_v1_contract.md)
+  374564b를고정후새exactOpenAlex W2912885887을GET200/30377bytes로확보했다.
+- DOI/title일치,locations[2]PMC is_oa=true/licensecc-by/versionsubmittedVersion확인.
+  이색인표기를actualpaper의권리/버전으로확정하지않았으며차단된bestOA/OUP미요청.
+- LiteraloldNCBI주소→newPMCdomain→trailingslash→PMCprefix canonical의301세건을
+  수동확인했다. 200/301/301/301,body30377/293/0/0,total30670bytes,
+  curl시간합계2.401983초. Auto-redirect/retry0,첫GET전16:56:40UTC.
+  최종canonical https://pmc.ncbi.nlm.nih.gov/articles/PMC6501944/ 는반환만되고미요청.
+- 4/4예산종료. 원문/PDF/raw/새schema·학습후보/fit/EEG예측0,카드abstract/독서queued유지.
+  [결과](openbmi_repository_fulltext_v1_results.md),[상태](reports/openbmi_repository_fulltext_v1_state.json).
+  다음은새canonical에서직접문서확보이며OpenAlex/세redirect/failedOUP재시도아니다.
+- Read-onlyagent의8body/header감사PASS,DOI/title/상대Location/hash/size검산.
+  Agent읽기시transportJSON없어curltelemetry독립검산은미포함. Root가반환을감사JSON으로
+  보존했다. request4선택설명은relativeLocation을origin으로해결한것으로명확화(URL불변).
+- Academic-research에따라OAmetadata와원문근거를분리,coordinate-worktree원칙에따라
+  rootsolewriter/read-only병렬검토. Claim81f9eed5675c80db QUALIFIED/근거2,
+  기존gap갱신. Catalog1151/search92/card48/technique18/claim103/evidence272/gap45/
+  analogy6/deepread40(completed28/queued11/skipped1),render11/SQLitequick_checkok.
+  코드변경없어pytest0,held60/사람요청/계정/유료/우회/설치/삭제/push0. 원목표미완료/active.

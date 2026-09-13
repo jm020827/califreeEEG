@@ -1,0 +1,6 @@
+{
+  "request": 3,
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/6501944",
+  "provenance": "Exact Location header in request2.headers, official NCBI-to-PMC domain redirect",
+  "reason": "Follow explicit HTTPS official repository redirect manually; not publisher retry; consumes one of four total requests."
+}
