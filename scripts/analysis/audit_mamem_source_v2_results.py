@@ -37,6 +37,21 @@ def audit_model(x, y, eval_x, model, saved_lambda):
     model = {k: np.asarray(v) for k, v in model.items()}
     require(set(model) == {"mean", "scale", "coef", "intercept"}, "model_keys")
     require(
+        x.ndim == 2
+        and y.shape == (len(x), 2)
+        and eval_x.ndim == 2
+        and eval_x.shape[1] == x.shape[1],
+        "model_input_shapes",
+    )
+    require(
+        model["mean"].shape == (x.shape[1],)
+        and model["scale"].shape == (x.shape[1],)
+        and model["coef"].shape == (x.shape[1], 2)
+        and model["intercept"].shape == (2,)
+        and np.shape(saved_lambda) == (len(eval_x), 2),
+        "model_parameter_shapes",
+    )
+    require(
         np.isfinite(x).all() and np.isfinite(y).all() and np.isfinite(eval_x).all(),
         "finite_model_inputs",
     )
@@ -76,8 +91,24 @@ def audit(result, summary, ledger):
             )
     largest_residual = largest_lambda_error = 0.0
     rows = {(r["target"], r["k"]): r for r in result["folds"]}
+    accuracies = {}
     for r in result["folds"]:
         target, k = r["target"], r["k"]
+        require(
+            r["fit_count"] == 4
+            and all(
+                set(r[field]) == set(ARMS) for field in ("train_x", "eval_x", "models", "lambdas")
+            ),
+            "arm_and_fit_coverage",
+        )
+        require(
+            all(set(r[field]) == set(ALL_ARMS) for field in ("scores", "predictions", "accuracy")),
+            "score_arm_coverage",
+        )
+        require(
+            type(r["support_prefix_samples"]) is int and r["support_prefix_samples"] > 0,
+            "integer_positive_prefix",
+        )
         source = [s for s in PEOPLE if s != target]
         require(
             len(r["rows"]) == 45 and sorted({v["subject"] for v in r["rows"]}) == source,
@@ -102,6 +133,15 @@ def audit(result, summary, ledger):
         train = {a: np.asarray(r["train_x"][a]) for a in ARMS}
         eval_x = {a: np.asarray(r["eval_x"][a]) for a in ARMS}
         y = np.asarray(r["oracle"])
+        close(
+            train["Q"][:, 8:13], np.eye(5)[[v["label"] for v in r["rows"]]], "common_source_onehot"
+        )
+        close(train["Q"][:, 13], np.full(45, k), "common_source_k")
+        close(train["Q"][:, 14], [v["event_count"] for v in r["rows"]], "common_source_eventcount")
+        close(train["Q"][:, 15], np.full(45, 2.0), "common_source_window")
+        close(eval_x["Q"][:, 8:13], np.eye(5), "common_target_onehot")
+        close(eval_x["Q"][:, 13], np.full(5, k), "common_target_k")
+        close(eval_x["Q"][:, 15], np.full(5, 2.0), "common_target_window")
         require(y.shape == (45, 2) and ((y >= 0) & (y <= 1)).all(), "oracle_shape_range")
         for a in ARMS:
             columns = 16 if a == "Q" else 18
@@ -157,10 +197,15 @@ def audit(result, summary, ledger):
             require(scores.shape == (15, 5) and np.isfinite(scores).all(), "saved_score_shape")
             prediction = np.argmax(scores, axis=1)
             close(prediction, r["predictions"][a], "saved_argmax")
-            close(np.mean(prediction == truth), r["accuracy"][a], "saved_accuracy")
+            accuracies[target, k, a] = float(np.mean(prediction == truth))
+            close(accuracies[target, k, a], r["accuracy"][a], "saved_accuracy")
         close(r["support_prefix_seconds"], r["support_prefix_samples"] / 250, "prefix_units")
         require(r["query_ready_elapsed_seconds"] is None, "offline_time_honesty")
     for s in PEOPLE:
+        require(
+            rows[s, 2]["support_prefix_samples"] > rows[s, 1]["support_prefix_samples"],
+            "increasing_support_prefix",
+        )
         close(rows[s, 1]["truth"], rows[s, 2]["truth"], "same_query_labels_both_k")
         close(
             rows[s, 1]["scores"]["ZERO_SHOT"],
@@ -175,9 +220,7 @@ def audit(result, summary, ledger):
         ("QM1-SHAM1", "SHAM", 1),
         ("QM1-Q_k2", "Q", 2),
     ]:
-        delta = np.array(
-            [rows[s, 1]["accuracy"]["QM"] - rows[s, k]["accuracy"][arm] for s in PEOPLE]
-        )
+        delta = np.array([accuracies[s, 1, "QM"] - accuracies[s, k, arm] for s in PEOPLE])
         ci = np.quantile(delta[draws].mean(axis=1), [0.025, 0.975])
         got = summary["comparisons"][name]
         close(got["mean"], delta.mean(), "paired_mean")
@@ -194,7 +237,7 @@ def audit(result, summary, ledger):
     require(
         summary["subjects"] == PEOPLE
         and summary["zero_shot_at_least_80_percent"]
-        == [s for s in PEOPLE if rows[s, 1]["accuracy"]["ZERO_SHOT"] >= 0.8],
+        == [s for s in PEOPLE if accuracies[s, 1, "ZERO_SHOT"] >= 0.8],
         "zero_shot_attainment",
     )
     benefit = all(
@@ -215,7 +258,7 @@ def audit(result, summary, ledger):
         for a in ALL_ARMS:
             close(
                 summary["mean_accuracy"][str(k)][a],
-                np.mean([rows[s, k]["accuracy"][a] for s in PEOPLE]),
+                np.mean([accuracies[s, k, a] for s in PEOPLE]),
                 "summary_accuracy",
             )
     return {

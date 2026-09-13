@@ -44,3 +44,10 @@ def test_prediction_mutation_is_detected():
     args[-1] += 0.1
     with pytest.raises(ValueError, match="lambda_replay"):
         audit.audit_model(*args)
+
+
+def test_coefficient_broadcast_is_rejected():
+    args = list(fixture())
+    args[3]["coef"] = args[3]["coef"][:, :1]
+    with pytest.raises(ValueError, match="model_parameter_shapes"):
+        audit.audit_model(*args)
