@@ -2476,3 +2476,60 @@
   누적1134papers/90searches/46cards/18techniques/97claims/257evidence/45gaps/
   6analogies/38deepreads,cutoff2026-09-04 유지. Render11views 및 SQLite quick_check
   ok 확인. 문헌을 새로 더 읽었다거나 전체 저보정 연구목표를 달성했다고 주장하지 않는다.
+
+### 147. 2026-09-14 KST / 2026-09-13 UTC — MMV 공개 landing 보존 성공, inventory/schema 미확인 종료
+
+- 직전 goal turn은 공통 baseline 300예측과 독립 감사 완료로 progress였다. Main36855a3,
+  free292GiB, 기존46worktrees/8untracked를 재확인하고 학습 후보가 아닌 공개 문서 capture
+  질문을 진행했다. Academic-research SKILL/두 reference를 완독하고 workspace의 MMV
+  gap/context를 확인했다. Coordinate-worktree-changes로 단일 writer/병렬 read-only를
+  선택했다. Root가 코드·HTTP·문서·SQLite, reviewer들이 전송·기작·기존후보 이력 검토 담당.
+- 새 signature/contract/code/tests를 **0a96034**로 실제 전에 동결했다. Exact ScienceDB
+  landing부터 literal public links만,4HTTP attempts/30wall초당/2MiB body당/8MiB전체/
+  외부180초, 자동redirect0/추측API0/JS실행0/raw/PDF0로 제한했다. 기존 Figshare known-size
+  downloader를 가져오지 않고 독점 claim/pins/부분body·HTTP오류 보존 경로를 만들었다.
+- 합성suite2회: 23PASS/.09초,29PASS/.10초,합성실패0. 마지막 suite 뒤 timer활성화
+  한 줄을 try 내부로 옮겼고, 이 변경은 독립 정적 검토/ruff만 했다. 정한suite예산을
+  늘려 pytest를 재실행하지 않았으며 변경후29tests가 실행됐다고 주장하지 않는다.
+  초기broadexception/importorder lint각1건 수정,최종ruff/diffcheckPASS. Whole-reposuite0.
+- 실제 전에 read-only검토를 반영해 dynamicJS '+인접literal' prefix 제외, 강한HTML
+  challenge/auth와 일반login링크 구분, preflight/claim시간 차감·GET직전기한, IncompleteRead
+  partial·timer해제후 retainedfilehash, Location 선보존/fragment 제거를 보강했다.
+  검토 최종StaticPASS. Challenge 판별은 명시패턴 범위이지 완전성을 보장하지 않는다.
+- Request1: exact `www.scidb.cn/detail?dataSetId=270bcdeaab0c48adb8eee700479daafd`,
+  15:56:05.772149–15:56:06.252653UTC,HTTP200/CAPTURED,785384bytes/.480511초.
+  BodySHA892f9c5c5051be32990e4b7662f43b04ed5dd3ae94801ec1f35e51a2901c7ff7.
+  과거 대형도구출력 capture실패를 로컬streambody+작은receipt로 해소했다.
+- Root가 보존HTML의 script/style제외 visibletext(제목만), literal links와 JSON-LD를
+  직접 파싱했다. DOI10.57760/sciencedb.ai.00010/name, PUBLIC, version3.0.0/citeAsV3,
+  CC BY4.0,size265453813779bytes 선언 확인. 기존DataCite원문/9381bytes/hash만 재참조,
+  registry재요청0. JSON-LD의 actual distribution/recordSet/filelist는없었으며 @context의
+  어휘를 실제field로 읽지 않았다. 브라우저렌더링/JS 실행/원파일 접근 확인은 아니다.
+- Canonical 영문주소에 설명이 있을지 확인하려고 문서상 literalhref를 두 번째 대상으로
+  선택·이유를 실행 전에 알렸다. Request2 15:57:18.743116–15:57:19.077389UTC,
+  HTTP302/Location은 이미시도한 seed, Content-Type없음으로 STOPPED_NO_RETRY /
+  non_document_mime. 보존body0은 서버body크기0이라는 뜻이 아니다. 실제중단은MIME검사,
+  redirect를따랐어도URL재시도가되므로 후속0. 두요청째이후code/contract수정·재요청0.
+- 2/4HTTPattempts,자동redirect0,외부창73.307353초,retained785384bytes. 남은2슬롯을
+  채우지 않고 사전실패조건에 종료했다. 총wirebytes/패킷추적은아니다. Run7파일788248bytes,
+  [결과](mmv_public_capture_v1_results.md)/[상태](reports/mmv_public_capture_v1_state.json) 보존.
+- 실제 저장 문서 독립감사1회 PASS. Reviewer가7파일(5JSON/2body)의pins/hash/크기/
+  literalcanonical/JSON-LD/시간범위를0.004307초계산으로 검산했다. 네트워크/테스트/
+  사람raw/이전EEGoutcome/쓰기0. Root가 agent반환을 [감사JSON](reports/mmv_public_capture_v1_audit.json)으로
+  옮겼으며 실행형독립auditor를 새로 만들었다고 주장하지 않는다. Canonical4행1397열,
+  JSON-LD4행15753열 locators확인. PublisherPUBLIC≠개별파일접근≠학습적격을 유지한다.
+- 과학판정 PARK_ACCESS_UNRESOLVED의남은공백은 inventory/schema/fieldmeaning/clock/
+  prequery/cost/기작이다. 공개landing미확인·비공개확정이아니다. 새raw/annotation/PDF/
+  fit/EEGprediction/GPU/held60/사람요청/유료/계정0,기존보호6hash불변. 삭제/설치/push0.
+- 병렬read-only scout는 post_gyro_candidate_feasibility_v1_results.md와 Eye-BCI schema/
+  header 계약 총3문서만 확인했다. Eye-BCI는 기존 정확한logicalpair 뒤 anonymousfile403으로
+  PARK된 경로이고 새로운접근변경/미검토후보는NONE. XRtiming도이미검토종료였다.
+  DOI04861-9→Synapse 연결을 이번읽기에서새검증하지않았고실패주소/다른참가자우회0.
+- [다음초안](public_acquisition_candidate_round_next.md)은 다른공개실측contact/motion/
+  opticaltiming과SSVEP pairing을찾는2search/4officialdoc/최대1후보 제안으로미실행이다.
+  정확한query/출처/새계약을실행전에고정하고 원래보류경로반복·raw/학습자동승격을하지않는다.
+  기존MAMEM학습/full잔차/commonbaseline종료판정과 Q/common/Q2/SHAM·비용조건 유지.
+- Claim26df38f63b33c11e QUALIFIED/근거3개와기존gap3f973164c88eabce갱신. 누적1134papers/
+  90searches/46cards/18techniques/98claims/260evidence/45gaps/6analogies/38deepreads,
+  cutoff2026-09-04유지. Render11views/SQLitequick_checkok. 공개문서access진전은있지만
+  원래학습M/보정절감목표미완료이므로goalactive이며complete/blocked처리하지않는다.

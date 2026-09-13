@@ -1,0 +1,12 @@
+{
+  "schema": "cfeg.mmv-public-capture-v1",
+  "created_utc": "2026-09-13T15:56:05.770575+00:00",
+  "external_start_epoch": 1789314965.7700355,
+  "pins": {
+    "contract": "069c926952d3aedd651b7117bac42b7983d178a01843eb71fb192218c71badde",
+    "code": "eac4ff9dad41042e6a82be5f41240d4d9382311d5c29f8d901204add4270dff5"
+  },
+  "max_attempts": 4,
+  "body_cap": 2097152,
+  "total_body_cap": 8388608
+}

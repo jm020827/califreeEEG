@@ -1,0 +1,10 @@
+{
+  "step": 2,
+  "url": "https://www.scidb.cn/en/detail?dataSetId=270bcdeaab0c48adb8eee700479daafd",
+  "parent": 1,
+  "started_utc": "2026-09-13T15:57:18.741974+00:00",
+  "pins": {
+    "contract": "069c926952d3aedd651b7117bac42b7983d178a01843eb71fb192218c71badde",
+    "code": "eac4ff9dad41042e6a82be5f41240d4d9382311d5c29f8d901204add4270dff5"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "url": "https://www.scidb.cn/en/detail?dataSetId=270bcdeaab0c48adb8eee700479daafd",
+  "started_utc": "2026-09-13T15:57:18.743116+00:00",
+  "status": "STOPPED_NO_RETRY",
+  "http_status": 302,
+  "automatic_redirects": 0,
+  "final_url": "https://www.scidb.cn/en/detail?dataSetId=270bcdeaab0c48adb8eee700479daafd",
+  "content_type": null,
+  "content_length": null,
+  "location": "https://www.scidb.cn/detail?dataSetId=270bcdeaab0c48adb8eee700479daafd",
+  "error_type": "Stop",
+  "reason": "non_document_mime",
+  "completed_utc": "2026-09-13T15:57:19.077389+00:00",
+  "elapsed_seconds": 0.3342763786204159,
+  "body_bytes": 0,
+  "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "body_name": "body_2.bin",
+  "step": 2,
+  "parent": 1,
+  "pins": {
+    "contract": "069c926952d3aedd651b7117bac42b7983d178a01843eb71fb192218c71badde",
+    "code": "eac4ff9dad41042e6a82be5f41240d4d9382311d5c29f8d901204add4270dff5"
+  }
+}

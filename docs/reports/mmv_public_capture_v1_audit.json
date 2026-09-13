@@ -1,0 +1,44 @@
+{
+  "schema": "cfeg.mmv-public-capture-v1.saved-document-audit",
+  "status": "PASS_SAVED_PUBLIC_DOCUMENTS_AND_RECORDED_SCOPE",
+  "audit_attempts": 1,
+  "reviewer": "mobile_protocol_review",
+  "artifact_authorship": "ROOT_TRANSCRIPTION_OF_INDEPENDENT_READ_ONLY_AGENT_AUDIT_RETURN",
+  "actual_artifacts_checked": 7,
+  "json_artifacts_checked": 5,
+  "body_artifacts_checked": 2,
+  "recorded_http_attempts": 2,
+  "recorded_automatic_redirects": 0,
+  "external_window_seconds": 73.307353,
+  "request_elapsed_seconds": [0.4805107656866312, 0.3342763786204159],
+  "body_bytes": [785384, 0],
+  "contract_sha256": "069c926952d3aedd651b7117bac42b7983d178a01843eb71fb192218c71badde",
+  "code_sha256": "eac4ff9dad41042e6a82be5f41240d4d9382311d5c29f8d901204add4270dff5",
+  "body_sha256": ["892f9c5c5051be32990e4b7662f43b04ed5dd3ae94801ec1f35e51a2901c7ff7", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+  "checks": {
+    "all_five_json_code_contract_pins": "MATCH",
+    "both_retained_body_size_and_sha": "MATCH",
+    "second_url_literal_canonical_link": "MATCH",
+    "second_location_already_attempted_seed": "MATCH",
+    "first_json_ld_publisher_declaration": "INDEPENDENTLY_PARSED",
+    "public_landing_not_file_access_or_learning_eligibility": "PASS"
+  },
+  "locators": {
+    "title": "body_1.bin line4 column1060",
+    "canonical": "body_1.bin line4 column1397; link[rel=canonical] href equals claim_2.json /url",
+    "json_ld": "body_1.bin line4 column15753; script[type=application/ld+json] /name,/version,/conditionsOfAccess,/license,/size/value"
+  },
+  "audit_calculation_seconds": 0.004307,
+  "audit_network_requests": 0,
+  "audit_raw_person_data_reads": 0,
+  "audit_old_eeg_outcome_reads": 0,
+  "audit_fits": 0,
+  "audit_test_runs": 0,
+  "limitations": [
+    "Saved artifacts and implementation scope, not packet-level HTTP/OS trace or browser rendering",
+    "Second retained body0 reflects MIME-boundary stop, not measured server body size0",
+    "Publisher PUBLIC/license/size/version declarations do not verify individual anonymous file access or pairing",
+    "No raw schema, acquisitionM field, clock/cue mapping, EEG learning or calibration-saving verification",
+    "JSON-LD context vocabulary field/recordSet is not actual dataset record schema"
+  ]
+}
