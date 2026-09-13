@@ -2269,3 +2269,43 @@
   6analogies/38deepreads,cutoff2026-09-04유지. Render11views/SQLitequick_checkok.
   마지막free295GiB,보호4문서·v2summary/terminalSHA불변,held60/외부사람요청/유료0.
   Goal은실제M효능/보정절감미확립으로active이며임의완료·blocked표시하지않는다.
+
+### 143. 2026-09-13 — 용량 재확인, CCA 출처 한계와 합성 reference probe 완료
+
+- 용량295GiB free 재확인. main11997ce→source계획77857b4, source마감/새합성계약
+  8fe8084, 구현e0d9604 순서다. Root가공유계약/코드/실행/SQLite 단독writer,
+  3reviewer는sharedrepo읽기전용. 기존45worktrees/8untracked디렉터리보존,
+  새worktree/install/symlink/push/cleanup0이다. 공간은현재작업의병목이아니다.
+- `academic-research` workspace/context와기존자료를먼저읽고저자revision5a03abe2a6a874e9adaceea29a52c2fce35d8a03의
+  tree1회152entries와code/docs8개51,492decodedbytes를확인했다. 8Gitblob로컬재계산
+  일치;원wrapper/hash/line은[출처결과](mamem_baseline_source_v1_results.md)와state에보존.
+  공식canoncorr/SciPyorth문서2개,새scholarlysearch/PDF0. Web문서30초/1MiB기술적
+  강제불가·원HTML미보존,GitHub크기사후검사라는절차한계를명시했다.
+- 활성CCA는caller지정전체bank와canoncorr,1e−8ridge함수는주석이었다. Dataset-I
+  Default는E126/PWelch/filter/SVM/5초,확인된CCAcaller는DatasetIII/128Hz/4harmonics/
+  filter/SVM이다. MOABB의montage부착을후두subset/CAR/filter실행으로읽지않는다.
+  따라서 **완전한MAMEM-I authorCCA baseline NOTQUALIFIED**,그계획의실제비교0.
+- 별도합성계약8fe8084에서source-inspired E126 reference-sensitivity수학/API만정의:
+  single500vector·250Hz·h1/h2·무filter/ridge·centeredprojectionenergy/argmax,
+  support1trial/class sample-index5bank. E126의Oz해부학매핑/최적성/저자CCA재현주장0.
+  후속개발진단을정당화할수있다는독립검토를받았으나이단계에서는raw허용하지않았다.
+- Root신규module1개/test1개. 새49검사최초0.12초PASS,기존211개와합쳐최종260검사
+  1.36초PASS/ruff/diffcheckPASS. 새suite예산3중2회,기존회귀1회;실패/threshold변경0.
+  Nominal/shifted각5positive,독립lstsq,referencephase/scale/sign/offset불변,직교null,
+  잘못된입력STOP,전체bank/label-free API검증. Phase문구를첫검사후명확화했지만
+  초기test부터query고정/reference회전이었다. Whole-repositorysuite는미실행이다.
+- Source/protocol/math3read-onlyreview가차단오류없음으로완료했다. 수학review의
+  near-zero reference_rank 실패직접test미포함·supportprovenance/windowmembership
+  reader미구현한계는남긴다. OS독립IOtrace/실제EEG재구축감사가아니다.
+- [합성결과](mamem_reference_probe_synthetic_v1_results.md)/[상태](reports/mamem_reference_probe_synthetic_v1_state.json)
+  `SYNTHETIC_OPERATOR_READY_ONLY`. 이번새EEG/DIN/NPZdecode·실제accuracy·gatefits0,
+  S001breceipt경로/hash만읽었다. v2RETIRE와원negative/보호4문서·v2summary/terminal
+  hash불변,held60/외부사람요청/유료0. 실제M효과/보정량절감미확립,goalactive유지.
+- [다음개발초안](mamem_reference_probe_development_next.md)은S001a지원5trial로만bank를
+  만들고S001b15query를2bank/30predictions/0fit로단회비교하는별도작은진단이다.
+  **아직미실행/actualreader·CLI없음**. 정확한입력pins/비용/독립감사/중단조건을새계약으로
+  먼저고정한다. 통과해도강한baseline복원·metadata학습성공·독립participant확증아니다.
+- Claim2453785b5eef29d5 QUALIFIED/3근거,claimd08537e29c89e3a0 QUALIFIED/2근거와
+  기존gap3f973164c88eabce갱신. 1134papers/90searches/46cards/18techniques/94claims/
+  248evidence/45gaps/6analogies/38deepreads,cutoff2026-09-04. Render11views와SQLite
+  quick_checkok. 공간확보가데이터/모델효능확보와동일하다는주장은하지않는다.
