@@ -1,0 +1,110 @@
+{
+  "schema": "cfeg.mamem-baseline-source-v1.closeout",
+  "closed_utc": "2026-09-13T13:58:08Z",
+  "plan_commit": "77857b4",
+  "status": "AUTHOR_MAMEM_I_CCA_RECIPE_NOT_QUALIFIED",
+  "overall_goal_status": "active",
+  "free_gib_approx": 295,
+  "source_revision": "5a03abe2a6a874e9adaceea29a52c2fce35d8a03",
+  "tree_requests": 1,
+  "tree_entries": 152,
+  "tree_truncated": false,
+  "tree_wrapper_sha256": "a964ba9c8be986ada57fd9a2e7c4eac16fd111fe747397e3bb2b08aa3da51f2f",
+  "files_read": 8,
+  "decoded_bytes": 51492,
+  "local_git_blob_checks": "8/8 MATCH",
+  "sources": [
+    {
+      "index": 0,
+      "path": "README.md",
+      "bytes": 6618,
+      "git_blob_sha": "44c57632efc5fc9102a20249bbbe3786862779cc",
+      "decoded_sha256": "40c41cd14cef2d0d3f9d719f86febf8acf864ba925b2dbfa917c85daaa3e946b",
+      "wrapper_sha256": "46077e2eba5a273f696434b38be6eeebe950396724df0b73dd30ce63f8fde1de",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 1,
+      "path": "+eegtoolkit/+featextraction/@CCA/CCA.m",
+      "bytes": 5875,
+      "git_blob_sha": "fae91b47d5fe810007d5c00a9c9a30900767afa9",
+      "decoded_sha256": "9eb123d9191ca5da21cafba11cb1129d5d67170093739816d2267a0e34a123a2",
+      "wrapper_sha256": "5806f413a0c6dba8bfed3e6be7c82c21955eed0357a8d318a2624e6eb8d4564c",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 2,
+      "path": "exampleDefault.m",
+      "bytes": 1608,
+      "git_blob_sha": "82ea4d4876846c2dff0c0acd14ff82c9661133f9",
+      "decoded_sha256": "aa68adc3613026b8ca2dfdc535be34a271ddadc688b5fd4fb4056e1e04c855e3",
+      "wrapper_sha256": "6481bf774a0a81ca3fe16405cba907aebcc1f6d9c203f24f85653177a7f37c40",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 3,
+      "path": "exampleOptimal.m",
+      "bytes": 1794,
+      "git_blob_sha": "36573f746730f5eaae9aca485e59ac57765c9080",
+      "decoded_sha256": "a8470c4975d883a597da380ae6a1371c8c5e62061b8c27079fc16a8169d5048e",
+      "wrapper_sha256": "65a44affda6766724ebc5a7b8b2928314b21e801341e07166fb373b0dbdecdcb",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 4,
+      "path": "+eegtoolkit/+preprocessing/@SampleSelection/SampleSelection.m",
+      "bytes": 3842,
+      "git_blob_sha": "fad7d87f9077ea8d13ef3c01205072d7b513ac31",
+      "decoded_sha256": "cf30bcbaf9496c0c0025ab4421080237ebf123367ffa1c06da6833539aec55b8",
+      "wrapper_sha256": "02e19a4ca09163e1649f4dadcde2b62e12cb139f4234b6e2e332a9a9f79381ed",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 5,
+      "path": "exampleEPOCCCASVM.m",
+      "bytes": 1776,
+      "git_blob_sha": "cc2e828493e20d2a9c243affe5904243b6ac4798",
+      "decoded_sha256": "a5570494e1000c60fba72a66560d83b5700262cf3dcf31ea58e5d356cd4f81e5",
+      "wrapper_sha256": "0b785226f555d5fbcdd6d88d034e03bf555874ce45f7f0e0abc781a0ec33d177",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 6,
+      "path": "LICENSE",
+      "bytes": 11335,
+      "git_blob_sha": "0d254d8854bbb1d5d45a560f62c9b6cd64f8e18b",
+      "decoded_sha256": "bb3780dd47cd7142ef5cebef98efa832d2bc5bfc592a32f543d2e77f0a8d01d4",
+      "wrapper_sha256": "bf05614f6791d14b9805bba66ca3f0e84f90c6804d16bea1cb4d8dabe06626cd",
+      "read_scope": "complete code/document, no execution"
+    },
+    {
+      "index": 7,
+      "path": "+eegtoolkit/+experiment/@Experimenter/Experimenter.m",
+      "bytes": 18644,
+      "git_blob_sha": "ffb784653bf870a857da6689a975252516ddcbb1",
+      "decoded_sha256": "2d6b33a12058f44f75070329b53ebba1d78a8cd038a382b609073d21f814e79e",
+      "wrapper_sha256": "52850ce70e48547addd6cc5d28adae9e73090d9dcf8e1e5eba99ba24b853fab6",
+      "read_scope": "complete code/document, no execution"
+    }
+  ],
+  "official_doc_pages": 2,
+  "official_docs": [
+    "https://www.mathworks.com/help/stats/canoncorr.html",
+    "https://docs.scipy.org/doc/scipy-1.15.3/reference/generated/scipy.linalg.orth.html"
+  ],
+  "official_doc_artifact_saved": false,
+  "budget_deviations": [
+    "web documentation calls did not enforce planned per-page30s/1MiB limits",
+    "GitHub wrappers and decoded bytes checked after receipt, not streaming-limited"
+  ],
+  "new_scholarly_searches": 0,
+  "new_pdf": 0,
+  "new_eeg_mat_npz_decode": 0,
+  "new_fits": 0,
+  "new_accuracy": 0,
+  "held60": 0,
+  "people_requests": 0,
+  "paid_resources": 0,
+  "previous_v2_decision": "RETIRE_UNDER_FROZEN_PROTOCOL",
+  "next": "separate synthetic-only source-inspired E126 reference-sensitivity operator; no real run"
+}
