@@ -2589,3 +2589,23 @@
 - 추가저장산출물감사 PASS: PDFsize/hash/8pages/DOI/제목,headers HTTP200와기록된1GET/
   0redirect/11.106406초확인. 실제curlflags·미기록요청부재의독립증명은아님.
   [검토](reports/pregel_public_fulltext_v1_review.json),[최종상태](reports/pregel_public_fulltext_v1_state.json).
+
+### 150. 2026-09-14 KST / 2026-09-13 UTC — PreG 보충자료 경로 challenge 보류
+
+- 직전 turn은 공식PDF확보/설계추가규칙 반영으로PROGRESS. 현재main1a4cda3/여유290GiB,
+  기존46worktrees/8untracked확인 후 [계약](pregel_supplement_inventory_v1_contract.md)
+  5f3d7bc를 고정했다. 추가broadsearch0/최대4GET/각20MiB·60초/15분창.
+- PDF URI annotation은ORCID4개뿐. 기존PDF accession09740692에서유도한공식
+  document9740692 route를 literalpaperlink라고하지않고명시했다. 실제1GET은HTTP202/
+  x-amzn-waf-action:challenge/body0/headers556bytes/curl0.230857초. DOI/제목페이지
+  확인은실패했다. Request전16:44:05UTC,HTTPDate16:44:06GMT,추가request0.
+- 사전challenge중단조건에남은3슬롯을쓰지않았다. 이전성공PDF는그대로유효하고,
+  이번결과는원자료비공개·부재증명이아니다. 보충목록·새schema후보0.
+  [결과](pregel_supplement_inventory_v1_results.md),[상태](reports/pregel_supplement_inventory_v1_state.json).
+- 읽기전용agent가로컬2문서로자격표를검토. IDlookup금지와개인1회실측M허용을
+  [addendum](acquisition_contact_measurement_addendum.md)에명확화. 시점미확인과실제future누출
+  판정을분리한다. 실제supplement내용/transport독립감사로과장하지않는다.
+- Claimede7f7968cfbb4c4 QUALIFIED/근거2개등록. 기존negative/held60봉인유지,
+  새PDF/video/raw/fit/예측/계정/사람요청/유료/우회/설치/삭제/push0. 코드변경없어pytest0.
+  Academic-research근거경계/coordinate-worktree의rootsolewriter+read-only병렬준수.
+  다음은보존round4의다른예비문헌에서one-paperqualification가치를비교한다.
