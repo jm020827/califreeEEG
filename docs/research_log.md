@@ -2309,3 +2309,57 @@
   기존gap3f973164c88eabce갱신. 1134papers/90searches/46cards/18techniques/94claims/
   248evidence/45gaps/6analogies/38deepreads,cutoff2026-09-04. Render11views와SQLite
   quick_checkok. 공간확보가데이터/모델효능확보와동일하다는주장은하지않는다.
+
+### 144. 2026-09-13 — S001 실제 reference 진단 완료: 12/15 → 14/15
+
+- 이전 turn은 출처/합성 구현 완료로 progress였다. 새 실제 계약39f1f79를 관측 전에
+  고정했다. 기존 authorCCA recipe 미확정 및 v2 M2→PSD shrinkage RETIRE는 유지한다.
+  목표를 단일채널 진단 성공으로 바꾸지 않았으며, Q·공통정보를 넘는 학습된 M의
+  보정 부담 감소는 여전히 확인해야 한다.
+- `coordinate-worktree-changes` 기준으로 tracked checkout34.69MB, rootvenv5.2GiB,
+  free294GiB를 확인하고 감사 writer만 새 worktree로 격리했다. Root는 계약·producer·
+  실행·SQLite 소유, auditor는 별도 경로의 script/test 두 파일만 소유했다. 신규 경로는
+  `/home/whwovy/califreeEEG-wt-reference-probe-audit-v1`이며 약36MiB다. 총46worktrees,
+  기존8untracked 디렉터리 보존, 같은 workingtree 동시writer0, cleanup/install/push0.
+- 구현 순서: producer00f1bbd → 종료 deadline 실패의 성공필드 제거54de7d1 → 독립
+  auditor08281b0을 e2ee6e2로 cherry-pick → 합성 producer/auditor 연동6a8a2ec.
+  텍스트 충돌0. 의미 충돌은 UTC 소수초 파싱, 시작 직후 terminal 누락, 만료 후 worker
+  생성, STOPPED에 COMPLETE 필드 잔존을 실제 결과 전에 보강했다.
+- 합성 총3suite 예산: root 최초20PASS/0.17초, auditor 최초25PASS/54FAIL/0.77초,
+  최종 통합366PASS/2.25초. 독립 감사 초기 실패는 Python3.10이 유효한 한 자리 UTC
+  소수초를 거부한 공통 원인이었고, 정규화 수정 후 최종 검사에 포함했다. 실패 이력 보존,
+  실제 관측 후 조건 변경0. Ruff/diffcheck PASS, 전체repo suite는 미실행이다.
+- Manifest14:27:37.536780UTC에 6개 코드·계약 SHA를 동결했다. 실제 실행은
+  14:27:47.259799–14:27:48.737328UTC,1.477529초/1attempt/30predictions/
+  150classscores/0gatefits COMPLETE. A에서 DIN/rate만 한 번 decode해 class별
+  첫지원1trial로 bank를 만들고, 그 뒤 B의 hash/header/EEG/DIN/rate를 읽었다.
+  A EEG decode0, B EEG 전체 decode 후 row125의15×500만 수치사용했다.
+  queryDIN label은 적격성/평가용이고 30score vectors가 먼저 고정됐다.
+- NOMINAL12/15(80%), SAMPLE_SUPPORT14/15(93.3333%). Class별 정답은
+  3/3/2/2/2 대3/3/3/3/2. 둘다정답12,지원bank만정답2,nominal만정답0,둘다오답1.
+  두arm 모두12/15+class당최소1 기준을 통과했다. 지원bank는6.483402/7.291667/
+  8.333333/9.655532/11.645963Hz다. Source-inspired cross-run reference 전달의
+  개발관찰이며, B의 현재clock 측정·단일globalclock 원인·학습된M 효능은 아니다.
+- 지원5trial 자극합25초, DIN 분석창합10초, 선택지원elapsedprefix445.94초,
+  전체 A기록471.668초. 전체23group 검증은 A전체DIN을 필요로 하며 query-ready/setup
+  UNKNOWN. Nominal은 사용자지원불필요하고 이미80%관문통과이므로 이번 결과로
+  보정량이나 실제 시간절감을 주장하지 않는다. 개선을 Q/공통source bank와 비교하지 않았다.
+- 고정 독립 auditor를 실제 저장자료에 1회 실행해 PASS. 600projection scalars→
+  150scores→30argmax→정답/paired/classcounts·정책·비용·지원주파수·6핀 및 실행
+  연결을 검사했다. Maxerror2.7755575615628914e−17,near-tie0,rawread/refit0.
+  원EEG→projection 재구축이나 OS I/O trace는 아니다. 정성 protocol/후속 리뷰는
+  별도 실행·재계산 없이 해석 한계와 공통 대조의 필요성을 확인했다.
+- [결과](mamem_reference_probe_development_v1_results.md)/[상태](reports/mamem_reference_probe_development_v1_state.json)/
+  [감사](reports/mamem_reference_probe_development_v1_audit.json)와 원run을 보존했다.
+  result22,345bytes/총24,429bytes,stdoutstderr0; resultSHA a026ac6314d2e1342bc36e5c0c08e4889ea374587d99513ec7ddad72d773b313.
+  새다운로드·sourcecohort/c/d/e·held60·사람요청·유료0. 기존4보호문서와v2summary/
+  terminal hash도 유지했다. 사용 가능한 공간은 마감 확인 약293GiB다.
+- 다음 [공통 reference와 잔여 M 분리 초안](mamem_reference_residual_learning_next.md)은
+  미실행이다. source-only common-bank-only/nominal/directM 대조와 Q/Q2/QM/SHAM,
+  cross-run vs same-run·총1trial vs class당1trial을 구분한다. 우선 새계약의 단일
+  source 구조 관문에서 잔차 크기/반복 재현성/전달성을 확인하고, 근거가 있을 때만
+  저용량 reference 신뢰도 학습 후보를 정의한다. 큰 모델·즉석 factor 확장은 하지 않는다.
+- `academic-research` claim7b641ca7de25c339 QUALIFIED/3근거와 기존gap3f973164c88eabce
+  갱신. 총1134papers/90searches/46cards/18techniques/95claims/251evidence/45gaps/
+  6analogies/38deepreads,cutoff2026-09-04 유지. Render11views/SQLitequick_checkok.
+  이 개발 진단 완료와 전체 연구목표 달성을 구분하며 goal은 active다.

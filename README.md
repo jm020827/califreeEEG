@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **최신: S001 실제 reference 진단 12/15 → 14/15**. [결과](docs/mamem_reference_probe_development_v1_results.md): 같은15query에서 지원 기록 bank가 추가2개를 맞혔고 새오답은0이었다. 1attempt/30predictions/0fit, 독립 저장 수치 감사·관련366tests PASS. **개발1인의 reference 비교이며 학습된M 효과·보정량 감소는 미입증**이다. Nominal도 무지원80% 관문을 통과했고, 지원5trial의선택prefix445.94초와전체기록471.668초를 실제준비시간으로바꾸지않는다. v2RETIRE/held60보호 유지. [다음 초안](docs/mamem_reference_residual_learning_next.md)은 공통reference와잔여M정보 분리이며미실행이다. 아래는시점별이력이다.
+
 > 2026-09-13 **최신: 용량295GiB 재확인·reference 진단 합성 구현 완료**. [출처 확인](docs/mamem_baseline_source_v1_results.md)에서 MAMEM-I의 완전한 저자 CCA 설정은 미확정으로 종료했다. 별도 단일채널 reference-sensitivity [합성 구현](docs/mamem_reference_probe_synthetic_v1_results.md)은 새49/관련260검사·독립 정적감사를 통과했다. 이번 새 실제 EEG 평가·학습0, metadata 효능·보정량 감소는 미확립이며 v2 부정 결과 유지. [다음 개발 진단](docs/mamem_reference_probe_development_next.md)은 별도 실제 계약을 고정하기 전인 미실행 초안이다. 아래는 시점별 이력이다.
 
 > 2026-09-13 **최신: 개발용15창 신호 진단 완료, 공통 baseline 점검 필요**. [S001 결과](docs/mamem_signal_validity_v1_results.md): timestamp/sample 간격 계산은 서로 부합하지만 일부 nominal reference와 크게 어긋났고, 기존 CCA는 시간순열 후에도 최대 score 평균0.604였다. 실제15창/0학습, 저장 산술·절차 감사 PASS. 이는 주파수 수정의 효능·metadata 이득이나 물리적 오류를 입증한 것은 아니다. 아래 v2 80-fit 부정 결과 유지. [다음 계획](docs/mamem_common_baseline_qualification_next.md)은 단일 공통 baseline의 출처 확인과 support-only reference 비교이며 미실행이다.

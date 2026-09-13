@@ -1,0 +1,102 @@
+{
+  "schema": "cfeg.mamem-reference-probe-dev-v1.audit-receipt",
+  "producer_and_auditor_commit": "6a8a2ec",
+  "executed_utc": "2026-09-13 14:28:06 UTC",
+  "exit_code": 0,
+  "stdout_json": {
+    "artifact_bytes": {
+      "manifest.json": 1215,
+      "result.json": 22345,
+      "started.json": 188,
+      "terminal.json": 498,
+      "worker_claim.json": 183
+    },
+    "artifact_sha256": {
+      "manifest.json": "7d3e558eda34347c17de47fd3a16568636f5c2a5ed9e441cc89d245888d801fc",
+      "result.json": "a026ac6314d2e1342bc36e5c0c08e4889ea374587d99513ec7ddad72d773b313",
+      "started.json": "ad301d06cf899a58f760cdbffec907b03d20938042a1887ddb2fc6e61dabdc57",
+      "terminal.json": "4d972c08ad843fffa40c29ff9544127e05bab5de62e7c635e09ef18df8b1dc29",
+      "worker_claim.json": "1974044ba92211a5891f98fae09722852f0b0a507847a49f291544f0504c2618"
+    },
+    "attempts": 1,
+    "class_scores": 150,
+    "code_sha256": {
+      "docs/mamem_reference_probe_development_v1_contract.md": "617ee9b3011e6bcf0d977d8d62ed3617c6429db8a31ffb085a08c10c1e2ecb0c",
+      "scripts/analysis/audit_mamem_reference_probe_v1.py": "f7ec8ce388f81f4e85c91db3a5c8a0c0a841fc694bb93296de775df7dfd4ff03",
+      "scripts/analysis/run_mamem_reference_probe_v1.py": "4ab5a68ce7155bf812b16daab35c4d99f1d832cbcb565291d47355d670617f22",
+      "src/cfeg/mamem_events_v1.py": "1c6762783fed206201a9c0539de5aa4c94d45564190bb08954ec4b0c242c096a",
+      "src/cfeg/mamem_events_v2.py": "e25565ebbf3b0af8bdd469c3847f4114040268dfe2cff19a708d66a13914c666",
+      "src/cfeg/mamem_reference_probe_v1.py": "a147f8ac18016d521832f33dc9f45f956ac0f8163aa56df5a5da9f38f32eb7e3"
+    },
+    "cost": {
+      "analyzed_support_seconds": 10,
+      "full_support_record_seconds": 471.668,
+      "query_ready_elapsed": "UNKNOWN",
+      "selected_stimulus_seconds": 25,
+      "selected_support_elapsed_prefix_seconds": 445.94,
+      "selected_trials": 5,
+      "setup_seconds": "UNKNOWN"
+    },
+    "elapsed_seconds": 0.002537910360842943,
+    "fits": 0,
+    "frequencies_hz": {
+      "NOMINAL": [
+        6.66,
+        7.5,
+        8.57,
+        10,
+        12
+      ],
+      "SAMPLE_SUPPORT": [
+        6.483402489626556,
+        7.291666666666667,
+        8.333333333333334,
+        9.65553235908142,
+        11.645962732919255
+      ]
+    },
+    "limitations": "Saved projection/scalar arithmetic and recorded scope only: no independent EEG-to-projection reconstruction, source-file rehash, support/query provenance proof, independent label truth, physical clock validation, efficacy or savings claim.",
+    "max_scalar_error": 2.7755575615628914e-17,
+    "predictions": 30,
+    "producer_imports": 0,
+    "projection_scalars": 600,
+    "queries": 15,
+    "raw_reads": 0,
+    "reconstruction_near_ties": 0,
+    "status": "PASS_SAVED_PROJECTION_AND_RECORDED_SCOPE",
+    "summary": {
+      "NOMINAL": {
+        "correct": 12,
+        "per_class_correct": [
+          3,
+          3,
+          2,
+          2,
+          2
+        ],
+        "signal_present_dev": true,
+        "total": 15
+      },
+      "SAMPLE_SUPPORT": {
+        "correct": 14,
+        "per_class_correct": [
+          3,
+          3,
+          3,
+          3,
+          2
+        ],
+        "signal_present_dev": true,
+        "total": 15
+      },
+      "decision": "REFERENCE_DIAGNOSTIC_COMPLETE",
+      "paired": {
+        "both_correct": 12,
+        "both_wrong": 1,
+        "nominal_only": 0,
+        "sample_only": 2
+      }
+    }
+  },
+  "tool_wall_seconds": 0.000003918
+}

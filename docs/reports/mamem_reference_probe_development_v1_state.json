@@ -1,0 +1,148 @@
+{
+  "schema": "cfeg.mamem-reference-probe-dev-v1.closeout",
+  "date": "2026-09-13",
+  "round_status": "DEVELOPMENT_REFERENCE_DIAGNOSTIC_COMPLETE_NOT_EFFICACY",
+  "overall_research_goal_status": "active",
+  "producer_and_auditor_commit": "6a8a2ec",
+  "contract_initial_commit": "39f1f79",
+  "audit_lane_commit": "08281b0cef7930939dc7a4d6d43c61d9d550716f",
+  "audit_integration_commit": "e2ee6e2",
+  "actual_attempts": 1,
+  "actual_attempt_budget": 1,
+  "actual_attempts_remaining": 0,
+  "new_gate_fits": 0,
+  "queries": 15,
+  "predictions": 30,
+  "class_scores": 150,
+  "projection_scalars": 600,
+  "started_utc": "2026-09-13T14:27:47.259799+00:00",
+  "ended_utc": "2026-09-13T14:27:48.737328+00:00",
+  "elapsed_seconds": 1.477529,
+  "nominal_correct": 12,
+  "sample_support_correct": 14,
+  "total": 15,
+  "nominal_accuracy": 0.8,
+  "sample_support_accuracy": 0.9333333333333333,
+  "paired": {
+    "both_correct": 12,
+    "both_wrong": 1,
+    "nominal_only": 0,
+    "sample_only": 2
+  },
+  "decision": "REFERENCE_DIAGNOSTIC_COMPLETE",
+  "frequencies_hz": {
+    "NOMINAL": [
+      6.66,
+      7.5,
+      8.57,
+      10,
+      12
+    ],
+    "SAMPLE_SUPPORT": [
+      6.483402489626556,
+      7.291666666666667,
+      8.333333333333334,
+      9.65553235908142,
+      11.645962732919255
+    ]
+  },
+  "cost": {
+    "analyzed_support_seconds": 10,
+    "full_support_record_seconds": 471.668,
+    "query_ready_elapsed": "UNKNOWN",
+    "selected_stimulus_seconds": 25,
+    "selected_support_elapsed_prefix_seconds": 445.94,
+    "selected_trials": 5,
+    "setup_seconds": "UNKNOWN"
+  },
+  "a_decoded_variables": [
+    "DIN_1",
+    "samplingRate"
+  ],
+  "b_decoded_variables": [
+    "eeg",
+    "DIN_1",
+    "samplingRate"
+  ],
+  "a_eeg_numeric_windows": 0,
+  "b_eeg_numeric_windows": 15,
+  "b_eeg_numeric_channels": 1,
+  "query_metadata_extractions": 0,
+  "information_scope": "A bank frozen before B input hashing/header/decode; B label only parser eligibility and post-score evaluation",
+  "metadata_used_directly_in_reference": true,
+  "metadata_learned": false,
+  "metadata_gain_beyond_Q_and_common_information_demonstrated": false,
+  "calibration_reduction_demonstrated": false,
+  "query_ready_time_reduction_demonstrated": false,
+  "strong_author_baseline_reproduction": false,
+  "independent_participant_confirmation": false,
+  "prior_v2_decision": "RETIRE_UNDER_FROZEN_PROTOCOL",
+  "synthetic_suite_budget": 3,
+  "synthetic_suites_used": 3,
+  "synthetic_history": [
+    {
+      "lane": "root_runner_initial",
+      "passed": 20,
+      "failed": 0,
+      "seconds": 0.17
+    },
+    {
+      "lane": "isolated_auditor_initial",
+      "passed": 25,
+      "failed": 54,
+      "seconds": 0.77,
+      "reason": "Python3.10 rejected valid 1-digit fractional UTC; fixed before actual observation; no local retry"
+    },
+    {
+      "lane": "final_integrated",
+      "passed": 366,
+      "failed": 0,
+      "seconds": 2.25
+    }
+  ],
+  "final_regression_output": "........................................................................ [ 19%]\n........................................................................ [ 39%]\n........................................................................ [ 59%]\n........................................................................ [ 78%]\n........................................................................ [ 98%]\n......                                                                   [100%]\n366 passed in 2.25s\nAll checks passed!\n",
+  "full_repository_suite_run": false,
+  "ruff": "PASS",
+  "diff_check": "PASS",
+  "audit_attempts": 1,
+  "audit_status": "PASS_SAVED_PROJECTION_AND_RECORDED_SCOPE",
+  "audit_max_scalar_error": 2.7755575615628914e-17,
+  "audit_reconstruction_near_ties": 0,
+  "audit_raw_reads": 0,
+  "audit_fits": 0,
+  "independent_raw_projection_reconstruction": false,
+  "os_io_trace": false,
+  "artifact_sha256": {
+    "manifest.json": "7d3e558eda34347c17de47fd3a16568636f5c2a5ed9e441cc89d245888d801fc",
+    "result.json": "a026ac6314d2e1342bc36e5c0c08e4889ea374587d99513ec7ddad72d773b313",
+    "started.json": "ad301d06cf899a58f760cdbffec907b03d20938042a1887ddb2fc6e61dabdc57",
+    "terminal.json": "4d972c08ad843fffa40c29ff9544127e05bab5de62e7c635e09ef18df8b1dc29",
+    "worker_claim.json": "1974044ba92211a5891f98fae09722852f0b0a507847a49f291544f0504c2618"
+  },
+  "audit_receipt_sha256": "c35765cd945921f6e0c94a0d8221299f05d71214867bde9e6c70086362f941af",
+  "code_sha256": {
+    "docs/mamem_reference_probe_development_v1_contract.md": "617ee9b3011e6bcf0d977d8d62ed3617c6429db8a31ffb085a08c10c1e2ecb0c",
+    "scripts/analysis/audit_mamem_reference_probe_v1.py": "f7ec8ce388f81f4e85c91db3a5c8a0c0a841fc694bb93296de775df7dfd4ff03",
+    "scripts/analysis/run_mamem_reference_probe_v1.py": "4ab5a68ce7155bf812b16daab35c4d99f1d832cbcb565291d47355d670617f22",
+    "src/cfeg/mamem_events_v1.py": "1c6762783fed206201a9c0539de5aa4c94d45564190bb08954ec4b0c242c096a",
+    "src/cfeg/mamem_events_v2.py": "e25565ebbf3b0af8bdd469c3847f4114040268dfe2cff19a708d66a13914c666",
+    "src/cfeg/mamem_reference_probe_v1.py": "a147f8ac18016d521832f33dc9f45f956ac0f8163aa56df5a5da9f38f32eb7e3"
+  },
+  "result_bytes": 22345,
+  "total_run_bytes": 24429,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "source_cohort_new_reads": 0,
+  "network_requests": 0,
+  "held60_openings": 0,
+  "people_requests": 0,
+  "paid_resources": 0,
+  "new_worktrees": 1,
+  "total_worktrees": 46,
+  "added_worktree": "/home/whwovy/califreeEEG-wt-reference-probe-audit-v1",
+  "added_worktree_mib_approx": 36,
+  "worktree_cleanup": 0,
+  "next_plan": "docs/mamem_reference_residual_learning_next.md",
+  "next_plan_executed": false,
+  "next_action": "Freeze source-only common-reference and residual-information structural eligibility before a new learned-M candidate; preserve direct-M and common-bank-only controls."
+}
