@@ -1,0 +1,7 @@
+{
+  "producer_sha256": "22232644dc0ac3aa5f0cd870a127252f2e8a19748cf14b111cea678e7a596c68",
+  "helper_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008",
+  "deadline_utc": "2026-09-13T12:10:00+00:00",
+  "fits": 12, "worlds": 3, "train_episodes": 32, "eval_episodes": 16,
+  "alpha": 0.1, "residual_zero_epsilon": 1e-9, "scaler_std_floor": 1e-9
+}

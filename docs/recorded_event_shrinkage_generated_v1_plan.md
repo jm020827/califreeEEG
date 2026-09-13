@@ -32,6 +32,9 @@ PSD trace1 support T와 source prior P에 A=(1−λ)T+λP를 적용한다. k1에
 - Deadline2026-09-13T12:10:00Z, actualrun<=30wall초/CPU30초/AS2GiB,
   singleBLASthread, stdout/stderr 각각32KiB, report32KiB, 직접 새 artifact1MiB.
   실제12fit 전에 코드/계약을 commit하고 고정 단회 디렉터리에 STARTED/terminal 보존.
+  각fit의STARTED/COMPLETE 영수증을 별도 작은 파일에 남겨 중간실패도 횟수를 잃지
+  않는다. 모델 scaler/beta/intercept 및 eval prediction을 report에 저장하여 재fit
+  없이 독립 수치 검산한다. 이 추가 영수증은 기존32KiB/파일·1MiB전체 상한 안이다.
 - T=diag(1,0),P=I/2. λ*=index bit0; T*=(1−λ*)T+λ*P. Q의2개 특징과
   Q2의 추가2개 EEG 특징은 모두0인 **통제된 장난감 세계**다. 실제 강한Q 설계가 아니다.
 - Positive: M state=bit0, Null: state=bit1, Schedule-only: state=0.
