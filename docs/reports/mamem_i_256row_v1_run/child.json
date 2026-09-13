@@ -1,0 +1,79 @@
+{
+  "started_utc": "2026-09-13T11:35:25.143651+00:00",
+  "planned_scope": {
+    "EEG_variable_fully_decoded": true,
+    "DIN_variable_fully_decoded": true,
+    "EEG_numeric_scope": "copied rows[0:256], fixed marker-relative500samples only",
+    "DIN_numeric_cells": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        71
+      ]
+    ],
+    "timestamp_or_descriptor_values_inspected": false,
+    "EEG_excluded_values_used_in_QC": false,
+    "physical_latency_corrected": false,
+    "class_labels_inferred": false,
+    "raw_arrays_exported": false,
+    "fits": 0,
+    "held60": 0
+  },
+  "access_stages": [
+    "DIN_1_load_requested",
+    "DIN_1_decoded_whitelist_validated",
+    "two_sample_cells_and_window_validated",
+    "eeg_load_requested",
+    "eeg_decoded_whitelist_validated",
+    "selected_256x500_copied_before_QC"
+  ],
+  "status": "INPUT_INTEGRITY_PASS",
+  "selected_shape": [
+    256,
+    500
+  ],
+  "all_finite": true,
+  "constant_channels": 0,
+  "max_abs_stored_units": 69188.140625,
+  "voltage_unit": "unverified_stored_units",
+  "selected_sha256": "c1c017a85f2eb32b145ce877f9ec370051c205cb8aaaf0f80da469b4267ae4ea",
+  "hash_encoding": "little-endian float64 C-order",
+  "SSVEP_presence_verified": false,
+  "window": {
+    "start0": 25488,
+    "end0": 25988,
+    "first_marker_sample1": 25239,
+    "last_marker_sample1": 26443,
+    "samples": 500,
+    "nominal_sampling_hz": 250,
+    "end_policy": "last_marker_sample_inclusive"
+  },
+  "mat_sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a",
+  "subject": "S001",
+  "scope": {
+    "EEG_variable_fully_decoded": true,
+    "DIN_variable_fully_decoded": true,
+    "EEG_numeric_scope": "copied rows[0:256], fixed marker-relative500samples only",
+    "DIN_numeric_cells": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        71
+      ]
+    ],
+    "timestamp_or_descriptor_values_inspected": false,
+    "EEG_excluded_values_used_in_QC": false,
+    "physical_latency_corrected": false,
+    "class_labels_inferred": false,
+    "raw_arrays_exported": false,
+    "fits": 0,
+    "held60": 0
+  },
+  "ended_utc": "2026-09-13T11:35:26.036769+00:00"
+}

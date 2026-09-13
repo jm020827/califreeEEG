@@ -1,0 +1,600 @@
+{
+  "started_utc": "2026-09-13T11:46:06.542900+00:00",
+  "planned_scope": {
+    "generated_only": true,
+    "real_EEG_reads": 0,
+    "actual_strong_Q_tested": false,
+    "actual_metadata_utility_tested": false,
+    "accuracy_evaluations": 0,
+    "calibration_savings_evaluations": 0,
+    "OOD_generalization_tested": false,
+    "held60": 0,
+    "random_draws": 0,
+    "seed_label": 20260913
+  },
+  "status": "GENERATED_ABILITY_PASS",
+  "scope": {
+    "generated_only": true,
+    "real_EEG_reads": 0,
+    "actual_strong_Q_tested": false,
+    "actual_metadata_utility_tested": false,
+    "accuracy_evaluations": 0,
+    "calibration_savings_evaluations": 0,
+    "OOD_generalization_tested": false,
+    "held60": 0,
+    "random_draws": 0,
+    "seed_label": 20260913
+  },
+  "fits": 12,
+  "additional_score_forwards": 6,
+  "worlds": {
+    "positive": {
+      "template_frobenius_mse": {
+        "Q": 0.12500000000000003,
+        "Q2": 0.12500000000000003,
+        "QM": 3.04224337460246e-07,
+        "SHAM": 0.12500000000000003
+      },
+      "models": {
+        "Q": {
+          "mean": [
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "Q2": {
+          "mean": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "QM": {
+          "mean": [
+            0.0,
+            0.0,
+            1.0,
+            -0.49999999999999994
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            0.49999999999999994
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.24960998439937773,
+            -0.2496099843993742
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519,
+            0.0007800312012480326,
+            0.9992199687987519
+          ]
+        },
+        "SHAM": {
+          "mean": [
+            0.0,
+            0.0,
+            1.0,
+            -0.49999999999999994
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            0.49999999999999994
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "sham_cross_table": [
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          8
+        ]
+      ],
+      "sham_changed_fraction": 0.5,
+      "train_episodes": 32,
+      "eval_episodes": 16
+    },
+    "null": {
+      "template_frobenius_mse": {
+        "Q": 0.12500000000000003,
+        "Q2": 0.12500000000000003,
+        "QM": 0.12500000000000003,
+        "SHAM": 0.12500000000000003
+      },
+      "models": {
+        "Q": {
+          "mean": [
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "Q2": {
+          "mean": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "QM": {
+          "mean": [
+            0.0,
+            0.0,
+            1.0,
+            -0.49999999999999994
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            0.49999999999999994
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "SHAM": {
+          "mean": [
+            0.0,
+            0.0,
+            1.0,
+            -0.49999999999999994
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            0.49999999999999994
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "sham_cross_table": [
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          8
+        ]
+      ],
+      "sham_changed_fraction": 0.5,
+      "train_episodes": 32,
+      "eval_episodes": 16
+    },
+    "schedule_only": {
+      "template_frobenius_mse": {
+        "Q": 0.12500000000000003,
+        "Q2": 0.12500000000000003,
+        "QM": 0.12500000000000003,
+        "SHAM": 0.12500000000000003
+      },
+      "models": {
+        "Q": {
+          "mean": [
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "Q2": {
+          "mean": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "QM": {
+          "mean": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "SHAM": {
+          "mean": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "beta": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "intercept": 0.5,
+          "eval_predicted_lambda": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "sham_cross_table": [
+        [
+          16,
+          0
+        ],
+        [
+          16,
+          0
+        ]
+      ],
+      "sham_changed_fraction": 0.0,
+      "train_episodes": 32,
+      "eval_episodes": 16
+    }
+  },
+  "invariants": {
+    "schedule_offset_invariance_state0": true,
+    "schedule_offset_invariance_state1": true,
+    "positive_oracle_matches_constructed_target": true,
+    "positive_sham_multiset_preserved": true,
+    "positive_sham_independent": true,
+    "null_oracle_matches_constructed_target": true,
+    "null_sham_multiset_preserved": true,
+    "null_sham_independent": true,
+    "schedule_only_oracle_matches_constructed_target": true,
+    "schedule_only_sham_multiset_preserved": true,
+    "schedule_only_M_is_exact_zero": true,
+    "twelve_fits": true,
+    "positive_QM_ability": true,
+    "positive_Q_baseline": true,
+    "positive_Q2_baseline": true,
+    "positive_SHAM_baseline": true,
+    "null_Q_baseline": true,
+    "null_Q2_baseline": true,
+    "null_QM_baseline": true,
+    "null_SHAM_baseline": true,
+    "schedule_only_Q_baseline": true,
+    "schedule_only_Q2_baseline": true,
+    "schedule_only_QM_baseline": true,
+    "schedule_only_SHAM_baseline": true,
+    "k1_metadata_changes_metric_and_score": true,
+    "same_template_prior_cancels": true,
+    "pure_reference_query_cancels": true
+  },
+  "intervention": {
+    "lambda_values": [
+      0.0007800312012480326,
+      0.9992199687987519
+    ],
+    "scores": [
+      0.999609984399376,
+      0.500390015600624
+    ],
+    "same_template_prior_scores": [
+      0.5,
+      0.5
+    ],
+    "pure_reference_scores": [
+      1.0,
+      1.0
+    ]
+  },
+  "limitation": "Designed missing-Q information; deterministic repeated train/eval states; not human efficacy",
+  "ended_utc": "2026-09-13T11:46:06.608476+00:00"
+}

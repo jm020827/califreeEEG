@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **현재: 실제256행 입력과 one-shot M 생성 학습 관문 완료**. [S001 고정2초 입력](docs/mamem_i_256row_adapter_v1_results.md)은 전체 decode 후 선택256×500만 QC해 finite/nonconstant를 확인했다. [새 후보의12-fit 생성 결과](docs/recorded_event_shrinkage_generated_v1_results.md)는 M→PSD template 혼합→score 작동과 null/schedule/SHAM 대조27개를 통과했다. 관련147tests 및 재fit 없는 독립 수치 감사 PASS. **실제 강한Q 이상의 M 효능·보정량 감소는 아직 미검증**이며 기존 부정 결과/held60 보호를 유지한다. [다음 실제 source 연결 초안](docs/mamem_recorded_event_source_learning_v1_draft.md)은 아직 실행하지 않았다. 아래는 이력이다.
+
 > 2026-09-13 **현재: 용량 확보·MAMEM scalar 관문 완료**. 가용 약 323GB를 재확인했고, S001a에서 samplingRate 하나만 단회 확인해 250Hz/MATCH를 얻었다. [결과](docs/mamem_i_scalar_adapter_v1_results.md), [상태](docs/reports/mamem_i_scalar_adapter_v1_state.json). 관련 77tests PASS. MOABB는 마지막 행을 명시적으로 stim으로 처리한다. 이를 우리 EEG 입력에 포함하지 않도록 하되 원본 row257의 물리적 의미를 확인한 척하지 않는다. 미정의 DIN descriptor는 읽지 않았고 새 EEG파형/fit/held60/발송/유료 0. [다음 초안](docs/mamem_i_256row_adapter_v1_draft.md)은 공통 256행 입력 격리이며 아직 미실행이다. 아래는 시점별 이력이다.
 
 > 2026-09-13 **현재: MAMEM 시간 metadata의 해석 관문 완료**. [결과](docs/mamem_i_timing_identifiability_v1_results.md), [상태](docs/reports/mamem_i_timing_identifiability_v1_state.json). 배포PDF로S001–S011 namespace를확인했으며S013동일인alias/257번째행은미확정이다. Cedrus의ST100–EGI polarity공지와3개생성상황검사로DIN만의국소clock일치≠physicaljitter검증을구분했다. `기록된 event 규칙성`의추가예측가치는열려있고새fit/EEG값/held60/발송/유료0이다. 관련43tests·독립생성검산PASS,PDFqueue-before-download이탈은보존했다. [후속초안](docs/mamem_i_recorded_event_metadata_v1_draft.md)은채널/이벤트정의와boundedS001metadata확인부터진행한다. 아래는시점별이력이다.

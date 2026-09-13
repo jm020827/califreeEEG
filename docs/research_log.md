@@ -2039,3 +2039,65 @@
   해시·시각·범위·문서 및 0byte stdout/stderr를 확인해 PASS했다. 기록된 전체 시도
   0.315117초다. 실제 MAT 재열람·별도 test 재실행 감사는 아니며, root 관련77tests는
   마감 전 다시 PASS했다. 새 차단 문제는 없고 후속256행 초안은 미실행으로 남긴다.
+
+### 137. 2026-09-13 — MAMEM 공통256행 실제 입력 연결
+
+- Active goal ‘계속 연구’를 확인했다. 직전 턴은 실제 samplingRate 및 정책 갱신을
+  완료한 progress이며 전체 연구의 완료로 축소하지 않는다. Base c62ea22/main,
+  tracked clean/기존8untracked/41worktrees 유지, free314,712,840KiB. Root만 쓰고
+  세 agent는 source index·학습 기작·protocol을 읽기전용 검토했다. Academic-research의
+  근거 분리·workspace와 coordinate-worktree-changes의 순차쓰기/병렬 검토를 적용했다.
+- [계획](mamem_i_256row_adapter_v1_plan.md)을f053400으로 고정했다. 기존 Session.m
+  MATLAB 직접 indexing을 읽어1-based 변환을 채택했다. 물리적 onset 검증이 아니며
+  원본257행의 정체와 공통 제외 정책을 구분한다. Source/network/PDF다운로드0.
+- 구현417ce74, 새54+기존77=131tests PASS 후 S001a 단회 실제 입력 확인을 실행했다.
+  DIN row4 첫/72번째 sample 두 개25239/26443만 읽고 `[25488:25988]`를 선택했다.
+  EEG/DIN 전체 decode를 고지하고, 먼저256×500 copy 뒤에만 QC했다. 전부finite,
+  상수행0, maxabs69188.140625는 미확인 저장 단위다. μV/정상진폭/SSVEP 확인 아님.
+  11:35:25.122681–11:35:26.088762UTC,0.966081초,attempt1/retry0/fit0이다.
+- Row/time 밖 NaN/Inf/가짜label/큰 값에 대한 결과 불변, 안쪽 변화의 민감성,
+  copy/order/두cell접근/해시/역할/범위/자원/마감/단회 기록을 생성 검증했다.
+  독립 저장 영수증 감사는 producer/helper/manifest와417ce74,시간/hash/scope를
+  확인해 PASS했다. 실제 MAT/tensor 재열람·독립 test 재실행은 아니다.
+- [결과](mamem_i_256row_adapter_v1_results.md)/[상태](reports/mamem_i_256row_adapter_v1_state.json)
+  보존. S001 전체 개발용, 새 참가자0/분류0/held60/외부발송/유료0. 기존 실패·부정,
+  Q/Q2/QM/SHAM·실제 획득prefix/setupcost 유지. Claim45e6162c5b11b253 QUALIFIED다.
+
+### 138. 2026-09-13 — Recorded-event M의 one-shot shrinkage 생성 학습
+
+- 입력 관문(fit0)을 끝낸 뒤 [별도12-fit계약](recorded_event_shrinkage_generated_v1_plan.md)을
+  13c65ec로 고정했다. 한 trial에서 정규화로 상쇄되는 scalar weighting 대신,
+  M이 support PSD template와 source prior의 혼합량을 학습하는 후보1개다.
+  Q/common 이상 반복-template 오차 예측이라는 원 연구 가설을 유지한다.
+- Timestamp→frame-grid residual MAD/lag1 extractor, population source scaler,
+  fixedridgeα=.1/비정규화intercept,λclip,source-oracle 대수를 구현했다. Positive/null/
+  schedule-only3세계×Q/Q2/QM/SHAM4,train32/eval16,randomdraw0,총12fits로 한정했다.
+  Q/Q2는 의도적으로zero인 능력 검사이며 실제 강한Q를 이긴다고 주장하지 않는다.
+- 독립 사전 검토의 timestamp extractor 연결·float floor·SHAM 독립성·유효 Gram
+  query·loss단위·fitledger·모델 저장 지적을 반영했다. Null에서2bit SHAM이 정답을
+  복구할 수 있어 실제fit 전에3bit cycle로 고정하고2×2balance와multiset을 검사했다.
+  구현53e77ec 및16algebra/reporttests를 고정한 뒤 단회12fits를11:46:06UTC에 실행했다.
+- PositiveQM FrobeniusMSE3.04224337460246e−7, Q/Q2/SHAM=.125; null/schedule의
+  모든arm=.125. M-onlyλ .000780→.999220,score .999610→.500390. T=P metric/score
+  불변 및 H=C score1 상쇄 대조 포함27invariants PASS. 추가scoreforward6, 재fit0.
+  FitSTARTED/COMPLETE 각12개, child12,010bytes 및모든모델/예측을 보존했다.
+- 독립 감사는 production import/solve 없이12모델,192eval+2개입 gate예측,6scores,
+  27invariants/ledger를 재계산했다. Prediction차2.22e−16,loss차2.78e−17,
+  normal-equation residual0로 PASS. Scope는 생성 수치이며 실제 EEG 효능/OOD/통계적
+  일반화/보정절감이 아니다. 최종 관련147tests PASS, 전체repo suite는 미실행이다.
+- [결과](recorded_event_shrinkage_generated_v1_results.md)/[상태](reports/recorded_event_shrinkage_generated_v1_state.json)/
+  [실제 source 연결 초안](mamem_recorded_event_source_learning_v1_draft.md)을 저장했다.
+  K1 연산은 유지하지만 실제 유망 후보로 승격하지 않는다. 실제강한Q/Q2·trial/class/
+  참가자-exclusiveprior/반복표적·supportM·queryDIN격리·80fit제안/비용 동결은 다음이다.
+- 기존 PDF p2/p4와 MOABB94/746·Session.m을 재독해 nominal6.66/7.50/8.57/10/12Hz와
+  정수keys6/7/8/9/11의 차이를 명시했다. Legacy shortgroup의 frequency와range추가
+  순서가 달라질 수 있어 새parser에서 group별 정렬을 검사한다. 실제 추가DIN값0.
+- Generatedclaim32526408cee4dd78 VERIFIED, mappingclaima393d8fce6916174 QUALIFIED,
+  기존gap3f973164c88eabce 갱신. 누적1134records/90searches/46cards/18techniques/
+  88claims/230evidence/45gaps/6analogies/38deepreads,cutoff2026-09-04 불변.
+  Render11views/SQLitequick_checkok, 보호4문서hash 불변. 단계별 새구간/fit 예산을
+  지켰고 이전 부정·실패·held60 경계는 그대로다. Goal은 실제 효능 미검증으로 active.
+- 최종 protocol reviewer는 generated STARTED/worker/terminal/config·53e77ec,
+  고유12fit/24ledger·문서/state/후속초안까지 PASS로 확인했다. 전체시도0.115395초,
+  output16,341bytes/빈stdoutstderr이며 실제 MAT/재fit/수치예측/단위검사 재실행은
+  하지 않았다. 숫자 감사와 절차 감사의 범위를 구분해 보존했다.

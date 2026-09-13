@@ -1,0 +1,52 @@
+{
+  "status": "INPUT_INTEGRITY_PASS",
+  "attempts": 1,
+  "planned_scope": {
+    "EEG_variable_fully_decoded": true,
+    "DIN_variable_fully_decoded": true,
+    "EEG_numeric_scope": "copied rows[0:256], fixed marker-relative500samples only",
+    "DIN_numeric_cells": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        71
+      ]
+    ],
+    "timestamp_or_descriptor_values_inspected": false,
+    "EEG_excluded_values_used_in_QC": false,
+    "physical_latency_corrected": false,
+    "class_labels_inferred": false,
+    "raw_arrays_exported": false,
+    "fits": 0,
+    "held60": 0
+  },
+  "child_returncode": 0,
+  "child_sha256": "99385f980757f750aa0606b48a1602ef383954ab78a46f493e89f3a67653dacd",
+  "selected_sha256": "c1c017a85f2eb32b145ce877f9ec370051c205cb8aaaf0f80da469b4267ae4ea",
+  "scope": {
+    "EEG_variable_fully_decoded": true,
+    "DIN_variable_fully_decoded": true,
+    "EEG_numeric_scope": "copied rows[0:256], fixed marker-relative500samples only",
+    "DIN_numeric_cells": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        71
+      ]
+    ],
+    "timestamp_or_descriptor_values_inspected": false,
+    "EEG_excluded_values_used_in_QC": false,
+    "physical_latency_corrected": false,
+    "class_labels_inferred": false,
+    "raw_arrays_exported": false,
+    "fits": 0,
+    "held60": 0
+  },
+  "ended_utc": "2026-09-13T11:35:26.088762+00:00"
+}

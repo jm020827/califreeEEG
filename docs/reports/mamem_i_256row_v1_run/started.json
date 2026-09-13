@@ -1,0 +1,37 @@
+{
+  "status": "STARTED",
+  "started_utc": "2026-09-13T11:35:25.122681+00:00",
+  "attempts": 1,
+  "manifest_sha256": "4ac02da770faaa8b438a865ce1c5f4f256da36d6eef1b6b4b183d3f456cafd64",
+  "producer_sha256": "69d33a69662da705ec071b427100e576a1f0d90975dd1955510d6eb6489efdfd",
+  "helper_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008",
+  "limits": {
+    "address_space_bytes": 2147483648,
+    "cpu_seconds": 30,
+    "wall_seconds": 60,
+    "each_output_bytes": 32768,
+    "free_reserve_bytes": 8589934592
+  },
+  "planned_scope": {
+    "EEG_variable_fully_decoded": true,
+    "DIN_variable_fully_decoded": true,
+    "EEG_numeric_scope": "copied rows[0:256], fixed marker-relative500samples only",
+    "DIN_numeric_cells": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        71
+      ]
+    ],
+    "timestamp_or_descriptor_values_inspected": false,
+    "EEG_excluded_values_used_in_QC": false,
+    "physical_latency_corrected": false,
+    "class_labels_inferred": false,
+    "raw_arrays_exported": false,
+    "fits": 0,
+    "held60": 0
+  }
+}

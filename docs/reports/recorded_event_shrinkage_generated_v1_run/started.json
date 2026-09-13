@@ -1,0 +1,20 @@
+{
+  "started_utc": "2026-09-13T11:46:06.520789+00:00",
+  "attempts": 1,
+  "manifest_sha256": "bbe1f94ab877023eec2e8562a27b511cf5aeea6327f8ec62fbc1489829fc8881",
+  "producer_sha256": "22232644dc0ac3aa5f0cd870a127252f2e8a19748cf14b111cea678e7a596c68",
+  "helper_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008",
+  "planned_fits": 12,
+  "planned_scope": {
+    "generated_only": true,
+    "real_EEG_reads": 0,
+    "actual_strong_Q_tested": false,
+    "actual_metadata_utility_tested": false,
+    "accuracy_evaluations": 0,
+    "calibration_savings_evaluations": 0,
+    "OOD_generalization_tested": false,
+    "held60": 0,
+    "random_draws": 0,
+    "seed_label": 20260913
+  }
+}

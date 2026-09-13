@@ -1,5 +1,7 @@
 # MAMEM I 공통 256행 입력 격리 관문 — 후속 초안
 
+> 실행 갱신: [별도 고정 계획](mamem_i_256row_adapter_v1_plan.md)과[실제 결과](mamem_i_256row_adapter_v1_results.md)로 입력 관문을 완료했다. 아래는 실행 전 초안이며 효능 검증 완료라는 뜻은 아니다.
+
 2026-09-13. DRAFT_NOT_EXECUTED. [scalar 관문](mamem_i_scalar_adapter_v1_results.md)
 이후의 별도 실행 계획을 위한 명세다. 만료된 reader의 scope를 넓히지 않는다.
 

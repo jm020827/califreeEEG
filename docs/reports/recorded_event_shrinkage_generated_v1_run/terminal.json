@@ -1,0 +1,23 @@
+{
+  "status": "GENERATED_ABILITY_PASS",
+  "attempts": 1,
+  "planned_fits": 12,
+  "child_returncode": 0,
+  "fits": 12,
+  "child_sha256": "465b710b5f23913aa7c2665bf5b6cd84378f21e3e14ffbd0f3e212ac0632ce06",
+  "scope": {
+    "generated_only": true,
+    "real_EEG_reads": 0,
+    "actual_strong_Q_tested": false,
+    "actual_metadata_utility_tested": false,
+    "accuracy_evaluations": 0,
+    "calibration_savings_evaluations": 0,
+    "OOD_generalization_tested": false,
+    "held60": 0,
+    "random_draws": 0,
+    "seed_label": 20260913
+  },
+  "fit_started_receipts": 12,
+  "fit_completed_receipts": 12,
+  "ended_utc": "2026-09-13T11:46:06.636184+00:00"
+}
