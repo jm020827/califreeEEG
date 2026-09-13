@@ -2217,3 +2217,55 @@
   38deepreads(27complete10queued1skipped),cutoff2026-09-04 유지. 신규검색/PDF0,
   다음불확실성은문헌더쌓기보다유한신호진단이다. Render11views/SQLitequick_checkok.
   README최신요약갱신. 보호4문서SHA불변,held60/사람자료요청/유료0,전체goal은active.
+
+### 142. 2026-09-13 — S001 신호 연결 단회 진단: nominal mismatch와 CCA 유효 차원
+
+- 직전turn은v2실제80-fit와검산/부정결과라는progress다. Base824039a/main,
+  trackedclean·기존8untracked·296GiBfree를확인했다. 새fit를늘리지않고직전S001a
+  진단초안을4ab4829계약으로고정했다. Core/runner를root가단독작성, 수식·source·
+  프로토콜review는읽기전용3agent. 새로운writingworktree0,기존45개보존,삭제없음.
+- Academic-research의관측/가설구분을적용했다. 기존workspacecontext조회후새검색0;
+  첫jq가잘못된.context를가정해display실패했으나올바른root.frontier키로재조회했다.
+  이미보존된Session.m/authorselectedtext/EGInotice를review해f_time은저자연속식,
+  f_sample은같은pairedDIN의추가일관성검사임을확인했다. 독립hardwareclock구성,
+  edge/polarity/절대latency를확인한것으로해석하지않는다. 새network/PDF0.
+- 순수signal_diagnostic/runner와test를구현했다. Exact15창/첫256rowcopy,
+  M2미호출, nominal/time/sample3reference의h1/h2energy와overlap, 기존CCA5scores,
+  topgap/signedmargin, covariance요약·고정ridge d_eff,공통seed20260914순열이다.
+  Scoreaccuracy/최선clock/ridge/channel/window선택은없다. Contractclarification에서
+  sharedπ가XiXjᵀ도보존함을명시하고purephase-null이아님을고정했다.
+- Review에서floatpermutation dtype검사,clock/overlap/covariance parent검증,
+  실패CLI nonzeroexit를보강했다. samplingRate header는기존검증처럼numeric scalar를
+  허용하고실제250을검사한다. Full-rankgeneratedpositive/negative, Gram/eigenwhite
+  독립수식,rotation·poison·scope·단회 tests후producer/auditor99baf32을고정했다.
+  실제자료전316relatedtests/새45tests PASS, 실제진단후최종317tests2.85초PASS,
+  ruff/diffcheck PASS. 전체repo suite는실행하지않았다.
+- 실제실행13:34:30.676898–13:34:31.860757UTC=1.183859초. 1attempt/15mainwindows/
+  0gatefits COMPLETE. EEG/DIN_1/samplingRate를한loadmat호출로전체decode했지만
+  EEG수치처리는고정15×256×500만이다. 다른구간·row257·descriptor·학습용M2는사용0.
+  Timingdiagnosticstats는계산했으므로Mflag의좁은뜻을출력에도명시했다. 새extraction0.
+- Classmean nominal6.66/7.5/8.57/10/12Hz대timestamp6.4988/7.3463/8.3151/9.6034/
+  11.6144Hz. Sample식과의최대차.004771Hz,모든15group의max|dt−4ds|3ms.
+  이는기록필드상일관성/nominal불일치이며실제광자Hz나뇌latency원인확정이아니다.
+  Nominal↔timeoverlap class8.57 h2평균.00279,10/12h1평균.0616/.0740.
+  Energy증가는일률적이지않다:6.66/7.5h1은감소,10/12h1은증가. 최선ref로새정확도0.
+- Entropyrankmean8.7728에비해고정tiny ridge d_eff255.9197,원CCA topscoremean
+  .82957/순열.60427, signedclassmarginmean−.02183/−.04089. 공분산보존상대오차
+  최대8.414e−16. 높은CCA점수≠높은target선택성. 순열은시간구조를바꾸지만단일null이므로
+  pvalue/phase-onlynull/뇌반응원인검증으로격상하지않는다.
+- 독립scalar auditor99baf32을30CPU/60wall/2GiB상한으로1회실행해PASS,
+  maxscalarerror3.3306690738754696e−16,rawrefit0. Diagnostic63,542bytes,
+  stdoutstderr각0. 별도protocolagent는6pins·start/claim/terminal/15범위·v2hash
+  보존확인,수치agent는저장JSON요약1회. 두reviewer모두원자료/fit/write0이다.
+  OS-level독립IO추적·peakRAM측정·원EEGfeature재구축감사를한것은아니다.
+- [결과](mamem_signal_validity_v1_results.md)/[상태](reports/mamem_signal_validity_v1_state.json)/
+  [감사](reports/mamem_signal_validity_v1_audit.json)와원run을보존했다.
+  다음은[공통baseline출처·구현확인](mamem_common_baseline_qualification_next.md),미실행이다.
+  단일검증baseline의nominal5bank와firstsupport1trial/class sampleclock5bank 비교만
+  고려하며queryDIN주파수shortcut/timevsSample선택sweep은금지한다. 새M효능fit는보류,
+  공통reference정정효과를M학습기여로세지않는다. v2RETIRE는그대로다.
+- Claim8331685a97858d9a QUALIFIED/3evidence,기존gap3f973164c88eabce갱신.
+  누적1134papers/90searches/46cards/18techniques/92claims/243evidence/45gaps/
+  6analogies/38deepreads,cutoff2026-09-04유지. Render11views/SQLitequick_checkok.
+  마지막free295GiB,보호4문서·v2summary/terminalSHA불변,held60/외부사람요청/유료0.
+  Goal은실제M효능/보정절감미확립으로active이며임의완료·blocked표시하지않는다.

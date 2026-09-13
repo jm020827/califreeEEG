@@ -1,0 +1,239 @@
+{
+  "schema": "cfeg.mamem-signal-validity-v1.saved-scalar-audit",
+  "auditor_commit": "99baf32",
+  "executions": 1,
+  "exit_code": 0,
+  "observed_complete_utc": "2026-09-13T13:34:51Z",
+  "command": "prlimit --as=2147483648 --cpu=30 -- timeout 60s env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python scripts/analysis/audit_mamem_signal_validity_v1.py",
+  "stdout_json": {
+    "status": "PASS_SAVED_SCALARS_AND_RECORDED_SCOPE",
+    "windows": 15,
+    "result_sha256": "12051d2c67d0780a0e11312b2aa85d7fcb16b2c33d11bb7f0e21a8217a683f4a",
+    "max_scalar_error": 3.3306690738754696e-16,
+    "refits": 0,
+    "raw_reads": 0,
+    "classes": [
+      {
+        "inferred_label": 0,
+        "frequency_mean_hz": {
+          "nominal": 6.66,
+          "time": 6.498770191086167,
+          "sample": 6.498349834983498
+        },
+        "relative_energy_mean_h1_h2": {
+          "nominal": [
+            0.004285100755969033,
+            0.00327664567729029
+          ],
+          "time": [
+            0.003737540522263371,
+            0.00557705775576585
+          ],
+          "sample": [
+            0.0037343590695621525,
+            0.005565357783706883
+          ]
+        }
+      },
+      {
+        "inferred_label": 1,
+        "frequency_mean_hz": {
+          "nominal": 7.5,
+          "time": 7.346260679825254,
+          "sample": 7.346740337673748
+        },
+        "relative_energy_mean_h1_h2": {
+          "nominal": [
+            0.006605763032625265,
+            0.0031430391982873803
+          ],
+          "time": [
+            0.004172856182171262,
+            0.007593898100541438
+          ],
+          "sample": [
+            0.004189006540342949,
+            0.007584525883085422
+          ]
+        }
+      },
+      {
+        "inferred_label": 2,
+        "frequency_mean_hz": {
+          "nominal": 8.57,
+          "time": 8.3151059769028,
+          "sample": 8.317380284728216
+        },
+        "relative_energy_mean_h1_h2": {
+          "nominal": [
+            0.004456556078564186,
+            0.0011683043174210543
+          ],
+          "time": [
+            0.005214952324392136,
+            0.007363180421089626
+          ],
+          "sample": [
+            0.0052373698513961285,
+            0.0073289019930260465
+          ]
+        }
+      },
+      {
+        "inferred_label": 3,
+        "frequency_mean_hz": {
+          "nominal": 10,
+          "time": 9.603406417070806,
+          "sample": 9.604716554380499
+        },
+        "relative_energy_mean_h1_h2": {
+          "nominal": [
+            0.0033953864538481555,
+            0.0013033704264380711
+          ],
+          "time": [
+            0.0072663579312090346,
+            0.0021743449412043136
+          ],
+          "sample": [
+            0.007256667157150597,
+            0.0021840710988941217
+          ]
+        }
+      },
+      {
+        "inferred_label": 4,
+        "frequency_mean_hz": {
+          "nominal": 12,
+          "time": 11.61441823104182,
+          "sample": 11.614406687403367
+        },
+        "relative_energy_mean_h1_h2": {
+          "nominal": [
+            0.002565740521034135,
+            0.001508969654093908
+          ],
+          "time": [
+            0.010392301173467702,
+            0.0018213485510426856
+          ],
+          "sample": [
+            0.010364224621048558,
+            0.001811083640880666
+          ]
+        }
+      }
+    ],
+    "time_minus_sample_hz": {
+      "mean": -0.0007264406484959925,
+      "median": -0.0015201436591425477,
+      "min": -0.0033999100073227595,
+      "max": 0.004770410687610749
+    },
+    "max_interval_clock_residual_ms": {
+      "mean": 3,
+      "median": 3,
+      "min": 3,
+      "max": 3
+    },
+    "entropy_effective_rank": {
+      "mean": 8.772841818657996,
+      "median": 8.562640484335478,
+      "min": 7.323872939438549,
+      "max": 10.427326010943473
+    },
+    "ridge_effective_dimension": {
+      "mean": 255.91966268379795,
+      "median": 255.9214893733719,
+      "min": 255.9066872863263,
+      "max": 255.92739135914417
+    },
+    "original_permuted": {
+      "original": {
+        "cca": {
+          "top_score": {
+            "mean": 0.8295712498613016,
+            "median": 0.8302849090279064,
+            "min": 0.7950472944904653,
+            "max": 0.8864898640678456
+          },
+          "top_gap": {
+            "mean": 0.02526176239235712,
+            "median": 0.018227633123229836,
+            "min": 0.001506169624057252,
+            "max": 0.08908337701417368
+          },
+          "inferred_label_margin": {
+            "mean": -0.021832169835208207,
+            "median": -0.030916614943979903,
+            "min": -0.10277022977653405,
+            "max": 0.08908337701417368
+          }
+        },
+        "weighted_energy": {
+          "top_score": {
+            "mean": 0.004400045996681341,
+            "median": 0.003843361264359722,
+            "min": 0.0028498071185363498,
+            "max": 0.007477360574147631
+          },
+          "top_gap": {
+            "mean": 0.001393543671919947,
+            "median": 0.001313077628741625,
+            "min": 4.036686737773215e-7,
+            "max": 0.004284224289728224
+          },
+          "inferred_label_margin": {
+            "mean": 0.000040513955058178033,
+            "median": -0.0002357735704690946,
+            "min": -0.003568332250486023,
+            "max": 0.004284224289728224
+          }
+        }
+      },
+      "permuted": {
+        "cca": {
+          "top_score": {
+            "mean": 0.6042662875296421,
+            "median": 0.5965409079859159,
+            "min": 0.5768674080085392,
+            "max": 0.6439526705949729
+          },
+          "top_gap": {
+            "mean": 0.016912930829290358,
+            "median": 0.00959533779800259,
+            "min": 0.0005488234571949802,
+            "max": 0.05036597758359629
+          },
+          "inferred_label_margin": {
+            "mean": -0.04088979890469955,
+            "median": -0.04127327152517757,
+            "min": -0.08172784545974032,
+            "max": -0.002155659278535227
+          }
+        },
+        "weighted_energy": {
+          "top_score": {
+            "mean": 0.005181616274874167,
+            "median": 0.005057464166862934,
+            "min": 0.004117163662405557,
+            "max": 0.007198581632132102
+          },
+          "top_gap": {
+            "mean": 0.0009008796622380973,
+            "median": 0.000667837361386672,
+            "min": 0.0000017107902455975113,
+            "max": 0.003356619565052289
+          },
+          "inferred_label_margin": {
+            "mean": -0.0009156217795271694,
+            "median": -0.0010589868187067487,
+            "min": -0.003515535287471865,
+            "max": 0.003356619565052289
+          }
+        }
+      }
+    },
+    "limitations": "Saved scalar arithmetic only; no raw reconstruction, independent label truth, phase-only null, efficacy or p-value."
+  }
+}

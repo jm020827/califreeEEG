@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 **최신: 개발용15창 신호 진단 완료, 공통 baseline 점검 필요**. [S001 결과](docs/mamem_signal_validity_v1_results.md): timestamp/sample 간격 계산은 서로 부합하지만 일부 nominal reference와 크게 어긋났고, 기존 CCA는 시간순열 후에도 최대 score 평균0.604였다. 실제15창/0학습, 저장 산술·절차 감사 PASS. 이는 주파수 수정의 효능·metadata 이득이나 물리적 오류를 입증한 것은 아니다. 아래 v2 80-fit 부정 결과 유지. [다음 계획](docs/mamem_common_baseline_qualification_next.md)은 단일 공통 baseline의 출처 확인과 support-only reference 비교이며 미실행이다.
+
 > 2026-09-13 **최신: 실제 MAMEM metadata 학습 80회 완료, 후보 종료**. [v2 결과](docs/mamem_recorded_event_source_v2_results.md): 10명 one-shot Q/Q2/QM/SHAM 평균 모두 25.33%, metadata 추가 이득과 보정량 감소 기준 미통과. M은 혼합 계수·일부 예측을 바꿨으나 정확도를 높이지 못했다. [독립 저장 산술 감사](docs/reports/mamem_recorded_event_source_v2_audit.json)와 관련 272tests PASS. 실제 query-ready 시간 절감은 미확인이다. 여유 약 296GiB, 기존 실패·held60 보호 유지. [다음 초안](docs/mamem_signal_validity_next.md)은 개발용 S001a의 시간축/reference/기본 검출 진단이며 아직 미실행이다. 아래의 “현재” 표기는 해당 과거 시점의 기록이다.
 
 > 2026-09-13 **현재: 실제256행 입력과 one-shot M 생성 학습 관문 완료**. [S001 고정2초 입력](docs/mamem_i_256row_adapter_v1_results.md)은 전체 decode 후 선택256×500만 QC해 finite/nonconstant를 확인했다. [새 후보의12-fit 생성 결과](docs/recorded_event_shrinkage_generated_v1_results.md)는 M→PSD template 혼합→score 작동과 null/schedule/SHAM 대조27개를 통과했다. 관련147tests 및 재fit 없는 독립 수치 감사 PASS. **실제 강한Q 이상의 M 효능·보정량 감소는 아직 미검증**이며 기존 부정 결과/held60 보호를 유지한다. [다음 실제 source 연결 초안](docs/mamem_recorded_event_source_learning_v1_draft.md)은 아직 실행하지 않았다. 아래는 이력이다.
