@@ -1,0 +1,225 @@
+{
+  "schema": "cfeg.mamem-reference-residual-v1.inputs",
+  "inputs": [
+    {
+      "subject": "S002",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S002a.mat",
+      "bytes": 135909873,
+      "crc32": "57fa05bd",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S002a.mat",
+      "sha256": "247f6b84fce356eeb8ae9fc49acd5576b05499dd88ac499a69870c417c3a2bff",
+      "receipt_sha256": "dae37f173d95942df5102c3ad4c23b5c2214cc24608a2e3ebd9e6e3e5edab260"
+    },
+    {
+      "subject": "S002",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S002b.mat",
+      "bytes": 136780557,
+      "crc32": "612ed0ea",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S002b.mat",
+      "sha256": "9bea521af295e90ee8af271736be776e45e097a2af817351fa8eaee25675b9a0",
+      "receipt_sha256": "65fdc0c50b4e99f5b742896f3442bbe34f4cd33467a5b31849143c3d2858b5d9"
+    },
+    {
+      "subject": "S003",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S003a.mat",
+      "bytes": 136236074,
+      "crc32": "4870ada3",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S003a.mat",
+      "sha256": "fbf2d03d233f5a2eb9ad2d4c798e12b433bdbaea88d8655634ed0bdf10c4e020",
+      "receipt_sha256": "d38e9978918074838c664f6fb1e07bf626b7a6e4351ee02c968b64fe743e8348"
+    },
+    {
+      "subject": "S003",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S003b.mat",
+      "bytes": 137387614,
+      "crc32": "6bf9c6c3",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S003b.mat",
+      "sha256": "09f8e79d62be76d2f68c8ed9e5d9d556c6d2b260f8be0c015cdce2228cdc21b1",
+      "receipt_sha256": "db22e950f1186b3ab393aa61f7af77b4b6fb5ea864c1913771c880f91cceff8f"
+    },
+    {
+      "subject": "S004",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S004a.mat",
+      "bytes": 138609396,
+      "crc32": "71185d59",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S004a.mat",
+      "sha256": "df61b3a4bf44a51e8d757f62b4386a02bfbff645b9191c77b098a920f2967e1f",
+      "receipt_sha256": "00f7c57b3ee3c3ce3ed5911dd5c0d67c45aa0b0374af6a6472220cbe11ffa02b"
+    },
+    {
+      "subject": "S004",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S004b.mat",
+      "bytes": 138152189,
+      "crc32": "69253b5d",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S004b.mat",
+      "sha256": "f8d7942ab919d2e349469a3fa6b2fe5c763ea51c801cdebe972d0f7279ff4f43",
+      "receipt_sha256": "3a7604a612a1743f7546561ea3adcfc68f522013cfb74c4f16d18207878283bd"
+    },
+    {
+      "subject": "S005",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S005a.mat",
+      "bytes": 140437373,
+      "crc32": "2a4d04c4",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S005a.mat",
+      "sha256": "b9993c08dcf7395008818aa55ab5c268c458148c66843ac71803ffae0e824ff5",
+      "receipt_sha256": "20284a2d2f1d771edfa52f891679baea204a87cf6cfda7bb48bfacfa6f5d998d"
+    },
+    {
+      "subject": "S005",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S005b.mat",
+      "bytes": 140666945,
+      "crc32": "2a1d34e9",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S005b.mat",
+      "sha256": "01e0e169d4c518360d0ec3e6d3e8188397ee578c6a46f5d1d3e1659fa0099c6d",
+      "receipt_sha256": "6a30e2274c99ed16e34888b80fcd65af9a9218b26e887744d0ad770ac98f88f2"
+    },
+    {
+      "subject": "S006",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S006a.mat",
+      "bytes": 136771810,
+      "crc32": "c8ce922b",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S006a.mat",
+      "sha256": "beeaf93eab85f831190f291f269ce97e9c0027a8cdc0282c2d03486ff1e578a7",
+      "receipt_sha256": "7db96758dbe78a2bf5f0e2b4b2ce83a60bccf7fe7c4184813ded88f7b9895323"
+    },
+    {
+      "subject": "S006",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part1.rar",
+      "member": "EEG-SSVEP-Part1/S006b.mat",
+      "bytes": 135599859,
+      "crc32": "a3a012b8",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S006b.mat",
+      "sha256": "714ee9162a95eb9e77966e7897fd21694e84992ea950d49854e7865cfdb1f313",
+      "receipt_sha256": "4b73e1de23cf4e8eb4249b13bdad8094b39271c39794eeba768f255742e94f31"
+    },
+    {
+      "subject": "S007",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S007a.mat",
+      "bytes": 136415988,
+      "crc32": "eea1f4c5",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S007a.mat",
+      "sha256": "36015ade103f04d3d3f706039973f3d0aa4478beccdb394c3a502ee83d31df38",
+      "receipt_sha256": "0b355196c4d441812c0cae068cb316471bbb9283e2ae75199b2a9b4a3b26f8a4"
+    },
+    {
+      "subject": "S007",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S007b.mat",
+      "bytes": 132783977,
+      "crc32": "c7fcfddd",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S007b.mat",
+      "sha256": "428607483cb617707ed4736bba20ce8931bea3293e82d520b023337ee10b8309",
+      "receipt_sha256": "b47df8f9fcba4411184c029a2251aa9abedc317d27bed3e82e9bf80a675aef91"
+    },
+    {
+      "subject": "S008",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S008a.mat",
+      "bytes": 137670806,
+      "crc32": "9ac31bc0",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S008a.mat",
+      "sha256": "edc7906392b907ecbd2a1e9de14b228cf8c634653c61158792252820ff31c354",
+      "receipt_sha256": "2b52eb7e0407679e547cfc8f6a1603d377ccfd638acc859f614d70180bf12445"
+    },
+    {
+      "subject": "S008",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S008b.mat",
+      "bytes": 136015933,
+      "crc32": "a46dc20c",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S008b.mat",
+      "sha256": "884415d9ea44781d83d86963f5eb4dd3d3ab8fae62fa0d906cd679706a54c11e",
+      "receipt_sha256": "5349a268aa47adc1eb1ed2bfe258c39eb3d726878c04347596eab73fc7a628c3"
+    },
+    {
+      "subject": "S009",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S009a.mat",
+      "bytes": 138202910,
+      "crc32": "7f098222",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S009a.mat",
+      "sha256": "97b9a1bf098b0d50ee6de11f911e1541981958cb08e3ff53af629f88c2fa6b2f",
+      "receipt_sha256": "19ff627273fbc29ed613e94dd58297061959ef7a9ca3a94b7a518642ed7f85c5"
+    },
+    {
+      "subject": "S009",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S009b.mat",
+      "bytes": 141909766,
+      "crc32": "d965754f",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S009b.mat",
+      "sha256": "bb359e44237703b2f0a6eff3c670dc2c471a7235cedb1a9650c3e3a426184709",
+      "receipt_sha256": "1300f7a4732d0ec03cb87687884c0693bfa82e0b06121a36e10a4598e23dc3f3"
+    },
+    {
+      "subject": "S010",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S010a.mat",
+      "bytes": 142158466,
+      "crc32": "0c6cd377",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S010a.mat",
+      "sha256": "4e2aaa732e17ec8fd73b4d8abefee79c61fa5fda0e42840b385dffde891afb0a",
+      "receipt_sha256": "839c6c26a02e1e7365aa8bba60d475030bd898cecdebb1c92715b5e6eedd7b91"
+    },
+    {
+      "subject": "S010",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S010b.mat",
+      "bytes": 138981184,
+      "crc32": "8e30c2fb",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S010b.mat",
+      "sha256": "04b956c68a0ac96c99e9404bf0134778ffd7acc2c0c7ff036c38f16dd135a79b",
+      "receipt_sha256": "18f4833a4aab7fe75347953d68f170a3e4e6647e83b93514e04b705cc844fbf0"
+    },
+    {
+      "subject": "S011",
+      "run": "a",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S011a.mat",
+      "bytes": 141528981,
+      "crc32": "99f16b34",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S011a.mat",
+      "sha256": "27ddd92f17185c30b9522bc26e8d43bba38c6cef2f0c4cef88139c64aa41da9b",
+      "receipt_sha256": "9d245ca83831f86e7f1dc9c0bd36035b1a231e3b54b9fe54650aee4523750910"
+    },
+    {
+      "subject": "S011",
+      "run": "b",
+      "archive": "/home/whwovy/data/mamem_i_v1_20260913/EEG-SSVEP-Part2.rar",
+      "member": "S011b.mat",
+      "bytes": 137936092,
+      "crc32": "291f7c6c",
+      "path": "/home/whwovy/data/mamem_recorded_event_source_v2/S011b.mat",
+      "sha256": "f93fb277cfd92a07965c634bee318b422d4f519eed24fad0b9fa71456b5a0a21",
+      "receipt_sha256": "5bce6fb3d875e9f8ccd81c111bf2273d0d903f231868fdddc472f2527aa00b38"
+    }
+  ]
+}
