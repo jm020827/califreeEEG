@@ -1192,6 +1192,7 @@ def execute(phase):
         if phase in ("generated", "real"):
             validate_fit_result(phase)
         validate_io_ledger(phase)
+        remaining(1)
         terminal.update(
             status="COMPLETE",
             fits=80 if phase == "real" else 0,
