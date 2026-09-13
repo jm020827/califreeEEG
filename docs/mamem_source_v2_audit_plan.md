@@ -12,7 +12,7 @@ productionengine을 import하거나회귀를다시fit/solve하지 않는다. 실
 
 원MAT/featurecache/EEG/Q/M 재계산0,fit0,network0. 원신호→PSD/oracle/queryscore의
 독립재구성은범위밖이며 audit PASS를그근거로쓰지않는다. Gate계수/λ의변조를잡는
-6개생성검사는수동constantmodelfixture이며회귀fit0이다. 결과경로는v2정확한1개,
+7개생성검사는수동constantmodelfixture이며회귀fit0이다. 결과경로는v2정확한1개,
 result<=16MiB,consoleJSON<=64KiB,root가마감14:00전60wall/2GiBAS/30CPU상한으로
 한번실행하고표준출력을감사기록으로보존한다. Audit실패시효능승격하지않고원인을기록;
 모델재학습/새parameter/새data제외로검사를통과시키지않는다.

@@ -92,6 +92,7 @@ def audit(result, summary, ledger):
     largest_residual = largest_lambda_error = 0.0
     rows = {(r["target"], r["k"]): r for r in result["folds"]}
     accuracies = {}
+    meaningful_changes = []
     for r in result["folds"]:
         target, k = r["target"], r["k"]
         require(
@@ -186,6 +187,18 @@ def audit(result, summary, ledger):
             )
         changed = np.any(np.abs(centered - centered[donor]) > 1e-9, axis=1).mean()
         close(changed, r["sham"]["changed_fraction"], "meaningful_sham_fraction")
+        meaningful_changes.append(changed)
+        close(
+            np.any(centered != centered[donor], axis=1).mean(),
+            r["sham"]["exact_changed_fraction"],
+            "exact_sham_fraction",
+        )
+        require(
+            r["sham"]["strata"] == len(strata)
+            and r["sham"]["singleton_rows"]
+            == sum(len(indices) == 1 for indices in strata.values()),
+            "sham_strata_counts",
+        )
         truth = np.asarray(r["truth"])
         require(
             truth.shape == (15,)
@@ -212,6 +225,7 @@ def audit(result, summary, ledger):
             rows[s, 2]["scores"]["ZERO_SHOT"],
             "same_zero_shot_both_k",
         )
+    require(any(v > 0 for v in meaningful_changes), "global_preflight_eligibility")
     draws = np.random.default_rng(20260913).integers(0, 10, (10000, 10))
     comparisons = {}
     for name, arm, k in [
@@ -229,7 +243,8 @@ def audit(result, summary, ledger):
         require(got["harm_over_5pp"] == int(np.sum(delta < -0.05)), "harm_count")
         comparisons[name] = (float(delta.mean()), ci)
     cost = [
-        rows[s, 2]["support_prefix_seconds"] - rows[s, 1]["support_prefix_seconds"] for s in PEOPLE
+        (rows[s, 2]["support_prefix_samples"] - rows[s, 1]["support_prefix_samples"]) / 250
+        for s in PEOPLE
     ]
     close(summary["support_prefix_difference_seconds"], cost, "cost_difference")
     close(summary["break_even_added_setup_seconds"], cost, "conditional_setup_budget")
