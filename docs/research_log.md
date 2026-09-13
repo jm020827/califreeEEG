@@ -2417,3 +2417,62 @@
   18techniques/96claims/254evidence/45gaps/6analogies/38deepreads,cutoff2026-09-04.
   Render11파일(상위7+writing4);SQLitequick_checkok확인. 공간은현재병목아니다.
   유망한학습M/보정절감미확립이므로전체goal은active이며임의complete/blocked처리하지않는다.
+
+### 146. 2026-09-14 KST / 2026-09-13 UTC — 공통 reference의 개선 확인, 두 baseline 준비 기준 미달
+
+- 이전 turn의 DIN 구조 검사 완료를 이어 별도 무지원 EEG 기준선 계약 c8849e7을
+  실행 전에 동결했다. 원 저보정 SSVEP 목표, v2 M2→PSD RETIRE, full잔차 전달 RETIRE,
+  S001 12/15→14/15 개발 관찰은 보존했다. Academic-research의 근거/한계/중단 원칙을
+  적용했고, 새 논문검색·PDF·네트워크 없이 남은 공통 baseline 질문을 실험했다.
+- Coordinate-worktree-changes에 따라 기존 clean 36MiB audit checkout을 재사용했다.
+  새 branch codex/mamem-common-reference-audit-v1을 계약 commit에 맞춘 뒤 writer를
+  배정했다. 이전 branch/08281b0 보존. Root는 계약/producer/실행/보고/SQLite를 소유,
+  별도 writer는 auditor/test 두 파일만 소유, 다른 reviewer들은 shared read-only였다.
+  같은 working tree 동시 writer 0, 새 worktree 0, 총 46개와 기존 8 untracked 유지,
+  설치·symlink·정리·삭제·push 0이다. 감사용 임시 test 경로도 보존했다.
+- Producer a16e4d9 → 생성 연동 b995d19 → 독립 auditor eeb9041을 a7f0e97로 통합.
+  텍스트/의미 충돌 0. 정적 검토의 디렉터리 fsync 보강과 초기 root ruff 1건 수정을
+  실제 전에 완료했다. 실제 결과 관측 이후 코드·threshold 변경과 재실행은 0이다.
+- 합성 suite 3회 예산: root 24PASS/0.13초, 별도 auditor 76PASS/1.67초,
+  최종 통합 428PASS/3.00초(root25 + auditor76 + 이전327). 합성 실패 0,
+  최종 ruff/diffcheck PASS. Whole-repository suite는 미실행이다.
+- 기존 S002–S011b 10개 MAT만 사용했다. 이전 hash-bound B기록 주파수에서 매번
+  본인을 뺀 9명×3반복/class 기하평균으로 COMMON을 계산했고 본인 A/B는 제외했다.
+  모든 bank를 새 EEG hash/header/load 전에 manifest에 동결했다. NOMINAL은
+  6.66/7.5/8.57/10/12Hz. E126/250Hz/2초/h1,h2/중심화/무filter·CAR·ridge의
+  기존 단일채널 primitive는 불변이다. 모든 300개 점수를 label 없이 먼저 seal했다.
+- 실제 15:30:02.290445–15:30:09.668911 UTC,7.378466초,1attempt,
+  10 MAT hash/header/EEG load,150 numeric EEG창,300 predictions,1500 class scores,
+  6000 projections,0 learned-model fits,terminal COMPLETE. Raw EEG 257×T는 전체
+  decode했지만 numeric use는 row125의15×500/사람뿐이다. 다른 행·구간 수치처리 0,
+  새 DIN/rate decode 0. 저장된 추론 label을 사용하며 독립 물리적 정답 검증은 아니다.
+- NOMINAL49/150(32.6667%),COMMON87/150(58.00%),**+25.3333%p**.
+  Class 정답은 19/11/5/6/8 대20/15/15/19/18. Paired 둘다정답38,common만49,
+  nominal만11,둘다오답52. 8명 개선·2명 악화·동률0, 참가자별 전 결과를 보고서에 보존했다.
+  준비 인원은0/10 대3/10(S002,S009,S011)이며 사전120/150+7명 조건에 모두 미달,
+  **NEITHER_BASELINE_READY_STOP**으로 고정 비교를 종료한다. 채널/창/필터 구제 0.
+- 두 arm 모두 target support0trial/0자극초. COMMON source는 fold당 기존9명135event창,
+  데이터 기반 통계이므로 fit0을 추정/획득비용0으로 부르지 않는다. Query-ready/setup
+  UNKNOWN. 개발10명 재사용과 공유 source fold 종속성 유지; CI/p-value/새독립확증0.
+  공통 정보 개선이지 개인 M 학습·Q 이상 효능·보정 절감 증거가 아니다. 이 단일채널 조건
+  미달을 모든 SSVEP/metadata 실패나 이전256행 모델 실패 원인 확정으로 일반화하지 않는다.
+- 별도 agent 저술 actual 저장감사 1회 PASS_SAVED_PROJECTION_AND_SOURCE_ONLY_COMMON,
+  최대 scalar 차이7.105427357601002e−15,near-tie0,45 distinct files/542789bytes,
+  경과0.019912초. B-only LOPO bank/projections→scores→argmax/labels/counts/readiness/
+  paired/cost와19 pins/역할/창/seal/lifetime를 검산했다. Raw read/producer import/fit0.
+  원DIN분할·원EEG→projection·실제clock·독립정답·OS I/O 재구축은 아니다.
+- [결과](mamem_common_reference_v1_results.md),[상태](reports/mamem_common_reference_v1_state.json),
+  [감사](reports/mamem_common_reference_v1_audit.json),run28파일391865bytes를 보존했다.
+  Result195739bytes/SHAec2ea73e41fcfa980619babddf1b2911442cdbf8d9f547618ab70de7cafee323,
+  stdout/stderr0bytes. 원 보호6hash와 frozen contract/manifest/result/terminal/audit 일치.
+  시작 free293GiB/마감292GiB,새다운로드/추출/held60/사람 요청/유료/GPU/네트워크0.
+- [다음 초안](mamem_post_common_reference_next.md)은 **미실행 문서 자격 확인**이다.
+  이미 등록된 MMV 페이지의 과거 capture 실패를 정확히 구분하고, 최대4public targets/
+  8MiB의 새 계약을 먼저 고정할 제안이다. 실제 pair/session/block·독립 acquisition 필드·
+  clock/cue/pre-query 권한·비용·기작 없이는 학습 승격하지 않는다. 비공개/계정 요구는
+  우회하지 않고 보류한다. 새 학습 적격 후보는 아직 없고 현재 설정 sweep은 하지 않는다.
+  별도 reviewer의 결과/state/README/후속권한 정성 검토 PASS, 원 목표는 active다.
+- Research claim2ad366bb8f60f874 QUALIFIED/근거3개,기존 gap3f973164c88eabce 갱신.
+  누적1134papers/90searches/46cards/18techniques/97claims/257evidence/45gaps/
+  6analogies/38deepreads,cutoff2026-09-04 유지. Render11views 및 SQLite quick_check
+  ok 확인. 문헌을 새로 더 읽었다거나 전체 저보정 연구목표를 달성했다고 주장하지 않는다.
