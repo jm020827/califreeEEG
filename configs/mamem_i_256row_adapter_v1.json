@@ -1,0 +1,19 @@
+{
+  "mat_path": "/home/whwovy/data/mamem_i_v1_20260913/development_first.mat",
+  "mat_sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a",
+  "mat_bytes": 137357437,
+  "role_path": "/home/whwovy/data/mamem_i_v1_20260913/development_role.json",
+  "role_sha256": "dc26f85099ed667208ec7b992430d257d01f2a4aa727b7b98f8a5195f6d9af18",
+  "din_report_path": "/home/whwovy/data/mamem_i_v1_20260913/din_probe.json",
+  "din_report_sha256": "c16c288ddcfb1d17e5f9c2e2ae1a0fed5f9090378f5cab7f37f3ea40d025f4e0",
+  "sampling_receipt_path": "/home/whwovy/califreeEEG/docs/reports/mamem_i_scalar_adapter_v1_run/child.json",
+  "sampling_receipt_sha256": "09e994853875fb406c73201e0d1f2983bc5d4790de5abef22aa9ef52176106e9",
+  "eeg_shape": [257, 117917], "din_shape": [4, 1966],
+  "deadline_utc": "2026-09-13T12:10:00+00:00",
+  "variables": ["DIN_1", "eeg"], "descriptor_read": false,
+  "rows": [0, 256], "offset_samples": 250, "window_samples": 500,
+  "din_sample_cells": [[3, 0], [3, 71]],
+  "limits": {"address_space_bytes": 2147483648, "cpu_seconds": 30, "wall_seconds": 60, "each_output_bytes": 32768, "free_reserve_bytes": 8589934592},
+  "producer_sha256": "69d33a69662da705ec071b427100e576a1f0d90975dd1955510d6eb6489efdfd",
+  "helper_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008"
+}
