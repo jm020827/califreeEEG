@@ -2101,3 +2101,41 @@
   고유12fit/24ledger·문서/state/후속초안까지 PASS로 확인했다. 전체시도0.115395초,
   output16,341bytes/빈stdoutstderr이며 실제 MAT/재fit/수치예측/단위검사 재실행은
   하지 않았다. 숫자 감사와 절차 감사의 범위를 구분해 보존했다.
+
+### 139. 2026-09-13 — 실제 MAMEM source-learning 구현 및 개발 라벨 관문 중단
+
+- 공간을 재확인해 약300GiB free를 확인했다. Basefb47c76/main에서 계약089caed,
+  clarification481e687을 먼저 고정했다. 단일2초/h1·2/ridge.1 candidate,
+  generated32fits/real80fits, S001개발용,22a/b선택,network0,13:20UTC마감이다.
+  Goal ‘계속 연구’는 active이고 이전 실패·부정·held60 경계를 유지한다.
+- coordinate-worktree-changes에 따라2writer를 별도worktree로 격리했다. Parser
+  01dddc2→0911332,features5cd8dfc→c02faac 순으로 main통합, root만 engine/runner/
+  계약/SQLite를 썼다. 총43worktrees와 기존8untracked를 보존, cleanup/install/push0.
+- Root1d11a80은 Q/Q2/QM/SHAM source-only 학습·LOSO/pseudo-target exclusion,
+  source-repeat PSD oracle·count-stratified jointSHAM·query predictor격리·비용평가를
+  구현했다. 감사의 tinydenominator/support-order/SHAM tolerance/worker단회성/
+  provenance/loader/시간경계 지적을 실제 데이터 전에 반영했다. 관련134tests PASS.
+- Generated12:23:34.687035–12:23:38.245495UTC,4가상people×2k×4arm=32fits 완료.
+  쉬운fixture에서 learned4arms=1.0으로 QM추가이득0; 사람효능/보정절감 근거 아님.
+  독립 수치검산32모델/λ320scalars/예측840개,normal-equation residual최대
+  5.204170427930421e-17,λ오차0,SHAM/배제 PASS. 재fit/사람IO0; 원 EEG 기반
+  oracle/score 재구성은 미감사다. Generated summary의10subject문구오류는4FAKE로
+  해석범위를 별도정정하고 원artifact는 그대로 보존했다.
+- Development12:23:58.447074–12:24:06.522627UTC attempt1에서 S001a의
+  `frequency_outside_unique_guardband`로 STOPPED_NO_RETRY. 두archive SHA일치,
+  기존S001a재사용이고 새MAT추출0. DINrow2/4 전체 scalar검사·23group수는 통과했지만
+  모든23trial이 유효하다는 뜻은 아니다. 실패group/주파수는 저장오류에 없어 미상이다.
+- EEG/DIN/samplingRate는 전체decode했으나 parser가 반환하지 않아 M계산0,
+  EEGwindow/Q/PSD/CCA계산0, S001b/source파일0,real학습0/80이다. 임계값확대/
+  다른file대체/재시도 없이 종료했다. 이 결과는 metadata효과의 부정 근거가 아니라
+  label-schema연결 미완료다. Protocol별도감사도7pins/32fit/정확한중단경계 PASS.
+- [결과](mamem_recorded_event_source_v1_results.md)/[상태](reports/mamem_recorded_event_source_v1_state.json)/
+  [감사](reports/mamem_recorded_event_source_v1_audit.json)/
+  [후속DIN-only진단초안](mamem_recorded_event_label_diagnostic_next.md)을 보존했다.
+  다음에는 개발파일의23group 진단을 별도고정하여 라벨 의미부터 확인한다. 현재 진단은
+  미실행이며 v1의0realfit 기록을 바꾸지 않는다. Academic-research 근거관리에 따라
+  실제효능·생성검사·라벨해석 실패를 분리하고, 보호4문서hash는 모두 불변이다.
+- Claim616d04659795a823 QUALIFIED/3근거, 기존gap3f973164c88eabce 갱신,
+  누적1134records/90searches/46cards/18techniques/89claims/233evidence/45gaps/
+  6analogies/38deepreads,cutoff2026-09-04 유지. Render11views/SQLitequick_checkok.
+  최종 관련134tests 재확인PASS; fit의 재실행이 아닌 단위검사다.

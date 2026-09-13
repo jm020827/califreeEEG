@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/whwovy/califreeEEG/scripts/analysis/run_mamem_source_v1.py", line 646, in <module>
+    main()
+  File "/home/whwovy/califreeEEG/scripts/analysis/run_mamem_source_v1.py", line 639, in main
+    io_child(args.argument)
+  File "/home/whwovy/califreeEEG/scripts/analysis/run_mamem_source_v1.py", line 357, in io_child
+    records = parse_main_trials(
+  File "/home/whwovy/califreeEEG/src/cfeg/mamem_events_v1.py", line 141, in parse_main_trials
+    label = _frequency_label(frequency)
+  File "/home/whwovy/califreeEEG/src/cfeg/mamem_events_v1.py", line 49, in _frequency_label
+    _require(len(matches) == 1, "frequency_outside_unique_guardband")
+  File "/home/whwovy/califreeEEG/src/cfeg/mamem_events_v1.py", line 27, in _require
+    raise ValueError(reason)
+ValueError: frequency_outside_unique_guardband

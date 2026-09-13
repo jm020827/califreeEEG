@@ -1,0 +1,3 @@
+{"kind": "EXTRACTION_STARTED", "utc": "2026-09-13T12:24:05.495164+00:00", "file": "S001a", "member": "EEG-SSVEP-Part1/S001a.mat"}
+{"kind": "EXTRACTION_COMPLETE", "utc": "2026-09-13T12:24:05.669451+00:00", "file": "S001a", "bytes": 137357437, "sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a"}
+{"kind": "IO_STARTED", "utc": "2026-09-13T12:24:05.669898+00:00", "file": "S001a"}
