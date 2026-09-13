@@ -82,3 +82,19 @@ After sources and generated tests, write results/state/research log, claim-evide
 and next executable question. Q/Q2/QM/SHAM, source-only selection, query-DIN ban,
 whole acquired-prefix/setup costs, S001 all-dev, old negatives and held60 protection
 remain unchanged. New EEG fits/query access/held60/outreach/paid resources all0.
+
+## Prerun algebra clarification after independent review
+
+Use fixed common baseline delay D0=4ms in all3worlds. j_i denotes deviation:
+world2=(t=u+j,d=D0), world3=(t=u,d=D0+j). All absolute marker-path delays are
+nonnegative; this changes no constructed observation-equality test or fit budget.
+Exact1e-12 correction uses oracle unquantized optical coordinates, not estimated
+quantized DIN. Report identifiability only for DIN(z,s), not EEG+DIN jointly.
+The generated5ms quantization bound does not relax yesterday's4.001ms real-probe
+criterion. These are preregistered algebra clarifications before generated run.
+
+Execution deviation: persistent PDF deep-read insertion failed twice (missing
+paper entry, then uncommitted backend upsert). Download started while the second
+queue failure was in the same tool batch. Questions existed in this committed plan
+before GET; queue was fixed before any PDF text/pages were read. Do not claim the
+strict persisted-queue-before-download requirement passed. Preserve this limitation.
