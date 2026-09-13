@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-14 KST / 2026-09-13 UTC **원본 헤더 탐색·MobileBCI 배포처 식별 정정**. [결과](docs/acquisition_file_native_probe_v1.md): 검색4회/공식4targets에서 MNE의 원본impedance 속성 보존 주의를 확인했다. Figshare16669072는 raw EEG가 아니라 설명JSON/CSV의 metadata record여서 기존식별을정정했다. 새실측M/학습후보0이며 실제header는미열람이다. 다음은공식목록의4.4KB data.json에서진짜원자료경로를확인하는단계다. 좌표는기존공통정보유지, 과거Wearable실측값/부정결과/held60봉인유지. 아래는시점별이력이다.
+
 > 2026-09-14 KST / 2026-09-13 UTC **OpenBMI 본문 표적 정독 완료, 실측 acquisition-M 공개 파일은 미확인**. [결과](docs/openbmi_canonical_read_v1_results.md): 여유290GiB 확인 후 PMC HTML을 확보했다. 임피던스10kΩ미만은 관리 기준이며 명시된7개MAT필드에 실측값은 없다. PDF 링크는HTML, 저자디렉터리README는license, GigaDB는일반앱shell로 실제파일목록은미확인이다. 전체파일부재·metadata무효로 단정하지 않는다. 사후설문·고정과제순서·예정/실측비용 경계를 [측정규칙](docs/acquisition_contact_measurement_addendum.md)에 반영했다. 5GET/608,263bytes, raw/fit0, OpenBMI는P3/context유지. 기존negative/held60보호유지, 아래는시점별이력이다.
 
 > 2026-09-14 KST / 2026-09-13 UTC **OpenBMI 공식OA·canonical 경로 확인, 본문은 미확보**. [결과](docs/openbmi_repository_fulltext_v1_results.md): exactOpenAlex200과공식301세번으로 PMC6501944 canonical주소를확인했다. 4GET예산소진으로최종주소는아직요청하지않았고새PDF/raw/학습후보/fit0이다. 저장body/header·상대Location감사PASS; OA·license·version은색인보고일뿐본문검증이아니다. 다음은확인된canonical에서직접문서확보이며이전challenge·redirect를재시도하지않는다. 원목표/기존negative/held60유지, 아래는시점별이력이다.

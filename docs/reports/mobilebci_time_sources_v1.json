@@ -22,5 +22,11 @@
   "agent_inference": "Our400samples@100Hz earlier MAT export cannot silently inherit the finalpaper5s interval or raw field definitions. Corresponding per-device markers are a candidate local alignment anchor, not yet validated.",
   "usage": {"official_document_api_calls":4,"search_queries":2,"pdf_downloads":0,"raw_reads":0,"writes":0},
   "errors": ["Initial API open tool URL-safety failure", "First direct API content decoding failed on base64 newlines; subsequent call succeeded"],
-  "guardrails": "No authentication/CAPTCHA bypass, external outreach or paid access. Known Nature/PMC blockers not retried."
+  "guardrails": "No authentication/CAPTCHA bypass, external outreach or paid access. Known Nature/PMC blockers not retried.",
+  "later_correction_20260914": {
+    "report": "docs/acquisition_file_native_probe_v1.md",
+    "primary_source": "https://api.figshare.com/v2/articles/16669072",
+    "finding": "Article16669072/v1 is a metadata record with data.json and metadata summary.csv, not a BrainVision EEG raw release. The historical source interpretation above conflated the metadata record with the raw distribution.",
+    "preserved_boundary": "Do not transfer final-paper5s or file_readBV conventions to13604078/v1 MAT without independent mapping. No prior result is rerun or replaced."
+  }
 }

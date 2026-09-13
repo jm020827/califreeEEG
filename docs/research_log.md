@@ -2684,3 +2684,30 @@
   learner를보류하고다른구체적공개후보를우선한다. 전체연구goal은미완료/active다.
 - 추가read-onlyscout는보존round4문서4개에서새적격후보/구체적public-schema대상NONE으로
   판단했다. 새검색/독립원문독서로과장하지않으며 다음후보가이미확보됐다고기록하지않는다.
+
+### 154. 2026-09-14 KST / 2026-09-13 UTC — 데이터 파일 어휘 탐색·잘못된 raw 배포처 정정
+
+- 직전goalturn은본문정독/설계갱신으로PROGRESS. Main6ef29a7/여유290GiB/기존46worktrees/
+  8untracked유지. [실행전signature와결과](acquisition_file_native_probe_v1.md)에
+  data-native4query/4officialtarget상한을기록후실행했다. Workspace기존landscape를먼저확인.
+- BIDS electrodes.tsv/BrainVision impedance/vhdr/digitized좌표어휘로4webquery.
+  MNEreader/FieldTripFAQ/MNE2명SSVEPtutorial/Figshare16669072 API의4targets를확인.
+  Web내부GET수·bytes는미측정, scholarlydiscover92는불변이며manualweb4를별도기록했다.
+- MNE공식문서Notes는raw.impedances의save/reload후미보존을설명한다. 실제SSVEP에값존재나
+  로컬라이브러리재현을확인한것이아니다. 실측좌표도이미공통m_struct라는계약을독립검토로
+  재확인,QM전용M으로승격0. channelwise요구는접촉후보한정임을addendum에명시했다.
+- ExactFigshareAPI1GET200/application-json/4,802bytes/1.215908초/retry0/redirect0.
+  Article16669072/v1은**metadata record**이며data.json4416bytes/metadata summary.csv293bytes
+  두개뿐이다. 과거이를BrainVision raw배포본으로식별한문장/JSON을후속정정표시로고쳤다.
+  기존MAT4초/문헌5초이식금지,실험실패/부정결과/실제Wearable Impedance.mat확보이력보존.
+- [상태](reports/acquisition_file_native_probe_v1.json) PROVENANCE_CORRECTED_NO_NEW_ELIGIBLE_M.
+  공식파일31816823의작은data.json이정확한다음pointer확인대상이며미다운로드다.
+  새actualM/독립코호트/learner/PDF/numericEEG/개인값/fit/예측0,held60/사람요청/유료0.
+- Academic-research로API원문/MNEtool-rendered출처·hash·locators를보존하고claim2개등록:
+  eb77c0bc511015a0 SUPPORTED(배포처정정),0b23396f98be88b7 QUALIFIED(header검증이유).
+  기존gap갱신. Coordinate-worktree에따라root만문서/SQLite작성,protocol검토와artifact감사는
+  read-only병렬. APIhash/size/title/2file목록감사PASS,문구수정권고반영. 코드변경없어pytest0.
+- 최종catalog1151/search92/card48/technique18/claim106/evidence278/gap45/analogy6/deepread40
+  (completed29/queued10/skipped1),render11/SQLitequick_checkok/JSON·diffcheckPASS/보호6hash불변.
+  검색후새기여는sourceheader의metadata손실주의와raw배포처식별교정이다. 다음불확실성은
+  새broadsearch보다정확한작은설명파일로줄인다. 원goal미완료/active,설치/삭제/push0.

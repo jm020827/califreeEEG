@@ -1,0 +1,108 @@
+{
+  "status": "PROVENANCE_CORRECTED_NO_NEW_ELIGIBLE_M",
+  "base_commit": "6ef29a7",
+  "previous_goal_turn": "PROGRESS_PRIMARY_HTML_READ_AND_DESIGN_UPDATES",
+  "objective_changed": false,
+  "search": {
+    "manual_web_queries": [
+      "SSVEP \"electrodes.tsv\"",
+      "SSVEP \"impedance\" \"BrainVision\"",
+      "SSVEP dataset \"digitized\" electrodes",
+      "SSVEP dataset \"impedance\" \"vhdr\""
+    ],
+    "query_limit": 4,
+    "distinct_official_target_limit": 4,
+    "distinct_official_targets": [
+      "https://mne.tools/stable/generated/mne.io.read_raw_brainvision.html",
+      "https://www.fieldtriptoolbox.org/faq/preproc/dataformat/impedancecheck/",
+      "https://mne.tools/stable/auto_tutorials/time-freq/50_ssvep.html",
+      "https://api.figshare.com/v2/articles/16669072"
+    ],
+    "web_internal_gets_bytes": "UNMEASURED",
+    "workspace_discover_runs_added": 0,
+    "publication_cutoff_enforced_for_web_search": false
+  },
+  "primary_api": {
+    "url": "https://api.figshare.com/v2/articles/16669072",
+    "http_code": 200,
+    "content_type": "application/json",
+    "body_bytes": 4802,
+    "header_bytes": 439,
+    "curl_seconds": 1.215908,
+    "automatic_redirects": 0,
+    "retries": 0,
+    "body_sha256": "cf7141c42a6e761a16045765e58f01dee349805c269c2a07a0fd1191ba9faa46",
+    "headers_sha256": "ffe0eefa692cf5d836256c23996972dd980b931548e3e7e6d0d055615eec7fa5",
+    "revision": "16669072/v1",
+    "title_kind": "Metadata record",
+    "license_scope": "CC0 metadata entry; raw data license not inferred",
+    "files": [
+      {
+        "id": 31816823,
+        "name": "data.json",
+        "size": 4416
+      },
+      {
+        "id": 31816826,
+        "name": "metadata summary.csv",
+        "size": 293
+      }
+    ]
+  },
+  "decision": {
+    "new_learning_candidates": 0,
+    "new_verified_measured_M_fields": 0,
+    "original_header_rationale": "Official MNE documentation warns raw.impedances not preserved after save/reload; absence in derivative does not establish source absence.",
+    "coordinate_status": "Session-digitized coordinates remain shared m_struct, not QM-only treatment.",
+    "correction": "Figshare16669072 is metadata record, not identified raw BrainVision distribution.",
+    "next_exact_metadata_file": "https://ndownloader.figshare.com/files/31816823",
+    "next_file_downloaded": false,
+    "prior_Wearable_impedance_acquisition_and_negative_results_preserved": true,
+    "independent_new_cohort_established": false
+  },
+  "review": {
+    "protocol_reviewer": "mobile_protocol_review, local documents and two named MobileBCI directory name listings only",
+    "artifact_reviewer": "mobile_features_review, saved API body/header and correction documents, read-only PASS",
+    "correction_applied": "Historical raw-distribution sentence changed to explicit prior interpretation; no outcome replacement",
+    "full_filesystem_scan": false,
+    "root_sole_writer": true
+  },
+  "boundaries": {
+    "numeric_EEG": 0,
+    "individual_coordinates_or_impedance_values": 0,
+    "pdf": 0,
+    "fit": 0,
+    "predictions": 0,
+    "held60": 0,
+    "person_requests": 0,
+    "accounts": 0,
+    "paid": 0,
+    "installs": 0,
+    "deletions": 0,
+    "push": 0,
+    "new_worktrees": 0,
+    "existing_worktrees": 46,
+    "existing_untracked_dirs": 8
+  },
+  "workspace": {
+    "claims": [
+      "claim:eb77c0bc511015a0",
+      "claim:0b23396f98be88b7"
+    ],
+    "statuses": [
+      "supported",
+      "qualified"
+    ],
+    "gap": "gap:3f973164c88eabce"
+  },
+  "verification": {
+    "code_changed": false,
+    "pytest_runs": 0,
+    "reason": "DOCUMENTATION_AND_SOURCE_RECORD_CORRECTION_ONLY",
+    "json_validation": "PASS",
+    "git_diff_check": "PASS",
+    "sqlite_quick_check": "ok",
+    "protected_six_hashes": "UNCHANGED",
+    "rendered_research_views": 11
+  }
+}

@@ -40,9 +40,15 @@
 
 ## 공개 문서에서 찾은 배포본 차이
 
+> 2026-09-14 정정: [공식 API 재확인](acquisition_file_native_probe_v1.md) 결과16669072/v1은
+> EEG 원자료가 아니라 `data.json`/`metadata summary.csv` 두 파일의 **metadata record**였다.
+> 아래의 BrainVision/5초 문헌상 설명과 달리 그 번호 자체를 raw 배포본으로 식별한 것은 잘못이다.
+> 13604078/v1 MAT에 다른 문헌의 시간 설정을 이식하지 않는다는 기존 경계는 유지한다.
+
 [arXiv v1](https://arxiv.org/html/2112.04176)의 Methods/Data Records와
-[저자 loader](https://github.com/youngeun1209/MobileBCI_Data/blob/main/a_load_all_data.m)는
-BrainVision/BIDS의 다른 배포본(Figshare16669072),5초 자극/구간을 설명한다.
+[저자 loader](https://github.com/youngeun1209/MobileBCI_Data/blob/main/a_load_all_data.m)를
+당시 BrainVision/BIDS의 다른 배포본(Figshare16669072),5초 자극/구간의 설명으로 해석했다.
+이 중16669072를 raw 배포본으로 식별한 부분은 위와 같이 정정했다.
 현재13604078/v1 MAT는400samples@100Hz이므로 그대로 같은 시간 설정을 적용할 수 없다.
 논문의 동시 trigger 설명은 후보 대응 방식의 근거이지 이 MAT의 index 원점·단위·drift 검증이 아니다.
 [읽기 범위·오류·출처 기록](reports/mobilebci_time_sources_v1.json)을 남겼다. 전체논문/PDF 정독 완료는 아니다.

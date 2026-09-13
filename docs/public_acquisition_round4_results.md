@@ -69,6 +69,9 @@ SQLite 충돌을 막기 위해 root가 순차 실행했고, 기존 경로 제외
 - MobileBCI13604078/v1에는 실제 EEG–IMU GET 성공 이력이 있다. 이를 접근 실패로
   바꾸지 않지만, 종료한 gyro source-routing을 새 이름으로 재개하지도 않는다.
   다른16669072 배포본의 시간 설정을 그대로 이식할 수 없다.
+  **후속 정정(2026-09-14):** [공식 API 확인](acquisition_file_native_probe_v1.md)에서
+  16669072는 raw 배포본이 아닌 metadata record로 밝혀졌다. 위 번호와 raw release를
+  동일시한 식별을 정정하며, 다른 문헌의 시간 설정을 MAT에 이식하지 않는 원칙은 유지한다.
 - Choi의 private 문의 branch, Eye-BCI의 익명 파일403, MMV의 inventory/schema 공백은
   각각 보류 유지다. 서로 다른 사유를 “모든 자료 비공개”로 합치지 않는다.
 - 세션 내 상수라는 이유만으로 실측 개인 M을 배제하지 않는다. 반대로 device label만으로
