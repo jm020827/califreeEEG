@@ -27,9 +27,12 @@ Problem signature: 단일500sample EEG와전체5class sinusoid bank; 병목은�
   처음8adaptation제외,main15/3perclass,window onset0+250:onset0+750 유지.
 - A에서각class첫maintrial하나만선택. 해당창안DINsample index≥4개로
   f=250*(n−1)/(2*(last−first)),한주기2events가정. 모든5개값을class-order로고정하고
-  **B가열리기전에bank완성**. A의다른repeat는parser적격성/label검증외feature0.
+  **실제runner에서B파일검증/hash/header/decode전에bank완성**.
+  준비단계에서이미읽은B경로/hash receipt는새수치접근이아니다.
+  A의다른repeat는parser적격성/label검증외feature0.
 - B DIN은segmentation/inferredlabel평가에만사용;queryfrequency/M2/descriptor추출0.
-  Pure scorer에는한채널EEG와전체5bank만전달. B truth는전체30scores계산이후평가에사용.
+  Pure scorer에는한채널EEG와전체5bank만전달. B truth는parser적격성검사에서계산되지만
+  scoring/decision입력에서격리하며전체30score vectors(150classscores)고정후평가에사용.
   DIN-derived label은독립groundtruth나실제광학주파수검증이아니다.
 
 ## 단일 operator와 예산
@@ -63,6 +66,7 @@ collection위에서실행한것이다. 지원주파수arm을zero-calibration이�
 하나라도통과하면`REFERENCE_DIAGNOSTIC_COMPLETE`일뿐,강한baseline복원/M학습효능/
 보정절감성공아니다. Nominal만통과하면지원bank는이진단에서채택하지않는다.
 Sample만통과하거나개선되면공통reference후보로기록한다(새M효능예산자동승격0).
+단,**양쪽미달NO_ARM_PASSES_STOP이최우선**이며이때상대개선만으로후보를유지하지않는다.
 두armcounts·classcounts·pairedcorrect/incorrect전이를전부보고,CI/pvalue는이15개
 상관trial/개발1인에서확증으로쓰지않는다. 이전v2 RETIRE는어느결과에서도보존한다.
 
@@ -71,14 +75,17 @@ Sample만통과하거나개선되면공통reference후보로기록한다(새M효
 Run=`docs/reports/mamem_reference_probe_development_v1_run/`.
 `manifest.json`: schema=`cfeg.mamem-reference-probe-dev-v1.manifest`,created_utc,
 deadline_utc,subject=`S001`,attempt_budget=1,fits=0,queries=15,predictions=30,
-mat_sha256={a,b},code_sha256={계약/runner/operator/events_v1/events_v2/auditor각relativepath:SHA}.
+mat_sha256={a,b},role_sha256={a,b:위receipt SHA},
+code_sha256={계약/runner/operator/events_v1/events_v2/auditor각relativepath:SHA}.
 `started.json`: status=STARTED,attempt=1,parent_pid,started_utc,manifest_sha256.
 `worker_claim.json`: attempt=1,pid,parent_pid,started_utc,manifest_sha256.
 `terminal.json`: status=COMPLETE 또는STOPPED_NO_RETRY,attempts=1,fits=0,started_utc,
-ended_utc,COMPLETE때result_sha256과predictions=30. 실패시error_type/reason보존.
+ended_utc,manifest_sha256,started_sha256,worker_claim_sha256,
+COMPLETE때result_sha256과predictions=30. 실패시error_type/reason보존;
+workerclaim미생성실패에서만worker_claim_sha256=null허용한다.
 
 `result.json` schema=`cfeg.mamem-reference-probe-dev-v1.result`,subject=S001,
-status=DEVELOPMENT_DIAGNOSTIC_NOT_EFFICACY,mat_sha256={a,b},completed_utc,
+status=DEVELOPMENT_DIAGNOSTIC_NOT_EFFICACY,mat_sha256={a,b},role_sha256={a,b},completed_utc,
 sampling_rate_hz=250,channel_index=125,window_samples=500,fits=0,
 frequencies_hz={NOMINAL:[5],SAMPLE_SUPPORT:[5]},
 support=[5records class순:label,group_index,start0,end0,trial_end0,event_samples:[int]],
@@ -94,24 +101,28 @@ a_eeg_numeric_windows:0,b_eeg_numeric_windows:15,b_eeg_numeric_channels:1,
 query_metadata_extractions:0,gate_fits:0,source_cohort_reads:0,held60_openings:0},
 access_stages=[順序a_loaded,support_bank_frozen,b_loaded,all_scores_frozen,evaluation_done].
 
-projection=U_j.T@(centeredquery/||centeredquery||),raw500vectors는저장하지않는다。
-Auditor는producer import없이保存projection sumsq→scores→argmax→accuracy/classcounts/
-pairedtransition→decision,지원event式→frequency·cost,範囲·pins·start/claim/terminal/
-result bindingを検査する。これは元EEG→projectionを独立再構築した監査ではない。
-Float tolerance1e−10,score bounds1e−12。全て未観測実結果前に実装する。
+analyzed_support_seconds는EEG분석시간이아닌선택지원DIN창길이합이다.
 
-## 所有/隔離/統合
+projection=U_j.T@(centeredquery/||centeredquery||),raw500vectors는저장하지않는다.
+Auditor는producer import없이저장projection sumsq→scores→argmax→accuracy/classcounts/
+pairedtransition→decision,지원event식→frequency·cost,범위·pins·start/claim/terminal/
+result binding을검사한다. 원EEG→projection을독립재구축한감사는아니다.
+Float tolerance1e−10,score bounds1e−12. 모두아직보지않은실제결과전에구현한다.
+Argmax는저장scores에서엄격히검산한다. 독립projection합산의roundoff근접tie는
+2e−10안에서별도count로보고하며임의정답뒤집기가아니다. 그이상최고점뒤짐은실패다.
 
-Trackedcheckout34,691,933bytes、rootvenv5.2GiB、free294GiB。監査writinglaneには
-新worktree1個、追加≤128MiB(code/test/cache)、dependencyinstall0、元環境read-only
-利用(新symlink0)。既存45worktrees/8untracked保護。根writerと同tree同時writer0。
+## 소유/격리/통합
+
+Trackedcheckout34,691,933bytes,rootvenv5.2GiB,free294GiB. 감사writinglane에는
+새worktree1개,추가≤128MiB(code/test/cache),dependencyinstall0,원환경read-only
+이용(새symlink0). 기존45worktrees/8untracked보호. Root와같은tree동시writer0.
 
 | Lane | Owned paths | Runtime | Integration |
 | --- | --- | --- | --- |
-| Root/main | 本契約、scripts/analysis/run_mamem_reference_probe_v1.py、tests/test_mamem_reference_probe_runner_v1.py、reports/log/SQLite | 唯一actualrunner/SQLitewriter | 契約→producer→audit→全体test→actual |
-| Audit isolated | scripts/analysis/audit_mamem_reference_probe_v1.py、tests/test_mamem_reference_probe_audit_v1.py | 合成testのみ、実データ0、別worktreetmp | commitをrootreview後cherry-pick |
-| Protocol/math reviews | 書込みなし、sharedrepo | raw/fit0、staticreview | actual前gate |
+| Root/main | 본계약,scripts/analysis/run_mamem_reference_probe_v1.py,tests/test_mamem_reference_probe_runner_v1.py,reports/log/SQLite | 유일actualrunner/SQLitewriter | 계약→producer→audit→통합test→actual |
+| Audit isolated | scripts/analysis/audit_mamem_reference_probe_v1.py,tests/test_mamem_reference_probe_audit_v1.py | 합성test만,실제자료0,별도worktreetmp | rootreview후cherry-pick |
+| Protocol/math reviews | 쓰기없음,sharedrepo | raw/fit0,staticreview | actual전gate |
 
-新worktree `/home/whwovy/califreeEEG-wt-reference-probe-audit-v1`,branch
-`codex/mamem-reference-probe-audit-v1`。依存契約変更はrootだけ、変更時agentへ通知。
-全test/実際終端確認はroot。実結果後の再fit/設定変更/既存worktree削除はしない。
+새worktree `/home/whwovy/califreeEEG-wt-reference-probe-audit-v1`,branch
+`codex/mamem-reference-probe-audit-v1`. 의존계약변경은root만,변경때agent에게통보한다.
+통합test/실제종료확인은root책임. 실제결과후재fit/설정변경/기존worktree삭제는하지않는다.
