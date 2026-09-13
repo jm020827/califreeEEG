@@ -38,3 +38,9 @@ raw파일이나원자료부재를 추정하지 않는다. 새raw schema 진입�
 평가하는 일이다. 같은PreG/이미종료한Wearable/Mobile기작을 새 이름으로 재개하지 않는다.
 후보선택과 별도 예산을 실행 전에 정하며, 저보정 목표·Q/Q2/QM/SHAM/directM와
 held60·외부사람요청·유료 별도승인 조건은 유지한다.
+
+후속으로OpenBMI한편을선정했으나 별도계약의PDF1GET도challenge로중단했다.
+[후속결과](openbmi_acquisition_fulltext_v1_results.md),
+[두저장응답독립감사](reports/pregel_openbmi_access_review.json). 두기록의hash/bytes/status/
+시간은PASS지만미기록요청부재를독립증명한것은아니다. PreG접근claimede7f7968cfbb4c4
+QUALIFIED/근거2개를기록했다.

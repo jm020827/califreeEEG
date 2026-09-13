@@ -46,6 +46,7 @@
     "reviewer": "mobile_protocol_review",
     "scope": "two local design/result docs only, not transport artifact or supplemental files",
     "status": "ELIGIBILITY_CHECKLIST_WITH_ONE_WORDING_CLARIFICATION",
+    "artifact_audit": "PASS_SAVED_SCOPE_SEE_pregel_openbmi_access_review.json",
     "pytest": 0,
     "why": "DOCUMENT_ONLY_NO_EXECUTABLE_CHANGE"
   },

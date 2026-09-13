@@ -2609,3 +2609,24 @@
   새PDF/video/raw/fit/예측/계정/사람요청/유료/우회/설치/삭제/push0. 코드변경없어pytest0.
   Academic-research근거경계/coordinate-worktree의rootsolewriter+read-only병렬준수.
   다음은보존round4의다른예비문헌에서one-paperqualification가치를비교한다.
+
+### 151. 2026-09-14 KST / 2026-09-13 UTC — OpenBMI 독서후보의 exact PDF 접근 실패
+
+- 보존round4 triage+2searchmanifest를root/read-onlyscout가검토했다. 다세션SSVEP와
+  exactPDF가있는OpenBMI1편을독서추천,실측acquisitionM후보는NONE. 기존P3context분류유지.
+  설문/휴지상태/EMG를새M로자동승격하지않는다. Deep-read를다운로드전에등록했다.
+- [계약](openbmi_acquisition_fulltext_v1_contract.md)0011f30후exactOUPPDF1GET:
+  HTTP403/cf-mitigated:challenge/text-html5632bytes/headers2119/curl0.043451초,
+  retry0/redirect0. Request전16:49:38UTC,HTTPDate16:49:39GMT. 남은redirect슬롯미사용.
+  body는HTML확인,PDF로세거나Methods/DataAvailability읽었다고하지않았다.
+- [결과](openbmi_acquisition_fulltext_v1_results.md), [상태](reports/openbmi_acquisition_fulltext_v1_state.json),
+  [두응답독립감사](reports/pregel_openbmi_access_review.json)PASS. Reviewer가PreG/OpenBMI
+  hash/status/bytes/time을검산,challengebody·token미출력. 실제curlflags/미기록요청부재
+  독립증명은아니다. 부모가반환을JSON기록했으며새auditor를만들지않았다.
+- OpenBMIabstract-onlycard저장,deep-readqueued유지. Claimd5cdfabe65fae3d5 QUALIFIED/
+  근거2개,PreGclaim포함catalog1151/search92/card48/technique18/claim102/evidence270/
+  gap45/analogy6/deepread40(completed28/queued11/skipped1),render11/SQLitequick_checkok.
+- 새공식OA location확인은후속옵션이나이번계약에서는미실행. 차단publisher주소재시도/
+  브라우저우회/계정/저자문의/유료0. 이번새PDF/raw/모델fit/EEG예측/held60개봉0.
+  코드변경없어pytest0. 이전PreG원문성공/모든negative유지,새적격dataset없음.
+  Goal은미완료/active이며좁은access검증완료를원목표완료로바꾸지않는다.

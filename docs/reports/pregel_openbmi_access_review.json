@@ -1,0 +1,61 @@
+{
+  "schema": "cfeg.pregel-openbmi-access-review",
+  "status": "PASS_SAVED_ARTIFACTS_WITH_SCOPE_LIMITS",
+  "provenance": "Root transcription of read-only agent returns; not an implemented executable auditor",
+  "artifact_reviewer": "mobile_features_review",
+  "responses": [
+    {
+      "name": "PreG supplement",
+      "http": 202,
+      "challenge_header": "x-amzn-waf-action: challenge",
+      "content_type": "text/html; charset=UTF-8",
+      "body_bytes": 0,
+      "headers_bytes": 556,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "headers_sha256": "f5bd515f7ad31c7eb3b745689d83e5337a8ae922f2d1dca6b61a8c6f21464f5c",
+      "recorded_gets": 1,
+      "recorded_redirects": 0,
+      "recorded_curl_seconds": 0.230857,
+      "observation_window_seconds": 19
+    },
+    {
+      "name": "OpenBMI",
+      "http": 403,
+      "challenge_header": "cf-mitigated: challenge",
+      "content_type": "text/html; charset=UTF-8",
+      "body_bytes": 5632,
+      "headers_bytes": 2119,
+      "body_sha256": "a30859872012b3f9ef0a4bbefec570174c52530351a3eb0f2bd7357d881ab7ad",
+      "headers_sha256": "02af7b17bbac3d4c8d64d9c18e734652f27e88889654d0a228cbe8f3a2b0893d",
+      "recorded_gets": 1,
+      "recorded_redirects": 0,
+      "recorded_curl_seconds": 0.043451,
+      "observation_window_seconds": 34
+    }
+  ],
+  "eligibility_review": {
+    "agent": "mobile_protocol_review",
+    "scope": "Only acquisition_contact_measurement_addendum.md and pregel_public_fulltext_v1_results.md",
+    "finding": "Distinguish ID lookup from one actual measurement for unseen user; unclear timing is not proven future leakage; supplemental illustrations are not raw paired release",
+    "change": "Clarified ID memorization vs individual one-time measurements"
+  },
+  "candidate_review": {
+    "agent": "source_transfer_scout",
+    "scope": "Only round4 triage JSON and two preserved search manifests",
+    "recommendation": "One OpenBMI primary read, not dataset/learning nomination; preserve P3 context status unless actual acquisition fields documented",
+    "other_leads": "No established new paired acquisition source; title/abstract-only evidence retained"
+  },
+  "audit_boundaries": {
+    "network": 0,
+    "writes": 0,
+    "db_writes": 0,
+    "raw_eeg": 0,
+    "models": 0,
+    "opaque_tokens_printed": 0
+  },
+  "limitations": [
+    "Recorded status/headers/body/time bounded, but no independent network packet audit or proof of unrecorded request absence.",
+    "Actual flags and retry ban are root execution records, not independently reconstructed from response files.",
+    "No primary article/inventory content acquired in these two requests; cannot conclude data or relevant M absent."
+  ]
+}

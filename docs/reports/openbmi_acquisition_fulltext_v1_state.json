@@ -1,0 +1,91 @@
+{
+  "schema": "cfeg.openbmi-acquisition-fulltext-v1.state",
+  "status": "STOPPED_AT_FIRST_RESPONSE",
+  "decision": "PARK_PUBLIC_FULLTEXT_UNRESOLVED",
+  "goal_status": "active",
+  "prior_goal_turn_classification": "PROGRESS_PRIMARY_PDF_AND_DESIGN_CONSTRAINTS",
+  "this_turn_progress": "Two exact access outcomes recorded, P3/identity semantics preserved, access routes closed and remaining lawful-repository gap narrowed; no new efficacy evidence.",
+  "base_commit": "ff6f873",
+  "contract_commit": "0011f30",
+  "contract_sha256": "e9dd5cf055148b07cfb9459d072d35e1d53976064ee39da3b21c1761199882ef",
+  "transport": {
+    "requests_allowed": 2,
+    "requests_used": 1,
+    "http": 403,
+    "challenge_header": "cf-mitigated: challenge",
+    "body_bytes": 5632,
+    "headers_bytes": 2119,
+    "content_type": "text/html; charset=UTF-8",
+    "curl_seconds": 0.043451,
+    "retries": 0,
+    "redirects": 0,
+    "fulltext_acquired": false,
+    "pdf_download_successes": 0,
+    "wire_bytes_measured": false
+  },
+  "paper": {
+    "doi": "10.1093/gigascience/giz002",
+    "openalex": "W2912885887",
+    "card_depth": "abstract",
+    "card_interpretation": "PROVISIONAL",
+    "deep_read_status": "queued",
+    "primary_methods_read": false,
+    "existing_P3_context_classification_changed": false
+  },
+  "scientific_result": {
+    "new_schema_candidates": 0,
+    "new_learning_datasets": 0,
+    "new_fits": 0,
+    "new_predictions": 0,
+    "calibration_savings_established": false,
+    "public_data_absence_established": false,
+    "failed_publisher_route_closed": true
+  },
+  "workspace": {
+    "catalog_records": 1151,
+    "searches": 92,
+    "cards": 48,
+    "techniques": 18,
+    "claims": 102,
+    "evidence": 270,
+    "gaps": 45,
+    "analogies": 6,
+    "deep_reads": 40,
+    "deep_read_status": {
+      "completed": 28,
+      "queued": 11,
+      "skipped": 1
+    },
+    "rendered_views": 11,
+    "cutoff": "2026-09-04",
+    "sqlite_quick_check": "ok",
+    "new_claim": "claim:d5cdfabe65fae3d5",
+    "pregel_access_claim": "claim:ede7f7968cfbb4c4",
+    "updated_gap": "gap:3f973164c88eabce"
+  },
+  "verification": {
+    "artifact_audit": "PASS_SAVED_SCOPE",
+    "artifact_review_file": "docs/reports/pregel_openbmi_access_review.json",
+    "pytest_runs": 0,
+    "why": "NO_EXECUTABLE_OR_MODEL_CHANGE",
+    "protected_six_hashes": "UNCHANGED",
+    "free_disk_gib_rounded": 290
+  },
+  "boundaries": {
+    "new_generic_searches": 0,
+    "raw_downloads": 0,
+    "held60_openings": 0,
+    "external_person_requests": 0,
+    "accounts": 0,
+    "paid": 0,
+    "bypass": 0,
+    "installs": 0,
+    "deletions": 0,
+    "pushes": 0,
+    "new_worktrees": 0,
+    "existing_worktrees": 46,
+    "existing_untracked_dirs": 8,
+    "root_sole_writer": true
+  },
+  "next": "Separate bounded official OpenAlex W2912885887 OA-location check is available; not executed in this consumed contract. No same publisher retry, proxy/login bypass or silent M scope change."
+}
