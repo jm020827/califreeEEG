@@ -1,0 +1,8 @@
+{
+  "started_utc": "2026-09-13T12:37:41.547599+00:00",
+  "attempts": 1,
+  "fits": 0,
+  "status": "COMPLETE",
+  "diagnostic_sha256": "9512d87e19e6b14b3e5d6af3b70bfca95b39f1a4fcca226067ead958f0073cd0",
+  "ended_utc": "2026-09-13T12:37:41.761676+00:00"
+}

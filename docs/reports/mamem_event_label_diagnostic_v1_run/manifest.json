@@ -1,0 +1,15 @@
+{
+  "deadline": "2026-09-13T13:00:00+00:00",
+  "mat_path": "/home/whwovy/data/mamem_i_v1_20260913/development_first.mat",
+  "mat_sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a",
+  "role_sha256": "dc26f85099ed667208ec7b992430d257d01f2a4aa727b7b98f8a5195f6d9af18",
+  "code_sha256": {
+    "scripts/analysis/diagnose_mamem_event_labels_v1.py": "3d7c2b28d374dd4e8660f5cbebcff637fdd89129d5dee7b140abcba65a99e70e",
+    "src/cfeg/mamem_events_v1.py": "1c6762783fed206201a9c0539de5aa4c94d45564190bb08954ec4b0c242c096a",
+    "docs/mamem_event_label_diagnostic_v1_plan.md": "ca47d9e57d6a4e1aee1471f649ef816a423fee08164bedf53cf83eb212eddf21"
+  },
+  "created_utc": "2026-09-13T12:37:41.524686+00:00",
+  "fits": 0,
+  "EEG_variables_requested": false,
+  "attempt_budget": 1
+}
