@@ -1,6 +1,7 @@
 """Generated-only common-bank and reader canaries; actual EEG access forbidden."""
 
 import importlib.util
+import itertools
 import json
 import subprocess
 from pathlib import Path
@@ -232,3 +233,59 @@ def test_worker_failure_preserved_and_no_retry(tmp_path, monkeypatch, timeout):
     with pytest.raises(FileExistsError):
         runner.execute()
     assert len(calls) == 1
+
+
+def test_generated_real_producer_to_independent_auditor(tmp_path, monkeypatch):
+    """Use the audit lane's synthetic provenance with real bank/score/evaluation code."""
+    from test_mamem_common_reference_audit_v1 import audit, build_fixture
+
+    fixture = build_fixture(tmp_path/"fixture")
+    # Preserve the generated canned run, then exercise the producer's exclusive writes.
+    fixture.run.rename(tmp_path/"canned_run_preserved")
+    fixture.run.mkdir()
+    monkeypatch.setattr(runner, "ROOT", fixture.root)
+    monkeypatch.setattr(runner, "RUN", fixture.run)
+    monkeypatch.setattr(audit, "KNOWN_SHA", fixture.known_sha)
+    cfg = fixture.new("manifest.json")
+    previous = fixture.documents[audit.OLD_RESULT]["frequencies_hz"]
+    cfg["frequencies_hz"]["COMMON"] = core.common_frequencies([p[1] for p in previous])
+    runner.save(fixture.run/"manifest.json", cfg)
+    for name in ("started.json", "worker_claim.json"):
+        payload = dict(fixture.new(name), manifest_sha256=runner.sha(fixture.run/"manifest.json"))
+        runner.save(fixture.run/name, payload)
+    counter = itertools.count(1)
+    monkeypatch.setattr(runner, "now", lambda: fixture.timestamp(next(counter)))
+    calls = []
+
+    def reader(row, record):
+        s = row["subject"]
+        calls.append(s)
+        assert (fixture.run/"manifest.json").is_file()
+
+        class EEG:
+            def __getitem__(self, index):
+                channel, window = index
+                assert channel == 125 and window.step is None
+                trial = next(t for t in record["records"]
+                             if (t["start0"], t["end0"]) == (window.start, window.stop))
+                frequency = cfg["frequencies_hz"]["COMMON"][s][trial["label"]]
+                return np.sin(2*np.pi*frequency*np.arange(1, 501)/250+.15)
+
+        return EEG()
+
+    monkeypatch.setattr(runner, "read_eeg", reader)
+    result = runner.inspect(cfg)
+    runner.save(fixture.run/"result.json", result)
+    terminal = dict(fixture.new("terminal.json"), ended_utc=fixture.timestamp(23),
+                    manifest_sha256=runner.sha(fixture.run/"manifest.json"),
+                    started_sha256=runner.sha(fixture.run/"started.json"),
+                    worker_claim_sha256=runner.sha(fixture.run/"worker_claim.json"),
+                    result_sha256=runner.sha(fixture.run/"result.json"))
+    runner.save(fixture.run/"terminal.json", terminal)
+    for name in ("stdout.txt", "stderr.txt"):
+        (fixture.run/name).touch()
+    receipt = audit.audit(fixture.root, fixture.run)
+    assert receipt["status"] == "PASS_SAVED_PROJECTION_AND_SOURCE_ONLY_COMMON"
+    assert receipt["summary"]["COMMON"]["correct"] == 150
+    assert calls == list(core.SUBJECTS)
+    assert receipt["raw_reads"] == receipt["fits"] == 0
