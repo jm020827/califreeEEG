@@ -2556,3 +2556,36 @@
   deep-read39(completed27/queued11/skipped1). Render11/SQLitequick_checkok.
   디스크약290GiB, 보호6hash불변, 기존8untracked유지. 코드변경/pytest/설치/삭제/push0.
   원목표미완료/active, held60/사람요청/계정/유료0. 다음별도실행은 공개원문경로확인이다.
+
+### 149. 2026-09-14 KST / 2026-09-13 UTC — 용량 재확인·PreG 원문1개 확보와 측정 설계 보강
+
+- 사용자 용량확보후계속 지시에 df290GiB 확인. 앞선 round4 미완마감을 dd8a1d8로 보존하고,
+  [별도 계약](pregel_public_fulltext_v1_contract.md)c174fa6을 실행 전에 고정했다.
+  자동resolver는 다중fallback/retry/TLS완화 경로가 있어 정적검토 후 미사용/무수정.
+- 이미manifest에있는 exactIEEE PDF1GET HTTP200/application-pdf/3,610,535bytes/8pages,
+  curl11.106406초. retry0/redirect0/추가metadata0/새검색0. 시각16:31:30UTC시작전,
+  16:32:21UTC는완료관측상한. 기존 DOI safe-open오류가 전체원문접근불가가 아님을 확인했다.
+  [전송](reports/pregel_public_fulltext_v1_transport.json), PDF hash5f13504e…ab93455.
+- PDFpp3–7지정Methods/Results와pp1/8일부·Conclusion targeted정독,3–7렌더5개 시각확인.
+  PDFskill없어pdfinfo/pdftotext/pdftoppm/view_image 사용. 본문CC BY-NC-ND4.0표시 확인,
+  미확인data라이선스로전용0. 원문/추출/렌더/headers는연구workspace보존,Git본문업로드0.
+- 실측impedance(7.8Hz/48nA/working-reference/초기·6분간격)와10명SSVEP비교는확인.
+  6시간시험은대표1명. BCI전150kΩ미만조정·EEG육안검사약3–5분을labelcalibration과분리.
+  FBCCA4초Fig8의94.6%/96.1%,p=.343은동등성·M무용성·학습M이득을입증하지않는다.
+- [결과](pregel_public_fulltext_v1_results.md) NO_RELEASE_OR_RELEVANT_M_DOCUMENTED는
+  본문에정확한공개pairedrelease미확인이라는제한판정이며,실측M없음·공개자료없음이아니다.
+  Supplement미열람,rawphotodiode/EEG–impedancejoin미확정. 다음은필요시별도공식supplementinventory.
+- [측정추가규칙](acquisition_contact_measurement_addendum.md)에 common장치/시험조건과
+  개인실측M,측정시각/경과시간,조정전후와개입비용,조건부SHAM/directM분리를반영했다.
+  이전negative/고정후보계약은소급수정하지 않았다. 새적격dataset/schema추천0,fit/예측0.
+- Academic-research: queued질문→단일원문→즉시card/근거기록. CLI명오류1회와
+  transferfalsification누락validator실패1회후수정·저장성공(중간patch형식거절도보존).
+  Abstract입력은유지하고card만targeted_fulltext로갱신,deep-readcompleted28/queued10/skipped1.
+  Claimc3b6e30fa6123b98 QUALIFIED/근거3,기존gap갱신. Catalog1151/search92/card47/
+  technique18/claim100/evidence266/gap45/analogy6/deepread39,render11/SQLitequick_checkok.
+- Coordinate-worktree-changes에따라 rootsolewriter+읽기전용 도구감사/원문검토병렬.
+  원문독립review는같은5page렌더로해석경계를확인. 새코드없어pytest0,보호6hash불변,
+  기존46worktrees/8untracked보존. held60/사람요청/계정/유료/설치/삭제/push0,goalactive.
+- 추가저장산출물감사 PASS: PDFsize/hash/8pages/DOI/제목,headers HTTP200와기록된1GET/
+  0redirect/11.106406초확인. 실제curlflags·미기록요청부재의독립증명은아님.
+  [검토](reports/pregel_public_fulltext_v1_review.json),[최종상태](reports/pregel_public_fulltext_v1_state.json).

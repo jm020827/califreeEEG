@@ -1,0 +1,47 @@
+{
+  "schema": "cfeg.pregel-public-fulltext-v1.review",
+  "status": "PASS_WITH_EXPLICIT_SCOPE",
+  "provenance": "Root transcription of two read-only agent returns, not a newly implemented executable auditor",
+  "protocol": {
+    "agent": "mobile_protocol_review",
+    "scope": "PDFpp.3–7 designated sections and five saved renders, pp.1/8 relevant notices",
+    "findings": [
+      "Initial/six-minute impedance test is not trial-wise EEG pairing; six-hour test is one representative participant.",
+      "Pre-BCI150kOhm adjustment with visual EEG check takes author-described3–5min; match setup and account for costs.",
+      "Hardware comparison does not test incremental M; hair-length/sex confounding prevents isolated causal claim.",
+      "Fig.8(b)94.6/96.1%,p=.343/.346 are not equivalence or no-M evidence.",
+      "Optical sensor and supplemental notice do not prove raw stream/release availability.",
+      "Fig.3 is amplitude/SNR analysis; Fig.7 is representative-person six-block average, not one-shot."
+    ],
+    "network": 0,
+    "writes": 0,
+    "raw_eeg": 0,
+    "fits": 0
+  },
+  "artifact": {
+    "agent": "mobile_features_review",
+    "pdf_bytes": 3610535,
+    "pdf_sha256": "5f13504edb12d14985f1105ad5bded92e9930c84aecb6f598f85e0a79ab93455",
+    "headers_sha256": "c2a2c697cf918201701d4ef951e2840b5630bd5a5419406a59a0772352a9f90c",
+    "pages": 8,
+    "title_doi_match": true,
+    "http_status": 200,
+    "content_type": "application/pdf",
+    "recorded_gets": 1,
+    "recorded_redirects": 0,
+    "recorded_transfer_seconds": 11.106406,
+    "retained_body_under_20MiB": true,
+    "additional_review": "Relevant PDFpp.1,3–4,6–8 and Fig.8 rendered in memory",
+    "network": 0,
+    "writes": 0,
+    "raw_eeg": 0,
+    "fits": 0
+  },
+  "limits": [
+    "Independent review verifies saved records, not network packet capture or absence of unrecorded requests.",
+    "Actual curl flags/file-size-limit enforcement are root execution records, not independently attested from saved PDF/headers.",
+    "16:32:21UTC is terminal observation upper bound, not exact HTTP end.",
+    "PDF license is not raw-data license; supplements uninspected.",
+    "No EEG efficacy/calibration result, and no full-code test run."
+  ]
+}

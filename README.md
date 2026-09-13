@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-14 KST / 2026-09-13 UTC **Pre-Gelled 공식 원문 확보·설계 교훈 반영**. 용량290GiB 재확인 후 정확한 IEEE PDF를1GET/HTTP200/3.61MB로 확보해 [표적 정독](docs/pregel_public_fulltext_v1_results.md)했다. 실제 임피던스 측정과 SSVEP 하드웨어 비교는 확인했지만 공개 paired원자료·학습M효능·보정절감은 미확인이다. [추가 설계 규칙](docs/acquisition_contact_measurement_addendum.md)에 측정시점/조정전후/공통조건/총비용 분리를 반영했다. 기존 후보 종료와 held60 봉인 유지, 새raw/fit/발송/유료0. 아래는 시점별 이력이다.
+
 > 2026-09-14 KST / 2026-09-13 UTC **공개 acquisition 탐색 round4 종료: 새 적격 후보 0개**. [결과](docs/public_acquisition_round4_results.md): 검색2회에서 서로 다른 DOI24개를 검토했지만 공식 원문4곳 모두 도구 접근 오류여서 공개 실측 필드/schema를 확인하지 못했다. 데이터가 비공개이거나 metadata가 무용하다는 증거는 아니다. 색인 초록의 Pre-Gelled 전극 연구를 [단일 원문 독서 후보](docs/pregel_public_fulltext_next.md)로만 등록했다. 독립 metadata 검토 PASS, 새 raw/PDF/fit/held60/발송/유료0. 아래는 시점별 이력이다.
 
 > 2026-09-14 KST / 2026-09-13 UTC **최신: MMV 공개 페이지 확보, 파일/schema는 보류**. [결과](docs/mmv_public_capture_v1_results.md): exact landing을 HTTP200/785,384bytes로 보존했고 JSON-LD의 PUBLIC·V3·CC BY 4.0 선언을 확인했다. Canonical 영문 주소는 원주소로302·MIME없음이라 2/4요청에서 사전 중단했다. **실제 파일쌍·acquisition 필드·학습 적격성을 확보한 것은 아니다.** 독립 저장 문서 감사 PASS, 기존 실패·held60 보호 유지; raw/PDF/fit/EEG예측0. [다음 초안](docs/public_acquisition_candidate_round_next.md)은 동일 보류 주소 재시도가 아닌 다른 공개 실측 acquisition 정보원의 제한된 탐색이며 미실행이다. 원 연구목표는 미완료/active, 아래는 시점별 이력이다.

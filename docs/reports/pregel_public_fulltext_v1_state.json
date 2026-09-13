@@ -1,0 +1,125 @@
+{
+  "schema": "cfeg.pregel-public-fulltext-v1.state",
+  "status": "COMPLETE_TARGETED_PRIMARY_READ",
+  "decision": "NO_RELEASE_OR_RELEVANT_M_DOCUMENTED",
+  "decision_scope": "No exact public paired raw release documented in reviewed main article; actual impedance measurements ARE reported; supplements uninspected; not evidence of nonexistence.",
+  "date_utc": "2026-09-13",
+  "date_kst": "2026-09-14",
+  "goal_status": "active",
+  "base_commit": "dd8a1d8",
+  "contract_commit": "c174fa6",
+  "contract_sha256": "760bdbeb41251d3c9648a75cae05d22646220514b40e8c423614cae52e49e457",
+  "storage": {
+    "free_gib_rounded": 290,
+    "document_body_bytes": 3610535,
+    "body_limit_each": 20971520,
+    "body_limit_total": 83886080,
+    "pdf_stored_outside_git": true
+  },
+  "transport": {
+    "requests_allowed": 4,
+    "requests_used": 1,
+    "status": 200,
+    "content_type": "application/pdf",
+    "time_total_curl_seconds": 11.106406,
+    "retries": 0,
+    "redirects": 0,
+    "additional_metadata_gets": 0,
+    "broad_searches": 0,
+    "underlying_wire_bytes_measured": false,
+    "resolver_tool_called": false
+  },
+  "paper": {
+    "doi": "10.1109/tnsre.2022.3161989",
+    "pages": 8,
+    "sha256": "5f13504edb12d14985f1105ad5bded92e9930c84aecb6f598f85e0a79ab93455",
+    "reading_depth": "targeted_fulltext",
+    "reviewed_pages": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "reviewed_page_scope": "p1 bibliographic/license/supplementary notice; p3-7 designated methods/results; p7-8 conclusion, not wholeintro/fabrication/references",
+    "rendered_pages": [
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "supplements_read": 0,
+    "raw_eeg_read": 0,
+    "raw_impedance_read": 0,
+    "pdf_skill_available": false,
+    "fallback_tools": [
+      "pdfinfo",
+      "pdftotext",
+      "pdftoppm",
+      "view_image"
+    ]
+  },
+  "learning": {
+    "new_eligible_datasets": 0,
+    "new_schema_nominations": 0,
+    "fits": 0,
+    "predictions": 0,
+    "metadata_efficacy_established": false,
+    "calibration_savings_established": false,
+    "addendum": "docs/acquisition_contact_measurement_addendum.md",
+    "old_candidate_contracts_changed": 0
+  },
+  "verification": {
+    "protocol_read_only_review": "AGENT_SUPPORTS_REPORTED_SCOPE_AND_LIMITS",
+    "transport_audit": "PASS_SAVED_ARTIFACTS_WITH_SCOPE_LIMITS",
+    "pytest_runs": 0,
+    "why_no_pytest": "NO_EXECUTABLE_OR_MODEL_CHANGE",
+    "cli_error_history": [
+      "invalid subcommand card; corrected to paper-card",
+      "paper-card validator required falsification for transfer hypotheses; conditions added, successful save"
+    ],
+    "patch_error_history": [
+      "delete-and-add same-path payload rejected; corrected with update patch"
+    ],
+    "protected_six_hashes": "UNCHANGED",
+    "sqlite_quick_check": "ok"
+  },
+  "workspace": {
+    "catalog_records": 1151,
+    "search_runs": 92,
+    "paper_cards": 47,
+    "techniques": 18,
+    "claims": 100,
+    "evidence": 266,
+    "gaps": 45,
+    "analogies": 6,
+    "deep_reads": 39,
+    "deep_read_status": {
+      "completed": 28,
+      "queued": 10,
+      "skipped": 1
+    },
+    "rendered_views": 11,
+    "cutoff_unchanged": "2026-09-04",
+    "claim": "claim:c3b6e30fa6123b98",
+    "gap": "gap:3f973164c88eabce"
+  },
+  "boundaries": {
+    "held60_openings": 0,
+    "raw_downloads": 0,
+    "external_person_requests": 0,
+    "accounts": 0,
+    "paid": 0,
+    "installs": 0,
+    "deletions": 0,
+    "pushes": 0,
+    "new_worktrees": 0,
+    "existing_worktrees": 46,
+    "existing_untracked_dirs": 8,
+    "parallelism": "ROOT_SOLE_WRITER_READ_ONLY_AGENTS"
+  },
+  "next": "If useful, one separately bounded official supplementary-inventory qualification; exact public file linkage needed before raw/learning. Stop/park at account/payment/author request; do not repeat DOI/PDF attempts."
+}
