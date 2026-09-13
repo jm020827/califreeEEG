@@ -2533,3 +2533,26 @@
   90searches/46cards/18techniques/98claims/260evidence/45gaps/6analogies/38deepreads,
   cutoff2026-09-04유지. Render11views/SQLitequick_checkok. 공개문서access진전은있지만
   원래학습M/보정절감목표미완료이므로goalactive이며complete/blocked처리하지않는다.
+
+### 148. 2026-09-14 KST / 2026-09-13 UTC — 공개 acquisition 탐색 round4 종료
+
+- 사전 계약 a14929a 이후 OpenAlex/Crossref 검색2회 실행: `SSVEP dry electrode dataset impedance`,
+  `SSVEP motion accelerometer dataset`. Search868060228aabfb30/36448168ed46a976,
+  각12개/총24distinct DOI, provider오류0. 새 catalog17개는 정독/적격논문17개가 아니다.
+- Querycutoff2026-09-14, workspace기본2026-09-04유지. 기존경로2/metadata예비10/
+  반환metadata상scope·recordtype불충분12. 의심1970날짜6개는 실제출판일로 인정하지 않았다.
+- 정확한 primarytarget4개 모두 도구 safe-open/redirect오류. 원문성공0, 서버비공개나
+  실제HTTP403/500으로 해석하지 않았다. 추가검색/재시도/PDF/raw/fit/EEG예측0.
+  [결과](public_acquisition_round4_results.md), [상태](reports/public_acquisition_round4_state.json).
+- 판정 NO_QUALIFIED_NEW_SCHEMA_CANDIDATE_WITHIN_ROUND. 예산2/2검색·4/4문서 종료.
+  Pre-Gelled DOI10.1109/tnsre.2022.3161989의 색인초록만 papercard에 보존하고,
+  exactrelease/실측impedance/SSVEPpairing/prequery/cost를 묻는 targeteddeep-read를 등록했다.
+  [다음초안](pregel_public_fulltext_next.md)은 독서후보일 뿐 데이터·학습추천이 아니다.
+- Academic-research 포화점검으로 broadsearch를 중단했다. Coordinate-worktree-changes에
+  따라 rootsolewriter+읽기전용 병렬review, 새worktree0/기존46보존. 독립검토가2manifest와
+  보고2개/JSON2개를 전수대조 PASS(계산0.000614초). 전체원문/실험감사는 아니다.
+- Claim61d1820c940cfb50 QUALIFIED/근거3개, 기존gap3f973164c88eabce갱신.
+  Catalog1151/search92/card47/technique18/claim99/evidence263/gap45/analogy6/
+  deep-read39(completed27/queued11/skipped1). Render11/SQLitequick_checkok.
+  디스크약290GiB, 보호6hash불변, 기존8untracked유지. 코드변경/pytest/설치/삭제/push0.
+  원목표미완료/active, held60/사람요청/계정/유료0. 다음별도실행은 공개원문경로확인이다.

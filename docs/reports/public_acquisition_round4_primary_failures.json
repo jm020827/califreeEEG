@@ -1,0 +1,11 @@
+{
+  "schema": "cfeg.public-acquisition-round4.primary-access",
+  "retrieved_date_utc": "2026-09-13",
+  "round_contract_commit": "a14929a",
+  "tool": "web.run.open",
+  "distinct_targets": 4,
+  "successful_primary_fulltexts": 0,
+  "primary_attempt_12": "Internal Error ()\nciteturn1061view0 [wordlim: 200] Source: open({\"ref_id\":\"https://doi.org/10.1109/TNSRE.2022.3161989\",\"lineno\":null}); Total lines: 1\nL0: URL https://doi.org/10.1109/TNSRE.2022.3161989 is not safe to open (non-retryable error)\n--------------------------------------------------------------------------------\nInternal Error ()\nciteturn1061view1 [wordlim: 200] Source: open({\"ref_id\":\"https://doi.org/10.2139/ssrn.5622956\",\"lineno\":null}); Total lines: 1\nL0: URL https://doi.org/10.2139/ssrn.5622956 is not safe to open (non-retryable error)\n",
+  "primary_attempt_34": "Internal Error ()\nciteturn1062view0 [wordlim: 200] Source: open({\"ref_id\":\"https://doi.org/10.1093/gigascience/giz002\",\"lineno\":null}); Total lines: 1\nL0: Failed to fetch https://doi.org/10.1093/gigascience/giz002: (500) Redirected to https://oup.silverchair-cdn.com/article-minimal/5304369 which is not safe to open (non-retryable error)\n--------------------------------------------------------------------------------\nInternal Error ()\nciteturn1062view1 [wordlim: 200] Source: open({\"ref_id\":\"https://doi.org/10.1038/s41598-022-12733-0\",\"lineno\":null}); Total lines: 1\nL0: URL https://doi.org/10.1038/s41598-022-12733-0 is not safe to open (non-retryable error)\n",
+  "limitations": "Tool-level safe-open/redirect errors, not verified publisher HTTP access policy or evidence that datasets are private. No raw/PDF download, no retries or alternative endpoint followup in this round."
+}

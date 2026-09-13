@@ -1,0 +1,40 @@
+{
+  "schema": "cfeg.public-acquisition-round4.saved-metadata-review",
+  "status": "PASS_SAVED_METADATA_AND_INTERPRETATION",
+  "reviewer": "mobile_protocol_review",
+  "artifact_authorship": "ROOT_TRANSCRIPTION_OF_INDEPENDENT_READ_ONLY_AGENT_RETURN",
+  "review_scope": [
+    "docs/public_acquisition_round4_results.md",
+    "docs/pregel_public_fulltext_next.md",
+    "docs/reports/public_acquisition_round4_triage.json",
+    "docs/reports/public_acquisition_round4_primary_failures.json",
+    "searches/2026-09-13T161145-ssvep-dry-electrode-dataset-impedance.json",
+    "searches/2026-09-13T161227-ssvep-motion-accelerometer-dataset.json"
+  ],
+  "verified_counts": {
+    "search_manifests": 2,
+    "records_each": [12, 12],
+    "distinct_dois": 24,
+    "duplicate_closed_routes": 2,
+    "preliminary_metadata": 10,
+    "scope_or_record_type_not_supported": 12,
+    "suspicious_1970_dates": 6,
+    "primary_target_failures": 4,
+    "primary_fulltexts_read": 0,
+    "schema_candidates_recommended": 0
+  },
+  "field_comparison": "ALL_DOI_TITLE_DATE_ABSTRACT_SOURCE_AND_PRESENCE",
+  "pregel_scope": "OPENALEX_W4220855852_INDEXED_ABSTRACT_READING_CANDIDATE_ONLY_NOT_SCHEMA_OR_LEARNING",
+  "calculation_seconds": 0.000614,
+  "additional_network": 0,
+  "pdf_reads": 0,
+  "raw_data_reads": 0,
+  "fits": 0,
+  "writes_by_reviewer": 0,
+  "limitations": [
+    "Not a primary-paper fact check or new public file access verification",
+    "Tool failures do not establish server403/private/authentication policy",
+    "Whole-workspace totals, paper-card/deep-read registration and historical access routes not independently reverified",
+    "No learning efficacy, calibration reduction or absence-of-all-public-M claim"
+  ]
+}
