@@ -1,0 +1,13 @@
+{
+  "mat_path": "/home/whwovy/data/mamem_i_v1_20260913/development_first.mat",
+  "mat_sha256": "57a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a",
+  "mat_bytes": 137357437,
+  "role_path": "/home/whwovy/data/mamem_i_v1_20260913/development_role.json",
+  "role_sha256": "dc26f85099ed667208ec7b992430d257d01f2a4aa727b7b98f8a5195f6d9af18",
+  "variables": ["samplingRate"],
+  "descriptor_read": false,
+  "expected_hz": 250,
+  "deadline_utc": "2026-09-13T11:00:00+00:00",
+  "limits": {"address_space_bytes": 2147483648, "cpu_seconds": 30, "wall_seconds": 60, "each_output_bytes": 32768},
+  "producer_sha256": "cf88e5127d865f77d28c825588f0018161ae8b6789f82e1ba9ee7ce0eee4d008"
+}

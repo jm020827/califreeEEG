@@ -21,6 +21,9 @@ configuration as actual, or reading extra arrays to justify a desired M story.
   shared filesystem changes. Bulk download/extraction remains disallowed. For this
   new small-doc/code round only, <=8MiB task artifacts and >=7GiB free; recheck
   before retention. No cleanup or attribution of other disk use to this task.
+  User subsequently reported space freed. Read-only check at10:28:33UTC found
+ 315,703,184KiB available (about323GB/301GiB). Disk blocker is resolved; this does
+  not enlarge the8MiB artifact/scalar/source scope or authorize bulk extraction.
 - <=3unique official source targets, each<=2MiB/30seconds/oneattempt. Root may
   retain<=2successful scout targets, not additional unique sources. Official
   implementation repos (MNE/EEGLAB/MAMEM) may clarify format conventions but do
@@ -57,6 +60,10 @@ SHA25657a72c3fde0ff3bc9aaae10721cd7cb450bda63eb5299a96f41704ea696ad10a,
 Freeze reader+manifest before real scalar access; tests use generated MAT/loader
 spies for whitelist, hash/role/header/size and scalar constraints and durable
 failure receipts. Parent compares its terminal/child report, not just exit0.
+The production output directory is pinned to
+`docs/reports/mamem_i_scalar_adapter_v1_run`; its exclusive creation plus a
+durable exclusive worker claim prevents a fresh output path or direct worker
+invocation from silently retrying the one allowed value-read attempt.
 
 ## Adapter decisions
 
