@@ -1,0 +1,13 @@
+{
+  "status": "PASS_SAVED_EVENTS_AND_RECORDED_SCOPE",
+  "actual_audit_attempts": 1,
+  "event_windows": 300,
+  "participants": 10,
+  "raw_reads": 0,
+  "fits": 0,
+  "max_scalar_error": 8.881784197001252e-15,
+  "result_sha256": "50cef4d3482975efe69d4fc5c145a95d2e4ab3822db30203576ce63dad906389",
+  "decision": "RETIRE_FULL_RESIDUAL_ROUTE",
+  "limitation": "No independent raw-DIN segmentation, physical-clock or OS-I/O audit",
+  "completed_utc": "2026-09-13T14:58:02.886842+00:00"
+}

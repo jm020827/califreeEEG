@@ -2363,3 +2363,57 @@
   갱신. 총1134papers/90searches/46cards/18techniques/95claims/251evidence/45gaps/
   6analogies/38deepreads,cutoff2026-09-04 유지. Render11views/SQLitequick_checkok.
   이 개발 진단 완료와 전체 연구목표 달성을 구분하며 goal은 active다.
+
+### 145. 2026-09-13 UTC / 2026-09-14 KST 마감 — DIN 잔차의 직접 A→B 전달 종료
+
+- 사용자 용량확보 재확인 요청에 main5d1272f/free293GiB와 active goal을 확인했다.
+  Root solewriter,3agent read-only protocol/math/runtime 검토. 새worktree0,
+  기존46worktrees/8untracked디렉터리보존, install/symlink/cleanup/push0.
+  academic-research workspace/context를 확인하고 새논문검색/PDF 대신 사전고정
+  구조검사로 공통값과 잔여acquisition 정보의 차이를 좁혔다.
+- 계약/input20핀 c522467 → code/actual전 보강11f02dd. 기존 S002–S011 a/b20파일
+  2,760,155,793bytes; 새다운로드/추출0. 각 MAT hash/header/DIN_1+samplingRate load
+  1회, EEG는257×T header만 확인, decode/수치접근0. A10기록의150창을저장seal한뒤
+  B10기록150창을읽었다. B는구조평가target이므로Bmetadata추출0이라고기록하지않는다.
+  Eventsv1/v2·referenceprimitive SHA유지,23groups/8adaptation제외/15main/3perclass,
+  onset+1초부터2초창의sample간격식·주기당2events가정유지.
+- 두common은각heldparticipant양run을제외하고다른9명3repeat logmean으로만계산했다.
+  A첫지원/class잔차를 Bcommon에전달하고B3repeat기하평균을target으로했다.
+  Between variance는LOPO잔차가아닌원Hz participantmean을사용한다.
+  W/3은iid근사반복성proxy이며순수measurementnoise/clock원인규명은아니다.
+- 새suite예산3: 최초22PASS/.41s;통합325PASS/2FAIL/1.27s;최종새22PASS/.33s.
+  기존관련305개는통합때PASS이며추가회귀재실행0. 두실패는auditor정수형강화후
+  연속값zero branch가int0/float0.0로달랐던표현문제이며실제전float로고쳤다.
+  최초ruff2style문제→최종PASS/diffcheckPASS. Whole-reposuite미실행.
+  출력한도실패때terminal을남길3MiB예약·receipt상한·CRC/총byte검사도실제전에보강했다.
+- 실제14:57:34.500823–14:57:37.370666UTC,2.869843초,1attempt/20파일/
+  300DINwindows/0fits/0EEGpredictions COMPLETE. A/BexcessRMS .0469554/.0494396Hz로
+  두size/repeatgate통과. 그러나commonMSE .003214629973Hz²→direct .006030096307Hz²,
+  **87.5829%증가**, 개선3/10명(S003/S008/S009),나머지7명악화.
+  사전10%감소+7명기준실패, **RETIRE_FULL_RESIDUAL_ROUTE**. RMS표현은
+  .0566977Hz→.0776537Hz이며EEG정확도하락수치가아니다.
+- Allones logfactor에너지비 .306568/직교logRMS .00614987은설명값만,
+  globalclock/총1trial전파/후속후보승격근거아니다. Class/사람별모든오차를보고서에보존.
+  v2M2→PSDRETIRE와 S001nominal12/15→support14/15도유지한다.
+  이번실패는공통값을넘는full잔차전달에한정하며모든partial학습/M무용성으로일반화하지않는다.
+- 실제저장검산1회 PASS,300event식→LOPO/moments/오차/판정/비용/핀/lifetime/Aseal-B순서,
+  최대차8.881784197001252e−15. Root가별도scalar구현하고독립read-only agent정적검토;
+  별도agent저술/rawDIN분할재구축/실제광학/OS I/O감사라고주장하지않는다.
+  [결과](mamem_reference_residual_v1_results.md)/[상태](reports/mamem_reference_residual_v1_state.json)/
+  [감사](reports/mamem_reference_residual_v1_audit.json)와rawrun48파일144,794bytes보존.
+  Result21,351bytes/SHA50cef4d3482975efe69d4fc5c145a95d2e4ab3822db30203576ce63dad906389,
+  stdout/stderr0. 실제후code/threshold변경0,재실행0.
+- 지원5trial25stimsec/10DINsec,선택prefix445.904–457.828초/fullA472.424–484.964초.
+  전체DIN검증비용과실제queryready/setupUNKNOWN을유지하며보정절감주장0.
+  새로운EEG/Q비교/학습0,같은10명개발재사용/공유sourcefold종속성을명시했다.
+  S001/c/d/e/held60/featureNPZ/사람요청/유료/네트워크접근0,기존보호6hash불변.
+- [다음 결정메모](mamem_post_residual_decision_next.md)는미실행이다. 먼저별도계약의
+  무지원sourcecommonbank대nominal EEG기준선300predictions/0fits를우선한다.
+  이후새학습후보1개는pre-query외부측정의시간적대응/물리적의미/추가정보근거가있을때만
+  재개하고공통0/nominal0/directM/Q/Q2/QM/SHAM·동일support/query비용을유지한다.
+  full잔차실패를계수/grid/same-run즉석변경으로자동구제하지않는다.
+- Researchclaim959459e55aa7c200 QUALIFIED/3evidence,기존gap3f973164c88eabce갱신.
+  기존MMVoffline/MAMEMIIflash공백도보존했다. 누적1134papers/90searches/46cards/
+  18techniques/96claims/254evidence/45gaps/6analogies/38deepreads,cutoff2026-09-04.
+  Render11파일(상위7+writing4);SQLitequick_checkok확인. 공간은현재병목아니다.
+  유망한학습M/보정절감미확립이므로전체goal은active이며임의complete/blocked처리하지않는다.

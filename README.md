@@ -1,5 +1,7 @@
 # Calibration-Efficient SSVEP EEG Decoding
 
+> 2026-09-13 UTC **최신: 공통값 대비 full잔차 전달 경로 종료**. 용량293GiB 재확인 뒤 기존10명×2기록의 DIN300창을 단회 분석했다. [결과](docs/mamem_reference_residual_v1_results.md): 반복변동을 넘는 차이는 관측됐지만, A잔차를 B에 그대로 전달하면 공통값보다 event-frequency MSE가 **87.58% 증가**, 개선3/10명으로 사전기준 미통과였다. 새 EEG decode/분류/학습0; 저장 산술 검산PASS, 새22+기존305 관련검사 통과. **모든metadata무효나 EEG정확도87.58%하락이란 뜻은 아니다.** 기존v2RETIRE·S001개발관찰·held60보호 유지. [다음 메모](docs/mamem_post_residual_decision_next.md)는 무지원공통bank EEG기준선 확인과 새학습후보 진입조건이며미실행이다. 아래는시점별이력이다.
+
 > 2026-09-13 **최신: S001 실제 reference 진단 12/15 → 14/15**. [결과](docs/mamem_reference_probe_development_v1_results.md): 같은15query에서 지원 기록 bank가 추가2개를 맞혔고 새오답은0이었다. 1attempt/30predictions/0fit, 독립 저장 수치 감사·관련366tests PASS. **개발1인의 reference 비교이며 학습된M 효과·보정량 감소는 미입증**이다. Nominal도 무지원80% 관문을 통과했고, 지원5trial의선택prefix445.94초와전체기록471.668초를 실제준비시간으로바꾸지않는다. v2RETIRE/held60보호 유지. [다음 초안](docs/mamem_reference_residual_learning_next.md)은 공통reference와잔여M정보 분리이며미실행이다. 아래는시점별이력이다.
 
 > 2026-09-13 **최신: 용량295GiB 재확인·reference 진단 합성 구현 완료**. [출처 확인](docs/mamem_baseline_source_v1_results.md)에서 MAMEM-I의 완전한 저자 CCA 설정은 미확정으로 종료했다. 별도 단일채널 reference-sensitivity [합성 구현](docs/mamem_reference_probe_synthetic_v1_results.md)은 새49/관련260검사·독립 정적감사를 통과했다. 이번 새 실제 EEG 평가·학습0, metadata 효능·보정량 감소는 미확립이며 v2 부정 결과 유지. [다음 개발 진단](docs/mamem_reference_probe_development_next.md)은 별도 실제 계약을 고정하기 전인 미실행 초안이다. 아래는 시점별 이력이다.
