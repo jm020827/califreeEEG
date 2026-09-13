@@ -44,12 +44,16 @@ EEG 수치 처리는 v2 parser(include_metadata=False)가 고정한15개 main창
    기록한다. Argmax label/accuracy·통계적 유의성·최선 설정을 출력하지 않는다.
 6. 공분산 eigenvalue 비율을 정렬하여 rank indices[1,2,4,8,16,32,64,128,256]의
    값과 cumulative mass, min/trace, entropy effective rank 및 regularized condition
-   number를 보고한다. 이것은 spectrum 요약이지 독립 cortical source 수가 아니다.
+   number를 보고한다. 사전 수식 review에 따라 같은 고정 ridge alpha에서
+   d_eff=sum(eigenvalue/(eigenvalue+alpha))도 보고한다. 이는 작은 eigen-direction의
+   whitening 기여를 보여주는 기존 행렬의 요약이지 새fit/parameter 선택이 아니다.
+   이것은 spectrum 요약이지 독립 cortical source 수가 아니다.
 7. seed20260914의default_rng로500sample permutation 한 개를 생성하고 모든 channel과
    모든15창에 공통 적용한다. 순열 배열/hash를 보존한다. Original/permuted 양쪽의
    nominal score·energy/Q 요약을 같은 방식으로 기록한다. Covariance relative
    Frobenius difference<=1e−10이어야 한다. Permutation은 spatial covariance를 보존하지만
    temporal spectrum/의존성도 바꾸므로 순수 phase-null·유의성 검정은 아니다.
+   같은 순열은 window 쌍의 XiXjᵀ도 보존하므로 모든 trial 공통 구조를 제거하는 대조가 아니다.
 8. Fixed seed synthetic B에 pi/3의2×2orthogonal R을 곱한 BBᵀ 불변 canary를 단위검사한다.
    공간 상대 phase나 query energy까지 사라진다고 해석하지 않는다. 실제 EEG phase
    reconstruction/ODE/추가 decoder/gate fit은 없다.
