@@ -116,6 +116,8 @@ denominator<=1e-24 returns0, recorded as degenerate. This uses source repeats on
 Subtracttrainclassmean M fromM beforeQM/SHAM; unobservedclassnotallowed. SourceSHAM
 cyclesparticipantIDs within EXACT(class,k,mean eventcount)strata; singletonselfmarked,
 donor vectors neverdimensionwisemixed. Eval uses realM inbothQM/SHAM. Recordchangedfraction;
+Numerically meaningful SHAM change requires any joint-vector component difference>1e-9;
+record exact-difference fraction separately. The preflight uses the meaningful fraction.
 if no conditionallychangingM/sourceSHAM anywhere,stopbeforeefficacyfits,notnewfeatures.
 
 Count realfitmax80; sourceoracle targets10fold×2k×9pseudo×5class×2harmonic=1800;
