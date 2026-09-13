@@ -341,3 +341,47 @@ def test_final_deadline_failure_keeps_partial_result_without_complete_terminal(t
     assert terminal["status"] == "STOPPED_NO_RETRY" and terminal["reason"] == "deadline"
     assert "predictions" not in terminal and "result_sha256" not in terminal
     assert (tmp_path / "result.json").is_file()
+
+
+def test_generated_producer_output_passes_independent_auditor(monkeypatch):
+    import hashlib
+    import json
+
+    spec = importlib.util.spec_from_file_location(
+        "reference_runner_integration_audit", runner.ROOT
+        / "scripts/analysis/audit_mamem_reference_probe_v1.py")
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    monkeypatch.setattr(runner, "now", lambda: "2026-09-13T14:10:01Z")
+    din, _ = generated_din()
+    _, eeg = windows_and_signal(din)
+
+    def load(role):
+        data = {"DIN_1": din, "samplingRate": np.array([[250]])}
+        if role == "b":
+            data["eeg"] = eeg
+        return data, 117917
+
+    def digest(value):
+        return hashlib.sha256(json.dumps(value).encode()).hexdigest()
+
+    result = runner.inspect(role_loader=load)
+    code = {p: hashlib.sha256((runner.ROOT / p).read_bytes()).hexdigest() for p in runner.PINS}
+    manifest = dict(runner.FIXED, created_utc="2026-09-13T14:00:00Z", code_sha256=code)
+    hashes = {"manifest.json": digest(manifest), "result.json": digest(result)}
+    started = {"status": "STARTED", "attempt": 1, "parent_pid": 100,
+               "started_utc": "2026-09-13T14:10:00Z", "manifest_sha256": hashes["manifest.json"]}
+    claim = {"attempt": 1, "parent_pid": 100, "pid": 101,
+             "started_utc": "2026-09-13T14:10:00.1Z", "manifest_sha256": hashes["manifest.json"]}
+    hashes.update({"started.json": digest(started), "worker_claim.json": digest(claim)})
+    terminal = {"status": "COMPLETE", "attempts": 1, "fits": 0, "predictions": 30,
+                "started_utc": started["started_utc"], "ended_utc": "2026-09-13T14:10:02Z",
+                "manifest_sha256": hashes["manifest.json"], "started_sha256": hashes["started.json"],
+                "worker_claim_sha256": hashes["worker_claim.json"],
+                "result_sha256": hashes["result.json"]}
+    hashes["terminal.json"] = digest(terminal)
+    report = audit.audit_objects(manifest, started, claim, terminal, result,
+                                 artifact_sha256=hashes, actual_code_sha256=code)
+    assert report["status"] == "PASS_SAVED_PROJECTION_AND_RECORDED_SCOPE"
+    assert report["summary"] == result["summary"]
+    assert report["max_scalar_error"] <= 1e-10
