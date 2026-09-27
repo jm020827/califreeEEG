@@ -1,0 +1,56 @@
+{
+  "schema": "cfeg.joint-harmonic-program-state.v1",
+  "status": "ENGINEERING_QUALIFIED_HUMAN_NOT_STARTED",
+  "parent_revision": "de150428b01e4bce39fe8b390bbb99a3c0c79280",
+  "plan_sha256": "ef32b8c245a8e4f314bd18965b63e5106dd1435fc223e63fc21691e1bac4f28e",
+  "config_sha256": "0d302b418ff9da5a338a59a63e2b471615f0b7388fe244c70570055c987c8627",
+  "frozen_before_numeric_experiment": true,
+  "candidate_count": 1,
+  "consumed": {
+    "human_extraction_attempts": 0,
+    "raw_loads": 0,
+    "raw_hashes": 0,
+    "manifest_hashes": 0,
+    "manifest_filtered_reads": 0,
+    "cache_loads": 0,
+    "human_fits": 0,
+    "human_updates": 0,
+    "human_episodes": 0,
+    "inner_evaluations": 0,
+    "outer_reveal_batches": 0,
+    "generated_test_invocations": 3,
+    "generated_test_seconds": 11.23,
+    "generated_updates": 304,
+    "engineering_repairs": 3,
+    "saved_audit_batches": 0,
+    "held60": 0,
+    "external_requests": 0,
+    "paid_resources": 0
+  },
+  "test_runs": [{"id":1,"status":"PASS","scope":"pure core and CPU/CUDA generated tests","passed":38,"seconds":2.88,"optimizer_updates":8,"receipt":"docs/reports/joint_harmonic_core_v1_tests.json"},{"id":2,"status":"PASS","scope":"generated full flow, mocked human reader, independent saved-forward audit","passed":8,"seconds":3.97,"optimizer_updates":144},{"id":3,"status":"PASS","scope":"integrated core and complete generated flow with stronger independent cost/context audit","passed":46,"seconds":4.38,"optimizer_updates":152}],
+  "full_flow_receipt": "docs/reports/joint_harmonic_full_flow_v1_tests.json",
+  "qualified_runner_artifacts": {
+    "docs/reports/joint_harmonic_full_flow_v1_tests.json": "23755b563aa6eaaec01fb118dcdc6fcf5a62ceea1e8e6bd0d1151515115d7624",
+    "src/cfeg/analysis/joint_harmonic_data.py": "efc4a757ee48690d6ec8d7fa07c7651f94d12959b63ff9687127d8155b416ba5",
+    "src/cfeg/analysis/joint_harmonic_runner.py": "920471895ed60c1b035383b3916d25b0677261ad265cc00fe9fa372c70582ef3",
+    "src/cfeg/analysis/joint_harmonic_report.py": "d3c309e19edef8c2b5d641e97ee73e5e6c56887771705ae4ecfc8edea3c29160",
+    "src/cfeg/analysis/joint_harmonic_audit.py": "e8b37ff1f1db4b75046504501e963f6c1161cbe816a298b8cd0085dead0b7115",
+    "tests/test_joint_harmonic_runner.py": "723b6eb22cd438bac2ffe88e65047266aedc687e1bde8bcc9d92196f2ae95ed8",
+    "src/cfeg/data/prepare_mat.py": "58bc566801236023f739f644f5c783b89bd5f64b53ff013ccfebc6b766a7d8d1",
+    "src/cfeg/data/prepare_wearable.py": "da47cd61e749f6f9fbb176512387dd9f6b0a291efa2399a1dbd832ee96f3b508"
+  },
+  "qualified_core_artifacts": {
+    "src/cfeg/models/joint_harmonic.py": "f3af280c595c2088e67cddf40106a2a8e563664a6ea21a75419405d65bf4d5d1",
+    "src/cfeg/analysis/joint_harmonic.py": "98d2adbe5e6cac8d1d031324fddc607cd1b3a38222bf5baf418c747aa5a9da34",
+    "tests/test_joint_harmonic.py": "e9641dedc41c6b204345ade4492f761ff89f51eb66d45876143626b68dc2056f",
+    "docs/reports/joint_harmonic_core_v1_tests.json": "3ad77a9eb2249142e39e5709f41102c154a4ff426545db577db657357e63fd55"
+  },
+  "research_space_records": {
+    "technique": "technique:1197aadf804f74c4",
+    "claim": "claim:74beb9739541d295",
+    "claim_status": "qualified"
+  },
+  "engineering_repairs": [{"round":1,"reason":"Initial static review: import Mapping/Sequence from collections.abc and use dictionary literal; no scientific change."},{"round":2,"reason":"Pre-test runner review: isolate authority fixture from real repository, add per-step runtime/allocator ceilings and termination receipt handling, correct import formatting/unused local; no scientific change."},{"round":3,"reason":"Final pre-human audit coverage: independent reconstruction of source-only normalizers and query contexts, policy/threshold costs, bootstrap and promotion decisions; bind all fit-record and feature-cache hashes. Scientific specification unchanged."}],
+  "next": "Execute the one authorized human source39 attempt, then the single saved-artifact independent audit. No new learning-rate, model, data scope or automatic retry is allowed.",
+  "efficacy": "NOT_EVALUATED"
+}

@@ -2780,3 +2780,187 @@
   논문1151/search92/targeted29 등 읽기·검색 수와 cutoff2026-09-04는 불변이다.
   Claim이 참조한3artifact hash와 JSON 파싱,보호된6원본SHA,ruff/diffcheck PASS,
   SQLite quick_check ok다. 이전 pytest 결과를 새로운 실행으로 세지 않는다.
+
+### 157. 2026-09-23 KST — 같은 M의 새 공동학습 가설 동결·합성 코어 38PASS
+
+- 직전 현재상태 응답은 NO_PROGRESS였다. 새 사용자 goal의 B+M 공동설계 권한에 따라
+  실제 다음 작업을 수행했다. Base de150428/main, 기존8 untracked 시험 디렉터리 보존.
+  원 저보정 목표/기존 부정결과를 유지한다. 같은 M의 재표현·삽입위치·상호작용 변경은
+  검토 가능하며 새 M 확보·사전 M 효능을 일반 필수조건으로 두지 않는다.
+- Academic-research 전체 skill/두 references와 기존 landscape를 읽었다. 실행 전 문제
+  signature를 저장하고 CSDuDoFN/SSVEP-DAN의 HTML methods 및 FiLM/Prototypical Networks
+  author abstract를 좁게 확인했다. 정확한4기사·8 web open 명령, 내부HTTP수 미측정,
+  broad discovery/PDF0. 일반 FiLM/공동학습이 기존 코드에도 있음을 확인하여 최초성 주장을
+  제외했다. HTML 표적 읽기와 abstract를 전체정독·저자재현으로 부르지 않는다.
+- [사전 계약](joint_harmonic_program_v1_plan.md)과
+  [기계 설정](../configs/analysis/joint_harmonic_program_v1.json)을 수치 시험 전에 고정했다.
+  후보는 C1 하나이며 지원 EEG로 만드는 prototype metric과 complex harmonic encoder를
+  함께 학습한다. Q/Q2/QM/SHAM 모두 동일 graph·seed·episode·튜닝 기회를 갖는다.
+  옛 frozen precision/TRCA regularizer/source routing/zero-shot FiLM과의 차이를 명시했다.
+- 39 exposed people·2초·k1/3/5·후기5 query blocks 고정, inner24+outer24=48fits,
+  48,000updates/192,000episodes, 실제7시간/훈련6시간/새출력4GiB 한도.
+  Candidate2/3 reserve 없음. 개발 재사용·descriptive threshold와 source-chosen policy 비용,
+  미도달 처리·준비시간 UNKNOWN·B-only 성과를 구분한다. 기존 조건별 부정 결과는 유지.
+- 코어를 새 파일에 구현했다. 원시데이터 reader가 없는 Fourier/Q/M/context/scaler/split/
+  SHAM/prototype/CCA/cost 함수와 source-episodic conditional metric이며 기존 runner 수정0.
+  CUDA 확인: torch2.2.2+cu121, RTX4090. 패키지 설치/환경변경0.
+- 생성 suite1/10: **38PASS/0FAIL/0SKIP**, pytest2.18초·외부2.88초·RSS1,056,920KiB.
+  합성 optimizer8updates/3000 한도. 위상·채널진폭·Q poison-M 불변·support-label equivariance·
+  query-batch independence·공동 gradient·동일 용량·CPU/CUDA forward/gradient를 검사했다.
+  Positive synthetic metadata efficacy gate는 없다. [시험 영수증](reports/joint_harmonic_core_v1_tests.json).
+- 초기 ruff UP035/C408 두 style 수정은 engineering repair1/3으로 보존했다.
+  최종ruff/diffcheck PASS. 전체 repository 시험/사람 reader/전체 nested pipeline 검증은
+  아직 하지 않았다. 실제 EEG/manifest load/fit/held60/사람연락/자료요청/유료0.
+- Root 단독 writer, 새 worktree/동시 agent writer0. 다음은 role-limited reader와
+  전체 generated fit→choice→freeze→evaluate→cost 검증 후, 이미 허용된 유한 사람 실행.
+  Goal active/미완료이며 코어 통과를 원 연구목표 달성으로 바꾸지 않는다.
+- Research-space에 technique1197aadf804f74c4 및 claim74beb9739541d295(QUALIFIED,
+  측정 근거2개)를 기록하고 render11을 완료했다. 기존 보호6개 결과/설계 SHA는 전부
+  불변이며 science plan/config SHA도 최초 동결값과 같다. 시험 대상 code/test와 영수증
+  hash를 program state에 결속했다. 과거 결과나 이번 generated 결과로 M 효능을 주장하지 않는다.
+
+### 158. 2026-09-23 KST — joint harmonic 전체 실행기 검증·실자료 단회 실행 준비
+
+- 직전 turn은 후보/예산 동결과 코어38PASS라는 PROGRESS였다. 같은 science SHA를 유지하고
+  source39/첫5블록 metadata projection, role-copy, prefix context, source-only scaler,
+  24inner+24outer 학습, 전체 모델 동결 뒤 단회 query 평가, 비용/판정을 연결했다.
+  Q/Q2/QM/SHAM의 초기 가중치·학습 episode hash·파라미터 수·튜닝 기회 일치를 검사한다.
+- 생성 invocation2는8PASS/3.97초/144updates, invocation3 통합은46PASS/4.38초/152updates.
+  누적3/10호출·11.23/1800초·304/3000 generated updates다. 인공12명/2채널/12class,
+  fit당3steps로 동일한48fit/24선택평가/24모델동결/1최종평가를 실행했다.
+  인공 M 효능 gate는 없으며 이 자료의 ceiling/0절감을 실제 부정결과로 해석하지 않는다.
+- NumPy/SciPy 별도 forward의 최대오차5.7129e-6, argmax차이0,24모델 검산PASS.
+  Source normalizer와 query prefix context를 독립 재구성하고 paired bootstrap/비용/판정을
+  재계산했다. Raw preprocessing/훈련의 독립 재현은 아니다. Human reader는IO를 mock해
+  39파일/4680 projected metadata rows/첫5블록 경계를 시험했으며 실제 human wrapper의
+  reader→engine 연결 전체를 인간 데이터로 실행한 것으로 부르지 않는다.
+- Engineering repair2는authority fixture격리/런타임·allocator한도/종료영수증/정적정리,
+  repair3은독립검산의context/비용/판정범위와파일hash결속 보강이다. 예산3/3소진,
+  과학설계변경0. 다음실제시도가실패하면자동수리·재실행하지않는다.
+- GPU는첫확인때공유작업으로100%/약21GiB사용중이었으나실행전재확인에서0%/약24GiB
+  여유였다. 다른작업종료/설정변경0. 최대8GiB allocator/16GiB RSS/7시간전체/6시간훈련
+  한도를유지한다. 생성영수증/코드hash를상태에저장했고실자료실행은아직0이다.
+- 다음행동의이유: 새데이터나M사전유용성검사없이, 기작이달라진공동학습이실제M을
+  유용하게쓸수있는지직접비교할준비가됐다. 고정39명/48fits/단회개발평가를실행한뒤
+  독립saved-audit1회를수행한다. held60/사람요청/유료0,원부정결과보존,goal active.
+
+### 159. 2026-09-23 KST — 공동학습48fits 완료·독립 감사 실패 보존
+
+- 실제단회실행은2026-09-22T16:05:08.930083Z에시작했고16:07:10.163126Z에
+  producer COMPLETE_AUDIT_PENDING으로끝났다. Process session34406/exit0/PID2330993 종료확인.
+  Root단독작성,예산/과학설계동결값과qualification snapshot SHA 일치.
+- Output `/home/whwovy/eeg-data/joint-harmonic-human-v1-0ioz9_2y`에원자료계보,
+  feature cache,48checkpoint/기록,24final모델동결,전체예측,정책,원결과를보존했다.
+  Raw39load/hash39,manifest1projectedread/4680rows,첫5블록M,held60/후기queryM반환0.
+- Inner24+outer24fits/48,000updates/192,000episodes,inner평가24,outerbatch1.
+  동일구조/파라미터수/초기state hash/episode schedule hash 검사 통과 후 전체final동결.
+  외부123.64초,내부121.231초,훈련105.355초,peakRSS1,687,548KiB,
+  Torchallocatedpeak35,301,888B. GPU전체메모리나kernel-only시간으로확대하지않는다.
+- **생산자 관측(미확정):** 저보정 Q41.250/Q241.384/QM40.962/SHAM41.261%.
+  QM−Q−0.288pp/기술적구간[−0.721,+0.123];각seed−0.385/−0.192pp.
+  전arm60trialfallback/비용절감0%,QM정책BA51.528%. B0대비Q+14.765pp지만
+  무보정CCA62.628%보다낮아강한기준선성공이나metadata성공으로부르지않는다.
+- 사전 독립audit1회는1.37외부초/0.113내부초만에FAIL. 첫innerQ normalizermean
+  최대절대차8.1001184e−8/상대차2.3459965e−8가rtol/atol1e−10을넘었다.
+  Float32집계/저장복원배치가능성은미검증가설이며원인확정/효능검증으로세지않는다.
+  Audit JSON의logit차이0/argmax차이0은초기값:실제forward단계미도달이다.
+- 수정3/3·audit1/1소진이므로코드/tolerance수정·재감사·재학습0. 실패감사SHA
+  0ae4beeb1037345892da3b2d723bce63d0a8130ca1fc6bc6f6b8ed8305c7bf7f를보존한다.
+  Producer resultSHA a02ab289da364c10a2d2b6bf412237cc653439cc8dc7accce66d2a2b3066b664.
+  Terminal원본의AUDIT_PENDING을PASS로수정하지않는다.
+- [결과/한계/후속검증](joint_harmonic_program_v1_results.md)을저장했다. C1학습탐색은
+  CLOSED_AUDIT_INCOMPLETE,전체goal은미완료/active. 추가학습0/raw0/held0으로
+  검산기수정1회+저장결과감사1회만별도승인제안이다. 예산을자동보충하지않는다.
+  최초동일블로커보고turn이며blocked상태를성급히설정하지않는다.
+- 기존보호6SHA불변,출력크기123,365,367B,삭제/설치/외부요청/유료/push0.
+  Academic-research 원칙에 따라생산자관측·독립검증실패·기작추론을분리한다.
+
+### 160. 2026-09-23 KST — 완료 조건 점검·검산 추가 승인 병목 재확인
+
+- 직전 현재상태 답변은 상태와 원결과 해시 재확인으로, 다음 행동을 바꾸는 새 근거가
+  없었으므로 NO_PROGRESS다. 이번 자동 goal 계속 요청에는 추가 검산 승인 문구가 없다.
+- 동결 계획/config/qualification snapshot, 코어·reader·runner·report·audit·tests 및
+  생성 영수증 해시가 실행 전 기록과 일치한다. 기존 보호6개 기록과 원 reader2개도 불변이다.
+  Actual terminal/audit는 각각 COMPLETE_AUDIT_PENDING/FAIL이며 관련 실행 프로세스는 없다.
+- 결과 문서에 원 목표별 근거/검증 한계와 승인 경계를 대조한 완료 점검을 추가했다.
+  생성46PASS 및 실제48fits 완료는 실자료 독립 forward/비용 검산 완료의 대체물이 아니다.
+  작은 normalizer 차이의 원인을 확정하거나 metadata 효능/무용성을 일반화하지 않는다.
+- 이번에는 문서·상태 기록만 보강했다. 모델/test/감사 재실행, feature cache/raw 접근,
+  수치 허용오차 변경, 새로운 후보/데이터/held60/외부요청/유료는 모두0이다.
+- 같은 추가 승인 병목이 최초 실행/감사 실패 보고, 현재상태 답변, 이번 계속 turn의
+  3회에 걸쳐 유지됐다. 안전한 기록 점검 이후 남은 검산을 수행할 권한이 없어
+  goal blocked 판정 요건에 도달했다. 완료나 사용자 요청 pause로 처리하지 않는다.
+  다음에는 새 학습 없이 검산 코드 수정1회·저장 결과 감사1회에 대한 명시적 승인이 필요하다.
+
+### 161. 2026-09-23 KST — 승인된 검산 보완 r1·실제 재감사 전 동결
+
+- 사용자 `응 계속하자.`는 직전 검산 보완1회/저장 결과 감사1회 제안에 대한 승인이다.
+  [추가 범위](joint_harmonic_audit_r1_plan.md)를 생성 시험 전에 기록했다. 재학습/새 후보가 아니다.
+- 생성 호출1은1PASS/1.06초: MAT/F 경로에서 저장 전후 원소가 같아도 NPZ의 strides
+  변경 때문에 float32 prefix평균에 Q 최대3.5763e-7/Q2 최대1.1921e-7 차이를 재현했다.
+  생성 C 경로에서는 이 차이가 없었다. 기존 생성 시험의 메모리 배치 범위 부족을 기록한다.
+- 원 auditor 소스를 동일 SHA로 별도 보존했다. 단일 보완은 Q/Q2의 물리 배치 복원과
+  explicit checked counters/argmax0 gate 및 기존 저장 source선택·baseline통계 확인이다.
+  생산자/학습기/전처리/원결과/원실패기록 변경0, normalizer/forward 허용오차 변경0.
+- 생성 호출2는7PASS/3.04초/0SKIP. Q/Q2/QM/SHAM의 복원된 정상값은 엄격비교 통과,
+  원 배치 손실과 의도적 mean/scale 훼손은 거부한다. 기존 인공24checkpoint/34,560예측
+  검산 최대logit차5.7129e-6/argmax0, normalizer48개·source선택12개·비용/판정 통과.
+  신규 인공/사람 fitting 모두0. 두 호출 총4.10초, 허용2호출/120초 안이다.
+- [실행 전 영수증](reports/joint_harmonic_audit_r1_qualification.json)에 새 코드/계획/test SHA를
+  동결했다. 다음은 원 결과가 있는 한 경로의 cache를1회 읽는 실제 audit_r1 한 번뿐이다.
+  모든48normalizer/24final forward가 고정 배치로 맞지 않으면 다른 배치/허용오차로 재시도하지 않는다.
+
+### 162. 2026-09-23 KST — 실제 r1 독립 검산 PASS·C1 유한 루프 마감
+
+- 승인된 실제 audit_r1 단회실행(session49089,exit0): 외부2.80초/내부1.628551초,
+  최대RSS574,028KiB. 추가cache load1회,raw/manifest/held60/학습/외부요청/유료0.
+- 모든48normalizer를 원rtol/atol1e-10으로 재현했다. 최대mean차3.5527e-15,
+  scale차6.6613e-16. 생성 재현에서 고정한 MAT/F 배치 복원으로 실제 불일치를 해소했다.
+- 24final모델112,320판정 NumPy독립forward 최대logit차7.8747e-6/argmax차0.
+  Source validation12개 선택, 조건/seed/개인별 정확도, 주요bootstrap/비용/gates 확인.
+  원자료/학습/CCA forward 독립 재현이 아니라 저장 결과 검산 범위임을 유지한다.
+- QM−Q저보정−0.288pp/보정량 절감0%라는 원결과를 확인했다. Q는B0보다+14.765pp지만
+  Q60trial51.99%도무보정CCA62.63%보다낮다. B-only개선을M성공으로보고하지않는다.
+  사전gate6실패/2통과,유망후보없음. 같은후보재학습·추가seed·C2/C3자동추가없음.
+- [최종 보고/후속 검증 계획/요구별 완료 점검](joint_harmonic_program_v1_closeout.md)을 작성했다.
+  후보/예산을 소진한 유한 연구 수행·검산·보고의 완료이며 긍정효능 확보를 뜻하지 않는다.
+  같은 metadata를 다른 신규 기작이 활용할 가능성은 남기되 미래별도프로그램과구분한다.
+- audit_r1 SHA dbe2c600cf651627b7ab3b160b0d1c99c775e14138cfb0298774db4e27268034.
+  원audit/result/terminal/freeze/전체scores SHA와원science/학습/reader코드SHA불변,
+  기존보호6개SHA불변. 원auditor소스동일SHA보존,원실패영수증덮어쓰기0.
+  추가코드수정1/1,생성2/2호출4.10/120초,실제감사1/1회2.80/600초로추가한도준수.
+
+### 163. 2026-09-23 KST — DAN teacher 새 유한 계획·핵심 구현 시작
+
+- 사용자 `응 그렇게 계획을 잡고 시작.`에 따라 새 프로그램을 계획했다. 원 저보정 SSVEP
+  목표/동일측정값 유지, 학습기1개·M삽입위치1개만 비교한다. 기존 후보 종료/음성 결과를
+  취소하거나 과거 DAN author-code NOT_RUN을 PASS로 바꾸지 않는다. Root 단독 writer다.
+- Academic-research로 기존 공간부터 조회한 뒤 DAN 논문v1 III-A–F/IV-A–C의 방법·설계와
+  공식 저장소 메타정보를 한정 확인했다. 새 포괄검색/PDF전문정독은 아니다. 공식repo의
+  head521cd7a46f69da1ea8c29e476fa74661cc1607ea/license=null 때문에 코드를 복사/실행하지
+  않고 공개 논문 기반 독립 protocol-adapted 구현으로 명세했다. 라이선스 요청/외부연락0.
+- [계획](dan_teacher_v1_plan.md)/[설정](../configs/analysis/dan_teacher_v1.json)을 첫 생성 수치
+  실행 전에 동결했다. Source39,1.5초,k2/3/5,U/Q/Q2/QM/SHAM,2seeds,3bands,5source,
+  총7020작은adaptation cells/42120fits/15,795,000updates가 전체 상한이다.
+  사람30wall시간/GPU24시간,생성6호출/1200초/1200updates,구현수정3round,감사1회다.
+- M은 query score가 아니라 source→target 파형정렬의 target-support teacher에 들어간다.
+  EEG Q 및 추가EEG Q2 대조군과 구조/훈련량 동일,상수/missing M→정확한Q를 보장한다.
+  기존 reliability weighting과의 중복을 명시했고,가중치 자체를 학습하거나 신규 발명이라고
+  주장하지 않는다. 실제M이 teacher를 개선할지는 미검증 가설이다.
+- No-IO 품질/impedance/scaler/teacher 및 DAN 공간변환/MSE 코어를 독립 작성했다.
+  [첫 생성검사 영수증](reports/dan_teacher_v1_core_tests.json):33PASS/0FAIL/0SKIP,
+  pytest2.95초/외부3.84초/peakRSS1,095,184KiB. CPU10+CUDA10+profile100=120updates.
+  Target교란 없는source-fit scaler,NPZ/C/F배치,상수·missing대조군,직접수식,
+  class/block permutation,teacher/MSE/gradient변화,BN고정/배치독립,NumPyforward,
+  저장왕복/CPU-CUDA일치를 확인했다. 정적ruff/diff검사PASS,구현수정0/3.
+- RTX4090 float32 batch96/val72,C8×T375 profile에서stepP95=0.001266289초,
+  valP95=0.000454534초,torchpeak30,177,792B. 전체횟수 외삽에2배계수를 적용한
+  **부분경로** 추산47,979초(13.33시간). IO/eTRCA/저장/checkpoint/감사 비용은 빠져 있어
+  human-entry/전체예산적합 판정으로 세지 않는다. 다른GPU작업 종료/환경설치0.
+- 첫 호출1/6·3.84/1200초·120/1200updates 사용. 과학설정/plan hash 불변이다.
+  실제EEG/manifest읽기/실제fits/최종평가/held60/유료0. 핵심검사만으로 metadata효능이나
+  논문재현을 주장하지 않는다. 다음은 고정filter-bank/decoder/두단계학습/role-limited reader/
+  전체fit→freeze→score→audit 구현과자원적합 확인이다. 새로운M기작/튜닝이 아니다.
+- Research-space에 prospective technique `technique:7a1f91bbf4f19189`(실제효능unknown),
+  generated core claim `claim:f672335c8b8ad7b8`(qualified)을 영수증/plan SHA와 함께
+  기록하고 views를 재생성했다. 논문기법의 근거,독립구현 검사,미실시 실제효능을 분리한다.

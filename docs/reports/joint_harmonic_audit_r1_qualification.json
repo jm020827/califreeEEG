@@ -1,0 +1,32 @@
+{
+  "schema": "cfeg.joint-harmonic-audit-r1-qualification.v1",
+  "status": "QUALIFIED_BEFORE_HUMAN_REAUDIT",
+  "date_kst": "2026-09-23",
+  "authority": "User approved the immediately preceding proposal with '응 계속하자.'",
+  "plan_sha256": "e408fd261f103ca540acf4f1ced1d29f6995c4bc8b7f6f23666593f667cb9668",
+  "auditor_sha256": "ecb590dfc71dc0314a85c289f14d1fa38fdeb3df44ff354e49c887e5efc0b719",
+  "tests_sha256": "0e53bda5d21342aadf643841dc7cc1777e355306edabc14f00743a8f4d5c4759",
+  "legacy_source_sha256": "e8b37ff1f1db4b75046504501e963f6c1161cbe816a298b8cd0085dead0b7115",
+  "repair_rounds": 1,
+  "generated_calls": [
+    {"call":1,"passed":1,"failed":0,"skipped":0,"process_seconds":1.06,"scope":"Generated C/F extraction, NPZ value preservation and float32 prefix-mean layout discrepancy"},
+    {"call":2,"passed":7,"failed":0,"skipped":0,"process_seconds":3.04,"scope":"All-arm F-layout normalizers, corruption rejection, original generated saved-checkpoint forward/choice/metric audit and exclusive retry refusal"}
+  ],
+  "generated_seconds": 4.10,
+  "new_optimizer_updates": 0,
+  "new_human_fits": 0,
+  "human_cache_loads": 0,
+  "generated_forward_models": 24,
+  "generated_forward_trials": 34560,
+  "generated_forward_max_absolute_error": 5.7129042776438155e-6,
+  "generated_argmax_differences": 0,
+  "normalizer_atol": 1e-10,
+  "normalizer_rtol": 1e-10,
+  "forward_absolute_limit": 1e-4,
+  "static_ruff": "PASS",
+  "limitations": [
+    "Generated checks do not establish the actual human mismatch cause or efficacy",
+    "Human original Q/Q2 strides were not recorded; one fixed MAT/F layout hypothesis must pass all stored normalizers without alternate retries",
+    "The saved-checkpoint fixture already existed; no new generated model fitting was performed"
+  ]
+}

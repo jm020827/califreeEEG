@@ -1,0 +1,48 @@
+{
+  "schema": "cfeg.joint-harmonic-core-tests.v1",
+  "date_kst": "2026-09-23",
+  "status": "PASS_PURE_CORE_NOT_HUMAN_PIPELINE",
+  "command": "/usr/bin/time -f 'elapsed_seconds=%e max_rss_kib=%M' .venv/bin/python -m pytest -q -o addopts='' -p no:cacheprovider tests/test_joint_harmonic.py",
+  "exit_code": 0,
+  "passed": 38,
+  "failed": 0,
+  "skipped": 0,
+  "pytest_seconds": 2.18,
+  "process_wall_seconds": 2.88,
+  "max_rss_kib": 1056920,
+  "generated_optimizer_updates": 8,
+  "human_data_accesses": 0,
+  "torch_version": "2.2.2+cu121",
+  "cuda_runtime": "12.1",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "numpy_version": "1.26.4",
+  "scipy_version": "1.15.3",
+  "verified_scope": [
+    "direct harmonic coefficient phase and amplitude on generated sinusoids",
+    "per-trial extraction and amplitude-normalization invariance",
+    "missing/zero/nonfinite impedance semantics",
+    "Q path ignores poison metadata and retains equal graph capacity",
+    "support-context normalizer role IDs and missing flags",
+    "participant split and nuisance-stratified SHAM mapping helpers",
+    "fixed prototype and common CCA generated numerical behavior",
+    "support-label permutation equivariance and query-batch independence",
+    "gradients through support, spectral encoder and conditioning network",
+    "all-arm equal parameter count and initialization",
+    "checkpoint roundtrip and CPU/CUDA forward/gradient agreement",
+    "source-policy selection and unattained threshold cost semantics"
+  ],
+  "not_verified": [
+    "human raw/manifest reader and provenance binding",
+    "complete source-only training and inner LR selection runner",
+    "all-model freeze before outer-query evaluation",
+    "end-to-end resource enforcement and generated full-flow execution",
+    "real EEG baseline strength, metadata efficacy or calibration savings",
+    "independent numerical audit of eventual human predictions"
+  ],
+  "static_checks": {
+    "initial_ruff": "2 style issues: UP035 and C408",
+    "repair": "collections.abc imports and dict literal; no science change",
+    "final_ruff": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

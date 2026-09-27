@@ -1,0 +1,41 @@
+{
+  "schema": "cfeg.joint-harmonic-full-flow-tests.v1",
+  "status": "PASS_GENERATED_FULL_FLOW",
+  "date_kst": "2026-09-23",
+  "passed": 46,
+  "failed": 0,
+  "skipped": 0,
+  "pytest_seconds": 3.70,
+  "process_wall_seconds": 4.38,
+  "max_rss_kib": 1093660,
+  "command": "/usr/bin/time -f 'elapsed_seconds=%e max_rss_kib=%M' .venv/bin/python -m pytest -q -o addopts='' -p no:cacheprovider --basetemp=/tmp/cfeg-joint-program-v1-tests-attempt3 tests/test_joint_harmonic.py tests/test_joint_harmonic_runner.py",
+  "generated_model_fits_this_invocation": 48,
+  "generated_optimizer_updates_this_invocation": 152,
+  "generated_full_flow": {
+    "participants": 12,
+    "classes": 12,
+    "channels": 2,
+    "steps_per_fit": 3,
+    "inner_fits": 24,
+    "outer_fits": 24,
+    "inner_evaluations": 24,
+    "outer_reveal_batches": 1,
+    "all_models_frozen_before_outer_query_scores": true,
+    "independent_saved_numpy_forward_max_error": 0.0000057129042776438155,
+    "independent_saved_numpy_argmax_differences": 0,
+    "independent_audit_seconds": 0.17911836877465248,
+    "independent_source_normalizers_query_contexts_costs_gates": "PASS",
+    "artifact_root": "/tmp/cfeg-joint-program-v1-tests-attempt3/test_generated_full_flow_and_i0/generated"
+  },
+  "scope": "Complete shared fit-choice-freeze-query-cost engine on generated arrays, plus mocked exact source39/first-five-block human reader, unqualified human-entry refusal, and generated CPU/CUDA core tests.",
+  "limitations": [
+    "The real human_entry reader-to-engine wrapper was not executed end-to-end against human files in this qualification",
+    "Generated data have no required positive metadata effect; no efficacy gate was imposed",
+    "Reduced generated fit steps/dimensions do not reproduce human training or prove human efficacy",
+    "Independent audit uses cached features, not an independent raw preprocessing implementation"
+  ],
+  "actual_human_numeric_reads": 0,
+  "held60_reads": 0,
+  "static_ruff": "PASS",
+  "scientific_plan_changed": false
+}

@@ -1,5 +1,39 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> **2026-09-23 새 계획·구현 착수:** 사용자 승인으로 [DAN teacher v1](dan_teacher_v1_plan.md)를
+> 별도 동결했다. 논문 기반 독립 DAN 계열1개에, support 임피던스로 **학습 teacher**를
+> 가중하는 기작1개를 넣고 U/Q/Q2/QM/SHAM 및 FBCCA/target-only eTRCA와 비교한다.
+> [생성 코어33PASS](reports/dan_teacher_v1_core_tests.json),CPU/CUDA120updates 완료.
+> 실제 EEG/metadata 읽기·학습·효능평가는0; 전처리/decoder/reader/전체학습·검산은 미완성이다.
+> 부분GPU profile은13.33시간 추산이나 전체실행가능 판정이 아니다. 다음은 고정 end-to-end
+> 경로 및 전체자원 검사다. 기존 joint-harmonic은 여전히 종료이며 과거실패를 재개하지 않는다.
+> Held60/외부요청·연락/유료0,각각 별도승인 경계 유지. 아래 ‘최종/현재’는 과거프로그램 이력이다.
+
+> **2026-09-23 최종:** [joint harmonic 유한 루프 완료 보고](joint_harmonic_program_v1_closeout.md).
+> 사용자 승인된 검산 보완1회로 배치/집계 차이를 해결했고, 허용오차 변경 없이48normalizer/
+> 24모델/112,320판정·보고 통계 검산PASS다. QM−Q−0.288pp,보정량 절감0%; 유망후보 없음.
+> 후보와 검산을 종료하며 기존 실패는 보존한다. 새 학습/held60/외부요청/유료0.
+> 원 목표에 따른 유한 연구 수행·보고가 끝났다는 뜻이며 metadata 효능 달성은 아니다.
+> 아래 실행/승인 대기 및 과거 '현재' 상태는 이력이다.
+
+> **2026-09-23 실자료 실행 후 현재:** [joint harmonic 결과·실패 감사](joint_harmonic_program_v1_results.md).
+> 39명48fits/48,000updates/단회최종개발평가 완료. 생산자 QM−Q는저보정−0.288pp,
+> 보정prefix절감0%지만, 독립감사가normalizer의8.1e−8차이에서중단돼확정효능은보류다.
+> 생성46PASS를실자료검산PASS로이식하지않는다. 수정3/3·감사1/1소진,실제후수정/재실행0.
+> 같은후보학습은종료하며,검산코드수정1회+저장결과감사1회만별도승인제안이다.
+> Held60/외부요청/유료0,기존실패보존. 원goal은최종검증미완료이며 추가 검산 승인 필요 상태다.
+> 후속 완료 조건 점검에서도 같은 승인 병목을 확인했다. 자동 계속은 예산 확대 승인이 아니며,
+> 새 학습 없이 검산기 수정1회·저장 결과 감사1회만 승인 대상으로 남는다.
+
+> **2026-09-23 현재:** [joint harmonic few-shot 프로그램](joint_harmonic_program_v1_plan.md)의
+> 후보1개·동일구조4대조군·실제48fits/48,000updates·단회최종개발평가 예산을 실행 전에
+> 고정했다. 같은 임피던스라도 support-template metric과 EEG encoder를 공동학습하는
+> 새 가설을 직접 시험한다. 기존 M 무용성의 일반화나 사전 M 효능 관문을 두지 않는다.
+> [합성 코어 검사](reports/joint_harmonic_core_v1_tests.json)38PASS(CPU/CUDA 포함),
+> 사람 EEG 접근/새 효능평가는 아직0이다. 다음은 role-limited reader 및 전체 generated
+> fit→freeze→evaluate 검증 후 이 계약 안의 실제 실행이다. 별도 단계별 승인은 필요 없다.
+> Held60·사람/자료 요청·유료는 계속 별도 승인이다. 아래 과거 종료 결과는 보존 이력이다.
+
 > **2026-09-14 최신 상태:** [Welch/source-SVM core 마감](welch_source_baseline_v1_results.md).
 > 합성 최종 48 tests PASS는 공통 비교기준의 부분 구현 검증이며 실제 EEG/M 효능이 아니다.
 > [MobileBCI 안정화 후속](block_scaled_router_human_v1_results.md)은 이미 M의 gate/margin
