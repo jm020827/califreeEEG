@@ -1,0 +1,22 @@
+{
+  "schema": "cfeg.dan-teacher-role-tests.v1",
+  "recorded_at_utc": "2026-09-27T17:02:45Z",
+  "generated_call": 4,
+  "status": "GENERATED_ROLE_FREEZE_GUARDS_PASS",
+  "passed": 8,
+  "failed": 0,
+  "skipped": 0,
+  "pytest_seconds": 0.50,
+  "wall_seconds": 0.70,
+  "peak_rss_kib": 164408,
+  "optimizer_updates": 0,
+  "artifact_sha256": {
+    "src/cfeg/analysis/dan_roles.py": "15b131828ebe13444c2a7a11d73ae99192a8810c5b841263d7cd5ba12021643b",
+    "tests/test_dan_roles.py": "893a09b0432fa1f4d39ee7d7c598ac364f8d8cc1d689a84145e6d1f48e6cd123"
+  },
+  "checks": ["first-five source selection from disjoint outer-fit roles", "first-four-only scalers invariant to other participant perturbations", "all five arms receive copied sources and paid target prefix only", "later unpaid target blocks cannot alter the prefix packet", "Q ignores metadata and all-missing QM equals Q", "SHAM is a stable within-role/order derangement; singleton strata fail", "complete artifact-key registration before exactly one query capability"],
+  "limitations": ["Array-level generated tests; no human reader or whole cohort runner invoked.", "Freeze gate validates ordering/completeness, not whether provided hashes correspond to durable artifacts; runner and saved auditor still required."],
+  "human_entry_qualified": false,
+  "human_reads_fits_reveals": 0,
+  "held60": 0
+}

@@ -1,0 +1,19 @@
+{
+  "status": "PASS_SAVED_MODELS_DECODERS_AND_ENDPOINTS",
+  "generated": false,
+  "seconds": 337.4999201949686,
+  "alignment_cells_checked": 7020,
+  "selected_states_checked": 42120,
+  "trial_decisions_checked": 127296,
+  "max_score_error": 3.9276915053676476e-13,
+  "argmax_disagreements": 0,
+  "raw_reads": 0,
+  "manifest_reads": 0,
+  "optimizer_updates": 0,
+  "producer_all_gates_pass": false,
+  "validated_metadata_calibration_reduction": false,
+  "scope_limits": [
+    "Saved-model/decoder/endpoint verification, not independent raw preprocessing or all training steps.",
+    "Model-selection traces are checked at selected checkpoints; unselected weights were not saved."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "status": "COMPLETE_AUDITED",
+  "at": "2026-09-27T22:31:35.519628+00:00",
+  "meter": {
+    "at": "2026-09-27T22:31:35.519641+00:00",
+    "generated": false,
+    "counts": {
+      "human_extraction_attempts": 1,
+      "manifest_hashes": 1,
+      "manifest_filtered_reads": 1,
+      "manifest_returned_rows": 4680,
+      "raw_hashes": 39,
+      "raw_loads": 39,
+      "human_cache_loads": 2,
+      "adaptation_cells": 7020,
+      "optimizer_fits": 42120,
+      "optimizer_updates": 15795000,
+      "source_validation_outputs": 8775000,
+      "outer_reveal_batches": 1,
+      "saved_audit_batches": 1
+    },
+    "wall_seconds": 17905.86011969112,
+    "training_seconds": 17238.48557252623,
+    "peak_rss_bytes": 1935818752,
+    "peak_torch_allocated_bytes": 32797184
+  }
+}

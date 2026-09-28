@@ -1,0 +1,40 @@
+{
+  "schema": "cfeg.dan-teacher-human-qualification.v1",
+  "status": "PASS_FULL_GENERATED_QUALIFICATION",
+  "human_entry_qualified": true,
+  "plan_sha256": "ca734672afc122d9fc4f36a662fa73bbfd82a14c68b32c25bdc38f9bdd9f84f6",
+  "config_sha256": "af3c075b483fbb447748bdb8b9784904cacecf9fee19d0fa8a5c601878f3b922",
+  "author_code_used": false,
+  "generated": {"calls": 6, "passed_checks": 54, "failed_checks": 0, "skipped_checks": 0, "optimizer_updates": 1125, "wall_seconds": 21.74, "implementation_repairs": 3},
+  "resource_projection": {"training_seconds": 41509.53100283258, "total_seconds": 47165.40631369315, "audit_seconds": 798.6231199130416, "output_bytes": 6621114304, "within_limits": true, "guaranteed_runtime": false},
+  "versions": {"python": "3.10.12", "torch": "2.2.2+cu121", "numpy": "1.26.4", "scipy": "1.15.3"},
+  "artifact_sha256": {
+    "src/cfeg/models/dan_alignment.py": "a296d40c6e38791a87c4aac31c3d5cadcd33fe136857f377f029dc019e627f6c",
+    "src/cfeg/analysis/dan_teacher.py": "13c9a0b8d8a529d280311d983ff53b0d9b13fe0789b2a13f4a02a1617665c94d",
+    "src/cfeg/analysis/dan_signal.py": "7902a852dae96f287e11ff272538987ed7cfcaee054fa049551e4bc90fe7eedf",
+    "src/cfeg/analysis/dan_training.py": "6a73e214116711c1fb03ad70d53dc35dae849bd62a3afb06536d4af88efcfe93",
+    "src/cfeg/analysis/dan_roles.py": "15b131828ebe13444c2a7a11d73ae99192a8810c5b841263d7cd5ba12021643b",
+    "src/cfeg/analysis/dan_runtime.py": "9b95e9ee516d05b036ad412da0a8eb433eb4aca128b9988b2edeed1fb4fa0d48",
+    "src/cfeg/analysis/dan_data.py": "af0d6fb83acf4b17cf1b957732b22df38a2dc4ddf8d1d45e5eafdfaae342a8ff",
+    "src/cfeg/analysis/dan_report.py": "9435e20b94773a6f13ee421975c87a514aecf8ed0b553bf3a2520d4c25fdba51",
+    "src/cfeg/analysis/dan_runner.py": "f3f1862a02ba9bc971b86c5dee8d947976180314863c2602209f3e54fdbd699a",
+    "src/cfeg/analysis/dan_audit.py": "6674b0cec153c71d6d2ba055cc768991456808f599b0c637106f48df3bf3099a",
+    "src/cfeg/analysis/joint_harmonic_data.py": "efc4a757ee48690d6ec8d7fa07c7651f94d12959b63ff9687127d8155b416ba5",
+    "src/cfeg/analysis/joint_harmonic.py": "98d2adbe5e6cac8d1d031324fddc607cd1b3a38222bf5baf418c747aa5a9da34",
+    "src/cfeg/data/prepare_mat.py": "58bc566801236023f739f644f5c783b89bd5f64b53ff013ccfebc6b766a7d8d1",
+    "src/cfeg/data/prepare_wearable.py": "da47cd61e749f6f9fbb176512387dd9f6b0a291efa2399a1dbd832ee96f3b508",
+    "tests/test_dan_full_flow.py": "d393b4cd8f5edbf4a477f72eac84d56c6f40f73e93f4a0a4ea02a34811812ae3",
+    "tests/test_dan_cuda_qualification.py": "fe70fdbc0bbbbc9e57306ec83509b95d28007e7075e5ef8d77e294573b966506"
+  },
+  "evidence_sha256": {
+    "docs/reports/dan_teacher_v1_core_tests.json": "1f124eaf21316d223cd9447f03d127098c997933e5270ccf8e05163211232466",
+    "docs/reports/dan_teacher_v1_pipeline_tests.json": "3971a654a8b167393ec5c21517176b8334a0863e2340361efacb2ca9c9a2203b",
+    "docs/reports/dan_teacher_v1_resource_tests.json": "c5879891aff4c3fc5289781a5850e25def159c1e6f79cb690e73f17c7739dca6",
+    "docs/reports/dan_teacher_v1_role_tests.json": "f690b1a421d0e73ea9c862ea47a3c91b3cc058d591ee0e04205d55caadb49430",
+    "docs/reports/dan_teacher_v1_full_flow_tests.json": "c794dad8addc463d38fa8fe4ebdb6644c4d3d4e2aad9bf1ed8287629c889b449",
+    "docs/reports/dan_teacher_v1_cuda_qualification_tests.json": "b1cf6237a76446b96f83e436d4696683116d0b639a6cf6492c325347894d44e5"
+  },
+  "human_scope": "One source39 extraction and run, fixed five arms, k2/3/5, two seeds, same-electrode transfer, global freeze then one query batch, automatic saved audit.",
+  "limits": "Frozen config limits; no retry/resume, new candidate, post-human repair, held60, external requests or paid resources.",
+  "scope_limits": ["Generated checks and projected cost are not real metadata efficacy.", "Saved audit is not independent raw preprocessing or replay of all training steps.", "Source39 results remain exploratory development evidence."]
+}

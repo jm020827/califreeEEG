@@ -2964,3 +2964,85 @@
 - Research-space에 prospective technique `technique:7a1f91bbf4f19189`(실제효능unknown),
   generated core claim `claim:f672335c8b8ad7b8`(qualified)을 영수증/plan SHA와 함께
   기록하고 views를 재생성했다. 논문기법의 근거,독립구현 검사,미실시 실제효능을 분리한다.
+
+### 164. 2026-09-28 KST — 마지막 DAN 승인·신호처리/학습/role 구현 계속
+
+- 사용자 `ㄱㄱ`에 따라 기존 마지막후보1개를 계속했다. 계획/config SHA불변,
+  후보/초모수/원법해석 변경0. Main단독writer,agent/worktree/merge/push0;
+  기존 원격통합과는 별도 작업이다. 원격snapshot은앞선core33PASS시점 그대로다.
+- [실행 전 구현 명세와 후속측정 이유](dan_teacher_v1_implementation_continuation.md)를
+  기록했다. Source-only 2stage Adam/최소validation선택/동일pretrain초기화,
+  고정notch/filterbank와eTRCA/FBCCA,3fold/source5/scalerfit4 역할을 구현했다.
+- 생성call2:6PASS/3.15pytest초/3.93wall초. 5arm×3band90fits/165updates에서
+  시작가중치·배치순서 동일,각fine초기화·validation선택,NumPy저장state파형 검산PASS.
+  직접TRCA공분산/scalar상관/CCA고유값수식,전처리prefix경계도PASS다.
+  추가CUDAprofile200updates로해당call총365updates. 실제수치효능평가는아니다.
+- 첫profile은0.61445초/200updates로보수적반복외삽29.96시간이었다. 최초CUDA
+  준비비용을7020번반복하는추산을분리하기위해call3을사전명세했다. Warm8updates+
+  고정200updates측정1회뿐이며최저값선택/반복성능탐색0,원cold측정보존.
+  Call3:1PASS/2.05pytest초/2.65wall초/208updates. Warm0.72772초,steady0.23636초,
+  동일2배여유×12.5비율추산41,509.53초(11.53h). 훈련경로만24h이내이며전체는미검증.
+- 생성call4:8PASS/0.50pytest초/0.70wall초/학습0. 대상사람·sourcevalidation교란이
+  scaler를바꾸지않음,모든armpaidprefix/copy경계,Q의M독립,missingQM=Q,
+  role/order내SHAM고정derangement와singleton거부,전체모델등록전query거부를확인했다.
+  등록hash의실제파일존재검증은runner/auditor책임으로명시했다.
+- 새15개·기존33개총48PASS. 생성4/6호출,693/1200updates,11.12/1200초,
+  수정1/3round(초기ruff표기수정),미해결테스트실패0. 영수증3개와code/test SHA보존.
+- [현재상태와남은작업](dan_teacher_v1_progress.md):reader/저장전체runner/독립audit/
+  비용보고·전체자원검사가남았다. 사람실험실행/raw/manifest/held60/외부요청/유료0.
+  백그라운드실행없음;구성요소PASS를전체pipeline이나실제M효능으로확대하지않는다.
+  다음2호출/507updates내에전체생성검증을완료해야하며과학예산을자동보충하지않는다.
+
+### 165. 2026-09-28 KST — 전체 저장 흐름·독립감사·CUDA 검증 완료 및 동결
+
+- 사용자 `시작할까? 시작.`에 따라reader/runtime/producer/report/auditor를완성했다.
+  과학계획/config SHA불변,새후보·탐색조건0,main단독writer/agent0이다.
+- 원MAT전체를1회decode할때querysample이메모리에들어오는물리적사실과학습접근을
+  구분했다. 학습에는SupportArrays만,query는rawprefix로별도vault에보관하며
+  모든학습state/decoder의파일hash동결후1회만preprocess/score하도록연결했다.
+- Call5:4PASS/5.66pytest초/6.15wall초/360updates,45cells/270selectedstates/
+  912판정의독립검산PASS. 최대score차3.064e-14,argmax차0. Teacher/비용훼손복사본은거부했다.
+  Reader는모든I/O를mock하여39raw/39hash/1filteredread4680행및allowlist를검사했다.
+  실제사람자료로생성검사를실시한것이아니다.
+- 실제크기8×375에서eTRCA35반복,48query CCA/score,NumPyforward,disk저장/hash/load를
+  측정했다. 훈련추산41,509.53초+비훈련1,257.25초+감사798.62초+여유3600초=
+  총47,165.41초(13.10h),산출물6,621,114,304B로상한안이다. 보장시간이아니며
+  실행중wall30h/training24h/audit1h/RAM24GiB/GPUallocator10GiB/output12GiB를감시한다.
+- Call6:2PASS/3.90pytest초/4.47wall초/72CUDAupdates. k2/3/5×3bands실제크기에서
+  54selectedstates/144판정과source-validation MSE/변환파형/decoderlineage검산PASS.
+  NumPyforward최대차2.553e-7,argmax차0. 이전CPU전체산출물45cells/912판정도
+  재학습없이cold재검산PASS했다. Raw/manifest/held접근0인생성검증이다.
+- 생성총54PASS/0FAIL/0SKIP,6/6호출·1125/1200updates·21.74/1200초;
+  구현수정3/3소진. 마지막round는busyGPU/diskheadroom사전검사와최종CUDA검증결속이다.
+  [qualification](reports/dan_teacher_v1_qualification.json)에16개code/test SHA와
+  6영수증SHA/환경버전/상한을동결했다. 실제시작전모든해시일치확인.
+  앞으로코드/허용오차수정·생성재시험·실제재시도권한을자동추가하지않는다.
+
+### 166. 2026-09-28 02:33 KST — 마지막 DAN 단회 실제 GPU 실행 시작
+
+- UTC2026-09-27T17:33:09.657687Z(09-28 02:33KST)에exclusive start를기록했다.
+  PID2620244/tool session87328,output `/home/whwovy/eeg-data/dan-teacher-human-v1-1sfi54y0`.
+  Qualification SHA3910911c2fd19f0368a97d98f8b2194081f82aaad7d55ca558b3937f5528f376.
+- 시작직전RTX4090여유24065MiB/util0%,충분한disk확인. 다른작업종료/새설치0.
+  39명raw단회load/hash완료,manifest1hash/1projectedread/4680행,첫5blockM만반환.
+  원dataset다른사람/held60반환0. Queryrawcache는미평가/학습미전달상태다.
+- UTC17:33:50관측:12adaptationcells/72optimizerfits/27,000updates,
+  sourcevalidation15,000출력. 첫대상sub004,dry,k2에서U/Q/Q2/QM decoder저장확인.
+  Wall40.66초/training29.80초,peakRSS1,913,225,216B/torch32,365,056B.
+  실험중간성능을보거나선택하지않았고최종querybatch는0이다.
+- 전체모델동결후단회평가·독립saved audit·terminal기록이같은프로세스에서자동진행한다.
+  현재는실행중이지효능완료가아니다. 최신숫자는output의meter/journal/terminal을우선한다.
+  실패시원오류/부분산출물을보존하고종료;학습재시도/초모수변경/held60자동개봉없음.
+  이번변경과생성영수증은로컬에있으며자동commit/push하지않았다.
+
+### 167. 2026-09-28 — DAN 종료 확인 및 승인된 원격 인계
+
+- 07:31 KST COMPLETE_AUDITED. 7020cells/42120fits/15795000updates 완료.
+- Saved audit 127296판정 불일치0. 전체 약4.97시간. Raw39/최종query1/audit1.
+- QM−Q 저보정 평균+0.414pp, 기술적95%구간[-0.127,+1.256]pp;
+  seed별 -0.053/+0.881pp. 사전 채택 기준 미달, 보정량 감소 미확인.
+- 최종 결과·감사·terminal 영수증과 인계 문서를 저장했다.
+  [종료 보고](dan_teacher_v1_closeout.md). 이전 실패·동결 코드·설정은 보존.
+- 사용자 push 승인에 따라 research/local-state-20260928 브랜치를 업데이트한다.
+  원격 main의 분기 이력은 덮어쓰지 않는다. 대용량 원자료·모델·임시 pytest는 제외.
+  새 연구/재실험/held60 개봉은 수행하지 않았다.

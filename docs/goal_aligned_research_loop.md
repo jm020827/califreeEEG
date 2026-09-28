@@ -1,5 +1,25 @@
 # 연구목표에 도달하기 위한 실행 루프
 
+> **2026-09-28 최종 종료:** DAN 전체 실행 및 saved audit PASS, 후보 채택 기준 미달.
+> QM−Q +0.414pp이나 보정량 감소 미확인. [결과·인계](dan_teacher_v1_closeout.md).
+> 이 후보의 추가 학습/튜닝은 종료. 아래는 과거 진행 기록이다.
+
+> **2026-09-28 02:33 KST DAN 실제 실행 시작:**
+> [동결·실행 허용 영수증](reports/dan_teacher_v1_qualification.json),
+> [단회 start](reports/dan_teacher_v1_human_start.json).
+> 54생성검사PASS·1125updates·6/6호출,코드수정3/3소진 뒤 실행했다.
+> Raw39/manifest1projectedread4680행 완료,초기72fits/27,000updates 확인.
+> 전체39명학습→모든모델동결→단회평가→자동독립검산이 진행될 예정이다.
+> 실제효능결과는아직없으며held60/외부요청/유료0. 재학습·자동수정/재시도없음.
+> [현재 출력·상태](dan_teacher_v1_progress.md); 아래 미구현/미시작 문구는 과거 이력이다.
+
+> **2026-09-28 DAN 계속:** [진행 보고](dan_teacher_v1_progress.md).
+> 고정 전처리/FBCCA/eTRCA/두단계 DAN 학습과 role/SHAM/freeze guards를 구현했고
+> 새 생성15PASS,기존33개와총48PASS다. 학습 경로 추산11.53시간은24시간 상한 안이나
+> 전체실행/IO/감사는 미검증이다. 생성4/6호출·693/1200updates 사용,실제EEG/held60접근0.
+> 다음은 단회reader·저장runner·별도auditor와전체생성검증이며 후보·과학설정은 변경하지 않는다.
+> 실제 사람 실험은 아직 시작하지 않았고 백그라운드 실행도 없다. 아래는 과거 단계 기록이다.
+
 > **2026-09-23 새 계획·구현 착수:** 사용자 승인으로 [DAN teacher v1](dan_teacher_v1_plan.md)를
 > 별도 동결했다. 논문 기반 독립 DAN 계열1개에, support 임피던스로 **학습 teacher**를
 > 가중하는 기작1개를 넣고 U/Q/Q2/QM/SHAM 및 FBCCA/target-only eTRCA와 비교한다.

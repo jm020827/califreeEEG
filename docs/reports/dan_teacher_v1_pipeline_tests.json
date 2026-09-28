@@ -1,0 +1,36 @@
+{
+  "schema": "cfeg.dan-teacher-pipeline-tests.v1",
+  "recorded_at_utc": "2026-09-27T16:55:35Z",
+  "generated_call": 2,
+  "status": "SIGNAL_TWO_STAGE_GENERATED_PASS_RESOURCE_PENDING",
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "pytest_seconds": 3.15,
+  "wall_seconds": 3.93,
+  "peak_rss_kib": 1128364,
+  "optimizer_updates": 365,
+  "checks": ["prefix-only filters", "direct pairwise TRCA covariance", "scalar saved-decoder correlation", "independent CCA eigenvalue formula", "5 arms times 3 bands; 90 fits and 165 updates", "matched initial weights and schedules", "source-validation selection and fine-stage reinitialization", "NumPy saved-state waveform forward", "full-shape CUDA two-stage profile"],
+  "artifact_sha256": {
+    "src/cfeg/analysis/dan_signal.py": "7902a852dae96f287e11ff272538987ed7cfcaee054fa049551e4bc90fe7eedf",
+    "src/cfeg/analysis/dan_training.py": "6a73e214116711c1fb03ad70d53dc35dae849bd62a3afb06536d4af88efcfe93",
+    "tests/test_dan_pipeline.py": "e00d7a737d949081e0fef8dfccd0a4d5c71b91fdc4cc7590256afa09a0d508b9"
+  },
+  "profile": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "precision": "float32",
+    "elapsed_seconds": 0.6144487494602799,
+    "checkpoint_memory_serialization_seconds": 0.0011749574914574623,
+    "checkpoint_packet_bytes": 312034,
+    "twofold_training_path_projection_seconds": 107852.25193345919,
+    "projected_checkpoint_bytes": 2190478680,
+    "peak_torch_allocated_bytes": 32508928,
+    "optimizer_updates": 200,
+    "source_validation_outputs": 100,
+    "whole_run_qualified": false,
+    "limitation": "First CUDA fit in this process includes one-time startup costs; cannot multiply that startup by every cell. Still exceeds the 24h training ceiling under this conservative estimate."
+  },
+  "human_entry_qualified": false,
+  "human_reads_fits_reveals": 0,
+  "held60": 0
+}
